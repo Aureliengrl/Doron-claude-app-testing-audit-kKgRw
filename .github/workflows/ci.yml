@@ -1,0 +1,49 @@
+name: CI — Flutter Tests & Analysis
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Flutter Tests & Static Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      # ── Setup ───────────────────────────────────────────────────────────────
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.x'
+          channel: 'stable'
+          cache: true
+
+      # ── Dependencies ─────────────────────────────────────────────────────────
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      # ── Static Analysis ───────────────────────────────────────────────────────
+      - name: Run dart analyze
+        run: flutter analyze --no-pub
+        continue-on-error: false
+
+      # ── Unit Tests ────────────────────────────────────────────────────────────
+      - name: Run domain unit tests
+        run: flutter test test/domain/ --reporter=github
+
+      - name: Run all tests
+        run: flutter test --reporter=github
+
+      # ── Build Check ──────────────────────────────────────────────────────────
+      # Vérifie que l'app compile sans erreur sur Android
+      # (iOS requiert un Mac runner payant, désactivé par défaut)
+      - name: Build Android (debug)
+        run: flutter build apk --debug --no-pub
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}

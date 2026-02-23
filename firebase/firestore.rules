@@ -1,0 +1,125 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Collection Users (FlutterFlow)
+    match /Users/{document} {
+      allow create: if request.auth.uid == document;
+      allow read: if request.auth.uid == document;
+      allow write: if request.auth.uid == document;
+      allow delete: if request.auth.uid == document;
+    }
+
+    // Collection users (Firebase Data Service) - avec sous-collections
+    match /users/{userId} {
+      allow create: if request.auth.uid == userId;
+      allow read: if request.auth.uid == userId;
+      allow write: if request.auth.uid == userId;
+      allow delete: if request.auth.uid == userId;
+
+      // Sous-collection favorites
+      match /favorites/{favId} {
+        allow create: if request.auth.uid == userId;
+        allow read: if request.auth.uid == userId;
+        allow write: if request.auth.uid == userId;
+        allow delete: if request.auth.uid == userId;
+      }
+
+      // Sous-collection onboarding
+      match /onboarding/{docId} {
+        allow create: if request.auth.uid == userId;
+        allow read: if request.auth.uid == userId;
+        allow write: if request.auth.uid == userId;
+        allow delete: if request.auth.uid == userId;
+      }
+
+      // Sous-collection people
+      match /people/{personId} {
+        allow create: if request.auth.uid == userId;
+        allow read: if request.auth.uid == userId;
+        allow write: if request.auth.uid == userId;
+        allow delete: if request.auth.uid == userId;
+
+        // Sous-collection gift_lists
+        match /gift_lists/{listId} {
+          allow create: if request.auth.uid == userId;
+          allow read: if request.auth.uid == userId;
+          allow write: if request.auth.uid == userId;
+          allow delete: if request.auth.uid == userId;
+        }
+      }
+
+      // Sous-collection home_feed
+      match /home_feed/{feedId} {
+        allow create: if request.auth.uid == userId;
+        allow read: if request.auth.uid == userId;
+        allow write: if request.auth.uid == userId;
+        allow delete: if request.auth.uid == userId;
+      }
+    }
+
+    // Collection giftSearches
+    match /giftSearches/{document} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow write: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // Collection suggestions
+    match /suggestions/{document} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow write: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // Collection wishlists
+    match /wishlists/{document} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow write: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // Collection translations (lecture publique)
+    match /translations/{document} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /Favourites/{document} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+
+    match /QAs/{document} {
+      allow create: if true;
+      allow read: if true;
+      allow write: if false;
+      allow delete: if false;
+    }
+
+    match /GiftSuggestionChat/{document} {
+      allow create: if true;
+      allow read: if true;
+      allow write: if false;
+      allow delete: if true;
+    }
+
+    match /products/{document} {
+      allow create: if true;
+      allow read: if true;
+      allow write: if true;
+      allow delete: if true;
+    }
+
+    match /gifts/{document} {
+      allow create: if true;
+      allow read: if true;
+      allow write: if true;
+      allow delete: if true;
+    }
+  }
+}

@@ -1,0 +1,29 @@
+
+# DORON ignores
+.env
+*.log
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.dart_tool/
+android/key.properties
+ios/Runner/GoogleService-Info.plist
+android/app/google-services.json
+
+assets/environment_values/environment.json
+
+# ==============================================================
+# SÉCURITÉ CRITIQUE — Ne jamais committer ces fichiers
+# ==============================================================
+# Clés de service Firebase Admin (accès total à la base de données)
+serviceAccountKey.json
+firebase-service-account.json
+*serviceAccount*.json
+*service_account*.json
+# Clés API (ne doivent jamais être dans le repo)
+*.key
+api_keys.dart
+secrets.dart
+
+node_modules/
+scripts/affiliate/__pycache__/

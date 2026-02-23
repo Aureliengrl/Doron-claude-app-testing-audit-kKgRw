@@ -1,0 +1,111 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // FONCTIONS UTILITAIRES
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /// Vérifie que l'utilisateur est connecté (non anonyme)
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    /// Vérifie que l'utilisateur accède à ses propres données
+    function isOwner(userId) {
+      return isAuth() && request.auth.uid == userId;
+    }
+
+    /// Vérifie qu'aucun champ critique n'est modifié
+    function notChanging(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // COLLECTION: users
+    // ─────────────────────────────────────────────────────────────────────────
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId);
+
+      // Onboarding answers
+      match /onboarding/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Favoris
+      match /favorites/{favoriteId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId)
+          && request.resource.data.keys().hasAll(['name', 'createdAt']);
+        allow update: if isOwner(userId);
+        allow delete: if isOwner(userId);
+      }
+
+      // Listes de souhaits
+      match /wishlists/{wishlistId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Destinataires (people)
+      match /people/{personId} {
+        allow read, write: if isOwner(userId);
+
+        // Listes de cadeaux par destinataire
+        match /giftLists/{listId} {
+          allow read, write: if isOwner(userId);
+        }
+      }
+
+      // Profils enrichis (gift profiles)
+      match /giftProfiles/{profileId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Historique feeds
+      match /homeFeeds/{feedId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // COLLECTION: gifts (catalogue produits — lecture seule pour tous les auth)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    match /gifts/{giftId} {
+      // Lecture seule pour tout utilisateur authentifié
+      allow read: if isAuth();
+      // Écriture admin uniquement (via Cloud Functions ou console Firebase)
+      allow write: if false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // COLLECTION: products (alias gifts — même règles)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    match /products/{productId} {
+      allow read: if isAuth();
+      allow write: if false;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // COLLECTION: favourites (ancien schéma FlutterFlow — lecture/écriture user)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    match /favourites/{docId} {
+      allow read: if isAuth() && resource.data.uid == request.auth.uid;
+      allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isAuth() && resource.data.uid == request.auth.uid;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // FALLBACK — Tout le reste est refusé
+    // ─────────────────────────────────────────────────────────────────────────
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

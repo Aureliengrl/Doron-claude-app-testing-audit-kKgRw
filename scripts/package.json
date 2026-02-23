@@ -1,0 +1,21 @@
+{
+  "name": "doron-fix-firebase-tags",
+  "version": "1.0.0",
+  "description": "Script pour corriger les tags Firebase de l'app Doron",
+  "main": "fix_firebase_tags.js",
+  "scripts": {
+    "start": "node fix_firebase_tags.js",
+    "fix": "node fix_firebase_tags.js"
+  },
+  "keywords": [
+    "firebase",
+    "firestore",
+    "tags",
+    "correction"
+  ],
+  "author": "Doron Team",
+  "license": "MIT",
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}

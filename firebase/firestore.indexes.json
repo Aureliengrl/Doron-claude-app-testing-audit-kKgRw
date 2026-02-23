@@ -1,0 +1,32 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "GiftSuggestionChat",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "UserId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "Timestamp",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Favourites",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "uid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "TimeStamp",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ]
+}

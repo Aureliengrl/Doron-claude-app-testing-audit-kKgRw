@@ -1,0 +1,13 @@
+{
+    "name": "doron-firebase-seed",
+    "version": "1.0.0",
+    "description": "Seed Firebase Firestore pour Doron",
+    "main": "seed.js",
+    "scripts": {
+        "seed": "node seed.js",
+        "migrate": "node migrate.js"
+    },
+    "dependencies": {
+        "firebase": "^10.7.0"
+    }
+}

@@ -1,0 +1,110 @@
+name: doron
+description: Doron — Application de suggestion de cadeaux personnalisés.
+
+publish_to: 'none'
+
+version: 1.2.7+30
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
+
+  # ── UI ──────────────────────────────────────────────────────
+  auto_size_text: 3.0.0
+  cached_network_image: 3.4.1
+  confetti: ^0.7.0
+  cupertino_icons: ^1.0.0
+  flutter_animate: 4.5.0
+  flutter_rating_bar: 4.0.1
+  flutter_staggered_animations: ^1.1.1
+  flutter_staggered_grid_view: ^0.7.0
+  font_awesome_flutter: 10.7.0
+  google_fonts: 6.1.0
+  lottie: ^3.1.0
+  page_transition: 2.1.0
+  percent_indicator: 4.2.2
+  shimmer: ^3.0.0
+  spring: ^2.0.2
+
+  # ── Navigation ─────────────────────────────────────────────
+  go_router: 12.1.3
+
+  # ── Firebase ───────────────────────────────────────────────
+  cloud_firestore: 5.6.9
+  firebase_auth: 5.6.0
+  firebase_core: 3.14.0
+  firebase_performance: 0.10.1+7
+
+  # ── Auth sociale ───────────────────────────────────────────
+  google_sign_in: 6.3.0
+  sign_in_with_apple: 7.0.1
+
+  # ── Réseau & API ───────────────────────────────────────────
+  http: 1.4.0
+  url_launcher: 6.3.1
+  webview_flutter: ^4.4.2
+
+  # ── Données & State ────────────────────────────────────────
+  collection: 1.19.1
+  equatable: 2.0.7
+  from_css_color: 2.0.0
+  intl: 0.20.2
+  json_path: 0.7.2
+  provider: 6.1.5
+  flutter_riverpod: ^2.5.1       # State management (migration progressive depuis Provider)
+  rxdart: 0.27.7
+  shared_preferences: 2.5.3
+  stream_transform: 2.1.0
+  uuid: ^4.0.0
+
+  # ── Utilitaires ────────────────────────────────────────────
+  device_info_plus: ^9.1.0
+  easy_debounce: 2.0.1
+  flutter_cache_manager: 3.4.1
+  flutter_native_splash: 2.4.1
+  mime_type: 1.0.0
+  path_provider: 2.1.4
+  plugin_platform_interface: 2.1.8
+  speech_to_text: 6.6.2
+  timeago: 3.7.1
+  universal_io: 2.2.2
+  xml: 6.5.0
+
+dev_dependencies:
+  flutter_launcher_icons: 0.13.1
+  flutter_lints: 4.0.0
+  mockito: ^5.4.4               # Mocks pour tests unitaires
+  build_runner: ^2.4.9          # Génération de code (mockito)
+  image: 4.2.0
+  lints: 4.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter_launcher_icons:
+  android: 'launcher_icon'
+  ios: true
+  web:
+    generate: true
+  image_path: 'assets/images/Icon.png'
+  adaptive_icon_background: '#062248'
+  adaptive_icon_foreground: 'assets/images/Icon.png'
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/fonts/
+    - assets/images/
+    - assets/videos/
+    - assets/audios/
+    - assets/rive_animations/
+    - assets/pdfs/
+    - assets/jsons/
+    - assets/environment_values/
