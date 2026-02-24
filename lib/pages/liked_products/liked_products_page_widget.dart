@@ -1,4 +1,5 @@
 ﻿import '/utils/app_logger.dart';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '/backend/backend.dart';
 import '/auth/firebase_auth/auth_util.dart';
+import '/components/liquid_glass.dart';
 
 class LikedProductsPageWidget extends StatefulWidget {
   const LikedProductsPageWidget({super.key});
@@ -53,7 +55,7 @@ class _LikedProductsPageWidgetState extends State<LikedProductsPageWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: LiquidGlassTokens.pageDark,
       body: SafeArea(
         child: Column(
           children: [
@@ -141,7 +143,7 @@ class _LikedProductsPageWidgetState extends State<LikedProductsPageWidget> {
             'Chargement...',
             style: GoogleFonts.poppins(
               fontSize: 16,
-              color: const Color(0xFF6B7280),
+              color: Colors.white.withOpacity(0.65),
             ),
           ),
         ],
@@ -204,7 +206,7 @@ class _LikedProductsPageWidgetState extends State<LikedProductsPageWidget> {
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF1F2937),
+                color: Colors.white,
               ),
               textAlign: TextAlign.center,
             ),
@@ -213,7 +215,7 @@ class _LikedProductsPageWidgetState extends State<LikedProductsPageWidget> {
               'Explorez l\'app et likez vos produits préférés pour les retrouver ici',
               style: GoogleFonts.poppins(
                 fontSize: 15,
-                color: const Color(0xFF6B7280),
+                color: Colors.white.withOpacity(0.65),
               ),
               textAlign: TextAlign.center,
             ),
@@ -226,15 +228,12 @@ class _LikedProductsPageWidgetState extends State<LikedProductsPageWidget> {
   Widget _buildProductCard(ProductsStruct product, int index) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft, end: Alignment.bottomRight,
+          colors: [Colors.white.withOpacity(0.14), Colors.white.withOpacity(0.06)],
+        ),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: Colors.white.withOpacity(0.18)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,7 +308,7 @@ class _LikedProductsPageWidgetState extends State<LikedProductsPageWidget> {
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF1F2937),
+                      color: Colors.white,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,

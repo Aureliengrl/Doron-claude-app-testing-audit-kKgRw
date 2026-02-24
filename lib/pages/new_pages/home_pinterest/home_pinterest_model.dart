@@ -25,7 +25,8 @@
   bool showFreeShipping = false;
 
   // Pagination
-  static const int productsPerPage = 12;
+  static const int productsPerPage = 30;
+  static const int infiniteScrollChunk = 15;
   int currentPage = 0;
   bool hasMore = true;
 

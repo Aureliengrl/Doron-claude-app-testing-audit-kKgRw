@@ -1,8 +1,10 @@
 ﻿import '/utils/app_logger.dart';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '/components/liquid_glass.dart';
 import 'onboarding_advanced_model.dart';
 export 'onboarding_advanced_model.dart';
 
@@ -66,7 +68,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
     // Afficher un loader pendant le chargement du mode
     if (_isLoadingMode) {
       return Scaffold(
-        backgroundColor: const Color(0xFFFAF5FF),
+        backgroundColor: LiquidGlassTokens.pageDark,
         body: Center(
           child: CircularProgressIndicator(
             color: violetColor,
@@ -95,51 +97,33 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
 
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: const Color(0xFFFAF5FF),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFFFAF5FF),
-              const Color(0xFFFCE7F3),
-              Colors.white,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Stack(
-            children: [
-              // Particules animées
-              ..._buildAnimatedParticles(),
-
-              // Contenu principal
-              Column(
-                children: [
-                  // Header avec progression
-                  _buildHeader(progress, steps.length, returnTo: returnTo),
-
-                  // Contenu de l'étape
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.only(
-                        left: 24,
-                        right: 24,
-                        top: 32,
-                        bottom: 120,
-                      ),
-                      child: _buildStepContent(currentStepData),
+      backgroundColor: LiquidGlassTokens.pageDark,
+      body: Stack(
+        children: [
+          // Fond sombre avec orbes ambiants
+          Positioned(top: -80, left: -60, child: Container(width: 280, height: 280, decoration: BoxDecoration(shape: BoxShape.circle, color: LiquidGlassTokens.primary.withOpacity(0.18)), child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80), child: const SizedBox()))),
+          Positioned(bottom: -60, right: -40, child: Container(width: 220, height: 220, decoration: BoxDecoration(shape: BoxShape.circle, color: LiquidGlassTokens.secondary.withOpacity(0.14)), child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 60, sigmaY: 60), child: const SizedBox()))),
+          // Contenu principal
+          SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(progress, steps.length, returnTo: returnTo),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.only(
+                      left: 24,
+                      right: 24,
+                      top: 32,
+                      bottom: 120,
                     ),
+                    child: _buildStepContent(currentStepData),
                   ),
-                ],
-              ),
-
-              // Bouton Continuer
-              _buildContinueButton(steps),
-            ],
+                ),
+              ],
+            ),
           ),
-        ),
+          _buildContinueButton(steps),
+        ],
       ),
     );
   }
@@ -203,12 +187,13 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                     child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(50),
+                        border: Border.all(color: Colors.white.withOpacity(0.25)),
                       ),
                       child: Icon(
                         Icons.arrow_back,
-                        color: violetColor,
+                        color: Colors.white,
                         size: 24,
                       ),
                     ),
@@ -216,27 +201,20 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 ),
               const Spacer(),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(50),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  border: Border.all(color: Colors.white.withOpacity(0.25)),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.auto_awesome, color: violetColor, size: 16),
+                    Icon(Icons.auto_awesome, color: LiquidGlassTokens.secondary, size: 16),
                     const SizedBox(width: 8),
                     Text(
                       '${_model.currentStep + 1}/$totalSteps',
                       style: GoogleFonts.poppins(
-                        color: violetColor,
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                       ),
@@ -368,7 +346,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
           textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
             fontSize: 20,
-            color: Colors.grey[600],
+            color: Colors.white.withOpacity(0.75),
           ),
         ),
       ],
@@ -501,14 +479,14 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 color: Colors.grey[400],
               ),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: Colors.white.withOpacity(0.10),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(20),
-                borderSide: BorderSide(color: violetColor.withOpacity(0.3)),
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.20)),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(20),
-                borderSide: BorderSide(color: violetColor.withOpacity(0.3)),
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.20)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -720,19 +698,23 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                                 violetColor.withOpacity(0.8),
                               ],
                             )
-                          : null,
-                      color: isSelected ? null : Colors.white,
+                          : LinearGradient(
+                              colors: [
+                                Colors.white.withOpacity(0.13),
+                                Colors.white.withOpacity(0.07),
+                              ],
+                            ),
                       borderRadius: BorderRadius.circular(32),
                       border: Border.all(
-                        color: isSelected ? Colors.transparent : Colors.grey[200]!,
-                        width: 2,
+                        color: isSelected ? Colors.white.withOpacity(0.35) : Colors.white.withOpacity(0.18),
+                        width: isSelected ? 1.5 : 1.0,
                       ),
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: violetColor.withOpacity(0.3),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
+                                color: violetColor.withOpacity(0.40),
+                                blurRadius: 14,
+                                offset: const Offset(0, 5),
                               ),
                             ]
                           : [],
@@ -745,7 +727,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
-                              color: isSelected ? Colors.white : Colors.grey[700],
+                              color: Colors.white.withOpacity(isSelected ? 1.0 : 0.80),
                             ),
                           ),
                         ),

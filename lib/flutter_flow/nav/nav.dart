@@ -27,6 +27,7 @@ import '/pages/voice_assistant/voice_analysis_page_widget.dart';
 import '/pages/voice_assistant/voice_guided_onboarding_widget.dart';
 import '/pages/tiktok_inspiration/tiktok_inspiration_page_widget.dart';
 import '/pages/admin/admin_products_page.dart';
+import '/pages/new_pages/public_profile/public_profile_page.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -308,6 +309,14 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: LikedProductsPageWidget.routeName,
           path: LikedProductsPageWidget.routePath,
           builder: (context, params) => LikedProductsPageWidget(),
+        ),
+        // Profil public @handle
+        FFRoute(
+          name: PublicProfilePage.routeName,
+          path: PublicProfilePage.routePath,
+          builder: (context, params) => PublicProfilePage(
+            handle: params.getParam<String>('handle', ParamType.String),
+          ),
         ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );

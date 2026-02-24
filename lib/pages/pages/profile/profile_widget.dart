@@ -16,6 +16,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/services/openai_onboarding_service.dart';
 import '/components/aesthetic_buttons.dart';
+import '/components/liquid_glass.dart';
 import '/components/micro_interactions.dart' as micro;
 import 'profile_model.dart';
 export 'profile_model.dart';
@@ -56,7 +57,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
 
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: LiquidGlassTokens.pageDark,
       body: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.max,
@@ -137,14 +138,11 @@ class _ProfileWidgetState extends State<ProfileWidget> {
               Container(
                 width: MediaQuery.sizeOf(context).width * 1.0,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      blurRadius: 4.0,
-                      color: Colors.black.withOpacity(0.05),
-                      offset: const Offset(0, 2),
-                    )
-                  ],
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft, end: Alignment.bottomRight,
+                    colors: [Colors.white.withOpacity(0.13), Colors.white.withOpacity(0.06)],
+                  ),
+                  border: Border.all(color: Colors.white.withOpacity(0.18)),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 margin: const EdgeInsets.all(16),
@@ -164,23 +162,12 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                 currentUserDisplayName,
                                 'Elaine Edwards',
                               ),
-                              style: FlutterFlowTheme.of(context)
-                                  .headlineSmall
-                                  .override(
-                                    font: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.bold,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .headlineSmall
-                                          .fontStyle,
-                                    ),
-                                    color: const Color(0xFF1F2937),
-                                    fontSize: 20.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .headlineSmall
-                                        .fontStyle,
-                                  ),
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize: 20.0,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.0,
+                              ),
                             ),
                           ),
                           Padding(
@@ -191,23 +178,12 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                                 currentUserEmail,
                                 'elaine.edwards@google.com',
                               ),
-                              style: FlutterFlowTheme.of(context)
-                                  .bodySmall
-                                  .override(
-                                    font: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.w400,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodySmall
-                                          .fontStyle,
-                                    ),
-                                    color: const Color(0xFF6B7280),
-                                    fontSize: 14.0,
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w400,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .bodySmall
-                                        .fontStyle,
-                                  ),
+                              style: GoogleFonts.poppins(
+                                color: Colors.white.withOpacity(0.65),
+                                fontSize: 14.0,
+                                letterSpacing: 0.0,
+                                fontWeight: FontWeight.w400,
+                              ),
                             ),
                           ),
                         ],
@@ -273,17 +249,11 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                     width: double.infinity,
                     height: 60.0,
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 5.0,
-                          color: Color(0x3416202A),
-                          offset: Offset(
-                            0.0,
-                            2.0,
-                          ),
-                        )
-                      ],
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft, end: Alignment.bottomRight,
+                        colors: [Colors.white.withOpacity(0.13), Colors.white.withOpacity(0.06)],
+                      ),
+                      border: Border.all(color: Colors.white.withOpacity(0.18)),
                       borderRadius: BorderRadius.circular(12.0),
                       shape: BoxShape.rectangle,
                     ),
@@ -300,23 +270,18 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                           const SizedBox(width: 12),
                           Text(
                             'Modifier mes préférences',
-                            style: FlutterFlowTheme.of(context)
-                                .labelMedium
-                                .override(
-                                  font: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  color: const Color(0xFF1F2937),
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
                           ),
                           Expanded(
                             child: Align(
                               alignment: AlignmentDirectional(0.9, 0.0),
                               child: FaIcon(
                                 FontAwesomeIcons.angleDown,
-                                color: Color(0xFF6B7280),
+                                color: Colors.white.withOpacity(0.55),
                                 size: 16.0,
                               ),
                             ),
@@ -352,17 +317,11 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                     width: double.infinity,
                     height: 60.0,
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 5.0,
-                          color: Color(0x3416202A),
-                          offset: Offset(
-                            0.0,
-                            2.0,
-                          ),
-                        )
-                      ],
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft, end: Alignment.bottomRight,
+                        colors: [Colors.white.withOpacity(0.13), Colors.white.withOpacity(0.06)],
+                      ),
+                      border: Border.all(color: Colors.white.withOpacity(0.18)),
                       borderRadius: BorderRadius.circular(12.0),
                       shape: BoxShape.rectangle,
                     ),
@@ -378,7 +337,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                             style: GoogleFonts.poppins(
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
-                              color: const Color(0xFF1F2937),
+                              color: Colors.white,
                             ),
                           ),
                           Expanded(
@@ -448,7 +407,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                             style: GoogleFonts.poppins(
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
-                              color: const Color(0xFF1F2937),
+                              color: Colors.white,
                             ),
                           ),
                           Expanded(

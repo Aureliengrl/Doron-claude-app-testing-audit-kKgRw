@@ -1,8 +1,10 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '/components/liquid_glass.dart';
 
 /// Dialog demandant la connexion avec liste des bénéfices
 class ConnectionRequiredDialog extends StatelessWidget {
@@ -22,15 +24,31 @@ class ConnectionRequiredDialog extends StatelessWidget {
     const violetColor = Color(0xFF8A2BE2);
 
     return Dialog(
+      backgroundColor: Colors.transparent,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(28),
       ),
-      child: Container(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          child: Container(
         constraints: const BoxConstraints(maxWidth: 400),
         padding: const EdgeInsets.all(28),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(28),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF1A0035).withOpacity(0.93),
+              const Color(0xFF0D001A).withOpacity(0.96),
+            ],
+          ),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.15),
+            width: 1.0,
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -61,7 +79,7 @@ class ConnectionRequiredDialog extends StatelessWidget {
               style: GoogleFonts.poppins(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF1F2937),
+                color: Colors.white,
               ),
             ),
 
@@ -73,7 +91,7 @@ class ConnectionRequiredDialog extends StatelessWidget {
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 15,
-                color: const Color(0xFF6B7280),
+                color: Colors.white.withOpacity(0.65),
                 height: 1.5,
               ),
             ),
@@ -97,15 +115,9 @@ class ConnectionRequiredDialog extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () async {
                   HapticFeedback.mediumImpact();
-
-                  // Désactiver le mode anonyme
-                  final prefs = await SharedPreferences.getInstance();
-                  await prefs.setBool('anonymous_mode', false);
-
                   if (context.mounted) {
                     Navigator.pop(context);
-                    // Rediriger vers le choix du mode (Classique ou Saint-Valentin)
-                    context.go('/mode-choice');
+                    context.go('/authentification');
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -143,11 +155,6 @@ class ConnectionRequiredDialog extends StatelessWidget {
               child: OutlinedButton(
                 onPressed: () async {
                   HapticFeedback.lightImpact();
-
-                  // Désactiver le mode anonyme
-                  final prefs = await SharedPreferences.getInstance();
-                  await prefs.setBool('anonymous_mode', false);
-
                   if (context.mounted) {
                     Navigator.pop(context);
                     context.go('/authentification');
@@ -192,7 +199,9 @@ class ConnectionRequiredDialog extends StatelessWidget {
             ],
           ],
         ),
-      ),
+          ),
+        ), // BackdropFilter
+      ), // ClipRRect
     );
   }
 
@@ -217,7 +226,7 @@ class ConnectionRequiredDialog extends StatelessWidget {
             text,
             style: GoogleFonts.poppins(
               fontSize: 14,
-              color: const Color(0xFF4B5563),
+              color: Colors.white.withOpacity(0.80),
               fontWeight: FontWeight.w500,
             ),
           ),

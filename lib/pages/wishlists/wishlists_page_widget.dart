@@ -1,9 +1,13 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '/services/firebase_data_service.dart';
+import '/services/user_search_service.dart';
 import '/backend/backend.dart';
+import '/components/liquid_glass.dart';
 
 class WishlistsPageWidget extends StatefulWidget {
   const WishlistsPageWidget({super.key});
@@ -51,7 +55,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: LiquidGlassTokens.pageDark,
       body: SafeArea(
         child: Column(
           children: [
@@ -78,60 +82,75 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
   }
 
   Widget _buildHeader() {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [violetColor, pinkColor],
-        ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: violetColor.withOpacity(0.3),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(
+        bottomLeft: Radius.circular(32),
+        bottomRight: Radius.circular(32),
       ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                LiquidGlassTokens.primary.withOpacity(0.50),
+                LiquidGlassTokens.secondary.withOpacity(0.35),
+              ],
+            ),
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(32),
+              bottomRight: Radius.circular(32),
+            ),
+            border: const Border(
+              bottom: BorderSide(color: Color(0x44FFFFFF), width: 1.0),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: LiquidGlassTokens.primary.withOpacity(0.35),
+                blurRadius: 28,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                IconButton(
-                  onPressed: () => context.pop(),
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => context.pop(),
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Mes Wishlists',
+                      style: GoogleFonts.poppins(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  'Mes Wishlists',
-                  style: GoogleFonts.poppins(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.only(left: 56),
+                  child: Text(
+                    '${_wishlists.length} liste${_wishlists.length > 1 ? 's' : ''} de souhaits',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.85),
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.only(left: 56),
-              child: Text(
-                '${_wishlists.length} liste${_wishlists.length > 1 ? 's' : ''} de souhaits',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.white.withOpacity(0.9),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -151,7 +170,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
             'Chargement...',
             style: GoogleFonts.poppins(
               fontSize: 16,
-              color: const Color(0xFF6B7280),
+              color: Colors.white.withOpacity(0.55),
             ),
           ),
         ],
@@ -216,7 +235,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF1F2937),
+                color: Colors.white,
               ),
               textAlign: TextAlign.center,
             ),
@@ -225,7 +244,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
               'Créez votre première wishlist pour organiser vos produits favoris',
               style: GoogleFonts.poppins(
                 fontSize: 15,
-                color: const Color(0xFF6B7280),
+                color: Colors.white.withOpacity(0.60),
               ),
               textAlign: TextAlign.center,
             ),
@@ -243,11 +262,13 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
       [const Color(0xFF3B82F6), const Color(0xFF2563EB)],
     ];
     final gradientColors = colors[index % colors.length];
+    final isPublic = wishlist['isPublic'] as bool? ?? false;
+    final wishlistId = wishlist['id'] as String;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: InkWell(
-        onTap: () => context.push('/wishlist-details/${wishlist['id']}'),
+        onTap: () => context.push('/wishlist-details/$wishlistId'),
         borderRadius: BorderRadius.circular(20),
         child: Container(
           decoration: BoxDecoration(
@@ -324,15 +345,71 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
                               color: gradientColors[0],
                             ),
                           ),
+                          const SizedBox(width: 12),
+                          // Badge visibilité
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: isPublic
+                                  ? const Color(0xFF10B981).withOpacity(0.1)
+                                  : Colors.grey.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isPublic ? Icons.lock_open : Icons.lock,
+                                  size: 11,
+                                  color: isPublic ? const Color(0xFF10B981) : Colors.grey[500],
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  isPublic ? 'Publique' : 'Privée',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: isPublic ? const Color(0xFF10B981) : Colors.grey[500],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color: gradientColors[0],
-                  size: 20,
+                // Bouton toggle public/privé
+                IconButton(
+                  onPressed: () async {
+                    HapticFeedback.lightImpact();
+                    final newIsPublic = !isPublic;
+                    await UserSearchService.setWishlistVisibility(wishlistId, newIsPublic);
+                    setState(() {
+                      wishlist['isPublic'] = newIsPublic;
+                    });
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(
+                          newIsPublic
+                              ? '🔓 Liste rendue publique'
+                              : '🔐 Liste rendue privée',
+                          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                        ),
+                        backgroundColor: newIsPublic ? const Color(0xFF10B981) : Colors.grey[700],
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        duration: const Duration(seconds: 2),
+                      ));
+                    }
+                  },
+                  tooltip: isPublic ? 'Rendre privée' : 'Rendre publique',
+                  icon: Icon(
+                    isPublic ? Icons.lock_open : Icons.lock_outline,
+                    color: isPublic ? const Color(0xFF10B981) : Colors.grey[400],
+                    size: 22,
+                  ),
                 ),
               ],
             ),

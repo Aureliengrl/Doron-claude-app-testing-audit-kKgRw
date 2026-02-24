@@ -47,6 +47,7 @@ dependencies:
   sign_in_with_apple: 7.0.1
 
   # ── Réseau & API ───────────────────────────────────────────
+  geolocator: ^13.0.1
   http: 1.4.0
   url_launcher: 6.3.1
   webview_flutter: ^4.4.2

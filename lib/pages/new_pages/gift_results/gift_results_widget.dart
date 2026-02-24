@@ -1,8 +1,10 @@
 ﻿import '/utils/app_logger.dart';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '/components/liquid_glass.dart';
 import '/services/product_url_service.dart';
 import 'gift_results_model.dart';
 export 'gift_results_model.dart';
@@ -48,7 +50,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: LiquidGlassTokens.pageDark,
       body: _model.isLoading
           ? Center(
               child: Column(
@@ -559,6 +561,9 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
               ),
             ),
           ),
+              ), // Container glass
+            ), // BackdropFilter
+          ), // ClipRRect
         ),
       ),
     );

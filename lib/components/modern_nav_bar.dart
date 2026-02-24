@@ -1,16 +1,17 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'dart:ui' as ui;
+import '/components/liquid_glass.dart';
 
-/// Navbar flottante moderne style App Store avec glassmorphism et animations liquid
+/// Navbar flottante Liquid Glass style iOS 26.
+/// Fond blur profond + specular highlight + pill indicateur lumineux.
 class FloatingModernNavBar extends StatefulWidget {
   final int currentIndex;
   final Function(int) onTap;
   final List<NavBarItem> items;
   final Color? primaryColor;
-  final Color? backgroundColor;
   final double height;
   final double borderRadius;
   final EdgeInsets margin;
@@ -21,25 +22,25 @@ class FloatingModernNavBar extends StatefulWidget {
     required this.onTap,
     required this.items,
     this.primaryColor,
-    this.backgroundColor,
-    this.height = 70,
-    this.borderRadius = 35,
-    this.margin = const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+    this.height = 72,
+    this.borderRadius = 36,
+    this.margin = const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
   });
 
   @override
   State<FloatingModernNavBar> createState() => _FloatingModernNavBarState();
 }
 
-class _FloatingModernNavBarState extends State<FloatingModernNavBar> with SingleTickerProviderStateMixin {
-  late AnimationController _liquidController;
+class _FloatingModernNavBarState extends State<FloatingModernNavBar>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pillController;
   int _previousIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _liquidController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+    _pillController = AnimationController(
+      duration: const Duration(milliseconds: 500),
       vsync: this,
     );
     _previousIndex = widget.currentIndex;
@@ -50,197 +51,177 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar> with Single
     super.didUpdateWidget(oldWidget);
     if (oldWidget.currentIndex != widget.currentIndex) {
       _previousIndex = oldWidget.currentIndex;
-      _liquidController.forward(from: 0);
+      _pillController.forward(from: 0);
     }
   }
 
   @override
   void dispose() {
-    _liquidController.dispose();
+    _pillController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = widget.primaryColor ?? const Color(0xFF8A2BE2);
-    final bgColor = widget.backgroundColor ?? Colors.white;
+    final primary = widget.primaryColor ?? LiquidGlassTokens.primary;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final navWidth = screenWidth - widget.margin.horizontal;
+    final itemWidth = navWidth / widget.items.length;
 
     return Padding(
       padding: widget.margin,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(widget.borderRadius),
-        child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-          child: Container(
-            height: widget.height,
-            decoration: BoxDecoration(
-              color: bgColor.withOpacity(0.85),
-              borderRadius: BorderRadius.circular(widget.borderRadius),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: primaryColor.withOpacity(0.15),
-                  blurRadius: 30,
-                  offset: const Offset(0, 10),
-                  spreadRadius: 0,
-                ),
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
-                  spreadRadius: 0,
-                ),
-              ],
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(widget.borderRadius),
+          boxShadow: [
+            BoxShadow(
+              color: primary.withOpacity(0.30),
+              blurRadius: 40,
+              offset: const Offset(0, 16),
+              spreadRadius: -8,
             ),
-            child: Stack(
-              children: [
-                // Liquid background indicator
-                AnimatedBuilder(
-                  animation: _liquidController,
-                  builder: (context, child) {
-                    return _buildLiquidIndicator(primaryColor);
-                  },
-                ),
-
-                // Nav items
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: List.generate(
-                    widget.items.length,
-                    (index) => _buildNavItem(
-                      widget.items[index],
-                      index,
-                      primaryColor,
-                    ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.30),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(widget.borderRadius),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
+            child: CustomPaint(
+              painter: _NavBarSpecularPainter(
+                borderRadius: widget.borderRadius,
+              ),
+              child: Container(
+                height: widget.height,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(widget.borderRadius),
+                  // Liquid Glass surface — très légèrement blanc
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white.withOpacity(0.15),
+                      Colors.white.withOpacity(0.07),
+                      Colors.white.withOpacity(0.12),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.22),
+                    width: 1.0,
                   ),
                 ),
-              ],
+                child: Stack(
+                  children: [
+                    // Pill indicateur animé
+                    AnimatedBuilder(
+                      animation: _pillController,
+                      builder: (context, _) {
+                        final curved = CurvedAnimation(
+                          parent: _pillController,
+                          curve: Curves.easeOutCubic,
+                        );
+                        final pos = Tween<double>(
+                          begin: _previousIndex * itemWidth,
+                          end: widget.currentIndex * itemWidth,
+                        ).animate(curved).value;
+
+                        return Positioned(
+                          left: pos + (itemWidth - 56) / 2,
+                          top: (widget.height - 48) / 2,
+                          child: Container(
+                            width: 56,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24),
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  primary.withOpacity(0.75),
+                                  primary.withOpacity(0.50),
+                                ],
+                              ),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.35),
+                                width: 1.0,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: primary.withOpacity(0.50),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    // Items
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: List.generate(
+                        widget.items.length,
+                        (i) => _buildNavItem(widget.items[i], i, primary),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
       ).animate()
         .fadeIn(duration: 400.ms)
-        .slideY(begin: 0.5, end: 0, duration: 500.ms, curve: Curves.easeOutCubic),
+        .slideY(begin: 0.6, end: 0, duration: 550.ms, curve: Curves.easeOutCubic),
     );
   }
 
-  Widget _buildLiquidIndicator(Color primaryColor) {
-    final itemWidth = MediaQuery.of(context).size.width / widget.items.length;
-    final targetPosition = widget.currentIndex * itemWidth;
-    final startPosition = _previousIndex * itemWidth;
-
-    final curvedAnimation = CurvedAnimation(
-      parent: _liquidController,
-      curve: Curves.easeInOutCubic,
-    );
-
-    final currentPosition = Tween<double>(
-      begin: startPosition,
-      end: targetPosition,
-    ).animate(curvedAnimation).value;
-
-    return Positioned(
-      left: currentPosition - widget.margin.left + (itemWidth / 2) - 30,
-      top: (widget.height - 60) / 2,
-      child: Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          gradient: RadialGradient(
-            colors: [
-              primaryColor.withOpacity(0.3),
-              primaryColor.withOpacity(0.15),
-              primaryColor.withOpacity(0.05),
-            ],
-          ),
-          shape: BoxShape.circle,
-        ),
-      ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-        .scale(
-          begin: const Offset(0.9, 0.9),
-          end: const Offset(1.1, 1.1),
-          duration: 1500.ms,
-          curve: Curves.easeInOut,
-        ),
-    );
-  }
-
-  Widget _buildNavItem(NavBarItem item, int index, Color primaryColor) {
+  Widget _buildNavItem(NavBarItem item, int index, Color primary) {
     final isSelected = widget.currentIndex == index;
 
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          HapticFeedback.mediumImpact();
+          HapticFeedback.lightImpact();
           widget.onTap(index);
         },
-        child: Container(
-          color: Colors.transparent,
+        behavior: HitTestBehavior.translucent,
+        child: SizedBox(
+          height: widget.height,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              AnimatedContainer(
+              AnimatedScale(
+                scale: isSelected ? 1.15 : 1.0,
                 duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutCubic,
-                padding: EdgeInsets.all(isSelected ? 12 : 10),
-                decoration: BoxDecoration(
-                  gradient: isSelected
-                      ? LinearGradient(
-                          colors: [
-                            primaryColor.withOpacity(0.2),
-                            primaryColor.withOpacity(0.1),
-                          ],
-                        )
-                      : null,
-                  shape: BoxShape.circle,
-                  border: isSelected
-                      ? Border.all(
-                          color: primaryColor.withOpacity(0.3),
-                          width: 2,
-                        )
-                      : null,
-                ),
+                curve: Curves.easeOutBack,
                 child: Icon(
                   isSelected ? item.activeIcon : item.icon,
-                  color: isSelected ? primaryColor : const Color(0xFF9E9E9E),
+                  color: isSelected
+                      ? Colors.white
+                      : Colors.white.withOpacity(0.45),
                   size: item.iconSize,
                 ),
-              ).animate(target: isSelected ? 1 : 0)
-                .scale(
-                  begin: const Offset(1.0, 1.0),
-                  end: const Offset(1.15, 1.15),
-                  duration: 300.ms,
-                  curve: Curves.easeOutBack,
-                ),
-
-              const SizedBox(height: 4),
-
-              // Label avec animation
+              ),
+              const SizedBox(height: 3),
               AnimatedOpacity(
                 opacity: isSelected ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 300),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
+                duration: const Duration(milliseconds: 200),
+                child: Text(
+                  item.label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: 0.4,
                   ),
-                  child: Text(
-                    item.label,
-                    style: GoogleFonts.poppins(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: primaryColor,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ).animate(target: isSelected ? 1 : 0)
-                  .fadeIn(duration: 200.ms)
-                  .slideY(begin: 0.3, end: 0, duration: 300.ms),
+                ),
               ),
             ],
           ),
@@ -250,7 +231,40 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar> with Single
   }
 }
 
-/// Item de la navbar
+/// CustomPainter pour le specular highlight sur le bord supérieur de la navbar.
+class _NavBarSpecularPainter extends CustomPainter {
+  final double borderRadius;
+  const _NavBarSpecularPainter({required this.borderRadius});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Specular gradient en haut
+    final paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.white.withOpacity(0.35),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.4],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.5));
+
+    final path = Path()
+      ..addRRect(RRect.fromRectAndCorners(
+        Rect.fromLTWH(0, 0, size.width, size.height * 0.5),
+        topLeft: Radius.circular(borderRadius),
+        topRight: Radius.circular(borderRadius),
+      ));
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_NavBarSpecularPainter oldDelegate) => false;
+}
+
+/// Item de navbar
 class NavBarItem {
   final IconData icon;
   final IconData activeIcon;
@@ -261,145 +275,17 @@ class NavBarItem {
     required this.icon,
     required this.activeIcon,
     required this.label,
-    this.iconSize = 24.0,
+    this.iconSize = 22.0,
   });
 }
 
-/// Version alternative avec effet "blob" morphing
-class BlobNavBar extends StatefulWidget {
-  final int currentIndex;
-  final Function(int) onTap;
-  final List<NavBarItem> items;
-  final Color? primaryColor;
-
+/// Alias pour compatibilité — conservé pour ne pas casser le code existant.
+class BlobNavBar extends FloatingModernNavBar {
   const BlobNavBar({
     super.key,
-    required this.currentIndex,
-    required this.onTap,
-    required this.items,
-    this.primaryColor,
+    required super.currentIndex,
+    required super.onTap,
+    required super.items,
+    super.primaryColor,
   });
-
-  @override
-  State<BlobNavBar> createState() => _BlobNavBarState();
-}
-
-class _BlobNavBarState extends State<BlobNavBar> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-  }
-
-  @override
-  void didUpdateWidget(BlobNavBar oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.currentIndex != widget.currentIndex) {
-      _controller.forward(from: 0);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final primaryColor = widget.primaryColor ?? const Color(0xFF8A2BE2);
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.white,
-            Colors.grey.shade50,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(40),
-        boxShadow: [
-          BoxShadow(
-            color: primaryColor.withOpacity(0.2),
-            blurRadius: 40,
-            offset: const Offset(0, 15),
-            spreadRadius: -5,
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(
-          widget.items.length,
-          (index) {
-            final isSelected = widget.currentIndex == index;
-            final item = widget.items[index];
-
-            return Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  HapticFeedback.mediumImpact();
-                  widget.onTap(index);
-                },
-                behavior: HitTestBehavior.translucent,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 400),
-                  curve: Curves.easeInOutCubic,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    gradient: isSelected
-                        ? LinearGradient(
-                            colors: [primaryColor, primaryColor.withOpacity(0.8)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          )
-                        : null,
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: primaryColor.withOpacity(0.4),
-                              blurRadius: 15,
-                              offset: const Offset(0, 5),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Icon(
-                    isSelected ? item.activeIcon : item.icon,
-                    color: isSelected ? Colors.white : const Color(0xFF9E9E9E),
-                    size: item.iconSize,
-                  ),
-                ).animate(target: isSelected ? 1 : 0)
-                  .scale(
-                    begin: const Offset(1.0, 1.0),
-                    end: const Offset(1.1, 1.1),
-                    duration: 300.ms,
-                    curve: Curves.elasticOut,
-                  )
-                  .shimmer(
-                    duration: 1000.ms,
-                    color: Colors.white.withOpacity(0.3),
-                  ),
-              ),
-            );
-          },
-        ),
-      ),
-    ).animate()
-      .fadeIn(duration: 400.ms)
-      .slideY(begin: 0.5, end: 0, duration: 600.ms, curve: Curves.easeOutCubic);
-  }
 }

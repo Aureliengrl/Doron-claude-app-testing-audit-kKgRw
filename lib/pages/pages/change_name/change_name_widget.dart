@@ -51,7 +51,11 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
     return Container(
       width: MediaQuery.sizeOf(context).width * 1.0,
       decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).secondaryBackground,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft, end: Alignment.bottomRight,
+          colors: [const Color(0xFF1A0035).withOpacity(0.96), const Color(0xFF0A0014).withOpacity(0.98)],
+        ),
+        border: Border.all(color: Colors.white.withOpacity(0.15)),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(0.0),
           bottomRight: Radius.circular(0.0),

@@ -1,9 +1,11 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import '/components/liquid_glass.dart';
 import 'voice_guided_onboarding_model.dart';
 export 'voice_guided_onboarding_model.dart';
 
@@ -45,7 +47,7 @@ class _VoiceGuidedOnboardingWidgetState
     return ChangeNotifierProvider.value(
       value: _model,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: LiquidGlassTokens.pageDark,
         body: Consumer<VoiceGuidedOnboardingModel>(
           builder: (context, model, _) {
             if (model.isProcessing) {

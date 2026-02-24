@@ -24,7 +24,10 @@ import '/components/connection_required_dialog.dart';
 import '/components/tutorial_overlay.dart';
 import '/components/brand_filters.dart';
 import '/components/aesthetic_buttons.dart';
+import '/components/store_finder_bottom_sheet.dart';
 import '/components/micro_interactions.dart' as micro;
+import '/components/liquid_glass.dart';
+import 'dart:ui' as dart_ui;
 import 'home_pinterest_model.dart';
 import 'home_pinterest_widgets_extra.dart';
 export 'home_pinterest_model.dart';
@@ -419,10 +422,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       // 🎯 Générer plus de produits via ProductMatchingService (Firebase-first)
       final rawProducts = await ProductMatchingService.getPersonalizedProducts(
         userTags: userProfileTags ?? {},
-        count: HomePinterestModel.productsPerPage,
+        count: HomePinterestModel.infiniteScrollChunk,
         category: _model.activeCategory != 'Pour toi' ? _model.activeCategory : null,
         excludeProductIds: seenProductIds,
-        filteringMode: "home", // Mode HOME: Strict sur sexe (basé sur soi-même)
+        filteringMode: "home",
       );
 
       // Convertir au format attendu et ajouter URLs intelligentes
@@ -690,7 +693,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: LiquidGlassTokens.pageDark,
       body: RefreshIndicator(
         color: violetColor,
         onRefresh: () async {
@@ -817,75 +820,113 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
   }
 
   Widget _buildHeader() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF8A2BE2),
-            const Color(0xFFEC4899),
-          ],
-        ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF8A2BE2).withOpacity(0.4),
-            blurRadius: 30,
-            spreadRadius: 2,
-            offset: const Offset(0, 10),
+    return Stack(
+      children: [
+        // Orbe violet ambiant
+        Positioned(
+          top: -40,
+          right: -30,
+          child: Container(
+            width: 180,
+            height: 180,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(colors: [
+                LiquidGlassTokens.secondary.withOpacity(0.30),
+                Colors.transparent,
+              ]),
+            ),
           ),
-          BoxShadow(
-            color: const Color(0xFFEC4899).withOpacity(0.3),
-            blurRadius: 20,
-            spreadRadius: 0,
-            offset: const Offset(0, 6),
+        ),
+        Positioned(
+          top: -20,
+          left: -40,
+          child: Container(
+            width: 160,
+            height: 160,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(colors: [
+                LiquidGlassTokens.primary.withOpacity(0.35),
+                Colors.transparent,
+              ]),
+            ),
           ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              micro.ShimmerEffect(
-                shimmerColor: Colors.white,
-                duration: const Duration(milliseconds: 3000),
-                child: Text(
-                  _model.isAnonymousMode
-                      ? 'Découvre 🎁'
-                      : (_model.firstName.isNotEmpty
-                          ? 'Salut ${_model.firstName} ! 👋'
-                          : 'Accueil'),
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
+        ),
+        ClipRRect(
+          borderRadius: const BorderRadius.only(
+            bottomLeft: Radius.circular(32),
+            bottomRight: Radius.circular(32),
+          ),
+          child: dart_ui.BackdropFilter(
+            filter: dart_ui.ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(32),
+                  bottomRight: Radius.circular(32),
+                ),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    LiquidGlassTokens.primary.withOpacity(0.45),
+                    LiquidGlassTokens.secondary.withOpacity(0.30),
+                  ],
+                ),
+                border: const Border(
+                  bottom: BorderSide(color: Color(0x44FFFFFF), width: 1.0),
+                  left: BorderSide(color: Color(0x22FFFFFF), width: 0.5),
+                  right: BorderSide(color: Color(0x22FFFFFF), width: 0.5),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: LiquidGlassTokens.primary.withOpacity(0.35),
+                    blurRadius: 35,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      micro.ShimmerEffect(
+                        shimmerColor: Colors.white,
+                        duration: const Duration(milliseconds: 3000),
+                        child: Text(
+                          _model.firstName.isNotEmpty
+                              ? 'Salut ${_model.firstName} ! 👋'
+                              : 'Découvre 🎁',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Voici tes inspirations cadeaux',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          color: Colors.white.withOpacity(0.85),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                _model.isAnonymousMode
-                    ? 'Idées cadeaux populaires'
-                    : 'Voici tes inspirations cadeaux',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  color: Colors.white.withOpacity(0.9),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 
@@ -1585,25 +1626,36 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           borderRadius: BorderRadius.circular(12),
           splashColor: violetColor.withOpacity(0.1),
           highlightColor: violetColor.withOpacity(0.05),
-          child: Container(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: dart_ui.BackdropFilter(
+              filter: dart_ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+              child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.13),
+                  Colors.white.withOpacity(0.06),
+                ],
+              ),
               border: Border.all(
-                color: Colors.transparent,
-                width: 2,
+                color: Colors.white.withOpacity(0.18),
+                width: 1.0,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF8A2BE2).withOpacity(0.08),
+                  color: LiquidGlassTokens.primary.withOpacity(0.20),
                   blurRadius: 20,
                   spreadRadius: -2,
                   offset: const Offset(0, 8),
                 ),
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+                  color: Colors.black.withOpacity(0.25),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -1749,7 +1801,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.7),
+      barrierColor: Colors.black.withOpacity(0.75),
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
           final isLiked = _model.likedProductTitles.contains(product['name'] ?? '');
@@ -1757,16 +1809,37 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           return Dialog(
             backgroundColor: Colors.transparent,
             insetPadding: const EdgeInsets.all(16),
-            child: Container(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: dart_ui.BackdropFilter(
+                filter: dart_ui.ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                child: Container(
               constraints: const BoxConstraints(maxWidth: 500),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(28),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF1A0035).withOpacity(0.92),
+                    const Color(0xFF0D0020).withOpacity(0.95),
+                  ],
+                ),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.18),
+                  width: 1.0,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: LiquidGlassTokens.primary.withOpacity(0.35),
                     blurRadius: 60,
                     offset: const Offset(0, 20),
+                    spreadRadius: -8,
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.50),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
                   ),
                 ],
               ),
@@ -1911,15 +1984,16 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: violetColor.withOpacity(0.15),
+                        color: LiquidGlassTokens.secondary.withOpacity(0.20),
                         borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: LiquidGlassTokens.secondary.withOpacity(0.35)),
                       ),
                       child: Text(
                         product['brand'] as String? ?? product['source'] as String? ?? 'Amazon',
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: violetColor,
+                          color: LiquidGlassTokens.secondary,
                         ),
                       ),
                     ),
@@ -1929,7 +2003,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       style: GoogleFonts.poppins(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF111827),
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -1938,7 +2012,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       style: GoogleFonts.poppins(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: violetColor,
+                        color: LiquidGlassTokens.secondary,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -1947,7 +2021,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                         product['description'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 14,
-                          color: const Color(0xFF6B7280),
+                          color: Colors.white.withOpacity(0.65),
                           height: 1.6,
                         ),
                         maxLines: 3,
@@ -1958,7 +2032,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                         'Cadeau parfait par ${product['brand'] as String? ?? 'une marque de qualité'}',
                         style: GoogleFonts.poppins(
                           fontSize: 14,
-                          color: const Color(0xFF6B7280),
+                          color: Colors.white.withOpacity(0.65),
                           height: 1.6,
                         ),
                       ),
@@ -1968,7 +2042,6 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () async {
-                          // Générer une URL de produit intelligente (≥95% précision)
                           final url = ProductUrlService.generateProductUrl(product);
                           if (url.isNotEmpty) {
                             try {
@@ -2000,10 +2073,43 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                               ),
                             ),
                             const SizedBox(width: 10),
-                            const Icon(
-                              Icons.open_in_new,
-                              color: Colors.white,
-                              size: 18,
+                            const Icon(Icons.open_in_new, color: Colors.white, size: 18),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    // Bouton Trouver en magasin
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          StoreFinderBottomSheet.show(
+                            context,
+                            productName: product['name'] as String? ?? 'Produit',
+                            brand: product['brand'] as String? ?? product['source'] as String? ?? '',
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.white54, width: 1.5),
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.location_on, size: 18),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Trouver en magasin',
+                              style: GoogleFonts.poppins(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ],
                         ),
@@ -2015,6 +2121,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             ],
           ),
         ),
+              ), // Container dark glass
+            ), // BackdropFilter
+          ), // ClipRRect
           );
         },
       ),
@@ -2023,11 +2132,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
   /// Affiche le modal de sélection de wishlist
   Future<void> _showWishlistModal(Map<String, dynamic> product) async {
-    // Vérifier si l'utilisateur est connecté
-    final prefs = await SharedPreferences.getInstance();
-    final isAnonymous = prefs.getBool('anonymous_mode') ?? false;
-
-    if (isAnonymous || !loggedIn) {
+    if (!loggedIn) {
       if (mounted) {
         await showConnectionRequiredDialog(
           context,

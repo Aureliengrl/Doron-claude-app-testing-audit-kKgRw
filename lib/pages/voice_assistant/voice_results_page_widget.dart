@@ -1,10 +1,12 @@
 ﻿import '/utils/app_logger.dart';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:doron/components/cached_image.dart';
 import 'package:doron/components/skeleton_loader.dart';
+import 'package:doron/components/liquid_glass.dart';
 import '/services/firebase_data_service.dart';
 import '/services/product_url_service.dart';
 import 'voice_results_page_model.dart';
@@ -47,9 +49,9 @@ class _VoiceResultsPageWidgetState extends State<VoiceResultsPageWidget> {
     return ChangeNotifierProvider.value(
       value: _model,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F5F5),
+        backgroundColor: LiquidGlassTokens.pageDark,
         appBar: AppBar(
-          backgroundColor: const Color(0xFF062248),
+          backgroundColor: const Color(0x991A0035),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () {
@@ -240,7 +242,7 @@ class _VoiceResultsPageWidgetState extends State<VoiceResultsPageWidget> {
                           : 'Suggestions de cadeaux',
                       style: const TextStyle(
                         fontFamily: 'Outfit',
-                        color: Color(0xFF062248),
+                        color: Colors.white,
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                       ),
@@ -270,7 +272,7 @@ class _VoiceResultsPageWidgetState extends State<VoiceResultsPageWidget> {
                           'Aucun produit trouvé',
                           style: TextStyle(
                             fontFamily: 'Outfit',
-                            color: Colors.grey[600],
+                            color: Colors.white.withOpacity(0.65),
                             fontSize: 16,
                           ),
                         ),
@@ -387,15 +389,12 @@ class _VoiceResultsPageWidgetState extends State<VoiceResultsPageWidget> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft, end: Alignment.bottomRight,
+            colors: [Colors.white.withOpacity(0.14), Colors.white.withOpacity(0.06)],
+          ),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          border: Border.all(color: Colors.white.withOpacity(0.18)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -458,7 +457,7 @@ class _VoiceResultsPageWidgetState extends State<VoiceResultsPageWidget> {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontFamily: 'Outfit',
-                        color: Color(0xFF062248),
+                        color: Colors.white,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         height: 1.3,

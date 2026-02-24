@@ -1,4 +1,5 @@
 ﻿import '/utils/app_logger.dart';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '/components/cached_image.dart';
 import '/components/aesthetic_buttons.dart';
 import '/components/micro_interactions.dart' as micro;
+import '/components/liquid_glass.dart';
 import '/services/product_url_service.dart';
 import '/services/firebase_data_service.dart';
 import '/backend/backend.dart';
@@ -55,7 +57,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     if (_model.errorMessage != null) {
       return Scaffold(
         key: scaffoldKey,
-        backgroundColor: const Color(0xFFF9FAFB),
+        backgroundColor: LiquidGlassTokens.pageDark,
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(32),
@@ -103,7 +105,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     if (_model.isLoading) {
       return Scaffold(
         key: scaffoldKey,
-        backgroundColor: const Color(0xFFF9FAFB),
+        backgroundColor: LiquidGlassTokens.pageDark,
         body: Center(
           child: micro.FadeSlideIn(
             child: Column(
@@ -155,7 +157,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: LiquidGlassTokens.pageDark,
       body: Stack(
         children: [
           // Contenu principal scrollable avec physics premium
@@ -200,9 +202,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    const Color(0xFFF9FAFB).withOpacity(0),
-                    const Color(0xFFF9FAFB),
-                    const Color(0xFFF9FAFB),
+                    LiquidGlassTokens.pageDark.withOpacity(0),
+                    LiquidGlassTokens.pageDark.withOpacity(0.92),
+                    LiquidGlassTokens.pageDark,
                   ],
                 ),
               ),
@@ -297,7 +299,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             child: Text(
               'Sélectionne une personne pour voir ses cadeaux',
               style: GoogleFonts.poppins(
-                color: const Color(0xFF4B5563),
+                color: Colors.white.withOpacity(0.75),
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
               ),
@@ -331,20 +333,12 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         width: 72,
                         height: 72,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Colors.white.withOpacity(0.12),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: violetColor,
-                            width: 3,
-                            style: BorderStyle.solid,
+                            color: violetColor.withOpacity(0.70),
+                            width: 2,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
                         ),
                         child: Icon(
                           Icons.add,
@@ -394,19 +388,22 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 return await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
+                    backgroundColor: const Color(0xEE1A0035),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
+                      side: BorderSide(color: Colors.white.withOpacity(0.18)),
                     ),
                     title: Text(
                       'Supprimer cette personne ?',
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.bold,
                         fontSize: 20,
+                        color: Colors.white,
                       ),
                     ),
                     content: Text(
                       'Les cadeaux sauvegardés pour ${profile['name']} seront supprimés.',
-                      style: GoogleFonts.poppins(fontSize: 15),
+                      style: GoogleFonts.poppins(fontSize: 15, color: Colors.white.withOpacity(0.80)),
                     ),
                     actions: [
                       TextButton(
@@ -661,7 +658,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF1F2937),
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 8),
@@ -670,7 +667,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
-                  color: const Color(0xFF6B7280),
+                  color: Colors.white.withOpacity(0.65),
                 ),
               ),
             ],
@@ -706,7 +703,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF1F2937),
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 8),
@@ -715,7 +712,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
-                  color: const Color(0xFF6B7280),
+                  color: Colors.white.withOpacity(0.65),
                 ),
               ),
             ],
@@ -755,17 +752,18 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       child: InkWell(
         onTap: () => _showProductDetail(product),
         borderRadius: BorderRadius.circular(20),
-        child: Container(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft, end: Alignment.bottomRight,
+              colors: [Colors.white.withOpacity(0.14), Colors.white.withOpacity(0.06)],
+            ),
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            border: Border.all(color: Colors.white.withOpacity(0.18)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

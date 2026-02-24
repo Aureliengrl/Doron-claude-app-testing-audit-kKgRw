@@ -9,6 +9,7 @@ import '/backend/backend.dart';
 import '/services/product_url_service.dart';
 import '/services/firebase_data_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '/components/liquid_glass.dart';
 import 'user_profile_model.dart';
 export 'user_profile_model.dart';
 
@@ -29,33 +30,19 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   final Color violetColor = const Color(0xFF8A2BE2);
   final Color pinkColor = const Color(0xFFEC4899);
 
-  bool _isAnonymous = false;
-
   @override
   void initState() {
     super.initState();
     _model = UserProfileModel();
     _tabController = TabController(length: 2, vsync: this);
 
-    // Vérifier le mode anonyme
-    _checkAnonymousMode();
-
     // Charger les favoris après le premier frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && !_isAnonymous) {
-        _model.loadFavourites();
-      }
+      if (mounted) _model.loadFavourites();
     });
 
     // Écouter les changements du model
     _model.addListener(_onModelChanged);
-  }
-
-  Future<void> _checkAnonymousMode() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _isAnonymous = prefs.getBool('anonymous_mode') ?? false;
-    });
   }
 
   void _onModelChanged() {
@@ -74,123 +61,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
-    if (_isAnonymous) {
-      return _buildAnonymousView();
-    }
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: LiquidGlassTokens.pageDark,
       body: CustomScrollView(
         slivers: [
-          // App Bar avec photo de profil et bouton paramètres
           _buildAppBar(),
-
-          // Tabs (Produits likés / Wishlists)
           _buildTabBar(),
-
-          // Contenu des tabs
           _buildTabContent(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAnonymousView() {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
-      body: Stack(
-        children: [
-          // Contenu flouté
-          CustomScrollView(
-            slivers: [
-              _buildAppBar(),
-              _buildTabBar(),
-              _buildTabContent(),
-            ],
-          ),
-
-          // Overlay flouté
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              color: Colors.white.withOpacity(0.3),
-            ),
-          ),
-
-          // Message connexion
-          Center(
-            child: Container(
-              margin: const EdgeInsets.all(32),
-              padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
-                    blurRadius: 30,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [violetColor, pinkColor],
-                      ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.lock_outline, color: Colors.white, size: 40),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Connecte-toi',
-                    style: GoogleFonts.poppins(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF111827),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Crée ton compte pour accéder à ton profil, tes produits likés et tes wishlists',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      color: const Color(0xFF6B7280),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => context.go('/auth'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: violetColor,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: Text(
-                        'Se connecter',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -339,26 +216,11 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         ),
       ),
       actions: [
-        // Bouton billet (mode découverte)
-        IconButton(
-          icon: const Icon(
-            Icons.local_activity,
-            color: Colors.white,
-            size: 24,
-          ),
-          onPressed: () {
-            context.push('/gala-ticket'); // Vers la page du gala
-          },
-        ),
         // Bouton paramètres
         IconButton(
-          icon: const Icon(
-            Icons.settings,
-            color: Colors.white,
-            size: 24,
-          ),
+          icon: const Icon(Icons.settings, color: Colors.white, size: 24),
           onPressed: () {
-            context.push('/profile'); // Vers l'ancienne page paramètres
+            context.push('/profile');
           },
         ),
       ],
@@ -371,9 +233,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       delegate: _SliverTabBarDelegate(
         TabBar(
           controller: _tabController,
-          labelColor: violetColor,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: violetColor,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white.withOpacity(0.55),
+          indicatorColor: Colors.white,
           indicatorWeight: 3,
           labelStyle: GoogleFonts.poppins(
             fontSize: 16,
@@ -440,7 +302,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             Icon(
               Icons.favorite_border,
               size: 80,
-              color: Colors.grey[400],
+              color: Colors.white.withOpacity(0.35),
             ),
             const SizedBox(height: 16),
             Text(
@@ -448,7 +310,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[700],
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 8),
@@ -457,7 +319,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                color: Colors.grey[500],
+                color: Colors.white.withOpacity(0.60),
               ),
             ),
           ],
@@ -496,17 +358,25 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           }
         },
         borderRadius: BorderRadius.circular(20),
-        child: Container(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.14),
+                Colors.white.withOpacity(0.06),
+              ],
+            ),
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            border: Border.all(
+              color: Colors.white.withOpacity(0.18),
+              width: 1,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -581,7 +451,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFF1F2937),
+                          color: Colors.white,
                           height: 1.2,
                         ),
                       ),
@@ -593,7 +463,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.poppins(
                             fontSize: 12,
-                            color: const Color(0xFF6B7280),
+                            color: Colors.white.withOpacity(0.55),
                           ),
                         ),
                       const Spacer(),

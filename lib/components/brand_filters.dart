@@ -1,7 +1,9 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '/components/liquid_glass.dart';
 
 /// Modèle pour une marque/retailer
 class BrandModel {
@@ -163,7 +165,7 @@ class _BrandFiltersWidgetState extends State<BrandFiltersWidget> {
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF1F2937),
+                  color: Colors.white,
                 ),
               ),
             ],

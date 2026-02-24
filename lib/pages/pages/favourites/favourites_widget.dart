@@ -10,6 +10,7 @@ import '/pages/pages/components/loader/loader_widget.dart';
 import '/pages/pages/components/product/product_widget.dart';
 import '/pages/pages/empty_data/empty_data_widget.dart';
 import '/components/cached_image.dart';
+import '/components/liquid_glass.dart';
 import 'dart:math';
 import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -105,7 +106,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: const Color(0xFFF9FAFB),
+        backgroundColor: LiquidGlassTokens.pageDark,
         body: RefreshIndicator(
           color: violetColor,
           onRefresh: _loadFavorites,
@@ -133,23 +134,33 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
   }
 
   Widget _buildHeader() {
-    return Container(
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(
+        bottomLeft: Radius.circular(32),
+        bottomRight: Radius.circular(32),
+      ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+        child: Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF8A2BE2),
-            const Color(0xFFEC4899),
+            LiquidGlassTokens.primary.withOpacity(0.50),
+            LiquidGlassTokens.secondary.withOpacity(0.35),
           ],
         ),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(32),
           bottomRight: Radius.circular(32),
         ),
+        border: const Border(
+          bottom: BorderSide(color: Color(0x44FFFFFF), width: 1.0),
+        ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF8A2BE2).withOpacity(0.3),
+            color: LiquidGlassTokens.primary.withOpacity(0.30),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
@@ -176,7 +187,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
                 'Tous vos cadeaux préférés en un seul endroit',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withOpacity(0.85),
                   fontSize: 13,
                   fontWeight: FontWeight.w400,
                 ),
@@ -185,24 +196,29 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
           ),
         ),
       ),
-    );
+        ),
+      ), // BackdropFilter
+    ); // ClipRRect
   }
 
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.white.withOpacity(0.12),
+                Colors.white.withOpacity(0.06),
+              ],
             ),
-          ],
-        ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withOpacity(0.18)),
+          ),
         child: TextField(
           controller: _searchController,
           onChanged: (value) {
@@ -212,22 +228,22 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
           },
           style: GoogleFonts.poppins(
             fontSize: 14,
-            color: const Color(0xFF1F2937),
+            color: Colors.white,
           ),
           decoration: InputDecoration(
             hintText: 'Rechercher un cadeau...',
             hintStyle: GoogleFonts.poppins(
               fontSize: 14,
-              color: const Color(0xFF9CA3AF),
+              color: Colors.white.withOpacity(0.45),
             ),
             prefixIcon: Icon(
               Icons.search,
-              color: violetColor,
+              color: Colors.white.withOpacity(0.70),
               size: 20,
             ),
             suffixIcon: _searchQuery.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(Icons.clear, size: 20),
+                    icon: Icon(Icons.clear, size: 20, color: Colors.white.withOpacity(0.60)),
                     onPressed: () {
                       _searchController.clear();
                       setState(() {
@@ -241,6 +257,8 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
               horizontal: 16,
               vertical: 14,
             ),
+          ),
+        ),
           ),
         ),
       ),
@@ -441,7 +459,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1F2937),
+                          color: Colors.white,
                           height: 1.3,
                         ),
                       ),
@@ -537,24 +555,38 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => Container(
+      builder: (context) => ClipRRect(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(32),
+          topRight: Radius.circular(32),
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          child: Container(
         height: MediaQuery.of(context).size.height * 0.85,
         decoration: const BoxDecoration(
-          color: Colors.white,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xF01A0035), Color(0xF00D001A)],
+          ),
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(28),
-            topRight: Radius.circular(28),
+            topLeft: Radius.circular(32),
+            topRight: Radius.circular(32),
+          ),
+          border: Border(
+            top: BorderSide(color: Color(0x44FFFFFF), width: 1.0),
           ),
         ),
         child: Column(
           children: [
             // Handle bar
             Container(
-              margin: const EdgeInsets.only(top: 12),
+              margin: const EdgeInsets.only(top: 14),
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: Colors.white.withOpacity(0.35),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -597,7 +629,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
                       style: GoogleFonts.poppins(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1F2937),
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -668,10 +700,10 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
                   ],
                 ),
               ),
-            ),
-          ],
+          ),
         ),
-      ),
+      ), // BackdropFilter
+      ), // ClipRRect
     );
   }
 }
