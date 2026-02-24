@@ -755,9 +755,60 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     mainAxisSpacing: 12,
                   ),
                   itemCount: products.length,
-                  itemBuilder: (context, index) => _buildProductCard(products[index]),
+                  itemBuilder: (context, index) => _buildWishlistProductCard(products[index]),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+  Widget _buildWishlistProductCard(Map<String, dynamic> product) {
+    final title = product['title'] as String? ?? product['name'] as String? ?? 'Produit';
+    final price = product['price'] != null ? product['price'].toString() : '';
+    final imageUrl = product['imageUrl'] as String? ?? product['image'] as String? ?? '';
+    final url = product['url'] as String? ?? product['productUrl'] as String? ?? '';
+
+    return Card(
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () async {
+          if (url.isNotEmpty) {
+            final uri = Uri.parse(url);
+            if (await canLaunchUrl(uri)) {
+              await launchUrl(uri, mode: LaunchMode.externalApplication);
+            }
+          }
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: imageUrl.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    errorWidget: (_, __, ___) => Container(
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                    ),
+                  )
+                : Container(color: Colors.grey[200], child: const Icon(Icons.card_giftcard, color: Colors.grey)),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600), maxLines: 2, overflow: TextOverflow.ellipsis),
+                  if (price.isNotEmpty)
+                    Text(price, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: violetColor)),
+                ],
+              ),
+            ),
           ],
         ),
       ),

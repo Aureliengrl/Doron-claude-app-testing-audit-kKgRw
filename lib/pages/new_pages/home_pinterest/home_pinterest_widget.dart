@@ -304,7 +304,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       }
 
       // Charger la liste des IDs de produits d�j� vus depuis le cache
-      // R�utilisation de prefs d�clar� plus haut
+      final prefs = await SharedPreferences.getInstance();
       final seenProductIds = prefs.getStringList('seen_home_product_ids_${_model.activeCategory}')?.map((s) => int.tryParse(s) ?? 0).toList() ?? [];
       AppLogger.debug('?? ${seenProductIds.length} produits d�j� vus dans la cat�gorie ${_model.activeCategory}', 'Debug');
 
