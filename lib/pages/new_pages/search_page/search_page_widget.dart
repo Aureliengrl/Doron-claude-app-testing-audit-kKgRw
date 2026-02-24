@@ -930,7 +930,6 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 ),
               ),
             ],
-            ],
           ),
         ),
       ),

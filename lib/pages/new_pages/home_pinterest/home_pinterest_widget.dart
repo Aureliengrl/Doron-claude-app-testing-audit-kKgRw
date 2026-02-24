@@ -1596,6 +1596,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 child: _buildProductCard(product, index),
               ),
             ),
+          ),
           );
         },
       ),
@@ -2124,6 +2125,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             ],
           ),
         ),
+          ),
           );
         },
       ),

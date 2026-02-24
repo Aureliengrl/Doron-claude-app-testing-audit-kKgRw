@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -36,12 +36,12 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     _model = UserProfileModel();
     _tabController = TabController(length: 2, vsync: this);
 
-    // Charger les favoris après le premier frame
+    // Charger les favoris apr├¿s le premier frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _model.loadFavourites();
     });
 
-    // Écouter les changements du model
+    // ├ëcouter les changements du model
     _model.addListener(_onModelChanged);
   }
 
@@ -69,8 +69,6 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           _buildTabBar(),
           _buildTabContent(),
         ],
-      ),
-        ),
       ),
     );
   }
@@ -156,11 +154,11 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                       right: 0,
                       child: GestureDetector(
                         onTap: () {
-                          // TODO: Ouvrir sélecteur de photo
+                          // TODO: Ouvrir s├®lecteur de photo
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                'Modifier la photo de profil - À venir',
+                                'Modifier la photo de profil - ├Ç venir',
                                 style: GoogleFonts.poppins(),
                               ),
                               backgroundColor: violetColor,
@@ -218,7 +216,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         ),
       ),
       actions: [
-        // Bouton paramètres
+        // Bouton param├¿tres
         IconButton(
           icon: const Icon(Icons.settings, color: Colors.white, size: 24),
           onPressed: () {
@@ -226,8 +224,6 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           },
         ),
       ],
-        ),
-      ),
     );
   }
 
@@ -256,7 +252,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 children: [
                   const Icon(Icons.favorite),
                   const SizedBox(width: 8),
-                  Text('Produits likés'),
+                  Text('Produits lik├®s'),
                 ],
               ),
             ),
@@ -273,8 +269,6 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           ],
         ),
       ),
-        ),
-      ),
     );
   }
 
@@ -286,8 +280,6 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           _buildLikedProducts(),
           _buildWishlists(),
         ],
-      ),
-        ),
       ),
     );
   }
@@ -314,7 +306,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             ),
             const SizedBox(height: 16),
             Text(
-              'Aucun produit liké',
+              'Aucun produit lik├®',
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -323,7 +315,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             ),
             const SizedBox(height: 8),
             Text(
-              'Explore l\'accueil et like tes produits préférés !',
+              'Explore l\'accueil et like tes produits pr├®f├®r├®s !',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 14,
@@ -348,8 +340,6 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         final favourite = _model.favourites[index];
         return _buildProductCard(favourite);
       },
-        ),
-      ),
     );
   }
 
@@ -494,8 +484,6 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           ),
         ),
       ),
-        ),
-      ),
     );
   }
 
@@ -518,7 +506,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 const SizedBox(height: 16),
                 Text('Aucune wishlist', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey[700])),
                 const SizedBox(height: 8),
-                Text('Crée des wishlists pour organiser tes cadeaux', textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
+                Text('Cr├®e des wishlists pour organiser tes cadeaux', textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
               ],
             ),
           );
@@ -573,8 +561,6 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           },
         );
       },
-        ),
-      ),
     );
   }
 
@@ -639,27 +625,25 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     mainAxisSpacing: 12,
                   ),
                   itemCount: products.length,
-                  itemBuilder: (context, index) => _buildWishlistMapCard(products[index]),
+                  itemBuilder: (context, index) => _buildWishlistProductCard(products[index]),
                 ),
               ),
           ],
         ),
       ),
-        ),
-      ),
     );
   }
-}
 
+  Widget _buildWishlistProductCard(Map<String, dynamic> product) {
+    final title = product['title'] as String? ?? product['name'] as String? ?? 'Produit';
+    final price = product['price'] as String? ?? '';
+    final imageUrl = product['imageUrl'] as String? ?? product['image'] as String? ?? '';
+    final url = product['url'] as String? ?? product['productUrl'] as String? ?? '';
 
-  /// Card builder for wishlist items (Map<String, dynamic> from Firebase)
-  Widget _buildWishlistMapCard(Map<String, dynamic> product) {
-    final url = product['productUrl'] as String? ?? '';
-    final title = product['productTitle'] as String? ?? '';
-    final price = product['productPrice'] as String? ?? '';
-    final photo = product['productPhoto'] as String? ?? '';
-    return Material(
-      color: Colors.transparent,
+    return Card(
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () async {
           if (url.isNotEmpty) {
@@ -669,59 +653,41 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             }
           }
         },
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.white.withOpacity(0.14), Colors.white.withOpacity(0.06)],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.18)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (photo.isNotEmpty)
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                  child: CachedNetworkImage(
-                    imageUrl: photo,
-                    height: 140,
-                    width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: imageUrl.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: imageUrl,
                     fit: BoxFit.cover,
-                    placeholder: (ctx, _) => Container(height: 140, color: Colors.white10),
-                    errorWidget: (ctx, _, __) => Container(height: 140, color: Colors.white10, child: const Icon(Icons.image, color: Colors.white54)),
-                  ),
-                ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title, maxLines: 2, overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
-                      const Spacer(),
-                      if (price.isNotEmpty)
-                        Text(price, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: violetColor)),
-                    ],
-                  ),
-                ),
+                    width: double.infinity,
+                    errorWidget: (_, __, ___) => Container(
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                    ),
+                  )
+                : Container(color: Colors.grey[200], child: const Icon(Icons.card_giftcard, color: Colors.grey)),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600), maxLines: 2, overflow: TextOverflow.ellipsis),
+                  if (price.isNotEmpty)
+                    Text(price, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: violetColor)),
+                ],
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
+          ],
         ),
       ),
     );
   }
-// Délégué pour la tab bar sticky
+}
+
+// D├®l├®gu├® pour la tab bar sticky
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;
 
@@ -738,8 +704,6 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
     return Container(
       color: Colors.white,
       child: tabBar,
-        ),
-      ),
     );
   }
 
