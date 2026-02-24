@@ -1,4 +1,5 @@
-﻿import '/utils/app_logger.dart';
+﻿import 'dart:ui' as ui;
+import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -307,9 +308,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       }
 
       // Charger la liste des IDs de produits déjà vus depuis le cache
-      // Réutilisation de prefs déclaré plus haut
+      final prefs = await SharedPreferences.getInstance();
       final seenProductIds = prefs.getStringList('seen_home_product_ids_${_model.activeCategory}')?.map((s) => int.tryParse(s) ?? 0).toList() ?? [];
-      AppLogger.debug('📋 ${seenProductIds.length} produits déjà vus dans la catégorie ${_model.activeCategory}', 'Debug');
+      print('📋 ${seenProductIds.length} produits déjà vus dans la catégorie ${_model.activeCategory}');
 
       // 🎯 Générer les produits via ProductMatchingService (Firebase-first)
       AppLogger.debug('🔄 Appel ProductMatchingService avec ${tagsToUse.length} tags...', 'Debug');
@@ -363,7 +364,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         newSeenIds.removeRange(0, newSeenIds.length - 300);
       }
       await prefs.setStringList('seen_home_product_ids_${_model.activeCategory}', newSeenIds);
-      AppLogger.debug('💾 ${newSeenIds.length} produits dans le cache (${products.length} nouveaux ajoutés)', 'Debug');
+      print('💾 ${newSeenIds.length} produits dans le cache (${products.length} nouveaux ajoutés)');
 
       if (mounted) {
         setState(() {
@@ -859,7 +860,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             bottomRight: Radius.circular(32),
           ),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+            filter: ui.ImageFilter.blur(sigmaX: 25, sigmaY: 25),
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: const BorderRadius.only(
@@ -1629,7 +1630,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              filter: ui.ImageFilter.blur(sigmaX: 20, sigmaY: 20),
               child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
@@ -1812,7 +1813,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(28),
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                filter: ui.ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                 child: Container(
               constraints: const BoxConstraints(maxWidth: 500),
               decoration: BoxDecoration(

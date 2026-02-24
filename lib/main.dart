@@ -1,7 +1,7 @@
 ﻿import '/utils/app_logger.dart';
 import '/custom_code/actions/index.dart' as actions;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as provider_pkg;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -157,7 +157,7 @@ void main() async {
   await appState.initializePersistedState();
 
   runApp(ProviderScope(
-    child: ChangeNotifierProvider(
+    child: provider_pkg.ChangeNotifierProvider(
       create: (context) => appState,
       child: MyApp(),
     ),

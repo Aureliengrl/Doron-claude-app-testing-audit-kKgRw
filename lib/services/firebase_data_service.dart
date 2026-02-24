@@ -517,7 +517,7 @@ class FirebaseDataService {
           .orderBy('createdAt', descending: true);
 
       if (personId != null) {
-        query = query.where('personId', isEqualTo: personId) as Query<Map<String, dynamic>> as dynamic;
+        query = _firestore.collection('users').doc(currentUserId).collection('wishlists').orderBy('createdAt', descending: true).where('personId', isEqualTo: personId);
       }
 
       final snapshot = await _firestore
@@ -1648,5 +1648,23 @@ class FirebaseDataService {
     }
 
     return null;
+  }
+
+  /// Ajoute un produit (par son docId) dans une wishlist
+  static Future<void> addToWishlist(String wishlistId, String productDocId) async {
+    final userId = currentUserId;
+    if (userId == null) return;
+    try {
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('wishlists')
+          .doc(wishlistId)
+          .collection('products')
+          .doc(productDocId)
+          .set({'addedAt': FieldValue.serverTimestamp()}, SetOptions(merge: true));
+    } catch (e) {
+      print('❌ addToWishlist error: $e');
+    }
   }
 }

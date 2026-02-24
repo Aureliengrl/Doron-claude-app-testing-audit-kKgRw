@@ -157,7 +157,7 @@ class DoronTheme {
             ),
           ),
         ),
-        cardTheme: const CardTheme(
+        cardTheme: const CardThemeData(
           color: cardWhite,
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -238,7 +238,7 @@ class DoronTheme {
             ),
           ),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: _darkColorScheme.surface,
           elevation: 0,
           shape: const RoundedRectangleBorder(

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -625,7 +625,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     mainAxisSpacing: 12,
                   ),
                   itemCount: products.length,
-                  itemBuilder: (context, index) => _buildProductCard(products[index]),
+                  itemBuilder: (context, index) => _buildWishlistMapCard(products[index]),
                 ),
               ),
           ],
@@ -635,6 +635,74 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   }
 }
 
+
+  /// Card builder for wishlist items (Map<String, dynamic> from Firebase)
+  Widget _buildWishlistMapCard(Map<String, dynamic> product) {
+    final url = product['productUrl'] as String? ?? '';
+    final title = product['productTitle'] as String? ?? '';
+    final price = product['productPrice'] as String? ?? '';
+    final photo = product['productPhoto'] as String? ?? '';
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () async {
+          if (url.isNotEmpty) {
+            final uri = Uri.parse(url);
+            if (await canLaunchUrl(uri)) {
+              await launchUrl(uri, mode: LaunchMode.externalApplication);
+            }
+          }
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white.withOpacity(0.14), Colors.white.withOpacity(0.06)],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withOpacity(0.18)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (photo.isNotEmpty)
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                  child: CachedNetworkImage(
+                    imageUrl: photo,
+                    height: 140,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    placeholder: (ctx, _) => Container(height: 140, color: Colors.white10),
+                    errorWidget: (ctx, _, __) => Container(height: 140, color: Colors.white10, child: const Icon(Icons.image, color: Colors.white54)),
+                  ),
+                ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title, maxLines: 2, overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
+                      const Spacer(),
+                      if (price.isNotEmpty)
+                        Text(price, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: violetColor)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 // Délégué pour la tab bar sticky
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;

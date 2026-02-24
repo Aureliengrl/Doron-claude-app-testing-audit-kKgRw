@@ -53,11 +53,11 @@
     if (likedProducts.contains(productId)) {
       likedProducts.remove(productId);
       likedProductTitles.remove(productTitle);
-      debugPrint('🗑️ Model: Produit retiré des favoris - ID: $productId, Titre: $productTitle');
+      print('🗑️ Model: Produit retiré des favoris - ID: $productId, Titre: $productTitle');
     } else {
       likedProducts.add(productId);
       likedProductTitles.add(productTitle);
-      debugPrint('❤️ Model: Produit ajouté aux favoris - ID: $productId, Titre: $productTitle');
+      print('❤️ Model: Produit ajouté aux favoris - ID: $productId, Titre: $productTitle');
     }
   }
 

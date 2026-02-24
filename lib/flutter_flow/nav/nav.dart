@@ -183,21 +183,17 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: ProfileWidget.routePath,
           builder: (context, params) => ProfileWidget(),
         ),
-        FFRoute(
-            name: ChatHistoryWidget.routeName,
-            path: ChatHistoryWidget.routePath,
-            requireAuth: true,
-            builder: (context, params) => params.isEmpty
-                ? NavBarPage(initialPage: 'ChatHistory')
-                : NavBarPage(
-                    initialPage: 'ChatHistory',
-                    page: ChatHistoryWidget(),
-                  )),
-        FFRoute(
-          name: ChatAiScreenWidget.routeName,
-          path: ChatAiScreenWidget.routePath,
-          builder: (context, params) => ChatAiScreenWidget(),
-        ),
+        // Chat routes removed - files no longer exist
+        // FFRoute(
+        //     name: ChatHistoryWidget.routeName,
+        //     path: ChatHistoryWidget.routePath,
+        //     requireAuth: true,
+        //     builder: (context, params) => params.isEmpty
+        //         ? NavBarPage(initialPage: 'ChatHistory')
+        //         : NavBarPage(
+        //             initialPage: 'ChatHistory',
+        //             page: ChatHistoryWidget(),
+        //           )),
         FFRoute(
           name: OpenAiSuggestedGiftsWidget.routeName,
           path: OpenAiSuggestedGiftsWidget.routePath,
@@ -210,24 +206,24 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             ),
           ),
         ),
-        FFRoute(
-          name: PreviewChatWidget.routeName,
-          path: PreviewChatWidget.routePath,
-          builder: (context, params) => PreviewChatWidget(
-            products: params.getParam<ProductsStruct>(
-              'products',
-              ParamType.DataStruct,
-              isList: true,
-              structBuilder: ProductsStruct.fromSerializableMap,
-            ),
-            chat: params.getParam<OpenAiResponseStruct>(
-              'chat',
-              ParamType.DataStruct,
-              isList: true,
-              structBuilder: OpenAiResponseStruct.fromSerializableMap,
-            ),
-          ),
-        ),
+        // FFRoute(
+        //   name: PreviewChatWidget.routeName,
+        //   path: PreviewChatWidget.routePath,
+        //   builder: (context, params) => PreviewChatWidget(
+        //     products: params.getParam<ProductsStruct>(
+        //       'products',
+        //       ParamType.DataStruct,
+        //       isList: true,
+        //       structBuilder: ProductsStruct.fromSerializableMap,
+        //     ),
+        //     chat: params.getParam<OpenAiResponseStruct>(
+        //       'chat',
+        //       ParamType.DataStruct,
+        //       isList: true,
+        //       structBuilder: OpenAiResponseStruct.fromSerializableMap,
+        //     ),
+        //   ),
+        // ),
         FFRoute(
           name: ForgotPasswordWidget.routeName,
           path: ForgotPasswordWidget.routePath,
