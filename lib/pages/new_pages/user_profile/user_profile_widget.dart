@@ -1,4 +1,4 @@
-﻿﻿import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -69,6 +69,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           _buildTabBar(),
           _buildTabContent(),
         ],
+      ),
+        ),
       ),
     );
   }
@@ -224,6 +226,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           },
         ),
       ],
+        ),
+      ),
     );
   }
 
@@ -269,6 +273,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           ],
         ),
       ),
+        ),
+      ),
     );
   }
 
@@ -280,6 +286,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           _buildLikedProducts(),
           _buildWishlists(),
         ],
+      ),
+        ),
       ),
     );
   }
@@ -340,6 +348,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         final favourite = _model.favourites[index];
         return _buildProductCard(favourite);
       },
+        ),
+      ),
     );
   }
 
@@ -484,6 +494,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           ),
         ),
       ),
+        ),
+      ),
     );
   }
 
@@ -561,6 +573,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           },
         );
       },
+        ),
+      ),
     );
   }
 
@@ -629,6 +643,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 ),
               ),
           ],
+        ),
+      ),
         ),
       ),
     );
@@ -701,6 +717,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           ),
         ),
       ),
+        ),
+      ),
     );
   }
 // Délégué pour la tab bar sticky
@@ -720,6 +738,8 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
     return Container(
       color: Colors.white,
       child: tabBar,
+        ),
+      ),
     );
   }
 

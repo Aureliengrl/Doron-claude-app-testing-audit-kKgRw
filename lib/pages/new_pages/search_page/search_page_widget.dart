@@ -1,4 +1,4 @@
-import '/utils/app_logger.dart';
+ï»¿import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -53,7 +53,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Afficher une erreur si le chargement a échoué
+    // Afficher une erreur si le chargement a ï¿½chouï¿½
     if (_model.errorMessage != null) {
       return Scaffold(
         key: scaffoldKey,
@@ -88,7 +88,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   width: 200,
                   child: PrimaryGradientButton(
                     onPressed: () => _loadData(),
-                    text: 'Réessayer',
+                    text: 'Rï¿½essayer',
                     icon: Icons.refresh,
                     gradientColors: const [Color(0xFF8A2BE2), Color(0xFFEC4899)],
                     height: 50,
@@ -101,7 +101,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       );
     }
 
-    // Afficher un indicateur de chargement si les données sont en cours de chargement
+    // Afficher un indicateur de chargement si les donnï¿½es sont en cours de chargement
     if (_model.isLoading) {
       return Scaffold(
         key: scaffoldKey,
@@ -175,14 +175,14 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               // Profils en scroll horizontal + Bouton ajouter
               SliverToBoxAdapter(child: _buildProfilesRow()),
 
-              // Info sur la personne sélectionnée
+              // Info sur la personne sï¿½lectionnï¿½e
               if (_model.currentProfile != null)
                 SliverToBoxAdapter(child: _buildProfileInfo()),
 
               // Grille de produits
               _buildProductsGrid(),
 
-              // Section Suggestions (après les cadeaux sauvegardés)
+              // Section Suggestions (aprï¿½s les cadeaux sauvegardï¿½s)
               if (_model.currentProfile != null && _model.getFilteredProducts().isNotEmpty)
                 _buildSuggestionsSection(),
 
@@ -191,7 +191,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             ],
           ),
 
-          // CTA fixe en bas de l'écran
+          // CTA fixe en bas de l'ï¿½cran
           Positioned(
             bottom: 0,
             left: 0,
@@ -297,7 +297,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              'Sélectionne une personne pour voir ses cadeaux',
+              'Sï¿½lectionne une personne pour voir ses cadeaux',
               style: GoogleFonts.poppins(
                 color: Colors.white.withOpacity(0.75),
                 fontSize: 15,
@@ -318,7 +318,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         scrollDirection: Axis.horizontal,
         itemCount: _model.profiles.length + 1, // +1 pour le bouton ajouter
         itemBuilder: (context, index) {
-          // Bouton ajouter à la fin
+          // Bouton ajouter ï¿½ la fin
           if (index == _model.profiles.length) {
             return Padding(
               padding: const EdgeInsets.only(left: 16),
@@ -402,7 +402,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       ),
                     ),
                     content: Text(
-                      'Les cadeaux sauvegardés pour ${profile['name']} seront supprimés.',
+                      'Les cadeaux sauvegardï¿½s pour ${profile['name']} seront supprimï¿½s.',
                       style: GoogleFonts.poppins(fontSize: 15, color: Colors.white.withOpacity(0.80)),
                     ),
                     actions: [
@@ -437,7 +437,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 // Supprimer la personne de Firebase
                 await FirebaseDataService.deletePerson(profileId.toString());
 
-                // Supprimer du modèle local
+                // Supprimer du modï¿½le local
                 setState(() {
                   _model.profiles.removeAt(index);
                   if (_model.selectedProfileId == profileIdInt) {
@@ -454,7 +454,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           const Icon(Icons.check_circle, color: Colors.white, size: 20),
                           const SizedBox(width: 12),
                           Text(
-                            '${profile['name']} supprimé(e)',
+                            '${profile['name']} supprimï¿½(e)',
                             style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                           ),
                         ],
@@ -471,15 +471,15 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () async {
-                    // Premier setState pour sélectionner le profil
+                    // Premier setState pour sï¿½lectionner le profil
                     setState(() {
                       _model.selectedProfileId = profileIdInt;
                     });
 
-                    // Charger les données (favoris + suggestions)
+                    // Charger les donnï¿½es (favoris + suggestions)
                     await _model.selectProfile(profileIdInt);
 
-                    // Deuxième setState pour mettre à jour avec les suggestions
+                    // Deuxiï¿½me setState pour mettre ï¿½ jour avec les suggestions
                     if (mounted) {
                       setState(() {});
                     }
@@ -613,7 +613,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${profile['relation']} • ${profile['occasion']}',
+                    '${profile['relation']} ï¿½ ${profile['occasion']}',
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       color: const Color(0xFF6B7280),
@@ -653,7 +653,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               ),
               const SizedBox(height: 24),
               Text(
-                'Ajoutez votre première personne',
+                'Ajoutez votre premiï¿½re personne',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 20,
@@ -663,7 +663,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Cliquez sur le bouton + pour ajouter\nune personne et générer ses cadeaux',
+                'Cliquez sur le bouton + pour ajouter\nune personne et gï¿½nï¿½rer ses cadeaux',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
@@ -676,7 +676,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       );
     }
 
-    // Si profil sélectionné mais pas de produits, afficher message
+    // Si profil sï¿½lectionnï¿½ mais pas de produits, afficher message
     if (products.isEmpty) {
       return SliverToBoxAdapter(
         child: Padding(
@@ -708,7 +708,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Les cadeaux de cette personne apparaîtront ici',
+                'Les cadeaux de cette personne apparaï¿½tront ici',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
@@ -742,7 +742,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   }
 
   Widget _buildProductCard(Map<String, dynamic> product) {
-    // Vérifier si ce produit est dans les favoris de cette personne (dans Firebase)
+    // Vï¿½rifier si ce produit est dans les favoris de cette personne (dans Firebase)
     final productName = product['name'] as String? ?? product['title'] as String? ?? '';
     final isLikedInFirebase = _model.isProductLiked(productName);
     final matchScore = product['match'] as int? ?? 0;
@@ -826,7 +826,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         ),
                       ),
                     ),
-                  // Bouton coeur - affiche rouge si déjà liké dans Firebase
+                  // Bouton coeur - affiche rouge si dï¿½jï¿½ likï¿½ dans Firebase
                   if (isLikedInFirebase)
                     Positioned(
                       top: 8,
@@ -855,7 +855,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 ],
               ),
 
-              // Info produit avec hiérarchie claire
+              // Info produit avec hiï¿½rarchie claire
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -885,7 +885,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      // Nom du produit (hiérarchie principale)
+                      // Nom du produit (hiï¿½rarchie principale)
                       Expanded(
                         child: Text(
                           productName,
@@ -916,7 +916,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           ),
                         ),
                         child: Text(
-                          '${product['price']}€',
+                          '${product['price']}ï¿½',
                           style: GoogleFonts.poppins(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -930,13 +930,13 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 ),
               ),
             ],
-          ), // Column children
-        ), // Column
-        ), // Container
-          ), // BackdropFilter
-        ), // ClipRRect
-      ), // InkWell
-    ); // Material
+            ],
+          ),
+        ),
+      ),
+    ),
+  ),
+);
   }
 
   void _showProductDetail(Map<String, dynamic> product) {
@@ -996,7 +996,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         onTap: () {
                           if (mounted) {
                             setState(() {
-                              // FIX: Cast sécurisé - ID peut être String ou int
+                              // FIX: Cast sï¿½curisï¿½ - ID peut ï¿½tre String ou int
                               final idRaw = product['id'];
                               final productId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0);
                               _model.toggleLike(productId);
@@ -1059,7 +1059,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '${product['price'] ?? 0}€',
+                      '${product['price'] ?? 0}ï¿½',
                       style: GoogleFonts.poppins(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -1081,7 +1081,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () async {
-                          // Générer une URL de produit intelligente (=95% précision)
+                          // Gï¿½nï¿½rer une URL de produit intelligente (=95% prï¿½cision)
                           final url = ProductUrlService.generateProductUrl(product);
                           if (url.isNotEmpty) {
                             final uri = Uri.parse(url);
@@ -1148,7 +1148,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Génération de suggestions...',
+                  'Gï¿½nï¿½ration de suggestions...',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: const Color(0xFF6B7280),
@@ -1171,7 +1171,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Séparateur
+          // Sï¿½parateur
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: Container(
@@ -1188,7 +1188,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             ),
           ),
 
-          // En-tête de la section Suggestions
+          // En-tï¿½te de la section Suggestions
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
@@ -1213,7 +1213,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Basées sur tes choix et son profil',
+                        'Basï¿½es sur tes choix et son profil',
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: const Color(0xFF6B7280),
@@ -1337,7 +1337,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       ),
                     ),
                   ),
-                  // Bouton coeur si liké
+                  // Bouton coeur si likï¿½
                   if (isLikedInFirebase)
                     Positioned(
                       top: 8,
@@ -1400,14 +1400,14 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '${product['price']}€',
+                            '${product['price']}ï¿½',
                             style: GoogleFonts.poppins(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: violetColor,
                             ),
                           ),
-                          // Bouton "+" pour ajout direct à wishlist
+                          // Bouton "+" pour ajout direct ï¿½ wishlist
                           Material(
                             color: Colors.transparent,
                             child: InkWell(
@@ -1487,7 +1487,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
         const SizedBox(height: 16),
 
-        // Bouton Saint-Valentin spécial
+        // Bouton Saint-Valentin spï¿½cial
         GestureDetector(
           onTap: () {
             HapticFeedback.mediumImpact();
@@ -1559,7 +1559,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     const SizedBox(width: 10),
                     Flexible(
                       child: Text(
-                        '?? SPÉCIAL SAINT-VALENTIN',
+                        '?? SPï¿½CIAL SAINT-VALENTIN',
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -1592,7 +1592,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
         // Texte descriptif sous le bouton
         Text(
-          'Créer une liste spéciale pour la Saint-Valentin ?',
+          'Crï¿½er une liste spï¿½ciale pour la Saint-Valentin ?',
           style: GoogleFonts.poppins(
             fontSize: 12,
             color: const Color(0xFF6B7280),
@@ -1604,11 +1604,11 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     );
   }
 
-  /// Ajoute le produit directement à la liste des cadeaux de la personne
+  /// Ajoute le produit directement ï¿½ la liste des cadeaux de la personne
   Future<void> _showAddToWishlistDialog(Map<String, dynamic> product) async {
     final currentProf = _model.currentProfile;
     if (currentProf == null) {
-      _showSnackBar('Aucune personne sélectionnée', isError: true);
+      _showSnackBar('Aucune personne sï¿½lectionnï¿½e', isError: true);
       return;
     }
 
@@ -1617,22 +1617,22 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     final productName = product['name'] as String? ?? 'Produit';
 
     try {
-      // Ajouter le cadeau directement à la liste de la personne
+      // Ajouter le cadeau directement ï¿½ la liste de la personne
       final success = await FirebaseDataService.addGiftToPerson(
         personId: personId,
         gift: product,
       );
 
       if (success) {
-        _showSnackBar('? $productName ajouté aux cadeaux de $personName');
+        _showSnackBar('? $productName ajoutï¿½ aux cadeaux de $personName');
 
-        // Recharger les données pour mettre à jour l'affichage
+        // Recharger les donnï¿½es pour mettre ï¿½ jour l'affichage
         await _model.loadProfiles();
         if (mounted) {
           setState(() {});
         }
       } else {
-        _showSnackBar('Ce cadeau est déjà dans la liste', isError: false);
+        _showSnackBar('Ce cadeau est dï¿½jï¿½ dans la liste', isError: false);
       }
     } catch (e) {
       _showSnackBar('Erreur lors de l\'ajout: ${e.toString()}', isError: true);

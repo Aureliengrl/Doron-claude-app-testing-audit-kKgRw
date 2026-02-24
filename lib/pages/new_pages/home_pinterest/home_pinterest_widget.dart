@@ -1754,8 +1754,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             ],
           ),
         ),
+        ),
       ),
-    ).animate()
+    ),
+  ).animate()
         .fadeIn(
           delay: Duration(milliseconds: 50 * index),
           duration: 400.ms,

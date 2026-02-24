@@ -701,6 +701,8 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
                 ),
               ),
           ),
+          ],
+        ),
         ),
       ), // BackdropFilter
       ), // ClipRRect
