@@ -1,4 +1,3 @@
-﻿import 'dart:ui' as ui;
 import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,10 +24,7 @@ import '/components/connection_required_dialog.dart';
 import '/components/tutorial_overlay.dart';
 import '/components/brand_filters.dart';
 import '/components/aesthetic_buttons.dart';
-import '/components/store_finder_bottom_sheet.dart';
 import '/components/micro_interactions.dart' as micro;
-import '/components/liquid_glass.dart';
-import 'dart:ui' as dart_ui;
 import 'home_pinterest_model.dart';
 import 'home_pinterest_widgets_extra.dart';
 export 'home_pinterest_model.dart';
@@ -59,10 +55,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     _loadFavorites(); // Charger les favoris depuis Firebase
     _loadProducts();
 
-    // Écouter le scroll pour l'infinite scroll
+    // �couter le scroll pour l'infinite scroll
     _scrollController.addListener(_onScroll);
 
-    // Afficher le tutoriel en mode découverte
+    // Afficher le tutoriel en mode d�couverte
     _showTutorialIfNeeded();
   }
 
@@ -70,24 +66,24 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     await Future.delayed(const Duration(milliseconds: 800));
     if (!mounted) return;
 
-    // Toujours afficher le tutoriel à la première visite
+    // Toujours afficher le tutoriel � la premi�re visite
     await TutorialOverlay.showIfNeeded(
       context,
       tutorialKey: 'home_discovery',
       steps: [
         const TutorialStep(
           title: 'Bienvenue sur Doron !',
-          description: 'Découvre des idées cadeaux personnalisées pour tes proches.',
+          description: 'D�couvre des id�es cadeaux personnalis�es pour tes proches.',
           icon: Icons.explore,
         ),
         const TutorialStep(
           title: 'Parcours les suggestions',
-          description: 'Fais défiler pour découvrir des cadeaux matchés à tes proches.',
+          description: 'Fais d�filer pour d�couvrir des cadeaux match�s � tes proches.',
           icon: Icons.card_giftcard,
         ),
         const TutorialStep(
           title: 'Like tes favoris',
-          description: 'Appuie sur le cœur pour sauvegarder tes coups de cœur.',
+          description: 'Appuie sur le c�ur pour sauvegarder tes coups de c�ur.',
           icon: Icons.favorite,
           buttonText: 'C\'est parti !',
         ),
@@ -98,9 +94,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
   /// Charge les favoris depuis Firebase (FlutterFlow system)
   Future<void> _loadFavorites() async {
-    // Vérifier si l'utilisateur est connecté
+    // V�rifier si l'utilisateur est connect�
     if (FirebaseAuth.instance.currentUser == null) {
-      AppLogger.debug('⚠️ Utilisateur non connecté, favoris non chargés', 'Debug');
+      AppLogger.debug('?? Utilisateur non connect�, favoris non charg�s', 'Debug');
       // Charger les favoris locaux depuis SharedPreferences
       try {
         final prefs = await SharedPreferences.getInstance();
@@ -110,10 +106,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             _model.likedProductTitles.clear();
             _model.likedProductTitles.addAll(localFavorites);
           });
-          AppLogger.debug('✅ ${localFavorites.length} favoris chargés depuis local storage', 'Debug');
+          AppLogger.debug('? ${localFavorites.length} favoris charg�s depuis local storage', 'Debug');
         }
       } catch (e) {
-        AppLogger.debug('❌ Erreur chargement favoris locaux: $e', 'Debug');
+        AppLogger.debug('? Erreur chargement favoris locaux: $e', 'Debug');
       }
       return;
     }
@@ -129,7 +125,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       if (mounted) {
         setState(() {
           // On ne peut pas utiliser les IDs car FlutterFlow utilise des titres
-          // On va créer un Set de titres pour la comparaison
+          // On va cr�er un Set de titres pour la comparaison
           _model.likedProductTitles.clear();
           for (var fav in favorites) {
             if (fav.product.productTitle.isNotEmpty) {
@@ -137,17 +133,17 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             }
           }
         });
-        AppLogger.debug('✅ ${_model.likedProductTitles.length} favoris chargés depuis Firebase', 'Debug');
+        AppLogger.debug('? ${_model.likedProductTitles.length} favoris charg�s depuis Firebase', 'Debug');
       }
     } catch (e) {
-      AppLogger.debug('❌ Erreur chargement favoris Firebase: $e', 'Debug');
+      AppLogger.debug('? Erreur chargement favoris Firebase: $e', 'Debug');
     }
   }
 
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent * 0.8) {
-      // L'utilisateur est à 80% du scroll, charger plus de produits
+      // L'utilisateur est � 80% du scroll, charger plus de produits
       if (!_model.isLoadingMore && _model.hasMore) {
         _loadMoreProducts();
       }
@@ -160,35 +156,35 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       final prefs = await SharedPreferences.getInstance();
       QuerySnapshot? snapshot;
 
-      // Tenter de charger les produits avec tri par popularité
+      // Tenter de charger les produits avec tri par popularit�
       try {
         Query query;
 
-        // Si catégorie spécifique, filtrer
+        // Si cat�gorie sp�cifique, filtrer
         if (_model.activeCategory != 'Pour toi') {
           final categoryLower = _model.activeCategory.toLowerCase();
-          // ATTENTION: Cette requête nécessite un index composite dans Firestore
-          // Si l'index n'existe pas, on va fallback sur une requête sans orderBy
+          // ATTENTION: Cette requ�te n�cessite un index composite dans Firestore
+          // Si l'index n'existe pas, on va fallback sur une requ�te sans orderBy
           query = FirebaseFirestore.instance
               .collection('gifts')
               .where('active', isEqualTo: true)
               .where('categories', arrayContains: categoryLower)
               .orderBy('popularity', descending: true)
-              .limit(100); // Augmenté de 50 à 100 pour plus de contenu
+              .limit(100); // Augment� de 50 � 100 pour plus de contenu
         } else {
           query = FirebaseFirestore.instance
               .collection('gifts')
               .where('active', isEqualTo: true)
               .orderBy('popularity', descending: true)
-              .limit(100); // Augmenté de 50 à 100 pour plus de contenu
+              .limit(100); // Augment� de 50 � 100 pour plus de contenu
         }
 
         snapshot = await query.get();
       } catch (firestoreError) {
-        AppLogger.debug('⚠️ Erreur requête avec orderBy (index manquant?): $firestoreError', 'Debug');
-        AppLogger.debug('📦 Fallback: chargement sans tri par popularité', 'Debug');
+        AppLogger.debug('?? Erreur requ�te avec orderBy (index manquant?): $firestoreError', 'Debug');
+        AppLogger.debug('?? Fallback: chargement sans tri par popularit�', 'Debug');
 
-        // Fallback: requête sans orderBy (ne nécessite pas d'index composite)
+        // Fallback: requ�te sans orderBy (ne n�cessite pas d'index composite)
         Query fallbackQuery;
         if (_model.activeCategory != 'Pour toi') {
           final categoryLower = _model.activeCategory.toLowerCase();
@@ -196,12 +192,12 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
               .collection('gifts')
               .where('active', isEqualTo: true)
               .where('categories', arrayContains: categoryLower)
-              .limit(100); // Augmenté de 50 à 100 pour plus de contenu
+              .limit(100); // Augment� de 50 � 100 pour plus de contenu
         } else {
           fallbackQuery = FirebaseFirestore.instance
               .collection('gifts')
               .where('active', isEqualTo: true)
-              .limit(100); // Augmenté de 50 à 100 pour plus de contenu
+              .limit(100); // Augment� de 50 � 100 pour plus de contenu
         }
 
         snapshot = await fallbackQuery.get();
@@ -234,9 +230,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         });
       }
 
-      AppLogger.debug('✅ ${products.length} produits populaires chargés (mode anonyme)', 'Debug');
+      AppLogger.debug('? ${products.length} produits populaires charg�s (mode anonyme)', 'Debug');
     } catch (e, stackTrace) {
-      AppLogger.debug('❌ Erreur chargement produits populaires: $e', 'Debug');
+      AppLogger.debug('? Erreur chargement produits populaires: $e', 'Debug');
       AppLogger.debug('Stack trace: $stackTrace', 'Debug');
 
       if (mounted) {
@@ -260,7 +256,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
   /// Charge les produits initiaux (12 premiers)
   Future<void> _loadProducts() async {
-    // Réinitialiser la pagination
+    // R�initialiser la pagination
     _model.resetPagination();
 
     if (mounted) {
@@ -273,18 +269,18 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       // Charger les tags utilisateur depuis Firebase
       final userProfileTags = await FirebaseDataService.loadUserProfileTags();
 
-      AppLogger.debug('🏷️ User profile tags: $userProfileTags', 'Debug');
+      AppLogger.debug('??? User profile tags: $userProfileTags', 'Debug');
 
-      // Extraire et stocker le prénom
+      // Extraire et stocker le pr�nom
       final firstName = userProfileTags?['firstName'] as String? ?? '';
       _model.setFirstName(firstName);
 
-      // ✅ TOUJOURS utiliser les tags, même vides (ProductMatchingService gère ça)
+      // ? TOUJOURS utiliser les tags, m�me vides (ProductMatchingService g�re �a)
       final tagsToUse = userProfileTags ?? {};
 
-      AppLogger.debug('📋 Tags utilisés pour matching: $tagsToUse', 'Debug');
+      AppLogger.debug('?? Tags utilis�s pour matching: $tagsToUse', 'Debug');
 
-      // Charger les sections thématiques (seulement pour "Pour toi")
+      // Charger les sections th�matiques (seulement pour "Pour toi")
       if (_model.activeCategory == 'Pour toi' && userProfileTags != null) {
         try {
           final sections = await ProductMatchingService.getHomeSections(
@@ -296,7 +292,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             });
           }
         } catch (e) {
-          AppLogger.debug('❌ Erreur chargement sections: $e', 'Debug');
+          AppLogger.debug('? Erreur chargement sections: $e', 'Debug');
         }
       } else {
         // Clear sections si on n'est pas dans "Pour toi"
@@ -307,19 +303,19 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         }
       }
 
-      // Charger la liste des IDs de produits déjà vus depuis le cache
-      final prefs = await SharedPreferences.getInstance();
+      // Charger la liste des IDs de produits d�j� vus depuis le cache
+      // R�utilisation de prefs d�clar� plus haut
       final seenProductIds = prefs.getStringList('seen_home_product_ids_${_model.activeCategory}')?.map((s) => int.tryParse(s) ?? 0).toList() ?? [];
-      print('📋 ${seenProductIds.length} produits déjà vus dans la catégorie ${_model.activeCategory}');
+      AppLogger.debug('?? ${seenProductIds.length} produits d�j� vus dans la cat�gorie ${_model.activeCategory}', 'Debug');
 
-      // 🎯 Générer les produits via ProductMatchingService (Firebase-first)
-      AppLogger.debug('🔄 Appel ProductMatchingService avec ${tagsToUse.length} tags...', 'Debug');
+      // ?? G�n�rer les produits via ProductMatchingService (Firebase-first)
+      AppLogger.debug('?? Appel ProductMatchingService avec ${tagsToUse.length} tags...', 'Debug');
 
-      // Déterminer le mode de filtrage selon la catégorie
-      // "Pour toi" = DISCOVERY (souple, personnalisé mais pas restrictif)
-      // Autres catégories = HOME (plus strict car filtre actif)
+      // D�terminer le mode de filtrage selon la cat�gorie
+      // "Pour toi" = DISCOVERY (souple, personnalis� mais pas restrictif)
+      // Autres cat�gories = HOME (plus strict car filtre actif)
       final filterMode = _model.activeCategory == 'Pour toi' ? 'discovery' : 'home';
-      AppLogger.debug('🎯 Mode de filtrage: $filterMode pour catégorie "${_model.activeCategory}"', 'Debug');
+      AppLogger.debug('?? Mode de filtrage: $filterMode pour cat�gorie "${_model.activeCategory}"', 'Debug');
 
       final rawProducts = await ProductMatchingService.getPersonalizedProducts(
         userTags: tagsToUse,
@@ -329,7 +325,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         filteringMode: filterMode, // DISCOVERY pour "Pour toi", HOME pour les autres
       );
 
-      AppLogger.debug('✅ ProductMatchingService a retourné ${rawProducts.length} produits', 'Debug');
+      AppLogger.debug('? ProductMatchingService a retourn� ${rawProducts.length} produits', 'Debug');
 
       // Convertir au format attendu et ajouter URLs intelligentes
       final products = rawProducts.map((product) {
@@ -342,14 +338,14 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           'url': ProductUrlService.generateProductUrl(product),
           'source': product['source'] ?? 'Amazon',
           'categories': product['categories'] ?? [],
-          // FIX CRASH: matchScore peut être int ou double
+          // FIX CRASH: matchScore peut �tre int ou double
           'match': (product['_matchScore'] is int
               ? product['_matchScore'] as int
               : (product['_matchScore'] is double ? (product['_matchScore'] as double).toInt() : 0)).clamp(0, 100),
         };
       }).toList();
 
-      AppLogger.debug('📦 ${products.length} produits convertis pour affichage', 'Debug');
+      AppLogger.debug('?? ${products.length} produits convertis pour affichage', 'Debug');
 
       // Sauvegarder les nouveaux IDs dans le cache
       final newSeenIds = <String>[...seenProductIds.map((id) => id.toString())];
@@ -359,12 +355,12 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           newSeenIds.add(productId);
         }
       }
-      // Limiter à 300 IDs max pour ne pas surcharger
+      // Limiter � 300 IDs max pour ne pas surcharger
       if (newSeenIds.length > 300) {
         newSeenIds.removeRange(0, newSeenIds.length - 300);
       }
       await prefs.setStringList('seen_home_product_ids_${_model.activeCategory}', newSeenIds);
-      print('💾 ${newSeenIds.length} produits dans le cache (${products.length} nouveaux ajoutés)');
+      AppLogger.debug('?? ${newSeenIds.length} produits dans le cache (${products.length} nouveaux ajout�s)', 'Debug');
 
       if (mounted) {
         setState(() {
@@ -375,21 +371,21 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         });
       }
     } catch (e) {
-      AppLogger.debug('❌ Erreur chargement produits: $e', 'Debug');
+      AppLogger.debug('? Erreur chargement produits: $e', 'Debug');
 
-      // Parser l'erreur pour extraire des détails utiles
+      // Parser l'erreur pour extraire des d�tails utiles
       String errorMessage = 'Erreur de chargement';
       String errorDetails = e.toString();
 
       // Analyser le type d'erreur
       if (errorDetails.contains('SocketException') || errorDetails.contains('Network')) {
-        errorMessage = '📡 Pas de connexion';
-        errorDetails = 'Vérifie ta connexion internet et tire pour rafraîchir.';
+        errorMessage = '?? Pas de connexion';
+        errorDetails = 'V�rifie ta connexion internet et tire pour rafra�chir.';
       } else if (errorDetails.contains('firebase') || errorDetails.contains('Firestore')) {
-        errorMessage = '🔥 Erreur Firebase';
-        errorDetails = 'Impossible de charger les produits depuis la base de données. Réessaye plus tard.';
+        errorMessage = '?? Erreur Firebase';
+        errorDetails = 'Impossible de charger les produits depuis la base de donn�es. R�essaye plus tard.';
       } else {
-        errorMessage = '⚠️ Erreur de chargement';
+        errorMessage = '?? Erreur de chargement';
         errorDetails = 'Une erreur est survenue lors du chargement des produits.';
       }
 
@@ -420,13 +416,13 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       final prefs = await SharedPreferences.getInstance();
       final seenProductIds = prefs.getStringList('seen_home_product_ids_${_model.activeCategory}')?.map((s) => int.tryParse(s) ?? 0).toList() ?? [];
 
-      // 🎯 Générer plus de produits via ProductMatchingService (Firebase-first)
+      // ?? G�n�rer plus de produits via ProductMatchingService (Firebase-first)
       final rawProducts = await ProductMatchingService.getPersonalizedProducts(
         userTags: userProfileTags ?? {},
-        count: HomePinterestModel.infiniteScrollChunk,
+        count: HomePinterestModel.productsPerPage,
         category: _model.activeCategory != 'Pour toi' ? _model.activeCategory : null,
         excludeProductIds: seenProductIds,
-        filteringMode: "home",
+        filteringMode: "home", // Mode HOME: Strict sur sexe (bas� sur soi-m�me)
       );
 
       // Convertir au format attendu et ajouter URLs intelligentes
@@ -440,14 +436,14 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           'url': ProductUrlService.generateProductUrl(product),
           'source': product['source'] ?? 'Amazon',
           'categories': product['categories'] ?? [],
-          // FIX CRASH: matchScore peut être int ou double
+          // FIX CRASH: matchScore peut �tre int ou double
           'match': (product['_matchScore'] is int
               ? product['_matchScore'] as int
               : (product['_matchScore'] is double ? (product['_matchScore'] as double).toInt() : 0)).clamp(0, 100),
         };
       }).toList();
 
-      // Mettre à jour le cache
+      // Mettre � jour le cache
       final newSeenIds = <String>[...seenProductIds.map((id) => id.toString())];
       for (var product in products) {
         final productId = product['id']?.toString() ?? '';
@@ -468,9 +464,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         });
       }
 
-      AppLogger.debug('✅ Chargé ${products.length} produits supplémentaires (page ${_model.currentPage})', 'Debug');
+      AppLogger.debug('? Charg� ${products.length} produits suppl�mentaires (page ${_model.currentPage})', 'Debug');
     } catch (e) {
-      AppLogger.debug('❌ Erreur chargement plus de produits: $e', 'Debug');
+      AppLogger.debug('? Erreur chargement plus de produits: $e', 'Debug');
       if (mounted) {
         setState(() {
           _model.setLoadingMore(false);
@@ -480,14 +476,14 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
   }
 
   /// Toggle favorite avec sauvegarde Firebase ou locale
-  /// FIX Bug 3: Amélioration de la sauvegarde des favoris avec les bonnes données
+  /// FIX Bug 3: Am�lioration de la sauvegarde des favoris avec les bonnes donn�es
   Future<void> _toggleFavorite(Map<String, dynamic> product) async {
     final productId = product['id'];
     final productTitle = product['name'] ?? product['title'] ?? '';
     final isCurrentlyLiked = _model.likedProductTitles.contains(productTitle);
     final isLoggedIn = FirebaseAuth.instance.currentUser != null;
 
-    // FIX Bug 3: Récupérer l'image depuis plusieurs clés possibles
+    // FIX Bug 3: R�cup�rer l'image depuis plusieurs cl�s possibles
     String productImage = '';
     for (final key in ['image', 'imageUrl', 'photo', 'productPhoto', 'product_photo']) {
       if (product[key] != null && product[key].toString().isNotEmpty) {
@@ -496,15 +492,15 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       }
     }
 
-    AppLogger.debug('💗 Toggle favori AVANT: isLiked=$isCurrentlyLiked, ID=$productId, Titre=$productTitle', 'Debug');
-    AppLogger.debug('💗 Image trouvée: $productImage', 'Debug');
-    AppLogger.debug('💗 likedProductTitles AVANT: ${_model.likedProductTitles}', 'Debug');
-    AppLogger.debug('💗 UID: ${FirebaseAuth.instance.currentUser?.uid}', 'Debug');
+    AppLogger.debug('?? Toggle favori AVANT: isLiked=$isCurrentlyLiked, ID=$productId, Titre=$productTitle', 'Debug');
+    AppLogger.debug('?? Image trouv�e: $productImage', 'Debug');
+    AppLogger.debug('?? likedProductTitles AVANT: ${_model.likedProductTitles}', 'Debug');
+    AppLogger.debug('?? UID: ${FirebaseAuth.instance.currentUser?.uid}', 'Debug');
 
     // Haptic feedback
     HapticFeedback.mediumImpact();
 
-    // FIX Bug 3: Convertir productId en int si nécessaire
+    // FIX Bug 3: Convertir productId en int si n�cessaire
     int productIdInt = 0;
     if (productId is int) {
       productIdInt = productId;
@@ -514,15 +510,15 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       productIdInt = productTitle.hashCode; // Fallback sur le hash du titre
     }
 
-    // Toggle l'état local immédiatement pour l'UI
+    // Toggle l'�tat local imm�diatement pour l'UI
     if (mounted) {
       setState(() {
         _model.toggleLike(productIdInt, productTitle);
-        AppLogger.debug('💗 likedProductTitles APRÈS toggle: ${_model.likedProductTitles}', 'Debug');
+        AppLogger.debug('?? likedProductTitles APR�S toggle: ${_model.likedProductTitles}', 'Debug');
       });
     }
 
-    // Sauvegarder toujours en local (pour persistance même sans connexion)
+    // Sauvegarder toujours en local (pour persistance m�me sans connexion)
     try {
       final prefs = await SharedPreferences.getInstance();
       final localFavorites = prefs.getStringList('local_favorite_titles') ?? [];
@@ -534,20 +530,20 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         }
       }
       await prefs.setStringList('local_favorite_titles', localFavorites);
-      AppLogger.debug('💾 Favoris locaux mis à jour: ${localFavorites.length} favoris', 'Debug');
+      AppLogger.debug('?? Favoris locaux mis � jour: ${localFavorites.length} favoris', 'Debug');
     } catch (e) {
-      AppLogger.debug('❌ Erreur sauvegarde favoris locaux: $e', 'Debug');
+      AppLogger.debug('? Erreur sauvegarde favoris locaux: $e', 'Debug');
     }
 
-    // Si non connecté, afficher un message suggérant la connexion
+    // Si non connect�, afficher un message sugg�rant la connexion
     if (!isLoggedIn) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               isCurrentlyLiked
-                ? '💔 Retiré des favoris (connectez-vous pour synchroniser)'
-                : '❤️ Ajouté aux favoris (connectez-vous pour synchroniser)',
+                ? '?? Retir� des favoris (connectez-vous pour synchroniser)'
+                : '?? Ajout� aux favoris (connectez-vous pour synchroniser)',
               style: GoogleFonts.poppins(),
             ),
             backgroundColor: isCurrentlyLiked ? Colors.grey[600] : const Color(0xFF10B981),
@@ -565,7 +561,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       return; // Ne pas tenter de sauvegarder sur Firebase
     }
 
-    // Sauvegarder sur Firebase si connecté
+    // Sauvegarder sur Firebase si connect�
     try {
       if (isCurrentlyLiked) {
         // Retirer des favoris Firebase
@@ -578,21 +574,21 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         for (var fav in favorites) {
           if (!fav.hasPersonId() || fav.personId == null || fav.personId!.isEmpty) {
             await fav.reference.delete();
-            AppLogger.debug('✅ Favori supprimé de Firebase: ${fav.reference.id}', 'Debug');
+            AppLogger.debug('? Favori supprim� de Firebase: ${fav.reference.id}', 'Debug');
           }
         }
 
-        AppLogger.debug('✅ Retiré des favoris Firebase: ${product['name']}', 'Debug');
+        AppLogger.debug('? Retir� des favoris Firebase: ${product['name']}', 'Debug');
       } else {
-        // FIX Bug 3: Ajouter aux favoris Firebase avec les bonnes données
+        // FIX Bug 3: Ajouter aux favoris Firebase avec les bonnes donn�es
         // S'assurer que l'URL est correcte
         final productUrl = product['url'] ??
             ProductUrlService.generateProductUrl(product);
 
-        // Récupérer la marque/source
+        // R�cup�rer la marque/source
         final brandOrSource = product['brand'] ?? product['source'] ?? 'Amazon';
 
-        // Créer le favori avec toutes les données correctes
+        // Cr�er le favori avec toutes les donn�es correctes
         final docRef = await FavouritesRecord.collection.add(
           createFavouritesRecordData(
             uid: currentUserReference,
@@ -601,9 +597,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             personId: null, // Favoris "en vrac" sans personne
             product: ProductsStruct(
               productTitle: productTitle,
-              productPrice: '${product['price'] ?? 0}€',
+              productPrice: '${product['price'] ?? 0}�',
               productUrl: productUrl,
-              productPhoto: productImage, // FIX: Utiliser productImage trouvé
+              productPhoto: productImage, // FIX: Utiliser productImage trouv�
               productStarRating: '',
               productOriginalPrice: '',
               productNumRatings: 0,
@@ -612,15 +608,15 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           ),
         );
 
-        AppLogger.debug('✅ Ajouté aux favoris Firebase: $productTitle (ID: ${docRef.id})', 'Debug');
-        AppLogger.debug('✅ Image sauvegardée: $productImage', 'Debug');
+        AppLogger.debug('? Ajout� aux favoris Firebase: $productTitle (ID: ${docRef.id})', 'Debug');
+        AppLogger.debug('? Image sauvegard�e: $productImage', 'Debug');
 
         // Afficher une confirmation
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                '❤️ Ajouté aux favoris !',
+                '?? Ajout� aux favoris !',
                 style: GoogleFonts.poppins(),
               ),
               backgroundColor: const Color(0xFF10B981),
@@ -630,14 +626,14 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         }
       }
     } catch (e, stackTrace) {
-      AppLogger.debug('❌ Erreur toggle favori Firebase: $e', 'Debug');
+      AppLogger.debug('? Erreur toggle favori Firebase: $e', 'Debug');
       AppLogger.debug('Stack trace: $stackTrace', 'Debug');
-      // Ne PAS rollback l'état local - le favori reste localement
+      // Ne PAS rollback l'�tat local - le favori reste localement
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '⚠️ Favori sauvegardé localement (erreur sync Firebase)',
+              '?? Favori sauvegard� localement (erreur sync Firebase)',
               style: GoogleFonts.poppins(),
             ),
             backgroundColor: Colors.orange[700],
@@ -648,38 +644,38 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     }
   }
 
-  /// Retourne un emoji + texte court pour la catégorie
+  /// Retourne un emoji + texte court pour la cat�gorie
   String _getCategoryEmoji(String category) {
     final categoryLower = category.toLowerCase();
 
     if (categoryLower.contains('tech') || categoryLower.contains('technologie')) {
-      return '📱 Tech';
-    } else if (categoryLower.contains('mode') || categoryLower.contains('fashion') || categoryLower.contains('vêtement')) {
-      return '👗 Mode';
-    } else if (categoryLower.contains('maison') || categoryLower.contains('home') || categoryLower.contains('déco')) {
-      return '🏠 Maison';
-    } else if (categoryLower.contains('beauté') || categoryLower.contains('beauty') || categoryLower.contains('cosmétique')) {
-      return '💄 Beauté';
+      return '?? Tech';
+    } else if (categoryLower.contains('mode') || categoryLower.contains('fashion') || categoryLower.contains('v�tement')) {
+      return '?? Mode';
+    } else if (categoryLower.contains('maison') || categoryLower.contains('home') || categoryLower.contains('d�co')) {
+      return '?? Maison';
+    } else if (categoryLower.contains('beaut�') || categoryLower.contains('beauty') || categoryLower.contains('cosm�tique')) {
+      return '?? Beaut�';
     } else if (categoryLower.contains('sport') || categoryLower.contains('fitness')) {
-      return '⚽ Sport';
+      return '? Sport';
     } else if (categoryLower.contains('food') || categoryLower.contains('gastronomie') || categoryLower.contains('cuisine')) {
-      return '🍷 Food';
-    } else if (categoryLower.contains('bien-être') || categoryLower.contains('wellness') || categoryLower.contains('spa')) {
-      return '🧘 Bien-être';
-    } else if (categoryLower.contains('art') || categoryLower.contains('créatif')) {
-      return '🎨 Art';
+      return '?? Food';
+    } else if (categoryLower.contains('bien-�tre') || categoryLower.contains('wellness') || categoryLower.contains('spa')) {
+      return '?? Bien-�tre';
+    } else if (categoryLower.contains('art') || categoryLower.contains('cr�atif')) {
+      return '?? Art';
     } else if (categoryLower.contains('gaming') || categoryLower.contains('jeux')) {
-      return '🎮 Gaming';
+      return '?? Gaming';
     } else if (categoryLower.contains('lecture') || categoryLower.contains('livre')) {
-      return '📚 Lecture';
+      return '?? Lecture';
     } else if (categoryLower.contains('musique')) {
-      return '🎵 Musique';
+      return '?? Musique';
     } else if (categoryLower.contains('voyage')) {
-      return '✈️ Voyage';
+      return '?? Voyage';
     }
 
-    // Par défaut
-    return '✨ $category';
+    // Par d�faut
+    return '? $category';
   }
 
   @override
@@ -694,7 +690,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: LiquidGlassTokens.pageDark,
+      backgroundColor: const Color(0xFFF9FAFB),
       body: RefreshIndicator(
         color: violetColor,
         onRefresh: () async {
@@ -704,7 +700,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           // Charger les produits
           await _loadProducts();
 
-          // Montrer un SnackBar de succès
+          // Montrer un SnackBar de succ�s
           if (mounted && _model.products.isNotEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -713,7 +709,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     const Icon(Icons.check_circle, color: Colors.white, size: 20),
                     const SizedBox(width: 8),
                     Text(
-                      '✨ ${_model.products.length} cadeaux chargés !',
+                      '? ${_model.products.length} cadeaux charg�s !',
                       style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
                     ),
                   ],
@@ -770,7 +766,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             // Message de bienvenue
             SliverToBoxAdapter(child: _buildWelcomeMessage()),
 
-            // Catégories
+            // Cat�gories
             SliverToBoxAdapter(child: _buildCategories()),
 
             // Filtres par marques
@@ -789,7 +785,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             // Filtres par prix
             SliverToBoxAdapter(child: _buildPriceFilters()),
 
-            // Sections thématiques désactivées - Pinterest uniquement
+            // Sections th�matiques d�sactiv�es - Pinterest uniquement
             // if (_model.sections.isNotEmpty) ...[
             //   SliverToBoxAdapter(child: _buildSections()),
             //   const SliverToBoxAdapter(child: SizedBox(height: 16)),
@@ -821,113 +817,75 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
   }
 
   Widget _buildHeader() {
-    return Stack(
-      children: [
-        // Orbe violet ambiant
-        Positioned(
-          top: -40,
-          right: -30,
-          child: Container(
-            width: 180,
-            height: 180,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(colors: [
-                LiquidGlassTokens.secondary.withOpacity(0.30),
-                Colors.transparent,
-              ]),
-            ),
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF8A2BE2),
+            const Color(0xFFEC4899),
+          ],
         ),
-        Positioned(
-          top: -20,
-          left: -40,
-          child: Container(
-            width: 160,
-            height: 160,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(colors: [
-                LiquidGlassTokens.primary.withOpacity(0.35),
-                Colors.transparent,
-              ]),
-            ),
-          ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
         ),
-        ClipRRect(
-          borderRadius: const BorderRadius.only(
-            bottomLeft: Radius.circular(32),
-            bottomRight: Radius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8A2BE2).withOpacity(0.4),
+            blurRadius: 30,
+            spreadRadius: 2,
+            offset: const Offset(0, 10),
           ),
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(32),
-                  bottomRight: Radius.circular(32),
-                ),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    LiquidGlassTokens.primary.withOpacity(0.45),
-                    LiquidGlassTokens.secondary.withOpacity(0.30),
-                  ],
-                ),
-                border: const Border(
-                  bottom: BorderSide(color: Color(0x44FFFFFF), width: 1.0),
-                  left: BorderSide(color: Color(0x22FFFFFF), width: 0.5),
-                  right: BorderSide(color: Color(0x22FFFFFF), width: 0.5),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: LiquidGlassTokens.primary.withOpacity(0.35),
-                    blurRadius: 35,
-                    offset: const Offset(0, 12),
-                  ),
-                ],
-              ),
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 18),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      micro.ShimmerEffect(
-                        shimmerColor: Colors.white,
-                        duration: const Duration(milliseconds: 3000),
-                        child: Text(
-                          _model.firstName.isNotEmpty
-                              ? 'Salut ${_model.firstName} ! 👋'
-                              : 'Découvre 🎁',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Voici tes inspirations cadeaux',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
-                          color: Colors.white.withOpacity(0.85),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
+          BoxShadow(
+            color: const Color(0xFFEC4899).withOpacity(0.3),
+            blurRadius: 20,
+            spreadRadius: 0,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              micro.ShimmerEffect(
+                shimmerColor: Colors.white,
+                duration: const Duration(milliseconds: 3000),
+                child: Text(
+                  _model.isAnonymousMode
+                      ? 'D�couvre ??'
+                      : (_model.firstName.isNotEmpty
+                          ? 'Salut ${_model.firstName} ! ??'
+                          : 'Accueil'),
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ),
-            ),
+              const SizedBox(height: 4),
+              Text(
+                _model.isAnonymousMode
+                    ? 'Id�es cadeaux populaires'
+                    : 'Voici tes inspirations cadeaux',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  color: Colors.white.withOpacity(0.9),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 
@@ -945,10 +903,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           Expanded(
             child: Text(
               _model.isAnonymousMode
-                  ? 'Mode découverte 🎯\nLes cadeaux les plus populaires du moment'
+                  ? 'Mode d�couverte ??\nLes cadeaux les plus populaires du moment'
                   : (_model.firstName.isNotEmpty
-                      ? 'Bienvenue ${_model.firstName} !\nVoici ta sélection personnalisée'
-                      : 'Bienvenue !\nVoici ta sélection personnalisée'),
+                      ? 'Bienvenue ${_model.firstName} !\nVoici ta s�lection personnalis�e'
+                      : 'Bienvenue !\nVoici ta s�lection personnalis�e'),
               style: GoogleFonts.poppins(
                 color: const Color(0xFF4B5563),
                 fontSize: 13,
@@ -969,7 +927,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         Padding(
           padding: const EdgeInsets.only(left: 20, bottom: 8),
           child: Text(
-            'Filtre par catégorie',
+            'Filtre par cat�gorie',
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -998,7 +956,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                   setState(() {
                     _model.activeCategory = category['name'] as String;
                   });
-                  _loadProducts(); // Recharger les produits pour la nouvelle catégorie
+                  _loadProducts(); // Recharger les produits pour la nouvelle cat�gorie
                 },
                 borderRadius: BorderRadius.circular(50),
                 child: AnimatedContainer(
@@ -1108,7 +1066,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       ),
                       decoration: BoxDecoration(
                         color: isActive
-                            ? const Color(0xFFEC4899) // Rose pour différencier
+                            ? const Color(0xFFEC4899) // Rose pour diff�rencier
                             : const Color(0xFFEC4899).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(50),
                         boxShadow: isActive
@@ -1155,7 +1113,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 24),
-            // Titre de la section avec flèche
+            // Titre de la section avec fl�che
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
@@ -1354,7 +1312,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      '${product['price']}€',
+                      '${product['price']}�',
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -1394,10 +1352,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       );
     }
 
-    // Séparer en 2 colonnes (avec filtrage par prix)
+    // S�parer en 2 colonnes (avec filtrage par prix)
     final filteredProducts = _model.getFilteredProducts();
 
-    // Afficher l'erreur si présente
+    // Afficher l'erreur si pr�sente
     if (_model.errorMessage != null) {
       return SliverToBoxAdapter(
         child: Center(
@@ -1406,7 +1364,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Icône d'erreur
+                // Ic�ne d'erreur
                 Container(
                   width: 80,
                   height: 80,
@@ -1434,7 +1392,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 ),
                 const SizedBox(height: 12),
 
-                // Détails de l'erreur
+                // D�tails de l'erreur
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
@@ -1454,7 +1412,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 ),
                 const SizedBox(height: 20),
 
-                // Bouton réessayer
+                // Bouton r�essayer
                 SizedBox(
                   width: 200,
                   child: PrimaryGradientButton(
@@ -1462,7 +1420,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       _model.clearError();
                       _loadProducts();
                     },
-                    text: 'Réessayer',
+                    text: 'R�essayer',
                     icon: Icons.refresh,
                     gradientColors: [Colors.red[600]!, Colors.red[400]!],
                     height: 50,
@@ -1475,7 +1433,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       );
     }
 
-    // Afficher un message si aucun produit (ou aucun après filtrage)
+    // Afficher un message si aucun produit (ou aucun apr�s filtrage)
     if (_model.products.isEmpty || filteredProducts.isEmpty) {
       return SliverToBoxAdapter(
         child: Center(
@@ -1484,7 +1442,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Icône avec animation
+                // Ic�ne avec animation
                 TweenAnimationBuilder<double>(
                   tween: Tween(begin: 0.0, end: 1.0),
                   duration: const Duration(milliseconds: 600),
@@ -1511,7 +1469,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 Text(
                   filteredProducts.isEmpty && _model.products.isNotEmpty
                       ? 'Oups, aucun produit !'
-                      : 'Oups, on a rien trouvé !',
+                      : 'Oups, on a rien trouv� !',
                   style: GoogleFonts.poppins(
                     color: const Color(0xFF1F2937),
                     fontSize: 22,
@@ -1522,8 +1480,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 const SizedBox(height: 12),
                 Text(
                   filteredProducts.isEmpty && _model.products.isNotEmpty
-                      ? 'Essaie de changer de filtre de prix ou de catégorie'
-                      : 'Essaie de changer de catégorie ou tire pour rafraîchir',
+                      ? 'Essaie de changer de filtre de prix ou de cat�gorie'
+                      : 'Essaie de changer de cat�gorie ou tire pour rafra�chir',
                   style: GoogleFonts.poppins(
                     color: const Color(0xFF6B7280),
                     fontSize: 15,
@@ -1532,7 +1490,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 28),
-                // Bouton de rafraîchissement avec effet tap scale
+                // Bouton de rafra�chissement avec effet tap scale
                 micro.TapScaleEffect(
                   onTap: () async {
                     await _loadProducts();
@@ -1558,7 +1516,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                         const Icon(Icons.refresh, size: 20, color: Colors.white),
                         const SizedBox(width: 8),
                         Text(
-                          'Rafraîchir',
+                          'Rafra�chir',
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -1575,13 +1533,13 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         ),
       );
     }
-    // Layout Masonry désordonné façon Pinterest
+    // Layout Masonry d�sordonn� fa�on Pinterest
     // Plus de colonnes et moins d'espacement pour un effet plus dense et inspirant
     return SliverPadding(
       padding: const EdgeInsets.fromLTRB(12, 16, 12, 0),
       sliver: SliverMasonryGrid.count(
         crossAxisCount: 2, // 2 colonnes pour garder des produits bien visibles
-        mainAxisSpacing: 8, // Réduit pour effet "dans tous les sens"
+        mainAxisSpacing: 8, // R�duit pour effet "dans tous les sens"
         crossAxisSpacing: 8,
         childCount: filteredProducts.length,
         itemBuilder: (context, index) {
@@ -1596,7 +1554,6 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 child: _buildProductCard(product, index),
               ),
             ),
-          ),
           );
         },
       ),
@@ -1606,7 +1563,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
   Widget _buildProductCard(Map<String, dynamic> product, int index) {
     final isLiked = _model.likedProductTitles.contains(product['name'] ?? '');
 
-    // AMÉLIORATION: Plus de variation dans les hauteurs pour un look plus dynamique et inspirant
+    // AM�LIORATION: Plus de variation dans les hauteurs pour un look plus dynamique et inspirant
     // Alternance forte entre petites et grandes cartes pour effet "dans tous les sens"
     final aspectRatios = [
       0.55, 0.95, 0.7, 0.85, 0.6, 0.9, 0.65, 0.8,
@@ -1628,36 +1585,25 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           borderRadius: BorderRadius.circular(12),
           splashColor: violetColor.withOpacity(0.1),
           highlightColor: violetColor.withOpacity(0.05),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: BackdropFilter(
-              filter: ui.ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(
+          child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withOpacity(0.13),
-                  Colors.white.withOpacity(0.06),
-                ],
-              ),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Colors.white.withOpacity(0.18),
-                width: 1.0,
+                color: Colors.transparent,
+                width: 2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: LiquidGlassTokens.primary.withOpacity(0.20),
+                  color: const Color(0xFF8A2BE2).withOpacity(0.08),
                   blurRadius: 20,
                   spreadRadius: -2,
                   offset: const Offset(0, 8),
                 ),
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.25),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
@@ -1668,7 +1614,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
               Stack(
                 children: [
                   AspectRatio(
-                    aspectRatio: aspectRatio, // Aspect ratio variable pour look désordonné
+                    aspectRatio: aspectRatio, // Aspect ratio variable pour look d�sordonn�
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12), // Coins moins arrondis
                       child: SizedBox(
@@ -1683,7 +1629,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     ),
                   ),
 
-                  // Badge de match en haut à droite
+                  // Badge de match en haut � droite
                   if (product['match'] != null && product['match'] > 0)
                     Positioned(
                       top: 8,
@@ -1725,7 +1671,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       ),
                     ),
 
-                  // Badge like/favoris en haut à gauche
+                  // Badge like/favoris en haut � gauche
                   if (isLiked)
                     Positioned(
                       top: 8,
@@ -1755,10 +1701,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             ],
           ),
         ),
-        ),
       ),
-    ),
-  ).animate()
+    ).animate()
         .fadeIn(
           delay: Duration(milliseconds: 50 * index),
           duration: 400.ms,
@@ -1783,17 +1727,17 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     final wasNew = _model.uniqueProductsViewed.add(productId);
 
     if (wasNew) {
-      AppLogger.debug('📊 Mode anonyme: ${_model.uniqueProductsViewed.length} produits uniques vus', 'Debug');
+      AppLogger.debug('?? Mode anonyme: ${_model.uniqueProductsViewed.length} produits uniques vus', 'Debug');
 
-      // Trigger après 10 produits UNIQUES vus
+      // Trigger apr�s 10 produits UNIQUES vus
       if (_model.uniqueProductsViewed.length >= 10) {
         _model.hasShownConnectionPrompt = true;
 
         // Afficher le dialog de connexion
         await showConnectionRequiredDialog(
           context,
-          title: 'Tu adores découvrir de nouveaux produits !',
-          message: 'Crée ton compte pour recevoir des suggestions ultra-personnalisées et ne plus jamais perdre tes favoris',
+          title: 'Tu adores d�couvrir de nouveaux produits !',
+          message: 'Cr�e ton compte pour recevoir des suggestions ultra-personnalis�es et ne plus jamais perdre tes favoris',
         );
       }
     }
@@ -1805,7 +1749,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.75),
+      barrierColor: Colors.black.withOpacity(0.7),
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
           final isLiked = _model.likedProductTitles.contains(product['name'] ?? '');
@@ -1813,37 +1757,16 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           return Dialog(
             backgroundColor: Colors.transparent,
             insetPadding: const EdgeInsets.all(16),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(28),
-              child: BackdropFilter(
-                filter: ui.ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: Container(
+            child: Container(
               constraints: const BoxConstraints(maxWidth: 500),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    const Color(0xFF1A0035).withOpacity(0.92),
-                    const Color(0xFF0D0020).withOpacity(0.95),
-                  ],
-                ),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.18),
-                  width: 1.0,
-                ),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: LiquidGlassTokens.primary.withOpacity(0.35),
+                    color: Colors.black.withOpacity(0.3),
                     blurRadius: 60,
                     offset: const Offset(0, 20),
-                    spreadRadius: -8,
-                  ),
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.50),
-                    blurRadius: 30,
-                    offset: const Offset(0, 10),
                   ),
                 ],
               ),
@@ -1929,7 +1852,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                           ),
                         ),
                       ),
-                      // Bouton coeur - Appel simplifié de _toggleFavorite
+                      // Bouton coeur - Appel simplifi� de _toggleFavorite
                       Positioned(
                         top: 12,
                         right: 12,
@@ -1937,14 +1860,14 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                           color: Colors.transparent,
                           child: InkWell(
                             onTap: () async {
-                              AppLogger.debug('💗 Dialog: Clic sur cœur pour "${product['name']}"', 'Debug');
+                              AppLogger.debug('?? Dialog: Clic sur c�ur pour "${product['name']}"', 'Debug');
 
-                              // Appeler la fonction centralisée
+                              // Appeler la fonction centralis�e
                               await _toggleFavorite(product);
 
-                              // Rafraîchir l'UI du dialog
+                              // Rafra�chir l'UI du dialog
                               setDialogState(() {
-                                AppLogger.debug('🔄 Dialog: Rafraîchissement UI après toggle', 'Debug');
+                                AppLogger.debug('?? Dialog: Rafra�chissement UI apr�s toggle', 'Debug');
                               });
                             },
                             borderRadius: BorderRadius.circular(50),
@@ -1976,7 +1899,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     ],
                   ),
 
-              // Détails du produit
+              // D�tails du produit
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -1988,16 +1911,15 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: LiquidGlassTokens.secondary.withOpacity(0.20),
+                        color: violetColor.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: LiquidGlassTokens.secondary.withOpacity(0.35)),
                       ),
                       child: Text(
                         product['brand'] as String? ?? product['source'] as String? ?? 'Amazon',
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: LiquidGlassTokens.secondary,
+                          color: violetColor,
                         ),
                       ),
                     ),
@@ -2007,16 +1929,16 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       style: GoogleFonts.poppins(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: const Color(0xFF111827),
                       ),
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '${product['price'] ?? 0}€',
+                      '${product['price'] ?? 0}�',
                       style: GoogleFonts.poppins(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: LiquidGlassTokens.secondary,
+                        color: violetColor,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -2025,7 +1947,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                         product['description'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 14,
-                          color: Colors.white.withOpacity(0.65),
+                          color: const Color(0xFF6B7280),
                           height: 1.6,
                         ),
                         maxLines: 3,
@@ -2033,10 +1955,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       )
                     else
                       Text(
-                        'Cadeau parfait par ${product['brand'] as String? ?? 'une marque de qualité'}',
+                        'Cadeau parfait par ${product['brand'] as String? ?? 'une marque de qualit�'}',
                         style: GoogleFonts.poppins(
                           fontSize: 14,
-                          color: Colors.white.withOpacity(0.65),
+                          color: const Color(0xFF6B7280),
                           height: 1.6,
                         ),
                       ),
@@ -2046,13 +1968,14 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () async {
+                          // G�n�rer une URL de produit intelligente (=95% pr�cision)
                           final url = ProductUrlService.generateProductUrl(product);
                           if (url.isNotEmpty) {
                             try {
                               final uri = Uri.parse(url);
                               await launchUrl(uri, mode: LaunchMode.externalApplication);
                             } catch (e) {
-                              AppLogger.debug('❌ Erreur ouverture URL: $e', 'Debug');
+                              AppLogger.debug('? Erreur ouverture URL: $e', 'Debug');
                             }
                           }
                         },
@@ -2077,43 +2000,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                               ),
                             ),
                             const SizedBox(width: 10),
-                            const Icon(Icons.open_in_new, color: Colors.white, size: 18),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    // Bouton Trouver en magasin
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          StoreFinderBottomSheet.show(
-                            context,
-                            productName: product['name'] as String? ?? 'Produit',
-                            brand: product['brand'] as String? ?? product['source'] as String? ?? '',
-                          );
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          side: const BorderSide(color: Colors.white54, width: 1.5),
-                          padding: const EdgeInsets.symmetric(vertical: 13),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.location_on, size: 18),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Trouver en magasin',
-                              style: GoogleFonts.poppins(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            const Icon(
+                              Icons.open_in_new,
+                              color: Colors.white,
+                              size: 18,
                             ),
                           ],
                         ),
@@ -2125,21 +2015,24 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             ],
           ),
         ),
-          ),
           );
         },
       ),
     );
   }
 
-  /// Affiche le modal de sélection de wishlist
+  /// Affiche le modal de s�lection de wishlist
   Future<void> _showWishlistModal(Map<String, dynamic> product) async {
-    if (!loggedIn) {
+    // V�rifier si l'utilisateur est connect�
+    final prefs = await SharedPreferences.getInstance();
+    final isAnonymous = prefs.getBool('anonymous_mode') ?? false;
+
+    if (isAnonymous || !loggedIn) {
       if (mounted) {
         await showConnectionRequiredDialog(
           context,
           title: 'Connexion requise',
-          message: 'Crée ton compte pour organiser tes cadeaux en wishlists',
+          message: 'Cr�e ton compte pour organiser tes cadeaux en wishlists',
         );
       }
       return;
@@ -2189,7 +2082,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Ajouter à une wishlist',
+                            'Ajouter � une wishlist',
                             style: GoogleFonts.poppins(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -2232,7 +2125,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Crée ta première wishlist ci-dessous',
+                        'Cr�e ta premi�re wishlist ci-dessous',
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: Colors.grey[500],
@@ -2296,7 +2189,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
               const Divider(height: 1),
 
-              // Bouton créer nouvelle wishlist
+              // Bouton cr�er nouvelle wishlist
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: SizedBox(
@@ -2308,7 +2201,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     },
                     icon: const Icon(Icons.add, color: Colors.white),
                     label: Text(
-                      'Créer une nouvelle wishlist',
+                      'Cr�er une nouvelle wishlist',
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -2333,7 +2226,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     );
   }
 
-  /// Crée une nouvelle wishlist et y ajoute le produit
+  /// Cr�e une nouvelle wishlist et y ajoute le produit
   Future<void> _createNewWishlist(Map<String, dynamic> product) async {
     final nameController = TextEditingController();
     final descriptionController = TextEditingController();
@@ -2373,7 +2266,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
               controller: descriptionController,
               decoration: InputDecoration(
                 labelText: 'Description (optionnel)',
-                hintText: 'Ex: Idées cadeaux pour ses 50 ans',
+                hintText: 'Ex: Id�es cadeaux pour ses 50 ans',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -2404,7 +2297,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
               ),
             ),
             child: Text(
-              'Créer',
+              'Cr�er',
               style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -2427,10 +2320,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     }
   }
 
-  /// Ajoute un produit à une wishlist
+  /// Ajoute un produit � une wishlist
   Future<void> _addToWishlist(Map<String, dynamic> product, String wishlistId) async {
     try {
-      // Créer d'abord le favori avec le produit
+      // Cr�er d'abord le favori avec le produit
       final productTitle = product['name'] as String? ?? '';
       final productImage = product['image'] as String? ?? '';
       final productUrl = product['url'] ?? ProductUrlService.generateProductUrl(product);
@@ -2445,7 +2338,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           personId: null,
           product: ProductsStruct(
             productTitle: productTitle,
-            productPrice: '${product['price'] ?? 0}€',
+            productPrice: '${product['price'] ?? 0}�',
             productUrl: productUrl,
             productPhoto: productImage,
             productStarRating: '',
@@ -2456,7 +2349,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         ),
       );
 
-      // Ajouter à la wishlist
+      // Ajouter � la wishlist
       await FirebaseDataService.addToWishlist(wishlistId, docRef.id);
 
       if (mounted) {
@@ -2468,7 +2361,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Ajouté à la wishlist !',
+                    'Ajout� � la wishlist !',
                     style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
@@ -2487,12 +2380,12 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         );
       }
     } catch (e) {
-      AppLogger.debug('❌ Erreur ajout wishlist: $e', 'Debug');
+      AppLogger.debug('? Erreur ajout wishlist: $e', 'Debug');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Erreur lors de l\'ajout à la wishlist',
+              'Erreur lors de l\'ajout � la wishlist',
               style: GoogleFonts.poppins(),
             ),
             backgroundColor: Colors.red[700],

@@ -1,10 +1,8 @@
-﻿import '/utils/app_logger.dart';
-import 'dart:ui';
+import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '/components/liquid_glass.dart';
 import '/services/product_url_service.dart';
 import 'gift_results_model.dart';
 export 'gift_results_model.dart';
@@ -50,7 +48,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: LiquidGlassTokens.pageDark,
+      backgroundColor: const Color(0xFFF9FAFB),
       body: _model.isLoading
           ? Center(
               child: Column(
@@ -59,7 +57,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                   CircularProgressIndicator(color: violetColor),
                   const SizedBox(height: 24),
                   Text(
-                    '🤖 Génération des cadeaux...',
+                    '?? G�n�ration des cadeaux...',
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       color: violetColor,
@@ -71,16 +69,16 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
             )
           : CustomScrollView(
               slivers: [
-                // Header violet arrondi avec résumé
+                // Header violet arrondi avec r�sum�
                 SliverToBoxAdapter(child: _buildHeader()),
 
-                // Message IA personnalisé
+                // Message IA personnalis�
                 SliverToBoxAdapter(child: _buildAIMessage()),
 
-                // Filtres de catégories
+                // Filtres de cat�gories
                 SliverToBoxAdapter(child: _buildFilters()),
 
-                // Liste des résultats
+                // Liste des r�sultats
                 _buildResultsList(),
 
                 // Boutons Enregistrer / Refaire (dans le scroll, pas fixes)
@@ -145,7 +143,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
               // Titre
               Expanded(
                 child: Text(
-                  'Résultats IA',
+                  'R�sultats IA',
                   style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 20,
@@ -229,7 +227,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '12 cadeaux parfaits trouvés !',
+                  '12 cadeaux parfaits trouv�s !',
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -238,7 +236,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Sélectionnés selon ses passions et ton budget',
+                  'S�lectionn�s selon ses passions et ton budget',
                   style: GoogleFonts.poppins(
                     fontSize: 13,
                     color: const Color(0xFF6B7280),
@@ -341,7 +339,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
 
   Widget _buildGiftCard(Map<String, dynamic> gift, int index) {
     final isLiked = _model.likedGifts.contains(gift['id']);
-    // FIX: Cast sécurisé pour éviter crash si type inattendu
+    // FIX: Cast s�curis� pour �viter crash si type inattendu
     final matchRaw = gift['match'];
     final matchPercent = matchRaw is int ? matchRaw : (matchRaw is double ? matchRaw.toInt() : 85);
 
@@ -354,12 +352,15 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
           borderRadius: BorderRadius.circular(24),
           child: Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft, end: Alignment.bottomRight,
-                colors: [Colors.white.withOpacity(0.14), Colors.white.withOpacity(0.06)],
-              ),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withOpacity(0.18)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: IntrinsicHeight(
               child: Row(
@@ -469,7 +470,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '${gift['price']}€',
+                                '${gift['price']}�',
                                 style: GoogleFonts.poppins(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
@@ -486,7 +487,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                               child: InkWell(
                                 onTap: () {
                                   setState(() {
-                                    // FIX: Cast sécurisé - ID peut être int, String ou autre
+                                    // FIX: Cast s�curis� - ID peut �tre int, String ou autre
                                     final idRaw = gift['id'];
                                     final giftId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0);
                                     _model.toggleLike(giftId);
@@ -554,6 +555,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                   ),
                 ),
               ),
+                ],
               ),
             ),
           ),
@@ -574,7 +576,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
 
   void _showGiftDetail(Map<String, dynamic> gift) {
     final isLiked = _model.likedGifts.contains(gift['id']);
-    // FIX: Cast sécurisé pour éviter crash
+    // FIX: Cast s�curis� pour �viter crash
     final matchRaw = gift['match'];
     final matchPercent = matchRaw is int ? matchRaw : (matchRaw is double ? matchRaw.toInt() : 85);
 
@@ -692,7 +694,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '${gift['price']}€',
+                      '${gift['price']}�',
                       style: GoogleFonts.poppins(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -746,7 +748,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                             onPressed: () {
                               if (mounted) {
                                 setState(() {
-                                  // FIX: Cast sécurisé
+                                  // FIX: Cast s�curis�
                                   final idRaw = gift['id'];
                                   final giftId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0);
                                   _model.toggleLike(giftId);
@@ -776,14 +778,14 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                           flex: 3,
                           child: ElevatedButton(
                             onPressed: () async {
-                              // Générer une URL de produit intelligente (≥95% précision)
+                              // G�n�rer une URL de produit intelligente (=95% pr�cision)
                               final url = ProductUrlService.generateProductUrl(gift);
                               if (url.isNotEmpty) {
                                 final uri = Uri.parse(url);
                                 if (await canLaunchUrl(uri)) {
                                   await launchUrl(uri, mode: LaunchMode.externalApplication);
                                 } else {
-                                  AppLogger.debug('❌ Cannot launch URL: $url', 'Debug');
+                                  AppLogger.debug('? Cannot launch URL: $url', 'Debug');
                                 }
                               }
                             },
@@ -836,7 +838,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
           Expanded(
             child: ElevatedButton.icon(
               onPressed: () {
-                // Retour à l'onboarding (skip questions sur soi)
+                // Retour � l'onboarding (skip questions sur soi)
                 context.go('/onboarding-advanced?skipUserQuestions=true');
               },
               icon: const Icon(Icons.refresh, size: 20),

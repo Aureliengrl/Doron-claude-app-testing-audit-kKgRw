@@ -9,7 +9,6 @@ import '/backend/backend.dart';
 import '/services/product_url_service.dart';
 import '/services/firebase_data_service.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '/components/liquid_glass.dart';
 import 'user_profile_model.dart';
 export 'user_profile_model.dart';
 
@@ -30,19 +29,33 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   final Color violetColor = const Color(0xFF8A2BE2);
   final Color pinkColor = const Color(0xFFEC4899);
 
+  bool _isAnonymous = false;
+
   @override
   void initState() {
     super.initState();
     _model = UserProfileModel();
     _tabController = TabController(length: 2, vsync: this);
 
-    // Charger les favoris apr├¿s le premier frame
+    // V+�rifier le mode anonyme
+    _checkAnonymousMode();
+
+    // Charger les favoris apr+�s le premier frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _model.loadFavourites();
+      if (mounted && !_isAnonymous) {
+        _model.loadFavourites();
+      }
     });
 
-    // ├ëcouter les changements du model
+    // +�couter les changements du model
     _model.addListener(_onModelChanged);
+  }
+
+  Future<void> _checkAnonymousMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isAnonymous = prefs.getBool('anonymous_mode') ?? false;
+    });
   }
 
   void _onModelChanged() {
@@ -61,13 +74,123 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
+    if (_isAnonymous) {
+      return _buildAnonymousView();
+    }
+
     return Scaffold(
-      backgroundColor: LiquidGlassTokens.pageDark,
+      backgroundColor: const Color(0xFFF9FAFB),
       body: CustomScrollView(
         slivers: [
+          // App Bar avec photo de profil et bouton param+�tres
           _buildAppBar(),
+
+          // Tabs (Produits lik+�s / Wishlists)
           _buildTabBar(),
+
+          // Contenu des tabs
           _buildTabContent(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnonymousView() {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF9FAFB),
+      body: Stack(
+        children: [
+          // Contenu flout+�
+          CustomScrollView(
+            slivers: [
+              _buildAppBar(),
+              _buildTabBar(),
+              _buildTabContent(),
+            ],
+          ),
+
+          // Overlay flout+�
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              color: Colors.white.withOpacity(0.3),
+            ),
+          ),
+
+          // Message connexion
+          Center(
+            child: Container(
+              margin: const EdgeInsets.all(32),
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [violetColor, pinkColor],
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.lock_outline, color: Colors.white, size: 40),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Connecte-toi',
+                    style: GoogleFonts.poppins(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF111827),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Cr+�e ton compte pour acc+�der +� ton profil, tes produits lik+�s et tes wishlists',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: const Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => context.go('/auth'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: violetColor,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        'Se connecter',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -154,11 +277,11 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                       right: 0,
                       child: GestureDetector(
                         onTap: () {
-                          // TODO: Ouvrir s├®lecteur de photo
+                          // TODO: Ouvrir s+�lecteur de photo
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                'Modifier la photo de profil - ├Ç venir',
+                                'Modifier la photo de profil - +� venir',
                                 style: GoogleFonts.poppins(),
                               ),
                               backgroundColor: violetColor,
@@ -216,11 +339,26 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         ),
       ),
       actions: [
-        // Bouton param├¿tres
+        // Bouton billet (mode d+�couverte)
         IconButton(
-          icon: const Icon(Icons.settings, color: Colors.white, size: 24),
+          icon: const Icon(
+            Icons.local_activity,
+            color: Colors.white,
+            size: 24,
+          ),
           onPressed: () {
-            context.push('/profile');
+            context.push('/gala-ticket'); // Vers la page du gala
+          },
+        ),
+        // Bouton param+�tres
+        IconButton(
+          icon: const Icon(
+            Icons.settings,
+            color: Colors.white,
+            size: 24,
+          ),
+          onPressed: () {
+            context.push('/profile'); // Vers l'ancienne page param+�tres
           },
         ),
       ],
@@ -233,9 +371,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       delegate: _SliverTabBarDelegate(
         TabBar(
           controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white.withOpacity(0.55),
-          indicatorColor: Colors.white,
+          labelColor: violetColor,
+          unselectedLabelColor: Colors.grey,
+          indicatorColor: violetColor,
           indicatorWeight: 3,
           labelStyle: GoogleFonts.poppins(
             fontSize: 16,
@@ -252,7 +390,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 children: [
                   const Icon(Icons.favorite),
                   const SizedBox(width: 8),
-                  Text('Produits lik├®s'),
+                  Text('Produits lik+�s'),
                 ],
               ),
             ),
@@ -302,24 +440,24 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             Icon(
               Icons.favorite_border,
               size: 80,
-              color: Colors.white.withOpacity(0.35),
+              color: Colors.grey[400],
             ),
             const SizedBox(height: 16),
             Text(
-              'Aucun produit lik├®',
+              'Aucun produit lik+�',
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: Colors.grey[700],
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Explore l\'accueil et like tes produits pr├®f├®r├®s !',
+              'Explore l\'accueil et like tes produits pr+�f+�r+�s !',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                color: Colors.white.withOpacity(0.60),
+                color: Colors.grey[500],
               ),
             ),
           ],
@@ -358,25 +496,17 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           }
         },
         borderRadius: BorderRadius.circular(20),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
+        child: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withOpacity(0.14),
-                Colors.white.withOpacity(0.06),
-              ],
-            ),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.18),
-              width: 1,
-            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -451,7 +581,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: const Color(0xFF1F2937),
                           height: 1.2,
                         ),
                       ),
@@ -463,7 +593,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.poppins(
                             fontSize: 12,
-                            color: Colors.white.withOpacity(0.55),
+                            color: const Color(0xFF6B7280),
                           ),
                         ),
                       const Spacer(),
@@ -506,7 +636,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 const SizedBox(height: 16),
                 Text('Aucune wishlist', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey[700])),
                 const SizedBox(height: 8),
-                Text('Cr├®e des wishlists pour organiser tes cadeaux', textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
+                Text('Cr+�e des wishlists pour organiser tes cadeaux', textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
               ],
             ),
           );
@@ -625,7 +755,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     mainAxisSpacing: 12,
                   ),
                   itemCount: products.length,
-                  itemBuilder: (context, index) => _buildWishlistProductCard(products[index]),
+                  itemBuilder: (context, index) => _buildProductCard(products[index]),
                 ),
               ),
           ],
@@ -633,61 +763,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       ),
     );
   }
-
-  Widget _buildWishlistProductCard(Map<String, dynamic> product) {
-    final title = product['title'] as String? ?? product['name'] as String? ?? 'Produit';
-    final price = product['price'] as String? ?? '';
-    final imageUrl = product['imageUrl'] as String? ?? product['image'] as String? ?? '';
-    final url = product['url'] as String? ?? product['productUrl'] as String? ?? '';
-
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () async {
-          if (url.isNotEmpty) {
-            final uri = Uri.parse(url);
-            if (await canLaunchUrl(uri)) {
-              await launchUrl(uri, mode: LaunchMode.externalApplication);
-            }
-          }
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: imageUrl.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    errorWidget: (_, __, ___) => Container(
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.image_not_supported, color: Colors.grey),
-                    ),
-                  )
-                : Container(color: Colors.grey[200], child: const Icon(Icons.card_giftcard, color: Colors.grey)),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600), maxLines: 2, overflow: TextOverflow.ellipsis),
-                  if (price.isNotEmpty)
-                    Text(price, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: violetColor)),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
-// D├®l├®gu├® pour la tab bar sticky
+// D+�l+�gu+� pour la tab bar sticky
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;
 
