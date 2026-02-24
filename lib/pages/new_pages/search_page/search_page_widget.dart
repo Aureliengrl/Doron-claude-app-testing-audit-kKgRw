@@ -894,7 +894,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF111827),
+                            color: Colors.white,
                             height: 1.3,
                             letterSpacing: -0.2,
                           ),

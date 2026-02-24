@@ -858,8 +858,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             bottomLeft: Radius.circular(32),
             bottomRight: Radius.circular(32),
           ),
-          child: dart_ui.BackdropFilter(
-            filter: dart_ui.ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: const BorderRadius.only(
@@ -1628,8 +1628,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           highlightColor: violetColor.withOpacity(0.05),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: dart_ui.BackdropFilter(
-              filter: dart_ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
               child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
@@ -1811,8 +1811,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             insetPadding: const EdgeInsets.all(16),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(28),
-              child: dart_ui.BackdropFilter(
-                filter: dart_ui.ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                 child: Container(
               constraints: const BoxConstraints(maxWidth: 500),
               decoration: BoxDecoration(
@@ -2121,9 +2121,6 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             ],
           ),
         ),
-              ), // Container dark glass
-            ), // BackdropFilter
-          ), // ClipRRect
           );
         },
       ),

@@ -354,15 +354,12 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
           borderRadius: BorderRadius.circular(24),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft, end: Alignment.bottomRight,
+                colors: [Colors.white.withOpacity(0.14), Colors.white.withOpacity(0.06)],
+              ),
               borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              border: Border.all(color: Colors.white.withOpacity(0.18)),
             ),
             child: IntrinsicHeight(
               child: Row(
@@ -558,12 +555,10 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                 ),
               ),
                 ],
+                ),
               ),
             ),
           ),
-              ), // Container glass
-            ), // BackdropFilter
-          ), // ClipRRect
         ),
       ),
     );
