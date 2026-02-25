@@ -25,6 +25,7 @@ import '/components/tutorial_overlay.dart';
 import '/components/brand_filters.dart';
 import '/components/aesthetic_buttons.dart';
 import '/components/micro_interactions.dart' as micro;
+import '/components/liquid_glass.dart';
 import 'home_pinterest_model.dart';
 import 'home_pinterest_widgets_extra.dart';
 export 'home_pinterest_model.dart';
@@ -690,8 +691,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: const Color(0xFFF9FAFB),
-      body: RefreshIndicator(
+      backgroundColor: LiquidGlassTokens.pageDark,
+      body: DarkPageBackground(
+        addOrbs: true,
+        child: RefreshIndicator(
         color: violetColor,
         onRefresh: () async {
           // Haptic feedback
@@ -811,8 +814,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             // Espacement pour la bottom nav
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
-        ),
-      ),
+        ), // CustomScrollView
+      ), // RefreshIndicator
+    ), // DarkPageBackground
     );
   }
 
@@ -927,7 +931,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         Padding(
           padding: const EdgeInsets.only(left: 20, bottom: 8),
           child: Text(
-            'Filtre par cat�gorie',
+            'Categories',
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -1029,7 +1033,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         Padding(
           padding: const EdgeInsets.only(left: 20, bottom: 8),
           child: Text(
-            'Filtre par prix',
+            'Prix',
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -1471,9 +1475,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       ? 'Oups, aucun produit !'
                       : 'Oups, on a rien trouv� !',
                   style: GoogleFonts.poppins(
-                    color: const Color(0xFF1F2937),
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+                    color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
                 ),

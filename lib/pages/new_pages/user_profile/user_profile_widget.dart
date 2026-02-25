@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
+import '/components/liquid_glass.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/services/product_url_service.dart';
@@ -79,13 +80,16 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: LiquidGlassTokens.pageDark,
       body: CustomScrollView(
         slivers: [
           // App Bar avec photo de profil et bouton param+�tres
-          _buildAppBar(),
+          _buildAppBar(),          // Gamification Stats
+          SliverToBoxAdapter(child: _buildStatsSection()),
+          // Gamification Badges
+          SliverToBoxAdapter(child: _buildBadgesSection()),
 
-          // Tabs (Produits lik+�s / Wishlists)
+          // Tabs (Produits likés / Wishlists)
           _buildTabBar(),
 
           // Contenu des tabs
@@ -97,7 +101,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
   Widget _buildAnonymousView() {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: LiquidGlassTokens.pageDark,
       body: Stack(
         children: [
           // Contenu flout+�
@@ -201,15 +205,11 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       expandedHeight: 280,
       floating: false,
       pinned: true,
-      backgroundColor: violetColor,
+      backgroundColor: LiquidGlassTokens.pageDark,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [violetColor, pinkColor],
-            ),
+          decoration: const BoxDecoration(
+            gradient: LiquidGlassTokens.darkPageGradient,
           ),
           child: SafeArea(
             child: Column(
@@ -224,13 +224,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                       height: 120,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 4,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
+                        border: Border.all(color: Colors.white.withOpacity(0.8), width: 3),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF8A2BE2).withOpacity(0.6),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
@@ -368,12 +365,12 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   Widget _buildTabBar() {
     return SliverPersistentHeader(
       pinned: true,
-      delegate: _SliverTabBarDelegate(
+      delegate: _SliverTabBarDelegate(backgroundColor: LiquidGlassTokens.pageDark.withOpacity(0.9),
         TabBar(
           controller: _tabController,
-          labelColor: violetColor,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: violetColor,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white.withOpacity(0.45),
+          indicatorColor: Colors.white,
           indicatorWeight: 3,
           labelStyle: GoogleFonts.poppins(
             fontSize: 16,
@@ -440,7 +437,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             Icon(
               Icons.favorite_border,
               size: 80,
-              color: Colors.grey[400],
+              color: Colors.white.withOpacity(0.35),
             ),
             const SizedBox(height: 16),
             Text(
@@ -448,7 +445,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[700],
+                color: Colors.white.withOpacity(0.7),
               ),
             ),
             const SizedBox(height: 8),
@@ -632,9 +629,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.bookmark_border, size: 80, color: Colors.grey[400]),
+                Icon(Icons.bookmark_border, size: 80, color: Colors.white.withOpacity(0.35)),
                 const SizedBox(height: 16),
-                Text('Aucune wishlist', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey[700])),
+                Text('Aucune wishlist', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
                 const SizedBox(height: 8),
                 Text('Cr+�e des wishlists pour organiser tes cadeaux', textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
               ],
@@ -682,7 +679,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                           ],
                         ),
                       ),
-                      Icon(Icons.chevron_right, color: Colors.grey[400]),
+                      Icon(Icons.chevron_right, color: Colors.white.withOpacity(0.35)),
                     ],
                   ),
                 ),
@@ -737,7 +734,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.card_giftcard, size: 64, color: Colors.grey[400]),
+                      Icon(Icons.card_giftcard, size: 64, color: Colors.white.withOpacity(0.35)),
                       const SizedBox(height: 16),
                       Text('Aucun produit', style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600])),
                     ],
@@ -815,6 +812,187 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     );
   }
 }
+
+  // ─── Gamification: Stats ─────────────────────────────────────────────────
+  Widget _buildStatsSection() {
+    final favCount = _model.favourites.length;
+    final wishlistCount = _model.wishlists.length;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 12),
+            child: Text(
+              'Ton activité',
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.white.withOpacity(0.5),
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          Row(
+            children: [
+              Expanded(child: _buildStatTile(
+                icon: Icons.favorite,
+                label: 'Coups de ❤️',
+                value: '$favCount',
+                color: const Color(0xFFEC4899),
+              )),
+              const SizedBox(width: 12),
+              Expanded(child: _buildStatTile(
+                icon: Icons.bookmark,
+                label: 'Wishlists',
+                value: '$wishlistCount',
+                color: const Color(0xFF8A2BE2),
+              )),
+              const SizedBox(width: 12),
+              Expanded(child: _buildStatTile(
+                icon: Icons.auto_awesome,
+                label: 'Niveau',
+                value: favCount > 20 ? 'Expert' : favCount > 5 ? 'Pro' : 'Débutant',
+                color: const Color(0xFFFBBF24),
+              )),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatTile({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: color.withOpacity(0.25),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: color, size: 22),
+              const SizedBox(height: 8),
+              Text(
+                value,
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  color: Colors.white.withOpacity(0.55),
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ─── Gamification: Badges ────────────────────────────────────────────────
+  Widget _buildBadgesSection() {
+    final favCount = _model.favourites.length;
+    final wishlistCount = _model.wishlists.length;
+
+    final badges = [
+      {'icon': '🎁', 'label': 'Explorateur', 'unlocked': true},
+      {'icon': '💝', 'label': 'Collectionneur', 'unlocked': favCount >= 5},
+      {'icon': '⭐', 'label': 'Expert', 'unlocked': favCount >= 20},
+      {'icon': '📋', 'label': 'Organisateur', 'unlocked': wishlistCount >= 1},
+      {'icon': '🎯', 'label': 'Pro', 'unlocked': favCount >= 10 && wishlistCount >= 2},
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 12),
+            child: Text(
+              'Badges',
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.white.withOpacity(0.5),
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: badges.map((badge) {
+              final unlocked = badge['unlocked'] as bool;
+              return Column(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: unlocked
+                          ? const Color(0xFF8A2BE2).withOpacity(0.20)
+                          : Colors.white.withOpacity(0.05),
+                      border: Border.all(
+                        color: unlocked
+                            ? const Color(0xFF8A2BE2).withOpacity(0.5)
+                            : Colors.white.withOpacity(0.10),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        badge['icon'] as String,
+                        style: TextStyle(
+                          fontSize: 22,
+                          color: unlocked ? null : Colors.transparent,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    badge['label'] as String,
+                    style: GoogleFonts.poppins(
+                      fontSize: 9,
+                      color: unlocked
+                          ? Colors.white.withOpacity(0.8)
+                          : Colors.white.withOpacity(0.25),
+                      fontWeight: unlocked ? FontWeight.w600 : FontWeight.w400,
+                    ),
+                  ),
+                ],
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
 
 // D+�l+�gu+� pour la tab bar sticky
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {

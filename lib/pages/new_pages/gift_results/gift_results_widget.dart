@@ -1,5 +1,6 @@
 import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
+import '/components/liquid_glass.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -48,7 +49,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: LiquidGlassTokens.pageDark,
       body: _model.isLoading
           ? Center(
               child: Column(
@@ -231,7 +232,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1F2937),
+                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -239,7 +240,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                   'S�lectionn�s selon ses passions et ton budget',
                   style: GoogleFonts.poppins(
                     fontSize: 13,
-                    color: const Color(0xFF6B7280),
+                    color: Colors.white.withOpacity(0.55),
                   ),
                 ),
               ],
@@ -460,7 +461,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFF1F2937),
+                            color: Colors.white,
                             height: 1.3,
                           ),
                         ),
@@ -706,7 +707,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                       gift['description'] as String,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        color: const Color(0xFF6B7280),
+                        color: Colors.white.withOpacity(0.55),
                         height: 1.6,
                       ),
                     ),
@@ -851,7 +852,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey[300],
-                foregroundColor: const Color(0xFF6B7280),
+                foregroundcolor: Colors.white.withOpacity(0.55),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),

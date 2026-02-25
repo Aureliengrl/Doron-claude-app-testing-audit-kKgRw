@@ -1,4 +1,4 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -79,7 +79,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   _model.errorMessage!,
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: const Color(0xFF6B7280),
+                    color: Colors.white.withOpacity(0.55),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -143,7 +143,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     'Chargement...',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
-                      color: const Color(0xFF6B7280),
+                      color: Colors.white.withOpacity(0.55),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -411,7 +411,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         child: Text(
                           'Annuler',
                           style: GoogleFonts.poppins(
-                            color: const Color(0xFF6B7280),
+                            color: Colors.white.withOpacity(0.55),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -608,7 +608,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF1F2937),
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -616,7 +616,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     '${profile['relation']} � ${profile['occasion']}',
                     style: GoogleFonts.poppins(
                       fontSize: 13,
-                      color: const Color(0xFF6B7280),
+                      color: Colors.white.withOpacity(0.55),
                     ),
                   ),
                 ],
@@ -1071,7 +1071,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         'Par ${product['brand']}',
                         style: GoogleFonts.poppins(
                           fontSize: 14,
-                          color: const Color(0xFF6B7280),
+                          color: Colors.white.withOpacity(0.55),
                           height: 1.6,
                         ),
                       ),
@@ -1150,7 +1150,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   'G�n�ration de suggestions...',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: const Color(0xFF6B7280),
+                    color: Colors.white.withOpacity(0.55),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1207,7 +1207,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFF1F2937),
+                          color: Colors.white,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -1215,7 +1215,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         'Bas�es sur tes choix et son profil',
                         style: GoogleFonts.poppins(
                           fontSize: 14,
-                          color: const Color(0xFF6B7280),
+                          color: Colors.white.withOpacity(0.55),
                         ),
                       ),
                     ],
@@ -1380,7 +1380,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFF1F2937),
+                          color: Colors.white,
                           height: 1.2,
                         ),
                       ),
@@ -1391,7 +1391,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          color: const Color(0xFF6B7280),
+                          color: Colors.white.withOpacity(0.55),
                         ),
                       ),
                       const Spacer(),
@@ -1594,7 +1594,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
           'Cr�er une liste sp�ciale pour la Saint-Valentin ?',
           style: GoogleFonts.poppins(
             fontSize: 12,
-            color: const Color(0xFF6B7280),
+            color: Colors.white.withOpacity(0.55),
             fontStyle: FontStyle.italic,
           ),
           textAlign: TextAlign.center,
