@@ -14,6 +14,8 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '/components/bounce_button.dart';
 import 'product_model.dart';
 export 'product_model.dart';
 
@@ -91,11 +93,7 @@ class _ProductWidgetState extends State<ProductWidget>
           children: [
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 8.0, 0.0),
-              child: InkWell(
-                splashColor: Colors.transparent,
-                focusColor: Colors.transparent,
-                hoverColor: Colors.transparent,
-                highlightColor: Colors.transparent,
+              child: BounceCard(
                 onTap: () async {
                   await launchURL(
                       (widget!.product?.platform == "sephora") ||
@@ -105,17 +103,22 @@ class _ProductWidgetState extends State<ProductWidget>
                               return '$var1?tag=doron7-21';
                             }(widget!.product!.productUrl)));
                 },
-                child: Material(
-                  color: Colors.transparent,
-                  elevation: 3.0,
-                  shape: RoundedRectangleBorder(
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                  borderRadius: BorderRadius.circular(20.0),
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 10.0,
+                      color: Color(0x33000000),
+                      offset: Offset(0.0, 4.0),
+                    )
+                  ],
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).secondaryBackground,
                     borderRadius: BorderRadius.circular(20.0),
                   ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: FlutterFlowTheme.of(context).secondaryBackground,
-                      borderRadius: BorderRadius.circular(20.0),
-                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.max,
                       children: [
@@ -130,16 +133,17 @@ class _ProductWidgetState extends State<ProductWidget>
                                   topLeft: Radius.circular(15.0),
                                   topRight: Radius.circular(0.0),
                                 ),
-                                child: Image.network(
-                                  valueOrDefault<String>(
+                                child: CachedNetworkImage(
+                                  imageUrl: valueOrDefault<String>(
                                     widget!.product?.productPhoto,
                                     'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/doron-on1fip/assets/fblzebifgq2c/IMG_1926-1741775187718.jpeg',
                                   ),
                                   width: 120.0,
                                   height: 120.0,
                                   fit: BoxFit.cover,
-                                  cacheWidth: 120,
-                                  cacheHeight: 120,
+                                  memCacheWidth: 240, // better for memory
+                                  placeholder: (context, url) => Container(color: Colors.grey[200]),
+                                  errorWidget: (context, url, error) => Container(color: Colors.grey[200], child: const Icon(Icons.error)),
                                 ),
                               ),
                             ),
@@ -338,11 +342,13 @@ class _ProductWidgetState extends State<ProductWidget>
                                       ClipRRect(
                                         borderRadius:
                                             BorderRadius.circular(80.0),
-                                        child: Image.network(
-                                          'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/doron-on1fip/assets/7miztrfeonld/sepora.png',
+                                        child: CachedNetworkImage(
+                                          imageUrl: 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/doron-on1fip/assets/7miztrfeonld/sepora.png',
                                           width: 28.0,
                                           height: 28.0,
                                           fit: BoxFit.cover,
+                                          memCacheWidth: 56,
+                                          placeholder: (context, url) => Container(color: Colors.transparent),
                                         ),
                                       ),
                                       Text(
@@ -390,11 +396,13 @@ class _ProductWidgetState extends State<ProductWidget>
                                       ClipRRect(
                                         borderRadius:
                                             BorderRadius.circular(80.0),
-                                        child: Image.network(
-                                          'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/doron-on1fip/assets/kyxe84sd75u3/ikea.png',
+                                        child: CachedNetworkImage(
+                                          imageUrl: 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/doron-on1fip/assets/kyxe84sd75u3/ikea.png',
                                           width: 32.0,
                                           height: 32.0,
                                           fit: BoxFit.fitWidth,
+                                          memCacheWidth: 64,
+                                          placeholder: (context, url) => Container(color: Colors.transparent),
                                         ),
                                       ),
                                       Text(
@@ -441,11 +449,13 @@ class _ProductWidgetState extends State<ProductWidget>
                                       ClipRRect(
                                         borderRadius:
                                             BorderRadius.circular(80.0),
-                                        child: Image.network(
-                                          'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/doron-on1fip/assets/rxlrv5fdk5ss/images-removebg-preview.png',
+                                        child: CachedNetworkImage(
+                                          imageUrl: 'https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/doron-on1fip/assets/rxlrv5fdk5ss/images-removebg-preview.png',
                                           width: 32.0,
                                           height: 32.0,
                                           fit: BoxFit.cover,
+                                          memCacheWidth: 64,
+                                          placeholder: (context, url) => Container(color: Colors.transparent),
                                         ),
                                       ),
                                       Text(

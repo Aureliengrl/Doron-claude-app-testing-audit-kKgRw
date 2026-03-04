@@ -28,6 +28,7 @@ import '/pages/voice_assistant/voice_guided_onboarding_widget.dart';
 import '/pages/tiktok_inspiration/tiktok_inspiration_page_widget.dart';
 import '/pages/admin/admin_products_page.dart';
 import '/pages/new_pages/public_profile/public_profile_page.dart';
+import '/pages/wishlists/wishlist_details_widget.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -89,33 +90,24 @@ class AppStateNotifier extends ChangeNotifier {
   }
 }
 
-/// Détermine la route initiale selon l'état de l'utilisateur
+/// Détermine la route initiale de façon binaire et immédiate
 Future<String> _determineInitialRoute() async {
   try {
     final FirebaseAuth auth = FirebaseAuth.instance;
-    final prefs = await SharedPreferences.getInstance();
-
     final User? currentUser = auth.currentUser;
     final bool isLoggedIn = currentUser != null;
-    final bool isFirstTime = prefs.getBool('first_time') ?? true;
-    final bool hasCompletedOnboarding = prefs.getBool('onboarding_completed') ?? false;
 
-    AppLogger.debug('🔍 Route initiale — loggedIn:$isLoggedIn, firstTime:$isFirstTime, onboarding:$hasCompletedOnboarding', 'Nav');
+    AppLogger.debug('🔍 Route initiale — loggedIn:$isLoggedIn', 'Nav');
 
-    // Utilisateur connecté + onboarding terminé → home
-    if (isLoggedIn && hasCompletedOnboarding) return '/home-pinterest';
-
-    // Connecté mais pas encore fait l'onboarding → onboarding
-    if (isLoggedIn && !hasCompletedOnboarding) return '/onboarding-advanced';
-
-    // Première visite → welcome
-    if (isFirstTime) return '/welcome';
-
-    // Déjà venu mais pas connecté → auth
-    return '/authentification';
+    // Routage Binaire: Si connecté -> Accueil. Sinon -> Auth. Plus de tutoriel.
+    if (isLoggedIn) {
+        return '/home-pinterest';
+    } else {
+        return '/authentification';
+    }
   } catch (e) {
     AppLogger.debug('❌ Erreur détermination route: $e', 'Nav');
-    return '/welcome';
+    return '/authentification';
   }
 }
 
@@ -141,7 +133,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
                   return const SizedBox.shrink();
                 }
 
-                final route = snapshot.data as String? ?? '/welcome';
+                final route = snapshot.data as String? ?? '/authentification';
 
                 // Navigation immédiate après chargement
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -174,14 +166,10 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: FavouritesWidget.routeName,
           path: FavouritesWidget.routePath,
+          requireAuth: true,
           builder: (context, params) => params.isEmpty
               ? NavBarPage(initialPage: 'Favourites')
               : FavouritesWidget(),
-        ),
-        FFRoute(
-          name: ProfileWidget.routeName,
-          path: ProfileWidget.routePath,
-          builder: (context, params) => ProfileWidget(),
         ),
         // Chat routes removed - files no longer exist
         // FFRoute(
@@ -197,6 +185,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: OpenAiSuggestedGiftsWidget.routeName,
           path: OpenAiSuggestedGiftsWidget.routePath,
+          requireAuth: true,
           builder: (context, params) => OpenAiSuggestedGiftsWidget(
             fetchproducts: params.getParam<ProductsStruct>(
               'fetchproducts',
@@ -233,16 +222,19 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: OnboardingAdvancedWidget.routeName,
           path: OnboardingAdvancedWidget.routePath,
+          requireAuth: true,
           builder: (context, params) => OnboardingAdvancedWidget(),
         ),
         FFRoute(
           name: OnboardingGiftsResultWidget.routeName,
           path: OnboardingGiftsResultWidget.routePath,
+          requireAuth: true,
           builder: (context, params) => OnboardingGiftsResultWidget(),
         ),
         FFRoute(
           name: HomePinterestWidget.routeName,
           path: HomePinterestWidget.routePath,
+          requireAuth: true,
           builder: (context, params) => params.isEmpty
               ? NavBarPage(initialPage: 'HomePinterest')
               : HomePinterestWidget(),
@@ -250,6 +242,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: SearchPageWidget.routeName,
           path: SearchPageWidget.routePath,
+          requireAuth: true,
           builder: (context, params) => params.isEmpty
               ? NavBarPage(initialPage: 'SearchPage')
               : SearchPageWidget(),
@@ -257,6 +250,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: GiftResultsWidget.routeName,
           path: GiftResultsWidget.routePath,
+          requireAuth: true,
           builder: (context, params) => GiftResultsWidget(),
         ),
         // ── Voice Module ────────────────────────────────────────────────────
@@ -268,11 +262,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: 'VoiceListening',
           path: '/voiceListening',
+          requireAuth: true,
           builder: (context, params) => const VoiceListeningPageWidget(),
         ),
         FFRoute(
           name: 'VoiceAnalysis',
           path: '/voiceAnalysis',
+          requireAuth: true,
           builder: (context, params) => VoiceAnalysisPageWidget(
             transcript: params.getParam<String>('transcript', ParamType.String) ?? '',
           ),
@@ -287,6 +283,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: TikTokInspirationPageWidget.routeName,
           path: TikTokInspirationPageWidget.routePath,
+          requireAuth: true,
           builder: (context, params) => TikTokInspirationPageWidget(),
         ),
         // Admin Products Page
@@ -299,12 +296,22 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: WishlistsPageWidget.routeName,
           path: WishlistsPageWidget.routePath,
+          requireAuth: true,
           builder: (context, params) => WishlistsPageWidget(),
         ),
         FFRoute(
           name: LikedProductsPageWidget.routeName,
           path: LikedProductsPageWidget.routePath,
+          requireAuth: true,
           builder: (context, params) => LikedProductsPageWidget(),
+        ),
+        FFRoute(
+          name: WishlistDetailsWidget.routeName,
+          path: WishlistDetailsWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => WishlistDetailsWidget(
+            wishlistId: params.getParam<String>('wishlistId', ParamType.String) ?? '',
+          ),
         ),
         // Profil public @handle
         FFRoute(

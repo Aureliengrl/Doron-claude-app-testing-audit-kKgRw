@@ -132,17 +132,20 @@ class CachedImage extends StatelessWidget {
   }
 }
 
-/// Widget optimisé spécifiquement pour les cartes produits (Pinterest)
 class ProductImage extends StatelessWidget {
   final String imageUrl;
-  final double height;
+  final double? height;
   final BorderRadius? borderRadius;
+  final BoxFit fit;
+  final Color? backgroundColor;
 
   const ProductImage({
     super.key,
     required this.imageUrl,
-    this.height = 180,
+    this.height,
     this.borderRadius,
+    this.fit = BoxFit.cover,
+    this.backgroundColor,
   });
 
   static const _violetColor = Color(0xFF8A2BE2);
@@ -156,14 +159,15 @@ class ProductImage extends StatelessWidget {
         height: height,
         width: double.infinity,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
+          color: backgroundColor,
+          gradient: backgroundColor == null ? LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
               _violetColor.withOpacity(0.1),
               _pinkColor.withOpacity(0.1),
             ],
-          ),
+          ) : null,
           borderRadius: borderRadius ?? BorderRadius.circular(12),
         ),
         child: Center(
@@ -190,14 +194,25 @@ class ProductImage extends StatelessWidget {
       );
     }
 
-    return CachedImage(
+    Widget imageWidget = CachedImage(
       imageUrl: imageUrl,
       height: height,
       width: double.infinity,
-      fit: BoxFit.cover, // ✅ COVER pour remplir les cadres sans bandes blanches ni étirement
+      fit: fit,
       borderRadius: borderRadius,
-      // FIX: Ne plus utiliser de placeholderColor gris - le CachedImage utilise maintenant un gradient violet par défaut
     );
+
+    if (backgroundColor != null) {
+      return Container(
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: borderRadius ?? BorderRadius.zero,
+        ),
+        child: imageWidget,
+      );
+    }
+
+    return imageWidget;
   }
 }
 

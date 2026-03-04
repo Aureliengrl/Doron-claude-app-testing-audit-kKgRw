@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '/services/product_url_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '/components/bounce_button.dart';
 import 'gift_results_model.dart';
 export 'gift_results_model.dart';
 
@@ -346,24 +348,20 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _showGiftDetail(gift),
+      child: BounceCard(
+        onTap: () => _showGiftDetail(gift),
+        decoration: BoxDecoration(
+          color: Colors.white,
           borderRadius: BorderRadius.circular(24),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
-            child: IntrinsicHeight(
+          ],
+        ),
+        child: IntrinsicHeight(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -375,11 +373,14 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                     ),
                     child: Stack(
                       children: [
-                        Image.network(
-                          gift['image'] as String,
+                        CachedNetworkImage(
+                          imageUrl: gift['image'] as String,
                           width: 140,
                           height: 160,
                           fit: BoxFit.cover,
+                          memCacheWidth: 280,
+                          placeholder: (context, url) => Container(color: Colors.grey[200]),
+                          errorWidget: (context, url, error) => Container(color: Colors.grey[200], child: const Icon(Icons.error)),
                         ),
                       // Match badge
                       Positioned(
@@ -587,12 +588,20 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
         insetPadding: const EdgeInsets.all(16),
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 500),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-          ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 500),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.85),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.4),
+                  width: 1.5,
+                ),
+              ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -603,11 +612,14 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                       topLeft: Radius.circular(24),
                       topRight: Radius.circular(24),
                     ),
-                    child: Image.network(
-                      gift['image'] as String,
+                    child: CachedNetworkImage(
+                      imageUrl: gift['image'] as String,
                       height: 280,
                       width: double.infinity,
                       fit: BoxFit.cover,
+                      memCacheWidth: 600,
+                      placeholder: (context, url) => Container(color: Colors.white10),
+                      errorWidget: (context, url, error) => Container(color: Colors.white10, child: const Icon(Icons.error, color: Colors.white)),
                     ),
                   ),
                   // Match badge
@@ -825,6 +837,8 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
               ),
             ],
           ),
+        ),
+        ),
         ),
       ),
     );

@@ -253,14 +253,12 @@ class VoiceGuidedOnboardingModel extends ChangeNotifier {
     notifyListeners();
 
     // Rediriger vers la page de génération de cadeaux
-    // (Similaire à l'onboarding classique)
     if (context.mounted) {
-      // TODO: Sauvegarder les tags et rediriger vers la page de génération
-      // Pour l'instant, on retourne juste en arrière
+      AppLogger.debug('🚀 NAVIGATION vers /onboarding-gifts-result avec tags vocaux', 'Debug');
+      // On dépile la modale d'écoute
       context.pop();
-
-      // Dans le futur, rediriger vers:
-      // context.push('/gift-generation', extra: tags);
+      // On pousse la page de résultats
+      context.push('/onboarding-gifts-result', extra: {'tags': tags});
     }
   }
 

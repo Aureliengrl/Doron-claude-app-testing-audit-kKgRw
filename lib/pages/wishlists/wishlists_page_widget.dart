@@ -1,10 +1,11 @@
 import 'dart:ui';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '/services/firebase_data_service.dart';
+import '/components/bounce_button.dart';
+import '/auth/firebase_auth/auth_util.dart';
 import '/services/user_search_service.dart';
 import '/backend/backend.dart';
 import '/components/liquid_glass.dart';
@@ -186,22 +187,35 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
     return RefreshIndicator(
       onRefresh: _loadWishlists,
       color: violetColor,
-      child: ListView.builder(
+      child: ReorderableListView.builder(
         padding: const EdgeInsets.all(20),
         itemCount: _wishlists.length,
+        onReorder: (int oldIndex, int newIndex) {
+          setState(() {
+            if (oldIndex < newIndex) {
+              newIndex -= 1;
+            }
+            final item = _wishlists.removeAt(oldIndex);
+            _wishlists.insert(newIndex, item);
+          });
+          // Update order in backend if there is an ordered index field.
+        },
         itemBuilder: (context, index) {
           final wishlist = _wishlists[index];
           final productCount = _wishlistCounts[wishlist['id']] ?? 0;
 
-          return _buildWishlistCard(wishlist, productCount, index)
-              .animate()
-              .fadeIn(delay: Duration(milliseconds: index * 100))
-              .slideY(
-                begin: 0.2,
-                end: 0,
-                duration: 400.ms,
-                curve: Curves.easeOutCubic,
-              );
+          return Container(
+            key: ValueKey(wishlist['id']),
+            child: _buildWishlistCard(wishlist, productCount, index)
+                .animate()
+                .fadeIn(delay: Duration(milliseconds: index * 10))
+                .slideY(
+                  begin: 0.2,
+                  end: 0,
+                  duration: 400.ms,
+                  curve: Curves.easeOutCubic,
+                ),
+          );
         },
       ),
     );
@@ -267,24 +281,22 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: InkWell(
+      child: BounceCard(
         onTap: () => context.push('/wishlist-details/$wishlistId'),
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                gradientColors[0].withOpacity(0.1),
-                gradientColors[1].withOpacity(0.1),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: gradientColors[0].withOpacity(0.3),
-              width: 2,
-            ),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              gradientColors[0].withOpacity(0.1),
+              gradientColors[1].withOpacity(0.1),
+            ],
           ),
-          child: Padding(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: gradientColors[0].withOpacity(0.3),
+            width: 2,
+          ),
+        ),
+        child: Padding(
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
@@ -425,113 +437,137 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
 
     await showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: ClipRRect(
           borderRadius: BorderRadius.circular(24),
-        ),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: Container(
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [violetColor, pinkColor]),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.add, color: Colors.white, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              'Nouvelle liste',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: 'Nom de la liste',
-                hintText: 'Ex: Noël 2026',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: violetColor),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: violetColor, width: 2),
+                color: Colors.white.withOpacity(0.85),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.4),
+                  width: 1.5,
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: descriptionController,
-              decoration: InputDecoration(
-                labelText: 'Description (optionnel)',
-                hintText: 'Ex: Cadeaux pour la famille',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: violetColor, width: 2),
-                ),
-              ),
-              maxLines: 2,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Annuler',
-              style: GoogleFonts.poppins(color: const Color(0xFF6B7280)),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (nameController.text.trim().isEmpty) return;
-
-              Navigator.pop(context);
-
-              final wishlistId = await FirebaseDataService.createWishlist(
-                name: nameController.text.trim(),
-                description: descriptionController.text.trim(),
-              );
-
-              if (wishlistId != null) {
-                await _loadWishlists();
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Liste créée avec succès !',
-                        style: GoogleFonts.poppins(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(colors: [violetColor, pinkColor]),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.add, color: Colors.white, size: 20),
                       ),
-                      backgroundColor: violetColor,
+                      const SizedBox(width: 12),
+                      Text(
+                        'Nouvelle liste',
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Nom de la liste',
+                      hintText: 'Ex: Noël 2026',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: violetColor),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: violetColor, width: 2),
+                      ),
                     ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: violetColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: descriptionController,
+                    decoration: InputDecoration(
+                      labelText: 'Description (optionnel)',
+                      hintText: 'Ex: Cadeaux pour la famille',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: violetColor, width: 2),
+                      ),
+                    ),
+                    maxLines: 2,
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          'Annuler',
+                          style: GoogleFonts.poppins(color: const Color(0xFF6B7280)),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton(
+                        onPressed: () async {
+                          if (nameController.text.trim().isEmpty) return;
+                          
+                          Navigator.pop(context);
+                          
+                          final wishlistId = await FirebaseDataService.createWishlist(
+                            name: nameController.text.trim(),
+                            description: descriptionController.text.trim(),
+                          );
+                          
+                          if (wishlistId != null) {
+                            await _loadWishlists();
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Liste créée avec succès !',
+                                    style: GoogleFonts.poppins(),
+                                  ),
+                                  backgroundColor: violetColor,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: violetColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 2,
+                        ),
+                        child: Text(
+                          'Créer',
+                          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-            child: Text(
-              'Créer',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-            ),
           ),
-        ],
+        ),
       ),
     );
   }

@@ -17,6 +17,13 @@ class ChangeNameModel extends FlutterFlowModel<ChangeNameWidget> {
   // State field(s) for TextField widget.
   FocusNode? textFieldFocusNode;
   TextEditingController? textController;
+  
+  FocusNode? bioFocusNode;
+  TextEditingController? bioController;
+  
+  FocusNode? handleFocusNode;
+  TextEditingController? handleController;
+
   String? Function(BuildContext, String?)? textControllerValidator;
   String? _textControllerValidator(BuildContext context, String? val) {
     if (val == null || val.isEmpty) {
@@ -43,5 +50,11 @@ class ChangeNameModel extends FlutterFlowModel<ChangeNameWidget> {
   void dispose() {
     textFieldFocusNode?.dispose();
     textController?.dispose();
+
+    bioFocusNode?.dispose();
+    bioController?.dispose();
+
+    handleFocusNode?.dispose();
+    handleController?.dispose();
   }
 }

@@ -15,6 +15,7 @@ import '/backend/backend.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import 'search_page_model.dart';
 export 'search_page_model.dart';
+import 'user_search_bottom_sheet.dart';
 
 class SearchPageWidget extends StatefulWidget {
   const SearchPageWidget({super.key});
@@ -250,31 +251,46 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          child: Stack(
             children: [
-              micro.ShimmerEffect(
-                shimmerColor: Colors.white,
-                duration: const Duration(milliseconds: 3000),
-                child: Text(
-                  'Recherche',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
+              Align(
+                alignment: Alignment.center,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    micro.ShimmerEffect(
+                      shimmerColor: Colors.white,
+                      duration: const Duration(milliseconds: 3000),
+                      child: Text(
+                        'Recherche',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Trouvez le cadeau parfait pour vos proches',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                'Trouvez le cadeau parfait pour vos proches',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  color: Colors.white.withOpacity(0.9),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w400,
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton(
+                  icon: const Icon(Icons.person_search, color: Colors.white),
+                  onPressed: _showUserSearchSheet,
                 ),
               ),
             ],
@@ -774,6 +790,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   ProductImage(
                     imageUrl: product['image'] as String? ?? '',
                     height: 180,
+                    fit: BoxFit.contain,
+                    backgroundColor: Colors.white.withOpacity(0.05),
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20),
@@ -961,6 +979,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   ProductImage(
                     imageUrl: product['image'] as String? ?? '',
                     height: 280,
+                    fit: BoxFit.contain,
+                    backgroundColor: Colors.white.withOpacity(0.05),
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(24),
                       topRight: Radius.circular(24),
@@ -1285,6 +1305,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   ProductImage(
                     imageUrl: product['image'] as String? ?? '',
                     height: 180,
+                    fit: BoxFit.contain,
+                    backgroundColor: Colors.white.withOpacity(0.05),
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20),
@@ -1484,121 +1506,6 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
           ),
         ),
 
-        const SizedBox(height: 16),
-
-        // Bouton Saint-Valentin sp�cial
-        GestureDetector(
-          onTap: () {
-            HapticFeedback.mediumImpact();
-            // Rediriger vers l'onboarding en mode Saint-Valentin
-            context.go('/onboarding-advanced?mode=valentine&skipUserQuestions=true&returnTo=/search-page');
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFFF1744), // Rouge profond
-                  Color(0xFFFF4081), // Rose vif
-                  Color(0xFFE91E63), // Rose
-                ],
-              ),
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFE91E63).withOpacity(0.5),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                  spreadRadius: 0,
-                ),
-                BoxShadow(
-                  color: const Color(0xFFFF1744).withOpacity(0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                  spreadRadius: 0,
-                ),
-              ],
-              border: Border.all(
-                color: Colors.white.withOpacity(0.3),
-                width: 1.5,
-              ),
-            ),
-            child: Stack(
-              children: [
-                // Effet shimmer/brillance
-                Positioned.fill(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(26),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.white.withOpacity(0.3),
-                            Colors.transparent,
-                            Colors.white.withOpacity(0.2),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                // Contenu
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.favorite,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                    const SizedBox(width: 10),
-                    Flexible(
-                      child: Text(
-                        '?? SP�CIAL SAINT-VALENTIN',
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 0.8,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    const Icon(
-                      Icons.favorite,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        // Texte descriptif sous le bouton
-        Text(
-          'Cr�er une liste sp�ciale pour la Saint-Valentin ?',
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            color: Colors.white.withOpacity(0.55),
-            fontStyle: FontStyle.italic,
-          ),
-          textAlign: TextAlign.center,
-        ),
       ],
     );
   }
@@ -1664,6 +1571,17 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         duration: const Duration(seconds: 3),
       ),
+    );
+  }
+
+  void _showUserSearchSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return const UserSearchBottomSheet();
+      },
     );
   }
 

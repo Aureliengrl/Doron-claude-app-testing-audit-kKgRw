@@ -636,7 +636,7 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget>
                                                             obscureText: false,
                                                             decoration:
                                                                 InputDecoration(
-                                                              labelText: 'Nom d\'utilisateur',
+                                                              labelText: 'Nom d\'utilisateur (optionnel)',
                                                               hintText: '@tonpseudo',
                                                               labelStyle:
                                                                   FlutterFlowTheme.of(
@@ -644,7 +644,9 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget>
                                                                       .labelLarge
                                                                       .override(
                                                                         font: GoogleFonts
-                                                                            .inter(),
+                                                                            .inter(
+                                                                          fontSize: 14,
+                                                                        ),
                                                                         letterSpacing:
                                                                             0.0,
                                                                       ),

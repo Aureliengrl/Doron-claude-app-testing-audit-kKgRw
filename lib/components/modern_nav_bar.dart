@@ -90,7 +90,7 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
         child: ClipRRect(
           borderRadius: BorderRadius.circular(widget.borderRadius),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
+            filter: ImageFilter.blur(sigmaX: 45, sigmaY: 45),
             child: CustomPaint(
               painter: _NavBarSpecularPainter(
                 borderRadius: widget.borderRadius,
@@ -99,18 +99,18 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
                 height: widget.height,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(widget.borderRadius),
-                  // Liquid Glass surface — très légèrement blanc
+                  // Liquid Glass surface — ultra premium
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.white.withOpacity(0.15),
-                      Colors.white.withOpacity(0.07),
+                      Colors.white.withOpacity(0.18),
+                      Colors.white.withOpacity(0.08),
                       Colors.white.withOpacity(0.12),
                     ],
                   ),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.22),
+                    color: Colors.white.withOpacity(0.25),
                     width: 1.0,
                   ),
                 ),
@@ -187,8 +187,9 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
 
     return Expanded(
       child: GestureDetector(
+        onTapDown: (_) => HapticFeedback.lightImpact(),
         onTap: () {
-          HapticFeedback.lightImpact();
+          HapticFeedback.selectionClick();
           widget.onTap(index);
         },
         behavior: HitTestBehavior.translucent,
@@ -198,18 +199,18 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               AnimatedScale(
-                scale: isSelected ? 1.15 : 1.0,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutBack,
+                scale: isSelected ? 1.2 : 1.0,
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.elasticOut,
                 child: Icon(
                   isSelected ? item.activeIcon : item.icon,
                   color: isSelected
                       ? Colors.white
-                      : Colors.white.withOpacity(0.45),
+                      : Colors.white.withOpacity(0.55),
                   size: item.iconSize,
                 ),
               ),
-              const SizedBox(height: 3),
+              const SizedBox(height: 4),
               AnimatedOpacity(
                 opacity: isSelected ? 1.0 : 0.0,
                 duration: const Duration(milliseconds: 200),
@@ -219,7 +220,7 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
                     fontSize: 9,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
-                    letterSpacing: 0.4,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ),

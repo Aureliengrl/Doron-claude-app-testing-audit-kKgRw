@@ -47,55 +47,45 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
 
+  // ==========================================================
+  // SHOWCASE / TUTORIAL KEYS
+  // ==========================================================
+  final GlobalKey _one = GlobalKey();
+  final GlobalKey _two = GlobalKey();
+  final GlobalKey _three = GlobalKey();
+
   @override
   void initState() {
     super.initState();
     _model = HomePinterestModel();
-    // Effacer le contexte de personne (les favoris de cette page seront "en vrac")
     FirebaseDataService.setCurrentPersonContext(null);
-    _loadFavorites(); // Charger les favoris depuis Firebase
+    _loadFavorites();
     _loadProducts();
 
-    // �couter le scroll pour l'infinite scroll
     _scrollController.addListener(_onScroll);
-
-    // Afficher le tutoriel en mode d�couverte
-    _showTutorialIfNeeded();
+    _showInteractiveTutorialIfNeeded();
   }
 
-  Future<void> _showTutorialIfNeeded() async {
-    await Future.delayed(const Duration(milliseconds: 800));
-    if (!mounted) return;
+  Future<void> _showInteractiveTutorialIfNeeded() async {
+    // Check if it's the very first time launching the app with an account
+    final prefs = await SharedPreferences.getInstance();
+    final isFirstLaunch = prefs.getBool('first_time_showcase') ?? true;
 
-    // Toujours afficher le tutoriel � la premi�re visite
-    await TutorialOverlay.showIfNeeded(
-      context,
-      tutorialKey: 'home_discovery',
-      steps: [
-        const TutorialStep(
-          title: 'Bienvenue sur Doron !',
-          description: 'D�couvre des id�es cadeaux personnalis�es pour tes proches.',
-          icon: Icons.explore,
-        ),
-        const TutorialStep(
-          title: 'Parcours les suggestions',
-          description: 'Fais d�filer pour d�couvrir des cadeaux match�s � tes proches.',
-          icon: Icons.card_giftcard,
-        ),
-        const TutorialStep(
-          title: 'Like tes favoris',
-          description: 'Appuie sur le c�ur pour sauvegarder tes coups de c�ur.',
-          icon: Icons.favorite,
-          buttonText: 'C\'est parti !',
-        ),
-      ],
-      onComplete: () {},
-    );
+    if (isFirstLaunch) {
+      await Future.delayed(const Duration(milliseconds: 1000));
+      if (!mounted) return;
+
+      // Start the animated showcase tutorial
+      ShowCaseWidget.of(context).startShowCase([_one, _two, _three]);
+      
+      // Keep it marked as complete so it never shows again
+      await prefs.setBool('first_time_showcase', false);
+    }
   }
 
   /// Charge les favoris depuis Firebase (FlutterFlow system)
   Future<void> _loadFavorites() async {
-    // V�rifier si l'utilisateur est connect�
+    // Vrifier si l'utilisateur est connect
     if (FirebaseAuth.instance.currentUser == null) {
       AppLogger.debug('?? Utilisateur non connect�, favoris non charg�s', 'Debug');
       // Charger les favoris locaux depuis SharedPreferences
@@ -1316,7 +1306,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      '${product['price']}�',
+                      '${product['price']}',
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -1356,10 +1346,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       );
     }
 
-    // S�parer en 2 colonnes (avec filtrage par prix)
+    // Sparer en 2 colonnes (avec filtrage par prix)
     final filteredProducts = _model.getFilteredProducts();
 
-    // Afficher l'erreur si pr�sente
+    // Afficher l'erreur si prsente
     if (_model.errorMessage != null) {
       return SliverToBoxAdapter(
         child: Center(
@@ -1368,7 +1358,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Ic�ne d'erreur
+                // Icne d'erreur
                 Container(
                   width: 80,
                   height: 80,
@@ -1396,7 +1386,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 ),
                 const SizedBox(height: 12),
 
-                // D�tails de l'erreur
+                // Dtails de l'erreur
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
@@ -1416,7 +1406,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 ),
                 const SizedBox(height: 20),
 
-                // Bouton r�essayer
+                // Bouton ressayer
                 SizedBox(
                   width: 200,
                   child: PrimaryGradientButton(
@@ -1424,7 +1414,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       _model.clearError();
                       _loadProducts();
                     },
-                    text: 'R�essayer',
+                    text: 'Ressayer',
                     icon: Icons.refresh,
                     gradientColors: [Colors.red[600]!, Colors.red[400]!],
                     height: 50,
@@ -1437,7 +1427,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       );
     }
 
-    // Afficher un message si aucun produit (ou aucun apr�s filtrage)
+    // Afficher un message si aucun produit (ou aucun aprs filtrage)
     if (_model.products.isEmpty || filteredProducts.isEmpty) {
       return SliverToBoxAdapter(
         child: Center(
@@ -1446,7 +1436,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Ic�ne avec animation
+                // Icne avec animation
                 TweenAnimationBuilder<double>(
                   tween: Tween(begin: 0.0, end: 1.0),
                   duration: const Duration(milliseconds: 600),
@@ -1473,7 +1463,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 Text(
                   filteredProducts.isEmpty && _model.products.isNotEmpty
                       ? 'Oups, aucun produit !'
-                      : 'Oups, on a rien trouv� !',
+                      : 'Oups, on a rien trouv !',
                   style: GoogleFonts.poppins(
                     color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold,
                   ),
@@ -1482,8 +1472,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 const SizedBox(height: 12),
                 Text(
                   filteredProducts.isEmpty && _model.products.isNotEmpty
-                      ? 'Essaie de changer de filtre de prix ou de cat�gorie'
-                      : 'Essaie de changer de cat�gorie ou tire pour rafra�chir',
+                      ? 'Essaie de changer de filtre de prix ou de catgorie'
+                      : 'Essaie de changer de catgorie ou tire pour rafrachir',
                   style: GoogleFonts.poppins(
                     color: const Color(0xFF6B7280),
                     fontSize: 15,
@@ -1492,7 +1482,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 28),
-                // Bouton de rafra�chissement avec effet tap scale
+                // Bouton de rafrachissement avec effet tap scale
                 micro.TapScaleEffect(
                   onTap: () async {
                     await _loadProducts();
@@ -1518,7 +1508,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                         const Icon(Icons.refresh, size: 20, color: Colors.white),
                         const SizedBox(width: 8),
                         Text(
-                          'Rafra�chir',
+                          'Rafrachir',
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -1535,13 +1525,13 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         ),
       );
     }
-    // Layout Masonry d�sordonn� fa�on Pinterest
+    // Layout Masonry dsordonn faon Pinterest
     // Plus de colonnes et moins d'espacement pour un effet plus dense et inspirant
     return SliverPadding(
       padding: const EdgeInsets.fromLTRB(12, 16, 12, 0),
       sliver: SliverMasonryGrid.count(
         crossAxisCount: 2, // 2 colonnes pour garder des produits bien visibles
-        mainAxisSpacing: 8, // R�duit pour effet "dans tous les sens"
+        mainAxisSpacing: 8, // Rduit pour effet "dans tous les sens"
         crossAxisSpacing: 8,
         childCount: filteredProducts.length,
         itemBuilder: (context, index) {
@@ -1564,14 +1554,6 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
   Widget _buildProductCard(Map<String, dynamic> product, int index) {
     final isLiked = _model.likedProductTitles.contains(product['name'] ?? '');
-
-    // AM�LIORATION: Plus de variation dans les hauteurs pour un look plus dynamique et inspirant
-    // Alternance forte entre petites et grandes cartes pour effet "dans tous les sens"
-    final aspectRatios = [
-      0.55, 0.95, 0.7, 0.85, 0.6, 0.9, 0.65, 0.8,
-      0.75, 0.6, 0.85, 0.7, 0.95, 0.65, 0.8, 0.55
-    ];
-    final aspectRatio = aspectRatios[index % aspectRatios.length];
 
     return Material(
         color: Colors.transparent,
@@ -1615,23 +1597,17 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
               // Image avec badge de match
               Stack(
                 children: [
-                  AspectRatio(
-                    aspectRatio: aspectRatio, // Aspect ratio variable pour look d�sordonn�
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12), // Coins moins arrondis
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: double.infinity,
-                        child: ProductImage(
-                          imageUrl: product['image'] as String? ?? '',
-                          height: double.infinity,
-                          borderRadius: BorderRadius.zero,
-                        ),
-                      ),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12), // Coins moins arrondis
+                    child: ProductImage(
+                      imageUrl: product['image'] as String? ?? '',
+                      height: null,
+                      fit: BoxFit.cover,
+                      borderRadius: BorderRadius.zero,
                     ),
                   ),
 
-                  // Badge de match en haut � droite
+                  // Badge de match en haut  droite
                   if (product['match'] != null && product['match'] > 0)
                     Positioned(
                       top: 8,
@@ -1673,7 +1649,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       ),
                     ),
 
-                  // Badge like/favoris en haut � gauche
+                  // Badge like/favoris en haut  gauche
                   if (isLiked)
                     Positioned(
                       top: 8,
@@ -1731,15 +1707,15 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     if (wasNew) {
       AppLogger.debug('?? Mode anonyme: ${_model.uniqueProductsViewed.length} produits uniques vus', 'Debug');
 
-      // Trigger apr�s 10 produits UNIQUES vus
+      // Trigger aprs 10 produits UNIQUES vus
       if (_model.uniqueProductsViewed.length >= 10) {
         _model.hasShownConnectionPrompt = true;
 
         // Afficher le dialog de connexion
         await showConnectionRequiredDialog(
           context,
-          title: 'Tu adores d�couvrir de nouveaux produits !',
-          message: 'Cr�e ton compte pour recevoir des suggestions ultra-personnalis�es et ne plus jamais perdre tes favoris',
+          title: 'Tu adores dcouvrir de nouveaux produits !',
+          message: 'Cre ton compte pour recevoir des suggestions ultra-personnalises et ne plus jamais perdre tes favoris',
         );
       }
     }
@@ -1854,7 +1830,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                           ),
                         ),
                       ),
-                      // Bouton coeur - Appel simplifi� de _toggleFavorite
+                      // Bouton coeur - Appel simplifi de _toggleFavorite
                       Positioned(
                         top: 12,
                         right: 12,

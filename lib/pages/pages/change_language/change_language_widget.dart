@@ -44,17 +44,11 @@ class _ChangeLanguageWidgetState extends State<ChangeLanguageWidget> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).secondaryBackground,
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 5.0,
-            color: Color(0x3B1D2429),
-            offset: Offset(
-              0.0,
-              -3.0,
-            ),
-          )
-        ],
+        gradient: LinearGradient(
+          begin: Alignment.topLeft, end: Alignment.bottomRight,
+          colors: [const Color(0xFF1A0035).withOpacity(0.96), const Color(0xFF0A0014).withOpacity(0.98)],
+        ),
+        border: Border.all(color: Colors.white.withOpacity(0.15)),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(0.0),
           bottomRight: Radius.circular(0.0),
@@ -81,24 +75,21 @@ class _ChangeLanguageWidgetState extends State<ChangeLanguageWidget> {
                 height: 60.0,
                 padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                 iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                color: FlutterFlowTheme.of(context).primaryBackground,
+                color: Colors.white.withOpacity(0.1),
                 textStyle: FlutterFlowTheme.of(context).bodyLarge.override(
                       font: GoogleFonts.inter(
                         fontWeight: FontWeight.bold,
-                        fontStyle:
-                            FlutterFlowTheme.of(context).bodyLarge.fontStyle,
                       ),
-                      color: FlutterFlowTheme.of(context).secondaryBackground,
+                      color: Colors.white,
                       letterSpacing: 0.0,
                       fontWeight: FontWeight.bold,
-                      fontStyle:
-                          FlutterFlowTheme.of(context).bodyLarge.fontStyle,
                     ),
-                elevation: 2.0,
+                elevation: 0.0,
                 borderSide: BorderSide(
-                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                  color: Colors.white.withOpacity(0.2),
                   width: 1.0,
                 ),
+                borderRadius: BorderRadius.circular(12.0),
               ),
             ),
             Padding(
@@ -117,27 +108,25 @@ class _ChangeLanguageWidgetState extends State<ChangeLanguageWidget> {
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                   iconPadding:
                       EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                  color: FlutterFlowTheme.of(context).primaryBackground,
+                  color: Colors.white.withOpacity(0.1),
                   textStyle: FlutterFlowTheme.of(context).bodyLarge.override(
                         font: GoogleFonts.inter(
                           fontWeight: FontWeight.bold,
-                          fontStyle:
-                              FlutterFlowTheme.of(context).bodyLarge.fontStyle,
                         ),
-                        color: FlutterFlowTheme.of(context).secondaryBackground,
+                        color: Colors.white,
                         letterSpacing: 0.0,
                         fontWeight: FontWeight.bold,
-                        fontStyle:
-                            FlutterFlowTheme.of(context).bodyLarge.fontStyle,
                       ),
-                  elevation: 2.0,
+                  elevation: 0.0,
                   borderSide: BorderSide(
-                    color: Colors.transparent,
+                    color: Colors.white.withOpacity(0.2),
                     width: 1.0,
                   ),
+                  borderRadius: BorderRadius.circular(12.0),
                 ),
               ),
             ),
+            const SizedBox(height: 16),
           ],
         ),
       ),

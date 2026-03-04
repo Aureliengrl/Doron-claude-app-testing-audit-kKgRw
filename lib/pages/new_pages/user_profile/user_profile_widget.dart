@@ -10,6 +10,12 @@ import '/backend/backend.dart';
 import '/services/product_url_service.dart';
 import '/services/firebase_data_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '/pages/pages/change_language/change_language_widget.dart';
+import '/pages/pages/change_name/change_name_widget.dart';
+import '/pages/pages/components/change_password/change_password_widget.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
 import 'user_profile_model.dart';
 export 'user_profile_model.dart';
 
@@ -71,6 +77,84 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     _tabController.dispose();
     _model.dispose();
     super.dispose();
+  }
+
+  // ─── Changement de photo de profil ──────────────────────────
+  Future<void> _changeProfilePicture() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 800,
+      imageQuality: 85,
+    );
+
+    if (pickedFile == null) return;
+
+    final file = File(pickedFile.path);
+
+    if (currentUserReference == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur: utilisateur non trouvé.', style: GoogleFonts.outfit()),
+            backgroundColor: const Color(0xFFE53935),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+              const SizedBox(width: 16),
+              Text('Mise à jour de la photo...', style: GoogleFonts.outfit()),
+            ],
+          ),
+          backgroundColor: LiquidGlassTokens.highlight1,
+          duration: const Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+
+    try {
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('users/${currentUserReference!.id}/profile_${DateTime.now().millisecondsSinceEpoch}.jpg');
+
+      final uploadTask = await storageRef.putFile(file);
+      final downloadUrl = await uploadTask.ref.getDownloadURL();
+
+      await currentUserReference!.update(createUsersRecordData(photoUrl: downloadUrl));
+
+      if (mounted) {
+        setState(() {}); // Rafraîchit l'UI (via AuthUserStreamWidget)
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Photo de profil mise à jour.', style: GoogleFonts.outfit()),
+            backgroundColor: const Color(0xFF8A2BE2),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors du transfert ($e)', style: GoogleFonts.outfit()),
+            backgroundColor: const Color(0xFFE53935),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -202,7 +286,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
   Widget _buildAppBar() {
     return SliverAppBar(
-      expandedHeight: 280,
+      expandedHeight: 220,
       floating: false,
       pinned: true,
       backgroundColor: LiquidGlassTokens.pageDark,
@@ -212,151 +296,231 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             gradient: LiquidGlassTokens.darkPageGradient,
           ),
           child: SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 20),
-                // Photo de profil
-                Stack(
-                  children: [
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white.withOpacity(0.8), width: 3),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF8A2BE2).withOpacity(0.6),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      // Photo de profil
+                      Stack(
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white.withOpacity(0.8), width: 2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF8A2BE2).withOpacity(0.6),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ClipOval(
+                              child: AuthUserStreamWidget(
+                                builder: (context) => currentUserPhoto != null && currentUserPhoto!.isNotEmpty
+                                    ? CachedNetworkImage(
+                                        imageUrl: currentUserPhoto!,
+                                        fit: BoxFit.cover,
+                                        placeholder: (context, url) => Container(
+                                          color: Colors.grey[300],
+                                          child: const Center(
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                            ),
+                                          ),
+                                        ),
+                                        errorWidget: (context, url, error) => Container(
+                                          color: violetColor.withOpacity(0.3),
+                                          child: Icon(
+                                            Icons.person,
+                                            size: 40,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      )
+                                    : Container(
+                                        color: violetColor.withOpacity(0.3),
+                                        child: Icon(
+                                          Icons.person,
+                                          size: 40,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                          ),
+                          // Badge modifier
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: _changeProfilePicture,
+                              child: Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(
+                                  Icons.camera_alt,
+                                  size: 14,
+                                  color: violetColor,
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                      child: ClipOval(
-                        child: AuthUserStreamWidget(
-                          builder: (context) => currentUserPhoto != null && currentUserPhoto!.isNotEmpty
-                              ? CachedNetworkImage(
-                                  imageUrl: currentUserPhoto!,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => Container(
-                                    color: Colors.grey[300],
-                                    child: const Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                      ),
-                                    ),
-                                  ),
-                                  errorWidget: (context, url, error) => Container(
-                                    color: violetColor.withOpacity(0.3),
-                                    child: Icon(
-                                      Icons.person,
-                                      size: 60,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                )
-                              : Container(
-                                  color: violetColor.withOpacity(0.3),
-                                  child: Icon(
-                                    Icons.person,
-                                    size: 60,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                      const SizedBox(width: 24),
+                      // Stats
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildProfileStat('Cadeaux', '${_model.favourites.length}'), // Number of liked gifts
+                            _buildProfileStat('Abonnés', '0'),
+                            _buildProfileStat('Abonnements', '0'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Nom et Bio
+                  const SizedBox(height: 12),
+                  AuthUserStreamWidget(
+                    builder: (context) => Text(
+                      currentUserDisplayName,
+                      style: GoogleFonts.outfit(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  if (_model.userProfile?['handle'] != null)
+                    Text(
+                      '@${_model.userProfile!['handle']}',
+                      style: GoogleFonts.outfit(
+                        fontSize: 14,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  if (_model.userProfile?['bio'] != null && _model.userProfile!['bio'].toString().isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        _model.userProfile!['bio'],
+                        style: GoogleFonts.outfit(
+                          fontSize: 14,
+                          color: Colors.white,
                         ),
                       ),
                     ),
-                    // Badge modifier
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: GestureDetector(
-                        onTap: () {
-                          // TODO: Ouvrir s+�lecteur de photo
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Modifier la photo de profil - +� venir',
-                                style: GoogleFonts.poppins(),
-                              ),
-                              backgroundColor: violetColor,
+                  const SizedBox(height: 16),
+                  
+                  // Nouveaux boutons d'action (Modifier & Partager)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: LiquidGlassCard(
+                          blur: LiquidGlassTokens.blurLight,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          onTap: () {
+                             _showEditProfileSheet(context);
+                          },
+                          child: Center(
+                            child: Text(
+                              'Modifier le profil',
+                              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
                             ),
-                          );
-                        },
-                        child: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            Icons.camera_alt,
-                            size: 18,
-                            color: violetColor,
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                // Nom d'utilisateur
-                AuthUserStreamWidget(
-                  builder: (context) => Text(
-                    '@${currentUserDisplayName ?? 'utilisateur'}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: LiquidGlassCard(
+                          blur: LiquidGlassTokens.blurLight,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          onTap: () {
+                             _shareProfile();
+                          },
+                          child: Center(
+                            child: Text(
+                              'Partager le profil',
+                              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 8),
-                // Email
-                Text(
-                  currentUserEmail ?? '',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: Colors.white.withOpacity(0.9),
-                  ),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                ],
+              ),
             ),
           ),
         ),
       ),
       actions: [
-        // Bouton billet (mode d+�couverte)
         IconButton(
           icon: const Icon(
             Icons.local_activity,
             color: Colors.white,
-            size: 24,
+            size: 28,
           ),
           onPressed: () {
-            context.push('/gala-ticket'); // Vers la page du gala
+            context.push('/gala-ticket');
           },
         ),
-        // Bouton param+�tres
         IconButton(
           icon: const Icon(
-            Icons.settings,
+            Icons.menu_rounded,
             color: Colors.white,
-            size: 24,
+            size: 32,
           ),
           onPressed: () {
-            context.push('/profile'); // Vers l'ancienne page param+�tres
+            _showSettingsBottomSheet(context);
           },
+        ),
+        const SizedBox(width: 8),
+      ],
+    );
+  }
+
+  Widget _buildProfileStat(String label, String count) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          count,
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            color: Colors.white.withOpacity(0.9),
+          ),
         ),
       ],
     );
@@ -463,12 +627,12 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(2),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.7,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        crossAxisCount: 3,
+        childAspectRatio: 1.0,
+        crossAxisSpacing: 2,
+        mainAxisSpacing: 2,
       ),
       itemCount: _model.favourites.length,
       itemBuilder: (context, index) {
@@ -492,122 +656,21 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             }
           }
         },
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+        child: CachedNetworkImage(
+          imageUrl: favourite.product.productPhoto,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => Container(
+            color: Colors.grey[200],
+            child: Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: violetColor,
               ),
-            ],
+            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                    ),
-                    child: CachedNetworkImage(
-                      imageUrl: favourite.product.productPhoto,
-                      height: 180,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: Colors.grey[200],
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: violetColor,
-                          ),
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: Colors.grey[200],
-                        child: const Icon(Icons.error, size: 40),
-                      ),
-                    ),
-                  ),
-                  // Coeur rouge
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.favorite,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              // Infos produit
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        favourite.product.productTitle,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF1F2937),
-                          height: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      if (favourite.platform != null && favourite.platform!.isNotEmpty)
-                        Text(
-                          favourite.platform!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: const Color(0xFF6B7280),
-                          ),
-                        ),
-                      const Spacer(),
-                      if (favourite.product.productPrice.isNotEmpty)
-                        Text(
-                          favourite.product.productPrice,
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: violetColor,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+          errorWidget: (context, url, error) => Container(
+            color: Colors.grey[200],
+            child: const Icon(Icons.error, size: 40),
           ),
         ),
       ),
@@ -994,7 +1057,178 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     );
   }
 
-// D+�l+�gu+� pour la tab bar sticky
+  // ─── Actions Profil (Partager / Modifier / Paramètres) ─────────────────
+  Future<void> _shareProfile() async {
+    final handle = _model.userProfile?['handle'] as String?;
+    if (handle == null || handle.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Veuillez configurer un @pseudo dans Modifier le profil.', style: GoogleFonts.outfit(color: Colors.white)),
+          backgroundColor: const Color(0xFFE53935),
+          behavior: SnackBarBehavior.floating,
+        )
+      );
+      return;
+    }
+    final url = 'https://doron.app/@$handle';
+    await Clipboard.setData(ClipboardData(text: url));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lien copié ! $url', style: GoogleFonts.outfit()),
+          backgroundColor: const Color(0xFF8A2BE2),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _showSettingsBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: LiquidGlassTokens.pageDark,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 24),
+              Text('Paramètres', style: GoogleFonts.outfit(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 24),
+              LiquidGlassSurface(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.tune_rounded, color: Colors.white),
+                      title: Text('Modifier mes préférences (IA)', style: GoogleFonts.outfit(color: Colors.white)),
+                      trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
+                      onTap: () {
+                        Navigator.pop(context);
+                        context.pushNamed('OnboardingAdvancedWidget', extra: {
+                          'skipUserQuestions': true,
+                          'onlyUserQuestions': true,
+                          'returnTo': '/user-profile',
+                        });
+                      },
+                    ),
+                    Divider(color: Colors.white.withOpacity(0.1), height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.lock_outline_rounded, color: Colors.white),
+                      title: Text('Changer le mot de passe', style: GoogleFonts.outfit(color: Colors.white)),
+                      trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
+                      onTap: () async {
+                        Navigator.pop(context);
+                        await showModalBottomSheet(
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          context: context,
+                          builder: (context) => Padding(padding: MediaQuery.viewInsetsOf(context), child: const ChangePasswordWidget()),
+                        );
+                      },
+                    ),
+                    Divider(color: Colors.white.withOpacity(0.1), height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.language_rounded, color: Colors.white),
+                      title: Text('Changer de langue', style: GoogleFonts.outfit(color: Colors.white)),
+                      trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
+                      onTap: () async {
+                        Navigator.pop(context);
+                        await showModalBottomSheet(
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          context: context,
+                          builder: (context) => Padding(padding: MediaQuery.viewInsetsOf(context), child: const ChangeLanguageWidget()),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+              LiquidGlassPill(
+                height: 56,
+                activeColor: const Color(0xFFE53935),
+                isActive: true,
+                onTap: () async {
+                  var confirmDialogResponse = await showDialog<bool>(
+                        context: context,
+                        builder: (alertDialogContext) {
+                          return AlertDialog(
+                            backgroundColor: const Color(0xFF1E1E1E),
+                            title: const Text('Déconnexion', style: TextStyle(color: Colors.white)),
+                            content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?', style: TextStyle(color: Colors.white70)),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(alertDialogContext, false),
+                                child: const Text('Annuler', style: TextStyle(color: Colors.white54)),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(alertDialogContext, true),
+                                child: const Text('Se déconnecter', style: TextStyle(color: Color(0xFFE53935))),
+                              ),
+                            ],
+                          );
+                        },
+                      ) ?? false;
+
+                  if (confirmDialogResponse) {
+                    GoRouter.of(context).prepareAuthEvent();
+                    await authManager.signOut();
+
+                    final prefs = await SharedPreferences.getInstance();
+                    // On ne reset pas first_time_showcase, juste session
+                    await prefs.remove('anonymous_mode');
+
+                    if (context.mounted) {
+                      context.go('/authentification');
+                    }
+                  }
+                },
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.logout_rounded, color: Colors.white, size: 20),
+                      const SizedBox(width: 12),
+                      Text('Se déconnecter', style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showEditProfileSheet(BuildContext context) async {
+    await showModalBottomSheet(
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      context: context,
+      builder: (context) => Padding(
+        padding: MediaQuery.viewInsetsOf(context),
+        child: const ChangeNameWidget(),
+      ),
+    ).then((_) {
+      _model.loadFavourites(); // Recharge pour sync les infos fraichement editées
+    });
+  }
+}
+
+// Délégué pour la tab bar sticky
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;
 

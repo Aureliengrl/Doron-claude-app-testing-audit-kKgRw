@@ -195,6 +195,33 @@ class ProductMatchingService {
       AppLogger.success('✅ ${allProducts.length} produits chargés depuis Firebase', 'Matching');
 
 
+      // =====================================================================
+      // 4️⃣ INJECTION DES WISHLISTS (Si un username Doron est fourni)
+      // =====================================================================
+      final personIdentifier = userTags['personIdentifier'] ?? userTags['personName']; 
+      if (personIdentifier != null && personIdentifier.toString().isNotEmpty) {
+        // On essaie de récupérer la wishlist pour ce username/name
+        final wishlistProducts = await _fetchWishlistByUsername(personIdentifier.toString());
+        if (wishlistProducts.isNotEmpty) {
+           AppLogger.info('🎁 Addition de ${wishlistProducts.length} produits provenant de la wishlist de $personIdentifier', 'Matching');
+           
+           // Pour éviter les doublons avec Firebase
+           final existingIds = allProducts.map((p) => p['id']).toSet();
+           for (final wp in wishlistProducts) {
+             if (!existingIds.contains(wp['id'])) {
+               allProducts.add(wp);
+             } else {
+               // Mettre à jour le produit existant pour lui ajouter le flag
+               final index = allProducts.indexWhere((p) => p['id'] == wp['id']);
+               if (index != -1) {
+                 allProducts[index]['isFromRecipientWishlist'] = true;
+               }
+             }
+           }
+        }
+      }
+
+
       // ============= FILTRAGE PAR TYPE DE CADEAU =============
       // JAMAIS de filtrage strict sur les types de cadeaux - seulement scoring
       // Cela permet d'avoir des cadeaux innovants même en mode PERSON
@@ -525,29 +552,114 @@ class ProductMatchingService {
     final tags = <String>{};
 
     // ========================================================================
-    // 1️⃣ GENRE (STRICT - 1 seul tag) → gender_femme, gender_homme, gender_mixte
-    // FIX CRITIQUE: Utiliser contains() pour supporter les emojis
+    // 1️⃣ GENRE
     // ========================================================================
     final gender = userTags['gender'] ?? userTags['recipientGender'];
     if (gender != null) {
-      final genderStr = gender.toString();
-
-      // FIX: Détecter "Femme" et "Homme" même avec emojis (🙋‍♀️ Femme, 🙋‍♂️ Homme)
-      if (genderStr.contains('Femme') || genderStr.contains('femme')) {
+      final genderStr = gender.toString().toLowerCase();
+      // FIX: Détecter "Femme" et "Homme" même avec emojis
+      if (genderStr.contains('femme')) {
         tags.add('gender_femme');
         AppLogger.debug('🚹 Genre converti: $genderStr → gender_femme', 'TagsConversion');
-      } else if (genderStr.contains('Homme') || genderStr.contains('homme')) {
+      } else if (genderStr.contains('homme')) {
         tags.add('gender_homme');
         AppLogger.debug('🚹 Genre converti: $genderStr → gender_homme', 'TagsConversion');
-      } else {
-        // Fallback pour "Autre", "Préfère ne pas dire", etc.
+      } else if (genderStr.contains('enfant')) {
+        // Enfant: neutre de base, on évite le filtrage strict de genre
         tags.add('gender_mixte');
-        AppLogger.debug('🚹 Genre non spécifié: $genderStr → gender_mixte', 'TagsConversion');
+        AppLogger.debug('🚹 Genre converti: $genderStr → gender_mixte', 'TagsConversion');
+      } else {
+        tags.add('gender_mixte');
       }
     }
 
     // ========================================================================
-    // 2️⃣ CATÉGORIE PRINCIPALE (STRICT - 1 seul tag)
+    // 2️⃣ ÂGE (Directement en tags de recherche)
+    // ========================================================================
+    final age = userTags['age'] ?? userTags['recipientAge'];
+    if (age != null) {
+      final ageStr = age.toString().toLowerCase();
+      if (ageStr.contains('moins de 12') || ageStr.contains('enfant')) {
+        tags.add('age_enfant');
+      } else if (ageStr.contains('ados') || ageStr.contains('13-17')) {
+        tags.add('age_ado');
+      } else if (ageStr.contains('18-25') || ageStr.contains('26-45')) {
+        tags.add('age_adulte');
+      } else if (ageStr.contains('45-65') || ageStr.contains('65+')) {
+        tags.add('age_senior');
+      }
+    }
+
+    // ========================================================================
+    // 3️⃣ BUDGET (STRICT - 1 seul tag principal, conversion des paliers)
+    // ========================================================================
+    final budgetTier = userTags['budgetTier'] ?? userTags['budget'];
+    if (budgetTier != null) {
+      final budgetStr = budgetTier.toString().toLowerCase();
+      if (budgetStr.contains('< 20') || budgetStr == '10.0' || budgetStr == '20.0') {
+        tags.add('budget_0_50');
+      } else if (budgetStr.contains('20€ - 50€') || budgetStr == '50.0') {
+        tags.add('budget_0_50'); // Jusqu'à 50€
+        tags.add('budget_50_100'); // Marge de tolérance
+      } else if (budgetStr.contains('50€ - 150€')) {
+        tags.addAll(['budget_50_100', 'budget_100_200']);
+      } else if (budgetStr.contains('luxe')) {
+        tags.addAll(['budget_100_200', 'budget_200+']);
+      } else if (budgetTier is num) {
+        tags.add(TagsDefinitions.getBudgetTagFromPrice(budgetTier.toInt()));
+      }
+    }
+
+    // ========================================================================
+    // 4️⃣ PERSONNALITÉS / STYLE DE VIE (L'entonnoir principal de la refonte)
+    // ========================================================================
+    final personality = userTags['recipientPersonality'];
+    if (personality != null) {
+      final personalityList = personality is List ? personality : [personality];
+      for (final p in personalityList) {
+        final pStr = p.toString().toLowerCase();
+        if (pStr.contains("explorateur")) {
+          tags.addAll(['passion_voyages', 'passion_nature', 'type_voyage_aventure', 'type_sport_outdoor', 'perso_aventurier']);
+        } else if (pStr.contains("casanier")) {
+          tags.addAll(['cat_maison', 'passion_lecture', 'passion_cuisine', 'style_minimaliste', 'type_maison_deco']);
+        } else if (pStr.contains("tech-enthusiast") || pStr.contains("tech")) {
+          tags.addAll(['cat_tech', 'passion_jeuxvideo', 'passion_tech', 'type_high_tech', 'perso_techie']);
+        } else if (pStr.contains("fashioniste")) {
+          tags.addAll(['cat_mode', 'cat_beaute', 'passion_mode', 'passion_beaute', 'style_tendance', 'style_elegant']);
+        } else if (pStr.contains("épicurien") || pStr.contains("epicurien")) {
+          tags.addAll(['cat_food', 'passion_vins', 'passion_cuisine', 'type_gastronomie', 'perso_gourmand']);
+        } else if (pStr.contains("créatif") || pStr.contains("creatif")) {
+          tags.addAll(['passion_art', 'passion_musique', 'passion_loisirs_creatifs', 'perso_creatif', 'type_loisirs_creatifs', 'style_boheme']);
+        } else {
+          // Fallback legacy behavior
+          TagsDefinitions.personalityConversion.forEach((key, value) {
+            if (pStr.contains(key.toLowerCase())) tags.add(value);
+          });
+        }
+      }
+    }
+
+    // ========================================================================
+    // 5️⃣ OCCASION
+    // ========================================================================
+    final occasion = userTags['occasion'];
+    if (occasion != null) {
+      final occStr = occasion.toString().toLowerCase();
+      if (occStr.contains('anniversaire')) {
+        tags.add('occasion_anniversaire');
+      } else if (occStr.contains('crémaillère')) {
+        tags.addAll(['occasion_fete', 'cat_maison', 'type_maison_deco']);
+      } else if (occStr.contains('mariage')) {
+        tags.addAll(['occasion_mariage', 'style_luxe']);
+      } else if (occStr.contains('naissance')) {
+        tags.add('occasion_naissance');
+      } else if (occStr.contains('remerciement')) {
+        tags.add('occasion_remerciement');
+      }
+    }
+
+    // ========================================================================
+    // 6️⃣ CATÉGORIE PRINCIPALE (Fallback au cas où)
     // ========================================================================
     final preferredCategories = userTags['preferredCategories'];
     if (preferredCategories != null) {
@@ -557,85 +669,29 @@ class ProductMatchingService {
         final converted = TagsDefinitions.categoryConversion[catStr];
         if (converted != null) {
           tags.add(converted);
-          AppLogger.debug('📁 Catégorie convertie: $catStr → $converted', 'TagsConversion');
         }
       }
     }
 
     // ========================================================================
-    // 3️⃣ BUDGET (STRICT - 1 seul tag)
-    // ========================================================================
-    final budget = userTags['budget'];
-    if (budget != null) {
-      final budgetInt = int.tryParse(budget.toString()) ?? 0;
-      final budgetTag = TagsDefinitions.getBudgetTagFromPrice(budgetInt);
-      tags.add(budgetTag);
-      AppLogger.debug('💰 Budget converti: $budgetInt → $budgetTag', 'TagsConversion');
-    }
-
-    // ========================================================================
-    // 4️⃣ STYLES (SOUPLE - plusieurs tags possibles)
-    // ========================================================================
-    final style = userTags['style'];
-    if (style != null) {
-      final styleStr = style.toString();
-      final converted = TagsDefinitions.styleConversion[styleStr];
-      if (converted != null) {
-        tags.add(converted);
-        AppLogger.debug('🎨 Style converti: $styleStr → $converted', 'TagsConversion');
-      }
-    }
-
-    // ========================================================================
-    // 5️⃣ PERSONNALITÉS (SOUPLE - plusieurs tags possibles)
-    // ========================================================================
-    final personality = userTags['personality'];
-    if (personality != null) {
-      final personalityStr = personality.toString().toLowerCase();
-      // Chercher dans le map de conversion
-      TagsDefinitions.personalityConversion.forEach((key, value) {
-        if (personalityStr.contains(key.toLowerCase())) {
-          tags.add(value);
-          AppLogger.debug('😊 Personnalité convertie: $key → $value', 'TagsConversion');
-        }
-      });
-    }
-
-    // ========================================================================
-    // 6️⃣ PASSIONS / HOBBIES / INTERESTS (SOUPLE - plusieurs tags possibles)
-    // ========================================================================
-    final interests = userTags['interests'] ?? userTags['hobbies'] ?? userTags['recipientHobbies'];
-    if (interests != null) {
-      final interestsList = interests is String ? interests.split(',').map((e) => e.trim()).toList() :
-                           (interests is List ? interests.map((e) => e.toString()).toList() : [interests.toString()]);
-
-      for (final interest in interestsList) {
-        final interestLower = interest.toLowerCase();
-        // Chercher dans le map de conversion de passions
-        TagsDefinitions.passionConversion.forEach((key, value) {
-          if (interestLower.contains(key.toLowerCase())) {
-            tags.add(value);
-            AppLogger.debug('❤️ Passion convertie: $key → $value', 'TagsConversion');
-          }
-        });
-      }
-    }
-
-    // ========================================================================
-    // 7️⃣ TYPES DE CADEAUX (SOUPLE - plusieurs tags possibles)
+    // 7️⃣ TYPES DE CADEAUX (Physique vs Expérience)
     // ========================================================================
     final giftTypes = userTags['giftTypes'];
     if (giftTypes != null) {
       final typesList = giftTypes is List ? giftTypes : [giftTypes];
       for (final type in typesList) {
         final typeStr = type.toString().toLowerCase();
-        // Essayer de matcher avec les types valides
-        for (final validType in TagsDefinitions.giftTypeTags) {
-          if (typeStr.contains(validType.replaceFirst('type_', '')) ||
-              validType.contains(typeStr)) {
-            tags.add(validType);
-            AppLogger.debug('🎁 Type cadeau ajouté: $validType', 'TagsConversion');
-            break;
+        if (typeStr.contains('physique')) {
+          tags.addAll(['type_mode_accessoires', 'type_maison_deco', 'type_livres_bd', 'type_high_tech', 'cat_mode', 'cat_tech', 'cat_maison']);
+        } else if (typeStr.contains('expérience') || typeStr.contains('experience') || typeStr.contains('activité') || typeStr.contains('activite')) {
+          tags.addAll(['type_voyage_aventure', 'type_bien_etre', 'type_gastronomie', 'type_culture', 'passion_voyages']);
+        } else {
+          // Fallback legacy behavior
+          for (final validType in TagsDefinitions.giftTypeTags) {
+            if (typeStr.contains(validType.replaceFirst('type_', '')) || validType.contains(typeStr)) {
+              tags.add(validType);
+              break;
+            }
           }
         }
       }
@@ -786,6 +842,12 @@ class ProductMatchingService {
     if (age != null) {
       final ageInt = int.tryParse(age.toString()) ?? 0;
       if (ageInt > 0) {
+        // 🔒 1.B PROTECTION MINEURS (ZÉRO TOLÉRANCE ALCOOL)
+        if (ageInt < 18 && allProductTags.contains('cat_alcool')) {
+          AppLogger.debug('❌ EXCLUSION MINEUR: Produit alcoolisé interdit pour $ageInt ans', 'Debug');
+          return -10000.0;
+        }
+
         // Déterminer la tranche d'âge de l'utilisateur
         String userAgeTag;
         if (ageInt < 13) {
@@ -822,89 +884,86 @@ class ProductMatchingService {
     // 🔒 3. CATÉGORIE PRINCIPALE (SCORING uniquement, PLUS JAMAIS d'exclusion)
     final userCategoryTags = searchTags.where((t) => t.startsWith('cat_')).toList();
     if (userCategoryTags.isNotEmpty) {
-      final userCategory = userCategoryTags.first;
       final productCategoryTags = allProductTags.where((t) => t.startsWith('cat_')).toList();
 
       if (productCategoryTags.isEmpty) {
         AppLogger.debug('⚠️ Produit sans catégorie: +20', 'Debug');
         score += 20.0;
-      } else if (productCategoryTags.contains(userCategory.toLowerCase())) {
-        // Match exact
-        AppLogger.debug('✅ CATÉGORIE MATCH: $userCategory = +80 points', 'Debug');
-        score += 80.0;
       } else {
-        // Catégorie ne correspond PAS - PÉNALITÉ mais PAS d'exclusion
-        if (isHomeMode) {
-          // Home: Pénalité importante mais pas d'exclusion (permet variété)
-          AppLogger.debug('⚠️ CATÉGORIE NE CORRESPOND PAS (home): $userCategory ≠ ${productCategoryTags.join(", ")} => Pénalité -45', 'Debug');
-          score -= 45.0;
-        } else if (isPersonMode) {
-          // Person: pénalité modérée (permet innovation)
-          AppLogger.debug('⚠️ CATÉGORIE NE CORRESPOND PAS (person): $userCategory ≠ ${productCategoryTags.join(", ")} => Pénalité -30', 'Debug');
-          score -= 30.0;
+        bool categoryMatched = false;
+        
+        for (final userCategory in userCategoryTags) {
+          if (productCategoryTags.contains(userCategory.toLowerCase())) {
+            categoryMatched = true;
+            AppLogger.debug('✅ CATÉGORIE MATCH: $userCategory = +80 points', 'Debug');
+            break; // On donne les points une seule fois si au moins une catégorie matche
+          }
+        }
+
+        if (categoryMatched) {
+            score += 80.0;
         } else {
-          // Discovery: pénalité légère
-          AppLogger.debug('⚠️ CATÉGORIE NE CORRESPOND PAS (discovery): $userCategory ≠ ${productCategoryTags.join(", ")} => Pénalité -10', 'Debug');
-          score -= 10.0;
+            // Catégorie ne correspond PAS - PÉNALITÉ mais PAS d'exclusion
+            if (isHomeMode) {
+              AppLogger.debug('⚠️ CATÉGORIE NE CORRESPOND PAS (home) => Pénalité -45', 'Debug');
+              score -= 45.0;
+            } else if (isPersonMode) {
+              AppLogger.debug('⚠️ CATÉGORIE NE CORRESPOND PAS (person) => Pénalité -30', 'Debug');
+              score -= 30.0;
+            } else {
+              AppLogger.debug('⚠️ CATÉGORIE NE CORRESPOND PAS (discovery) => Pénalité -10', 'Debug');
+              score -= 10.0;
+            }
         }
       }
     }
 
-    // 🔒 4. BUDGET (SCORING uniquement, PLUS JAMAIS d'exclusion)
+    // 🔒 4. BUDGET (SCORING avec élasticité budgétaire)
     final userBudgetTags = searchTags.where((t) => t.startsWith('budget_')).toList();
     if (userBudgetTags.isNotEmpty) {
       final userBudget = userBudgetTags.first;
+      String productBudget = '';
+
       final productBudgetTags = allProductTags.where((t) => t.startsWith('budget_')).toList();
-
       if (productBudgetTags.isEmpty) {
-        // Calculer depuis le prix
         final price = product['price'];
-        if (price != null) {
-          final priceInt = price is int ? price : (price is double ? price.toInt() : 0);
-          final calculatedBudget = TagsDefinitions.getBudgetTagFromPrice(priceInt);
+        final priceInt = price is int ? price : (price is double ? price.toInt() : 0);
+        productBudget = TagsDefinitions.getBudgetTagFromPrice(priceInt);
+      } else {
+        productBudget = productBudgetTags.first;
+      }
 
-          if (calculatedBudget.toLowerCase() == userBudget.toLowerCase()) {
-            AppLogger.debug('✅ BUDGET CALCULÉ MATCH: $priceInt€ = $calculatedBudget = +60 points', 'Debug');
-            score += 60.0;
-          } else {
-            // Budget ne correspond PAS - PÉNALITÉ mais PAS d'exclusion
-            if (isHomeMode) {
-              // Home: Pénalité importante mais pas d'exclusion (permet flexibilité)
-              AppLogger.debug('⚠️ BUDGET NE CORRESPOND PAS (home): $calculatedBudget ≠ $userBudget => Pénalité -30', 'Debug');
-              score -= 30.0;
-            } else if (isPersonMode) {
-              // Person: pénalité légère (permet flexibilité)
-              AppLogger.debug('⚠️ BUDGET NE CORRESPOND PAS (person): $calculatedBudget ≠ $userBudget => Pénalité -20', 'Debug');
-              score -= 20.0;
-            } else {
-              // Discovery: pénalité très légère
-              AppLogger.debug('⚠️ BUDGET NE CORRESPOND PAS (discovery): $calculatedBudget ≠ $userBudget => Pénalité -5', 'Debug');
-              score -= 5.0;
-            }
-          }
-        } else {
-          // Pas de prix disponible => petite pénalité
-          AppLogger.debug('⚠️ Pas de prix disponible: +10', 'Debug');
-          score += 10.0;
-        }
-      } else if (productBudgetTags.contains(userBudget.toLowerCase())) {
-        // Match exact du budget
+      if (productBudget.toLowerCase() == userBudget.toLowerCase()) {
         AppLogger.debug('✅ BUDGET MATCH: $userBudget = +60 points', 'Debug');
         score += 60.0;
       } else {
-        // Budget ne correspond PAS - PÉNALITÉ mais PAS d'exclusion
-        if (isDiscoveryMode) {
-          // En mode discovery, on pénalise mais on n'exclut PAS
-          AppLogger.debug('⚠️ BUDGET NE CORRESPOND PAS (discovery mode): $userBudget ≠ ${productBudgetTags.join(", ")} => Pénalité -10', 'Debug');
-          score -= 10.0;
-        } else if (isHomeMode) {
-          // En mode home, pénalité importante mais PAS d'exclusion
-          AppLogger.debug('⚠️ BUDGET NE CORRESPOND PAS (home): $userBudget ≠ ${productBudgetTags.join(", ")} => Pénalité -30', 'Debug');
-          score -= 30.0;
+        // Calculer l'élasticité (distance entre les budgets)
+        int getBudgetIndex(String b) {
+          if (b.contains('0_50')) return 0;
+          if (b.contains('50_100')) return 1;
+          if (b.contains('100_200')) return 2;
+          if (b.contains('200')) return 3;
+          return -1;
+        }
+
+        final userIdx = getBudgetIndex(userBudget);
+        final prodIdx = getBudgetIndex(productBudget);
+
+        if (userIdx != -1 && prodIdx != -1) {
+          final diff = (userIdx - prodIdx).abs();
+          if (diff == 1) {
+            AppLogger.debug('⚠️ BUDGET ÉLASTIQUE (diff 1): $productBudget ≠ $userBudget => Pénalité -25', 'Debug');
+            score -= 25.0;
+          } else if (diff == 2) {
+            AppLogger.debug('⚠️ BUDGET ÉLASTIQUE (diff 2): $productBudget ≠ $userBudget => Pénalité -60', 'Debug');
+            score -= 60.0;
+          } else if (diff >= 3) {
+            AppLogger.debug('❌ BUDGET HORS SCÉNARIO (diff 3+): $productBudget ≠ $userBudget => EXCLUSION', 'Debug');
+            return -10000.0;
+          }
         } else {
-          // En mode person, pénalité modérée
-          AppLogger.debug('⚠️ BUDGET NE CORRESPOND PAS (person): $userBudget ≠ ${productBudgetTags.join(", ")} => Pénalité -20', 'Debug');
-          score -= 20.0;
+            // Fallback
+            score -= 20.0;
         }
       }
     }
@@ -973,7 +1032,7 @@ class ProductMatchingService {
       }
     }
 
-    // 💫 7. TYPES DE CADEAUX (SOUPLE - max 30 points)
+    // 💫 7. TYPES DE CADEAUX (SOUPLE - max 70 points)
     final userTypeTags = searchTags.where((t) => t.startsWith('type_')).toList();
     if (userTypeTags.isNotEmpty) {
       final productTypeTags = allProductTags.where((t) => t.startsWith('type_')).toList();
@@ -987,10 +1046,51 @@ class ProductMatchingService {
       }
 
       if (typeMatches > 0) {
-        final typeScore = typeMatches * 15.0; // 15 points par type matché
-        score += typeScore.clamp(0, 30); // Max 30 points
-        AppLogger.debug('🎁 TYPES: $typeMatches matches = +${typeScore.clamp(0, 30)} points', 'Debug');
+        final typeScore = typeMatches * 35.0; // 35 points par type matché
+        score += typeScore.clamp(0, 70); // Max 70 points
+        AppLogger.debug('🎁 TYPES: $typeMatches matches = +${typeScore.clamp(0, 70)} points', 'Debug');
       }
+    }
+
+    // ========================================================================
+    // 8️⃣ LOCATION (Boost activités locales) - NOUVEAU
+    // ========================================================================
+    final location = userTags['location'];
+    if (location != null && location.toString().isNotEmpty) {
+      final locStr = location.toString().toLowerCase();
+      
+      // Est-ce une activité ?
+      final isActivity = allProductTags.any((t) => 
+        t == 'type_voyage_aventure' || 
+        t == 'type_bien_etre' || 
+        t == 'type_gastronomie' || 
+        t == 'type_culture'
+      );
+      
+      if (isActivity) {
+        // Obtenir la description ou le nom ou un tag location du produit
+        final productName = (product['name'] ?? '').toString().toLowerCase();
+        final productDesc = (product['description'] ?? '').toString().toLowerCase();
+        
+        // On cherche le nom de la ville ou département (ex: "Paris", "Île-de-France")
+        final parts = locStr.replaceAll(RegExp(r'[()]'), ' ').split(' ').where((p) => p.length > 3).toList();
+        for (final part in parts) {
+          if (productName.contains(part) || productDesc.contains(part) || allProductTags.contains(part)) {
+             score += 150.0; // GROS BONUS pour une activité locale pertinente
+             AppLogger.debug('📍 ACTIVITÉ LOCALE détectée ($part) = +150 points', 'Debug');
+             break;
+          }
+        }
+      }
+    }
+
+    // ========================================================================
+    // 9️⃣ WISHLIST USERNAME MATCH - NOUVEAU
+    // ========================================================================
+    final isWishlisted = product['isFromRecipientWishlist'] == true;
+    if (isWishlisted) {
+      score += 500.0; // BONUS MASSIF ABSOLU pour les produits issus de leur vraie wishlist
+      AppLogger.debug('🎯 WISHLIST MATCH ABSOLU = +500 points', 'Debug');
     }
 
     // ========================================================================
@@ -1013,6 +1113,62 @@ class ProductMatchingService {
     AppLogger.debug('', 'Debug');
 
     return score;
+  }
+
+  /// NOUVEAU: Récupère les favoris/wishlists d'un utilisateur par son username
+  static Future<List<Map<String, dynamic>>> _fetchWishlistByUsername(String username) async {
+    try {
+      if (username.isEmpty) return [];
+      
+      // Nettoyer le @ si présent
+      final cleanUsername = username.startsWith('@') ? username.substring(1) : username;
+      
+      final FirebaseFirestore firestore = FirebaseFirestore.instance;
+      // Chercher l'utilisateur par username (requiert que le champ username existe dans 'users')
+      final usersSnapshot = await firestore
+          .collection('users')
+          .where('username', isEqualTo: cleanUsername)
+          .limit(1)
+          .get();
+          
+      if (usersSnapshot.docs.isEmpty) {
+        // Fallback: chercher par email au cas où (ou par displayName)
+         final emailSnapshot = await firestore
+          .collection('users')
+          .where('displayName', isEqualTo: cleanUsername)
+          .limit(1)
+          .get();
+          
+         if (emailSnapshot.docs.isEmpty) return [];
+         
+         // On remplace le résultat si trouvé par displayName
+         usersSnapshot.docs.addAll(emailSnapshot.docs);
+      }
+      
+      final targetUid = usersSnapshot.docs.first.id;
+      AppLogger.debug('🔍 Utilisateur trouvé pour username $cleanUsername: UID = $targetUid', 'Matching');
+      
+      // Récupérer la collection 'favorites'
+      final favSnapshot = await firestore
+          .collection('users')
+          .doc(targetUid)
+          .collection('favorites')
+          .get();
+          
+      final products = favSnapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        data['isFromRecipientWishlist'] = true; // Flag très important
+        return data;
+      }).toList();
+      
+      AppLogger.success('🎁 ${products.length} produits trouvés dans la wishlist de $cleanUsername', 'Matching');
+      return products;
+      
+    } catch (e) {
+      AppLogger.error('Erreur lors de la récupération de la wishlist pour $username', 'Matching', e);
+      return [];
+    }
   }
 
   /// ⛔ FONCTION SUPPRIMÉE - Plus de fallback assets

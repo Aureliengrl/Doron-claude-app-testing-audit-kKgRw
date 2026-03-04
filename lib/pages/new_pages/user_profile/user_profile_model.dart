@@ -6,6 +6,8 @@ import '/auth/firebase_auth/auth_util.dart';
 class UserProfileModel extends ChangeNotifier {
   bool isLoading = true;
   List<FavouritesRecord> favourites = [];
+  Map<String, dynamic>? userProfile;
+  List<Map<String, dynamic>> wishlists = [];
   String? errorMessage;
 
   /// Charge les favoris de l'utilisateur
@@ -20,6 +22,10 @@ class UserProfileModel extends ChangeNotifier {
         notifyListeners();
         return;
       }
+
+      // Charger le profil (Bio, Name, stats) et les wishlists
+      userProfile = await FirebaseDataService.loadUserProfile();
+      wishlists = await FirebaseDataService.loadWishlists();
 
       // Charger les favoris depuis Firestore
       final favQuery = await queryFavouritesRecordOnce(

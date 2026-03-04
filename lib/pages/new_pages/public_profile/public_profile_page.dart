@@ -1,3 +1,4 @@
+```dart
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -5,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '/components/liquid_glass.dart';
+import '/components/bounce_button.dart'; // Added import for BounceCard
 import '/services/user_search_service.dart';
 import '/utils/app_logger.dart';
 
@@ -120,7 +122,7 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
     final handle = profile['handle'] as String? ?? '';
 
     return SliverAppBar(
-      expandedHeight: 260,
+      expandedHeight: 250,
       floating: false,
       pinned: true,
       backgroundColor: _violet,
@@ -144,50 +146,127 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
             ),
           ),
           child: SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 20),
-                // Photo de profil
-                CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.white.withOpacity(0.2),
-                  backgroundImage: photoUrl.isNotEmpty
-                      ? CachedNetworkImageProvider(photoUrl)
-                      : null,
-                  child: photoUrl.isEmpty
-                      ? Text(
-                          displayName[0].toUpperCase(),
-                          style: GoogleFonts.poppins(
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        )
-                      : null,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  displayName,
-                  style: GoogleFonts.poppins(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      // Photo de profil
+                      CircleAvatar(
+                        radius: 40,
+                        backgroundColor: Colors.white.withOpacity(0.2),
+                        backgroundImage: photoUrl.isNotEmpty
+                            ? CachedNetworkImageProvider(photoUrl)
+                            : null,
+                        child: photoUrl.isEmpty
+                            ? Text(
+                                displayName[0].toUpperCase(),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : null,
+                      ),
+                      const SizedBox(width: 24),
+                      // Stats
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildProfileStat('Cadeaux', '0'),
+                            _buildProfileStat('Abonnés', '0'),
+                            _buildProfileStat('Abonnements', '0'),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                if (handle.isNotEmpty)
+                  const SizedBox(height: 16),
                   Text(
-                    '@$handle',
+                    displayName,
                     style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.white.withOpacity(0.85),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
-              ],
+                  if (handle.isNotEmpty)
+                    Text(
+                      '@$handle',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: Colors.white.withOpacity(0.85),
+                      ),
+                    ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 36,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Vous suivez maintenant $displayName',
+                              style: GoogleFonts.poppins(),
+                            ),
+                            backgroundColor: const Color(0xFF10B981),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: _violet,
+                        padding: const EdgeInsets.symmetric(vertical: 0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Suivre',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildProfileStat(String label, String count) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          count,
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            color: Colors.white.withOpacity(0.9),
+          ),
+        ),
+      ],
     );
   }
 
@@ -276,50 +355,55 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
     final count = wishlist['productCount'] as int? ?? 0;
     final isPublic = wishlist['isPublic'] as bool? ?? false;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [_violet, _pink]),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            isPublic ? Icons.bookmark : Icons.lock,
-            color: Colors.white,
-            size: 22,
-          ),
-        ),
-        title: Text(
-          name,
-          style: GoogleFonts.poppins(
-              fontSize: 15, fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(
-          '$count cadeau${count > 1 ? 'x' : ''}',
-          style: GoogleFonts.poppins(
-              fontSize: 13, color: const Color(0xFF6B7280)),
-        ),
-        trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF)),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: BounceCard(
         onTap: () {
-          // TODO: ouvrir le contenu de la wishlist
+          final wishlistId = wishlist['id'] as String?;
+          if (wishlistId != null && wishlistId.isNotEmpty) {
+            context.push('/wishlist-details/$wishlistId');
+          }
         },
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          leading: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [_violet, _pink]),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              isPublic ? Icons.bookmark : Icons.lock,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
+          title: Text(
+            name,
+            style: GoogleFonts.poppins(
+                fontSize: 15, fontWeight: FontWeight.bold),
+          ),
+          subtitle: Text(
+            '$count cadeau${count > 1 ? 'x' : ''}',
+            style: GoogleFonts.poppins(
+                fontSize: 13, color: const Color(0xFF6B7280)),
+          ),
+          trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF)),
+        ),
       ),
     );
   }

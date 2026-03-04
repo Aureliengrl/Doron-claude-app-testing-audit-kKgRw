@@ -6,7 +6,6 @@ export '/pages/pages/gift_generator/gift_generator_widget.dart'
 export '/pages/pages/home_algoace/home_algoace_widget.dart'
     show HomeAlgoaceWidget;
 export '/pages/pages/favourites/favourites_widget.dart' show FavouritesWidget;
-export '/pages/pages/profile/profile_widget.dart' show ProfileWidget;
 // export '/pages/pages/chat_history/chat_history_widget.dart'
 //     show ChatHistoryWidget; // file removed
 // export '/pages/pages/open_ai_chat/chat_ai_screen/chat_ai_screen_widget.dart'

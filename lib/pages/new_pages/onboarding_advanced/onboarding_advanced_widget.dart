@@ -123,6 +123,53 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
             ),
           ),
           _buildContinueButton(steps),
+          // Scan IA overlay during navigation of the final step
+          if (_model.isNavigating && _model.currentStep == steps.length - 1)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.85),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Animated scanning icon
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0.0, end: 1.0),
+                        duration: const Duration(milliseconds: 1500),
+                        builder: (context, value, child) {
+                          return Transform.rotate(
+                            angle: value * 2 * 3.14159,
+                            child: Icon(
+                              Icons.data_usage_outlined,
+                              size: 80,
+                              color: violetColor,
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 32),
+                      Text(
+                        'Recherche en cours...',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Analyse des millions de combinaisons\ngrace à notre ✨ Scan IA',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          color: Colors.white70,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -389,7 +436,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
           textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
             fontSize: 18,
-            color: Colors.grey[600],
+            color: const Color(0xFFF5F5F7),
           ),
         ),
       ],
@@ -452,7 +499,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: const Color(0xFFF5F5F7),
               ),
             ),
           ],
@@ -474,6 +521,13 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
               ),
               decoration: InputDecoration(
               hintText: placeholder,
+              labelText: 'optionnel',
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              labelStyle: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w300,
+              ),
               hintStyle: GoogleFonts.poppins(
                 fontSize: 20,
                 color: Colors.grey[400],
@@ -500,7 +554,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
           ),
         ),
         // Espace supplémentaire en bas pour s'assurer que le champ reste visible
-        const SizedBox(height: 40),
+        const SizedBox(height: 60),
         ],
       ),
     );
@@ -530,7 +584,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: const Color(0xFFF5F5F7),
               ),
             ),
           ],
@@ -660,7 +714,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 style: GoogleFonts.poppins(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -780,7 +834,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
           style: GoogleFonts.poppins(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.grey[800],
+            color: Colors.white,
           ),
         ),
         if (stepData.containsKey('subtitle'))
@@ -874,14 +928,14 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                     '${min.toInt()}€',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
-                      color: Colors.grey[600],
+                      color: const Color(0xFFF5F5F7),
                     ),
                   ),
                   Text(
                     '${max.toInt()}€',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
-                      color: Colors.grey[600],
+                      color: const Color(0xFFF5F5F7),
                     ),
                   ),
                 ],

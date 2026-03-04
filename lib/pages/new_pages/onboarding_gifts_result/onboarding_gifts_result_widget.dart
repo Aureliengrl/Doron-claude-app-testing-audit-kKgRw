@@ -14,6 +14,7 @@ import '/services/product_matching_service.dart';
 import '/services/firebase_data_service.dart';
 import '/services/product_url_service.dart';
 import '/components/bounce_button.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'onboarding_gifts_result_model.dart';
 export 'onboarding_gifts_result_model.dart';
 
@@ -685,35 +686,31 @@ class _OnboardingGiftsResultWidgetState
 
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            // Toggle sélection au lieu d'ouvrir l'URL
-            setState(() {
-              _model.toggleGiftSelection(giftId);
-            });
-            HapticFeedback.selectionClick();
-          },
+      child: BounceCard(
+        onTap: () {
+          // Toggle sélection au lieu d'ouvrir l'URL
+          setState(() {
+            _model.toggleGiftSelection(giftId);
+          });
+          HapticFeedback.selectionClick();
+        },
+        decoration: BoxDecoration(
+          color: Colors.white,
           borderRadius: BorderRadius.circular(24),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: isSelected
-                  ? Border.all(color: violetColor, width: 3)
-                  : null,
-              boxShadow: [
-                BoxShadow(
-                  color: isSelected
-                      ? violetColor.withOpacity(0.3)
-                      : Colors.black.withOpacity(0.08),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+          border: isSelected
+              ? Border.all(color: violetColor, width: 3)
+              : null,
+          boxShadow: [
+            BoxShadow(
+              color: isSelected
+                  ? violetColor.withOpacity(0.3)
+                  : Colors.black.withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
             ),
-            child: Stack(
+          ],
+        ),
+        child: Stack(
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -724,74 +721,63 @@ class _OnboardingGiftsResultWidgetState
                         topLeft: Radius.circular(24),
                         topRight: Radius.circular(24),
                       ),
-                      child: Image.network(
-                        gift['image'] ?? '',
+                      child: CachedNetworkImage(
+                        imageUrl: gift['image'] ?? '',
                         height: 250,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        // FIX: Loader visible pendant le chargement (pas de gris)
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            height: 250,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  violetColor.withOpacity(0.1),
-                                  const Color(0xFFEC4899).withOpacity(0.1),
-                                ],
-                              ),
-                            ),
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                color: violetColor,
-                                strokeWidth: 3,
-                                value: loadingProgress.expectedTotalBytes != null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                    : null,
-                              ),
-                            ),
-                          );
-                        },
-                        // FIX: Widget d'erreur avec style violet (pas gris)
-                        errorBuilder: (context, error, stackTrace) {
-                          AppLogger.debug('❌ Erreur chargement image cadeau: $error', 'Debug');
-                          return Container(
-                            height: 250,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  violetColor.withOpacity(0.1),
-                                  const Color(0xFFEC4899).withOpacity(0.1),
-                                ],
-                              ),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.card_giftcard,
-                                  color: violetColor.withOpacity(0.5),
-                                  size: 60,
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'Image en cours de chargement',
-                                  style: GoogleFonts.poppins(
-                                    color: violetColor.withOpacity(0.7),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
+                        memCacheWidth: 600,
+                        placeholder: (context, url) => Container(
+                          height: 250,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                violetColor.withOpacity(0.1),
+                                const Color(0xFFEC4899).withOpacity(0.1),
                               ],
                             ),
-                          );
-                        },
+                          ),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: violetColor,
+                              strokeWidth: 3,
+                            ),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          height: 250,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                violetColor.withOpacity(0.1),
+                                const Color(0xFFEC4899).withOpacity(0.1),
+                              ],
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.card_giftcard,
+                                color: violetColor.withOpacity(0.5),
+                                size: 60,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Erreur d\'image',
+                                style: GoogleFonts.poppins(
+                                  color: violetColor.withOpacity(0.7),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                     // Informations du produit

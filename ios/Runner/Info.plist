@@ -88,6 +88,10 @@
 	<string>Cette application a besoin d'accéder à la reconnaissance vocale pour comprendre votre description et générer des suggestions de cadeaux personnalisées.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Doron utilise votre position pour trouver les magasins physiques proches qui vendent ce cadeau.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Doron a besoin d'accéder à votre galerie pour vous permettre de changer votre photo de profil.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Doron a besoin d'accéder à l'appareil photo pour vous permettre de prendre une nouvelle photo de profil.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Doron utilise votre position pour trouver les magasins physiques proches qui vendent ce cadeau.</string>
 
