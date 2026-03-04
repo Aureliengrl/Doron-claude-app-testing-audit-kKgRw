@@ -9,6 +9,8 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/services/user_search_service.dart';
 import '/backend/backend.dart';
 import '/components/liquid_glass.dart';
+import '/services/firebase_data_service.dart';
+import 'package:go_router/go_router.dart';
 
 class WishlistsPageWidget extends StatefulWidget {
   const WishlistsPageWidget({super.key});
@@ -427,8 +429,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   Future<void> _showCreateWishlistDialog() async {

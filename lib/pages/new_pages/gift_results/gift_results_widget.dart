@@ -562,9 +562,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
               ),
             ),
           ),
-        ),
-      ),
-    );
+        );
   }
 
   Color _getMatchColor(int matchPercent) {

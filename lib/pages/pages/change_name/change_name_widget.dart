@@ -286,7 +286,6 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
                 ),
               ].divide(SizedBox(width: 5.0)),
             ),
-            ),
           ].divide(SizedBox(height: 20.0)),
         ),
       ),
