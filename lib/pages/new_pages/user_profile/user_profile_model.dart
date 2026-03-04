@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '/backend/backend.dart';
 import '/auth/firebase_auth/auth_util.dart';
+import '/services/firebase_data_service.dart';
 
 class UserProfileModel extends ChangeNotifier {
   bool isLoading = true;

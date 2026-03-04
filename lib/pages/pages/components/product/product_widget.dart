@@ -503,7 +503,6 @@ class _ProductWidgetState extends State<ProductWidget>
                   ),
                 ),
               ),
-            ),
             Align(
               alignment: AlignmentDirectional(1.0, -1.0),
               child: InkWell(

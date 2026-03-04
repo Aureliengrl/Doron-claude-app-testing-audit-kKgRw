@@ -918,8 +918,6 @@ class _OnboardingGiftsResultWidgetState
               ],
             ),
           ),
-        ),
-      ),
     );
   }
 

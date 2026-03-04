@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -115,7 +116,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
               Text('Mise à jour de la photo...', style: GoogleFonts.outfit()),
             ],
           ),
-          backgroundColor: LiquidGlassTokens.highlight1,
+          backgroundColor: LiquidGlassTokens.pageDark,
           duration: const Duration(seconds: 4),
           behavior: SnackBarBehavior.floating,
         ),
@@ -529,7 +530,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   Widget _buildTabBar() {
     return SliverPersistentHeader(
       pinned: true,
-      delegate: _SliverTabBarDelegate(backgroundColor: LiquidGlassTokens.pageDark.withOpacity(0.9),
+      delegate: _SliverTabBarDelegate(
         TabBar(
           controller: _tabController,
           labelColor: Colors.white,
@@ -567,6 +568,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             ),
           ],
         ),
+        backgroundColor: LiquidGlassTokens.pageDark.withOpacity(0.9),
       ),
     );
   }
@@ -874,7 +876,6 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       ),
     );
   }
-}
 
   // ─── Gamification: Stats ─────────────────────────────────────────────────
   Widget _buildStatsSection() {
@@ -1182,7 +1183,6 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                       ) ?? false;
 
                   if (confirmDialogResponse) {
-                    GoRouter.of(context).prepareAuthEvent();
                     await authManager.signOut();
 
                     final prefs = await SharedPreferences.getInstance();
@@ -1231,8 +1231,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 // Délégué pour la tab bar sticky
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;
+  final Color backgroundColor;
 
-  _SliverTabBarDelegate(this.tabBar);
+  _SliverTabBarDelegate(this.tabBar, {this.backgroundColor = Colors.white});
 
   @override
   double get minExtent => tabBar.preferredSize.height;
@@ -1243,7 +1244,7 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: Colors.white,
+      color: backgroundColor,
       child: tabBar,
     );
   }

@@ -1,4 +1,5 @@
 import '/utils/app_logger.dart';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '/components/liquid_glass.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -866,7 +867,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey[300],
-                foregroundcolor: Colors.white.withOpacity(0.55),
+                foregroundColor: Colors.white.withOpacity(0.55),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),

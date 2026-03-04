@@ -55,7 +55,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
   }
 
   Future<void> _removeProduct(String productId) async {
-    final success = await FirebaseDataService.removeFromWishlist(widget.wishlistId, productId);
+    final success = await FirebaseDataService.removeProductFromWishlist(widget.wishlistId, productId);
     if (success) {
       setState(() {
         _products.removeWhere((p) => p['product_id'] == productId);
