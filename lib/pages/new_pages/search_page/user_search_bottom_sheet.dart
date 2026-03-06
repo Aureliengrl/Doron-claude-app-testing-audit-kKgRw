@@ -93,13 +93,13 @@ class _UserSearchBottomSheetState extends State<UserSearchBottomSheet> {
             child: TextField(
               controller: _searchController,
               onChanged: _onSearchChanged,
-              style: GoogleFonts.poppins(color: Colors.white),
+              style: GoogleFonts.poppins(color: Colors.black),
               decoration: InputDecoration(
                 hintText: 'Pseudo ou prénom...',
-                hintStyle: GoogleFonts.poppins(color: Colors.white54),
-                prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                hintStyle: GoogleFonts.poppins(color: Colors.black54),
+                prefixIcon: const Icon(Icons.search, color: Colors.black54),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.08),
+                fillColor: Colors.white,
                 contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),

@@ -208,6 +208,20 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
                       ? Colors.white
                       : Colors.white.withOpacity(0.55),
                   size: item.iconSize,
+                  shadows: [
+                    if (!isSelected)
+                      Shadow(
+                        offset: const Offset(0, 1),
+                        blurRadius: 2.0,
+                        color: Colors.black.withOpacity(0.8),
+                      )
+                    else
+                      Shadow(
+                        offset: const Offset(0, 2),
+                        blurRadius: 8.0,
+                        color: const Color(0xFF8A2BE2).withOpacity(0.5),
+                      ),
+                  ],
                 ),
               ),
               const SizedBox(height: 4),

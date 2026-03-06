@@ -517,7 +517,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: violetColor,
+                color: Colors.white,
               ),
               decoration: InputDecoration(
               hintText: placeholder,
@@ -641,7 +641,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: violetColor,
+                      color: Colors.black,
                     ),
                     decoration: InputDecoration(
                       hintText: placeholder,
@@ -1017,9 +1017,9 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.white.withOpacity(0),
-              Colors.white,
-              Colors.white,
+              LiquidGlassTokens.pageDark.withOpacity(0),
+              LiquidGlassTokens.pageDark,
+              LiquidGlassTokens.pageDark,
             ],
           ),
         ),
@@ -1036,8 +1036,8 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 }
               : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: canProceed ? violetColor : Colors.grey[300],
-            disabledBackgroundColor: Colors.grey[300],
+            backgroundColor: canProceed ? violetColor : Colors.white.withOpacity(0.1),
+            disabledBackgroundColor: Colors.white.withOpacity(0.1),
             padding: const EdgeInsets.symmetric(vertical: 20),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(50),
@@ -1057,7 +1057,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: canProceed ? Colors.white : Colors.grey[500],
+                  color: canProceed ? Colors.white : Colors.white54,
                 ),
               ),
               if (isLastStep) ...[
@@ -1067,7 +1067,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 const SizedBox(width: 8),
                 Icon(
                   Icons.arrow_forward,
-                  color: canProceed ? Colors.white : Colors.grey[500],
+                  color: canProceed ? Colors.white : Colors.white54,
                   size: 20,
                 ),
               ],

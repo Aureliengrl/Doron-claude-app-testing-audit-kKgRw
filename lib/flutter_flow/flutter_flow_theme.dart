@@ -285,21 +285,21 @@ class ThemeTypography extends Typography {
   String get labelLargeFamily => 'Inter';
   bool get labelLargeIsCustom => false;
   TextStyle get labelLarge => GoogleFonts.inter(
-        color: theme.secondaryText,
+        color: theme.secondaryText.withOpacity(0.8),
         fontWeight: FontWeight.normal,
         fontSize: 16.0,
       );
   String get labelMediumFamily => 'Inter';
   bool get labelMediumIsCustom => false;
   TextStyle get labelMedium => GoogleFonts.inter(
-        color: theme.secondaryText,
+        color: theme.secondaryText.withOpacity(0.8),
         fontWeight: FontWeight.normal,
         fontSize: 14.0,
       );
   String get labelSmallFamily => 'Inter';
   bool get labelSmallIsCustom => false;
   TextStyle get labelSmall => GoogleFonts.inter(
-        color: theme.secondaryText,
+        color: theme.secondaryText.withOpacity(0.8),
         fontWeight: FontWeight.normal,
         fontSize: 12.0,
       );
