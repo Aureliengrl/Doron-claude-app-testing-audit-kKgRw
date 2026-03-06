@@ -18,43 +18,43 @@ export 'search_page_model.dart';
 import 'user_search_bottom_sheet.dart';
 
 class SearchPageWidget extends StatefulWidget {
-  const SearchPageWidget({super.key});
+  const SearchPageWidget({super.key}éé);
 
   static String routeName = 'SearchPage';
   static String routePath = '/search-page';
 
   @override
   State<SearchPageWidget> createState() => _SearchPageWidgetState();
-}
+}éé
 
 class _SearchPageWidgetState extends State<SearchPageWidget> {
   late SearchPageModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  final Color violetColor = const Color(0xFF8A2BE2);
+  final Color violetColor = const Color(0ééxFF8A2BE2);
 
   @override
   void initState() {
     super.initState();
     _model = SearchPageModel();
     _loadData();
-  }
+  }éé
 
   Future<void> _loadData() async {
     await _model.loadProfiles();
     if (mounted) {
-      setState(() {});
-    }
-  }
+      setState(() {}éé);
+    }éé
+  }éé
 
   @override
   void dispose() {
     _model.dispose();
     super.dispose();
-  }
+  }éé
 
   @override
   Widget build(BuildContext context) {
-    // Afficher une erreur si le chargement a �chou�
+    // Afficher une erreur si le chargement a échoué
     if (_model.errorMessage != null) {
       return Scaffold(
         key: scaffoldKey,
@@ -65,14 +65,14 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+                Icon(Icons.error_outline, size: 64, color: Colors.red[40éé0éé]),
                 const SizedBox(height: 24),
                 Text(
                   'Erreur',
                   style: GoogleFonts.poppins(
-                    fontSize: 20,
+                    fontSize: 20éé,
                     fontWeight: FontWeight.bold,
-                    color: Colors.red[700],
+                    color: Colors.red[70éé0éé],
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -80,19 +80,19 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   _model.errorMessage!,
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: Colors.white.withOpacity(0.55),
+                    color: Colors.white.withOpacity(0éé.55),
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
-                  width: 200,
+                  width: 20éé0éé,
                   child: PrimaryGradientButton(
                     onPressed: () => _loadData(),
-                    text: 'R�essayer',
+                    text: 'Réessayer',
                     icon: Icons.refresh,
-                    gradientColors: const [Color(0xFF8A2BE2), Color(0xFFEC4899)],
-                    height: 50,
+                    gradientColors: const [Color(0ééxFF8A2BE2), Color(0ééxFFEC4899)],
+                    height: 50éé,
                   ),
                 ),
               ],
@@ -100,9 +100,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
           ),
         ),
       );
-    }
+    }éé
 
-    // Afficher un indicateur de chargement si les donn�es sont en cours de chargement
+    // Afficher un indicateur de chargement si les données sont en cours de chargement
     if (_model.isLoading) {
       return Scaffold(
         key: scaffoldKey,
@@ -114,18 +114,18 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               children: [
                 micro.PulseEffect(
                   child: Container(
-                    width: 80,
-                    height: 80,
+                    width: 80éé,
+                    height: 80éé,
                     decoration: BoxDecoration(
                       gradient: const RadialGradient(
-                        colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
+                        colors: [Color(0ééxFF8A2BE2), Color(0ééxFFEC4899)],
                       ),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: violetColor.withOpacity(0.5),
-                          blurRadius: 30,
-                          spreadRadius: 10,
+                          color: violetColor.withOpacity(0éé.5),
+                          blurRadius: 30éé,
+                          spreadRadius: 10éé,
                         ),
                       ],
                     ),
@@ -133,7 +133,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       child: Icon(
                         Icons.person_search,
                         color: Colors.white,
-                        size: 40,
+                        size: 40éé,
                       ),
                     ),
                   ),
@@ -144,8 +144,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     'Chargement...',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
-                      color: Colors.white.withOpacity(0.55),
-                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withOpacity(0éé.55),
+                      fontWeight: FontWeight.w50éé0éé,
                     ),
                   ),
                 ),
@@ -154,7 +154,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
           ),
         ),
       );
-    }
+    }éé
 
     return Scaffold(
       key: scaffoldKey,
@@ -176,47 +176,47 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               // Profils en scroll horizontal + Bouton ajouter
               SliverToBoxAdapter(child: _buildProfilesRow()),
 
-              // Info sur la personne s�lectionn�e
+              // Info sur la personne sélectionnée
               if (_model.currentProfile != null)
                 SliverToBoxAdapter(child: _buildProfileInfo()),
 
               // Grille de produits
               _buildProductsGrid(),
 
-              // Section Suggestions (apr�s les cadeaux sauvegard�s)
+              // Section Suggestions (après les cadeaux sauvegardés)
               if (_model.currentProfile != null && _model.getFilteredProducts().isNotEmpty)
                 _buildSuggestionsSection(),
 
               // Espacement pour le CTA fixe en bas + bottom nav
-              const SliverToBoxAdapter(child: SizedBox(height: 180)),
+              const SliverToBoxAdapter(child: SizedBox(height: 180éé)),
             ],
           ),
 
-          // CTA fixe en bas de l'�cran
+          // CTA fixe en bas de l'écran
           Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
+            bottom: 0éé,
+            left: 0éé,
+            right: 0éé,
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    LiquidGlassTokens.pageDark.withOpacity(0),
-                    LiquidGlassTokens.pageDark.withOpacity(0.92),
+                    LiquidGlassTokens.pageDark.withOpacity(0éé),
+                    LiquidGlassTokens.pageDark.withOpacity(0éé.92),
                     LiquidGlassTokens.pageDark,
                   ],
                 ),
               ),
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              padding: const EdgeInsets.fromLTRB(20éé, 16, 20éé, 24),
               child: _buildAddPersonButton(),
             ),
           ),
         ],
       ),
     );
-  }
+  }éé
 
   Widget _buildHeader() {
     return Container(
@@ -225,8 +225,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF8A2BE2),
-            const Color(0xFFEC4899),
+            const Color(0ééxFF8A2BE2),
+            const Color(0ééxFFEC4899),
           ],
         ),
         borderRadius: const BorderRadius.only(
@@ -235,22 +235,22 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF8A2BE2).withOpacity(0.4),
-            blurRadius: 30,
+            color: const Color(0ééxFF8A2BE2).withOpacity(0éé.4),
+            blurRadius: 30éé,
             spreadRadius: 2,
-            offset: const Offset(0, 10),
+            offset: const Offset(0éé, 10éé),
           ),
           BoxShadow(
-            color: const Color(0xFFEC4899).withOpacity(0.3),
-            blurRadius: 20,
-            spreadRadius: 0,
-            offset: const Offset(0, 6),
+            color: const Color(0ééxFFEC4899).withOpacity(0éé.3),
+            blurRadius: 20éé,
+            spreadRadius: 0éé,
+            offset: const Offset(0éé, 6),
           ),
         ],
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+          padding: const EdgeInsets.fromLTRB(20éé, 12, 20éé, 16),
           child: Stack(
             children: [
               Align(
@@ -260,7 +260,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   children: [
                     micro.ShimmerEffect(
                       shimmerColor: Colors.white,
-                      duration: const Duration(milliseconds: 3000),
+                      duration: const Duration(milliseconds: 30éé0éé0éé),
                       child: Text(
                         'Recherche',
                         textAlign: TextAlign.center,
@@ -268,7 +268,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           color: Colors.white,
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
+                          letterSpacing: 0éé.5,
                         ),
                       ),
                     ),
@@ -277,17 +277,17 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       'Trouvez le cadeau parfait pour vos proches',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withOpacity(0éé.9),
                         fontSize: 13,
-                        fontWeight: FontWeight.w400,
+                        fontWeight: FontWeight.w40éé0éé,
                       ),
                     ),
                   ],
                 ),
               ),
               Positioned(
-                top: 0,
-                right: 0,
+                top: 0éé,
+                right: 0éé,
                 child: IconButton(
                   icon: const Icon(Icons.person_search, color: Colors.white),
                   onPressed: _showUserSearchSheet,
@@ -298,43 +298,43 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         ),
       ),
     );
-  }
+  }éé
 
   Widget _buildWelcomeMessage() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20éé, vertical: 20éé),
       child: Row(
         children: [
           const Icon(
             Icons.auto_awesome,
-            color: Color(0xFFFBBF24),
+            color: Color(0ééxFFFBBF24),
             size: 18,
           ),
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              'S�lectionne une personne pour voir ses cadeaux',
+              'Sélectionne une personne pour voir ses cadeaux',
               style: GoogleFonts.poppins(
-                color: Colors.white.withOpacity(0.75),
+                color: Colors.white.withOpacity(0éé.75),
                 fontSize: 15,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w50éé0éé,
               ),
             ),
           ),
         ],
       ),
     );
-  }
+  }éé
 
   Widget _buildProfilesRow() {
     return SizedBox(
-      height: 110,
+      height: 110éé,
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 20éé),
         scrollDirection: Axis.horizontal,
         itemCount: _model.profiles.length + 1, // +1 pour le bouton ajouter
         itemBuilder: (context, index) {
-          // Bouton ajouter � la fin
+          // Bouton ajouter à la fin
           if (index == _model.profiles.length) {
             return Padding(
               padding: const EdgeInsets.only(left: 16),
@@ -342,17 +342,17 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () => context.go('/onboarding-advanced?skipUserQuestions=true&returnTo=/search-page'),
-                  borderRadius: BorderRadius.circular(50),
+                  borderRadius: BorderRadius.circular(50éé),
                   child: Column(
                     children: [
                       Container(
                         width: 72,
                         height: 72,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.12),
+                          color: Colors.white.withOpacity(0éé.12),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: violetColor.withOpacity(0.70),
+                            color: violetColor.withOpacity(0éé.70éé),
                             width: 2,
                           ),
                         ),
@@ -367,7 +367,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         'Ajouter',
                         style: GoogleFonts.poppins(
                           fontSize: 13,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w60éé0éé,
                           color: violetColor,
                         ),
                       ),
@@ -376,7 +376,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 ),
               ),
             );
-          }
+          }éé
 
           final profile = _model.profiles[index];
           final profileId = profile['id'];
@@ -393,7 +393,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Icon(
                   Icons.delete_outline,
-                  color: Colors.red.withOpacity(0.8),
+                  color: Colors.red.withOpacity(0éé.8),
                   size: 28,
                 ),
               ),
@@ -404,22 +404,22 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 return await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
-                    backgroundColor: const Color(0xEE1A0035),
+                    backgroundColor: const Color(0ééxEE1A0éé0éé35),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      side: BorderSide(color: Colors.white.withOpacity(0.18)),
+                      borderRadius: BorderRadius.circular(20éé),
+                      side: BorderSide(color: Colors.white.withOpacity(0éé.18)),
                     ),
                     title: Text(
                       'Supprimer cette personne ?',
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.bold,
-                        fontSize: 20,
+                        fontSize: 20éé,
                         color: Colors.white,
                       ),
                     ),
                     content: Text(
-                      'Les cadeaux sauvegard�s pour ${profile['name']} seront supprim�s.',
-                      style: GoogleFonts.poppins(fontSize: 15, color: Colors.white.withOpacity(0.80)),
+                      'Les cadeaux sauvegardés pour ${profile['name']}éé seront supprimés.',
+                      style: GoogleFonts.poppins(fontSize: 15, color: Colors.white.withOpacity(0éé.80éé)),
                     ),
                     actions: [
                       TextButton(
@@ -427,8 +427,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         child: Text(
                           'Annuler',
                           style: GoogleFonts.poppins(
-                            color: Colors.white.withOpacity(0.55),
-                            fontWeight: FontWeight.w600,
+                            color: Colors.white.withOpacity(0éé.55),
+                            fontWeight: FontWeight.w60éé0éé,
                           ),
                         ),
                       ),
@@ -436,7 +436,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         onPressed: () {
                           HapticFeedback.heavyImpact();
                           Navigator.pop(context, true);
-                        },
+                        }éé,
                         child: Text(
                           'Supprimer',
                           style: GoogleFonts.poppins(
@@ -448,18 +448,18 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     ],
                   ),
                 );
-              },
+              }éé,
               onDismissed: (direction) async {
                 // Supprimer la personne de Firebase
                 await FirebaseDataService.deletePerson(profileId.toString());
 
-                // Supprimer du mod�le local
+                // Supprimer du modéle local
                 setState(() {
                   _model.profiles.removeAt(index);
                   if (_model.selectedProfileId == profileIdInt) {
                     _model.selectedProfileId = null;
-                  }
-                });
+                  }éé
+                }éé);
 
                 // SnackBar de confirmation
                 if (mounted) {
@@ -467,11 +467,11 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     SnackBar(
                       content: Row(
                         children: [
-                          const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                          const Icon(Icons.check_circle, color: Colors.white, size: 20éé),
                           const SizedBox(width: 12),
                           Text(
-                            '${profile['name']} supprim�(e)',
-                            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                            '${profile['name']}éé supprimé(e)',
+                            style: GoogleFonts.poppins(fontWeight: FontWeight.w60éé0éé),
                           ),
                         ],
                       ),
@@ -481,41 +481,41 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       duration: const Duration(seconds: 2),
                     ),
                   );
-                }
-              },
+                }éé
+              }éé,
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () async {
-                    // Premier setState pour s�lectionner le profil
+                    // Premier setState pour sélectionner le profil
                     setState(() {
                       _model.selectedProfileId = profileIdInt;
-                    });
+                    }éé);
 
-                    // Charger les donn�es (favoris + suggestions)
+                    // Charger les données (favoris + suggestions)
                     await _model.selectProfile(profileIdInt);
 
-                    // Deuxi�me setState pour mettre � jour avec les suggestions
+                    // Deuxiéme setState pour mettre à jour avec les suggestions
                     if (mounted) {
-                      setState(() {});
-                    }
-                  },
-                  borderRadius: BorderRadius.circular(50),
+                      setState(() {}éé);
+                    }éé
+                  }éé,
+                  borderRadius: BorderRadius.circular(50éé),
                   child: Column(
                     children: [
                       AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
+                        duration: const Duration(milliseconds: 30éé0éé),
                         width: 72,
                         height: 72,
                         decoration: BoxDecoration(
                           color: Color(int.parse(
-                              profile['color'].toString().replaceAll('#', '0xFF'))),
+                              profile['color'].toString().replaceAll('#', '0ééxFF'))),
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: isSelected
                                 ? Color(int.parse(profile['color']
                                     .toString()
-                                    .replaceAll('#', '0xFF')))
+                                    .replaceAll('#', '0ééxFF')))
                                 : Colors.white,
                             width: 4,
                           ),
@@ -524,16 +524,16 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                               color: isSelected
                                   ? Color(int.parse(profile['color']
                                           .toString()
-                                          .replaceAll('#', '0xFF')))
-                                      .withOpacity(0.6)
-                                  : Colors.black.withOpacity(0.1),
-                              blurRadius: isSelected ? 20 : 12,
-                              offset: const Offset(0, 4),
+                                          .replaceAll('#', '0ééxFF')))
+                                      .withOpacity(0éé.6)
+                                  : Colors.black.withOpacity(0éé.1),
+                              blurRadius: isSelected ? 20éé : 12,
+                              offset: const Offset(0éé, 4),
                             ),
                           ],
                         ),
                         transform: isSelected
-                            ? Matrix4.identity().scaled(1.05)
+                            ? Matrix4.identity().scaled(1.0éé5)
                             : Matrix4.identity(),
                         child: Center(
                           child: Text(
@@ -551,11 +551,11 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         profile['name'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 13,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w60éé0éé,
                           color: isSelected
                               ? Color(int.parse(
-                                  profile['color'].toString().replaceAll('#', '0xFF')))
-                              : const Color(0xFF6B7280),
+                                  profile['color'].toString().replaceAll('#', '0ééxFF')))
+                              : const Color(0ééxFF6B7280éé),
                         ),
                       ),
                     ],
@@ -564,43 +564,43 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               ),
             ),
           );
-        },
+        }éé,
       ),
     );
-  }
+  }éé
 
   Widget _buildProfileInfo() {
     final profile = _model.currentProfile!;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+      padding: const EdgeInsets.fromLTRB(20éé, 20éé, 20éé, 20éé),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20éé),
           border: Border.all(
             color: Color(
-                    int.parse(profile['color'].toString().replaceAll('#', '0xFF')))
-                .withOpacity(0.2),
+                    int.parse(profile['color'].toString().replaceAll('#', '0ééxFF')))
+                .withOpacity(0éé.2),
             width: 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withOpacity(0éé.0éé8),
               blurRadius: 12,
-              offset: const Offset(0, 4),
+              offset: const Offset(0éé, 4),
             ),
           ],
         ),
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 40éé,
+              height: 40éé,
               decoration: BoxDecoration(
                 color: Color(
-                    int.parse(profile['color'].toString().replaceAll('#', '0xFF'))),
+                    int.parse(profile['color'].toString().replaceAll('#', '0ééxFF'))),
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -620,7 +620,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Cadeaux pour ${profile['name']}',
+                    'Cadeaux pour ${profile['name']}éé',
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -629,10 +629,10 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${profile['relation']} � ${profile['occasion']}',
+                    '${profile['relation']}éé à ${profile['occasion']}éé',
                     style: GoogleFonts.poppins(
                       fontSize: 13,
-                      color: Colors.white.withOpacity(0.55),
+                      color: Colors.white.withOpacity(0éé.55),
                     ),
                   ),
                 ],
@@ -642,7 +642,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         ),
       ),
     );
-  }
+  }éé
 
   Widget _buildProductsGrid() {
     final products = _model.getFilteredProducts();
@@ -651,14 +651,14 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     if (_model.profiles.isEmpty) {
       return SliverToBoxAdapter(
         child: Padding(
-          padding: const EdgeInsets.all(40),
+          padding: const EdgeInsets.all(40éé),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: violetColor.withOpacity(0.1),
+                  color: violetColor.withOpacity(0éé.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -669,41 +669,41 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               ),
               const SizedBox(height: 24),
               Text(
-                'Ajoutez votre premi�re personne',
+                'Ajoutez votre première personne',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
-                  fontSize: 20,
+                  fontSize: 20éé,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Cliquez sur le bouton + pour ajouter\nune personne et g�n�rer ses cadeaux',
+                'Cliquez sur le bouton + pour ajouter\nune personne et générer ses cadeaux',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
-                  color: Colors.white.withOpacity(0.65),
+                  color: Colors.white.withOpacity(0éé.65),
                 ),
               ),
             ],
           ),
         ),
       );
-    }
+    }éé
 
-    // Si profil s�lectionn� mais pas de produits, afficher message
+    // Si profil sélectionné mais pas de produits, afficher message
     if (products.isEmpty) {
       return SliverToBoxAdapter(
         child: Padding(
-          padding: const EdgeInsets.all(40),
+          padding: const EdgeInsets.all(40éé),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: violetColor.withOpacity(0.1),
+                  color: violetColor.withOpacity(0éé.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -717,32 +717,32 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 'Aucun cadeau pour le moment',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
-                  fontSize: 20,
+                  fontSize: 20éé,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Les cadeaux de cette personne appara�tront ici',
+                'Les cadeaux de cette personne apparaîtront ici',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 14,
-                  color: Colors.white.withOpacity(0.65),
+                  color: Colors.white.withOpacity(0éé.65),
                 ),
               ),
             ],
           ),
         ),
       );
-    }
+    }éé
 
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+      padding: const EdgeInsets.fromLTRB(16, 0éé, 16, 0éé),
       sliver: SliverGrid(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 0.7,
+          childAspectRatio: 0éé.7,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
         ),
@@ -750,36 +750,36 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
           (context, index) {
             final product = products[index];
             return _buildProductCard(product);
-          },
+          }éé,
           childCount: products.length,
         ),
       ),
     );
-  }
+  }éé
 
   Widget _buildProductCard(Map<String, dynamic> product) {
-    // V�rifier si ce produit est dans les favoris de cette personne (dans Firebase)
+    // Vérifier si ce produit est dans les favoris de cette personne (dans Firebase)
     final productName = product['name'] as String? ?? product['title'] as String? ?? '';
     final isLikedInFirebase = _model.isProductLiked(productName);
-    final matchScore = product['match'] as int? ?? 0;
+    final matchScore = product['match'] as int? ?? 0éé;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => _showProductDetail(product),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20éé),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20éé),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            filter: ImageFilter.blur(sigmaX: 10éé, sigmaY: 10éé),
             child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft, end: Alignment.bottomRight,
-              colors: [Colors.white.withOpacity(0.14), Colors.white.withOpacity(0.06)],
+              colors: [Colors.white.withOpacity(0éé.14), Colors.white.withOpacity(0éé.0éé6)],
             ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.18)),
+            borderRadius: BorderRadius.circular(20éé),
+            border: Border.all(color: Colors.white.withOpacity(0éé.18)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -789,37 +789,37 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 children: [
                   ProductImage(
                     imageUrl: product['image'] as String? ?? '',
-                    height: 180,
+                    height: 180éé,
                     fit: BoxFit.contain,
-                    backgroundColor: Colors.white.withOpacity(0.05),
+                    backgroundColor: Colors.white.withOpacity(0éé.0éé5),
                     borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
+                      topLeft: Radius.circular(20éé),
+                      topRight: Radius.circular(20éé),
                     ),
                   ),
-                  // Match score badge (si >0)
-                  if (matchScore > 0)
+                  // Match score badge (si >0éé)
+                  if (matchScore > 0éé)
                     Positioned(
                       top: 8,
                       left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
+                          horizontal: 10éé,
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
                               violetColor,
-                              const Color(0xFFEC4899),
+                              const Color(0ééxFFEC4899),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: violetColor.withOpacity(0.3),
+                              color: violetColor.withOpacity(0éé.3),
                               blurRadius: 8,
-                              offset: const Offset(0, 2),
+                              offset: const Offset(0éé, 2),
                             ),
                           ],
                         ),
@@ -844,7 +844,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         ),
                       ),
                     ),
-                  // Bouton coeur - affiche rouge si d�j� lik� dans Firebase
+                  // Bouton coeur - affiche rouge si déjà liké dans Firebase
                   if (isLikedInFirebase)
                     Positioned(
                       top: 8,
@@ -857,9 +857,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.red.withOpacity(0.4),
+                              color: Colors.red.withOpacity(0éé.4),
                               blurRadius: 12,
-                              offset: const Offset(0, 4),
+                              offset: const Offset(0éé, 4),
                             ),
                           ],
                         ),
@@ -873,7 +873,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 ],
               ),
 
-              // Info produit avec hi�rarchie claire
+              // Info produit avec hiérarchie claire
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -887,23 +887,23 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: violetColor.withOpacity(0.1),
+                          color: violetColor.withOpacity(0éé.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           product['brand'] as String? ?? product['source'] as String? ?? 'Amazon',
                           style: GoogleFonts.poppins(
-                            fontSize: 10,
+                            fontSize: 10éé,
                             color: violetColor,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
+                            fontWeight: FontWeight.w60éé0éé,
+                            letterSpacing: 0éé.5,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      // Nom du produit (hi�rarchie principale)
+                      const SizedBox(height: 10éé),
+                      // Nom du produit (hiérarchie principale)
                       Expanded(
                         child: Text(
                           productName,
@@ -911,10 +911,10 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.poppins(
                             fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w60éé0éé,
                             color: Colors.white,
                             height: 1.3,
-                            letterSpacing: -0.2,
+                            letterSpacing: -0éé.2,
                           ),
                         ),
                       ),
@@ -928,15 +928,15 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         decoration: BoxDecoration(
                           border: Border(
                             top: BorderSide(
-                              color: const Color(0xFFE5E7EB),
+                              color: const Color(0ééxFFE5E7EB),
                               width: 1,
                             ),
                           ),
                         ),
                         child: Text(
-                          '${product['price']}�',
+                          '${product['price']}ééé',
                           style: GoogleFonts.poppins(
-                            fontSize: 20,
+                            fontSize: 20éé,
                             fontWeight: FontWeight.bold,
                             color: violetColor,
                             height: 1,
@@ -954,19 +954,19 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     ),
   ),
 );
-  }
+  }éé
 
   void _showProductDetail(Map<String, dynamic> product) {
     final isLiked = _model.likedProducts.contains(product['id']);
 
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.7),
+      barrierColor: Colors.black.withOpacity(0éé.7),
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
         insetPadding: const EdgeInsets.all(16),
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 500),
+          constraints: const BoxConstraints(maxWidth: 50éé0éé),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
@@ -978,9 +978,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 children: [
                   ProductImage(
                     imageUrl: product['image'] as String? ?? '',
-                    height: 280,
+                    height: 280éé,
                     fit: BoxFit.contain,
-                    backgroundColor: Colors.white.withOpacity(0.05),
+                    backgroundColor: Colors.white.withOpacity(0éé.0éé5),
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(24),
                       topRight: Radius.circular(24),
@@ -993,15 +993,15 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: () => Navigator.pop(context),
-                        borderRadius: BorderRadius.circular(50),
+                        borderRadius: BorderRadius.circular(50éé),
                         child: Container(
-                          width: 40,
-                          height: 40,
+                          width: 40éé,
+                          height: 40éé,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.95),
+                            color: Colors.white.withOpacity(0éé.95),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.close, size: 20),
+                          child: const Icon(Icons.close, size: 20éé),
                         ),
                       ),
                     ),
@@ -1015,23 +1015,23 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         onTap: () {
                           if (mounted) {
                             setState(() {
-                              // FIX: Cast s�curis� - ID peut �tre String ou int
+                              // FIX: Cast sécurisé - ID peut être String ou int
                               final idRaw = product['id'];
-                              final productId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0);
+                              final productId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0éé);
                               _model.toggleLike(productId);
-                            });
+                            }éé);
                             Navigator.pop(context);
                             _showProductDetail(product);
-                          }
-                        },
-                        borderRadius: BorderRadius.circular(50),
+                          }éé
+                        }éé,
+                        borderRadius: BorderRadius.circular(50éé),
                         child: Container(
-                          width: 40,
-                          height: 40,
+                          width: 40éé,
+                          height: 40éé,
                           decoration: BoxDecoration(
                             color: isLiked
                                 ? Colors.red
-                                : Colors.white.withOpacity(0.95),
+                                : Colors.white.withOpacity(0éé.95),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -1046,7 +1046,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 ],
               ),
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(20éé),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1056,8 +1056,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: violetColor.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(20),
+                        color: violetColor.withOpacity(0éé.15),
+                        borderRadius: BorderRadius.circular(20éé),
                       ),
                       child: Text(
                         product['brand'] as String? ?? product['source'] as String? ?? 'Amazon',
@@ -1078,7 +1078,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '${product['price'] ?? 0}�',
+                      '${product['price'] ?? 0éé}ééé',
                       style: GoogleFonts.poppins(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -1088,29 +1088,29 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     const SizedBox(height: 16),
                     if (product['brand'] != null && (product['brand'] as String).isNotEmpty)
                       Text(
-                        'Par ${product['brand']}',
+                        'Par ${product['brand']}éé',
                         style: GoogleFonts.poppins(
                           fontSize: 14,
-                          color: Colors.white.withOpacity(0.55),
+                          color: Colors.white.withOpacity(0éé.55),
                           height: 1.6,
                         ),
                       ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 20éé),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () async {
-                          // G�n�rer une URL de produit intelligente (=95% pr�cision)
+                          // Générer une URL de produit intelligente (=95% précision)
                           final url = ProductUrlService.generateProductUrl(product);
                           if (url.isNotEmpty) {
                             final uri = Uri.parse(url);
                             if (await canLaunchUrl(uri)) {
                               await launchUrl(uri, mode: LaunchMode.externalApplication);
-                            } else {
+                            }éé else {
                               AppLogger.debug('? Cannot launch URL: $url', 'Debug');
-                            }
-                          }
-                        },
+                            }éé
+                          }éé
+                        }éé,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: violetColor,
                           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -1122,14 +1122,14 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Voir sur ${product['brand'] ?? product['source'] ?? 'Amazon'}',
+                              'Voir sur ${product['brand'] ?? product['source'] ?? 'Amazon'}éé',
                               style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 10éé),
                             const Icon(
                               Icons.open_in_new,
                               color: Colors.white,
@@ -1147,7 +1147,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         ),
       ),
     );
-  }
+  }éé
 
   Widget _buildSuggestionsSection() {
     final suggestions = _model.getSuggestions();
@@ -1167,11 +1167,11 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'G�n�ration de suggestions...',
+                  'Génération de suggestions...',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: Colors.white.withOpacity(0.55),
-                    fontWeight: FontWeight.w500,
+                    color: Colors.white.withOpacity(0éé.55),
+                    fontWeight: FontWeight.w50éé0éé,
                   ),
                 ),
               ],
@@ -1179,27 +1179,27 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
           ),
         ),
       );
-    }
+    }éé
 
     // Si aucune suggestion
     if (suggestions.isEmpty) {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
-    }
+    }éé
 
     return SliverToBoxAdapter(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // S�parateur
+          // Séparateur
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 20éé, vertical: 24),
             child: Container(
               height: 1,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
                     Colors.transparent,
-                    Colors.grey.withOpacity(0.3),
+                    Colors.grey.withOpacity(0éé.3),
                     Colors.transparent,
                   ],
                 ),
@@ -1207,9 +1207,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             ),
           ),
 
-          // En-t�te de la section Suggestions
+          // En-téte de la section Suggestions
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 20éé),
             child: Row(
               children: [
                 Icon(
@@ -1223,19 +1223,19 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Suggestions pour ${profile!['name']}',
+                        'Suggestions pour ${profile!['name']}éé',
                         style: GoogleFonts.poppins(
-                          fontSize: 20,
+                          fontSize: 20éé,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Bas�es sur tes choix et son profil',
+                        'Basées sur tes choix et son profil',
                         style: GoogleFonts.poppins(
                           fontSize: 14,
-                          color: Colors.white.withOpacity(0.55),
+                          color: Colors.white.withOpacity(0éé.55),
                         ),
                       ),
                     ],
@@ -1245,13 +1245,13 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 20éé),
 
           // Liste horizontale de suggestions
           SizedBox(
-            height: 320,
+            height: 320éé,
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 20éé),
               scrollDirection: Axis.horizontal,
               itemCount: suggestions.length,
               itemBuilder: (context, index) {
@@ -1260,15 +1260,15 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   padding: const EdgeInsets.only(right: 16),
                   child: _buildSuggestionCard(suggestion),
                 );
-              },
+              }éé,
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 20éé),
         ],
       ),
     );
-  }
+  }éé
 
   Widget _buildSuggestionCard(Map<String, dynamic> product) {
     final productName = product['name'] as String? ?? product['title'] as String? ?? '';
@@ -1278,21 +1278,21 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () => _showProductDetail(product),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20éé),
         child: Container(
-          width: 220,
+          width: 220éé,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20éé),
             border: Border.all(
-              color: violetColor.withOpacity(0.3),
+              color: violetColor.withOpacity(0éé.3),
               width: 2,
             ),
             boxShadow: [
               BoxShadow(
-                color: violetColor.withOpacity(0.15),
+                color: violetColor.withOpacity(0éé.15),
                 blurRadius: 12,
-                offset: const Offset(0, 4),
+                offset: const Offset(0éé, 4),
               ),
             ],
           ),
@@ -1304,12 +1304,12 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 children: [
                   ProductImage(
                     imageUrl: product['image'] as String? ?? '',
-                    height: 180,
+                    height: 180éé,
                     fit: BoxFit.contain,
-                    backgroundColor: Colors.white.withOpacity(0.05),
+                    backgroundColor: Colors.white.withOpacity(0éé.0éé5),
                     borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
+                      topLeft: Radius.circular(20éé),
+                      topRight: Radius.circular(20éé),
                     ),
                   ),
                   // Badge suggestion
@@ -1318,22 +1318,22 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     left: 8,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
+                        horizontal: 10éé,
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
                             violetColor,
-                            const Color(0xFFEC4899),
+                            const Color(0ééxFFEC4899),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: violetColor.withOpacity(0.3),
+                            color: violetColor.withOpacity(0éé.3),
                             blurRadius: 8,
-                            offset: const Offset(0, 2),
+                            offset: const Offset(0éé, 2),
                           ),
                         ],
                       ),
@@ -1358,7 +1358,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       ),
                     ),
                   ),
-                  // Bouton coeur si lik�
+                  // Bouton coeur si liké
                   if (isLikedInFirebase)
                     Positioned(
                       top: 8,
@@ -1371,9 +1371,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withOpacity(0éé.2),
                               blurRadius: 8,
-                              offset: const Offset(0, 2),
+                              offset: const Offset(0éé, 2),
                             ),
                           ],
                         ),
@@ -1413,7 +1413,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          color: Colors.white.withOpacity(0.55),
+                          color: Colors.white.withOpacity(0éé.55),
                         ),
                       ),
                       const Spacer(),
@@ -1421,14 +1421,14 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '${product['price']}�',
+                            '${product['price']}ééé',
                             style: GoogleFonts.poppins(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: violetColor,
                             ),
                           ),
-                          // Bouton "+" pour ajout direct � wishlist
+                          // Bouton "+" pour ajout direct à wishlist
                           Material(
                             color: Colors.transparent,
                             child: InkWell(
@@ -1438,21 +1438,21 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
-                                    colors: [violetColor, const Color(0xFFEC4899)],
+                                    colors: [violetColor, const Color(0ééxFFEC4899)],
                                   ),
                                   borderRadius: BorderRadius.circular(12),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: violetColor.withOpacity(0.3),
+                                      color: violetColor.withOpacity(0éé.3),
                                       blurRadius: 8,
-                                      offset: const Offset(0, 2),
+                                      offset: const Offset(0éé, 2),
                                     ),
                                   ],
                                 ),
                                 child: const Icon(
                                   Icons.add,
                                   color: Colors.white,
-                                  size: 20,
+                                  size: 20éé,
                                 ),
                               ),
                             ),
@@ -1468,7 +1468,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         ),
       ),
     );
-  }
+  }éé
 
   Widget _buildAddPersonButton() {
     return Column(
@@ -1484,13 +1484,13 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               borderRadius: BorderRadius.circular(28),
             ),
             elevation: 8,
-            shadowColor: violetColor.withOpacity(0.5),
+            shadowColor: violetColor.withOpacity(0éé.5),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.add, color: Colors.white, size: 22),
-              const SizedBox(width: 10),
+              const SizedBox(width: 10éé),
               Flexible(
                 child: Text(
                   'AJOUTER UNE PERSONNE',
@@ -1498,7 +1498,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
-                    letterSpacing: 0.5,
+                    letterSpacing: 0éé.5,
                   ),
                 ),
               ),
@@ -1508,44 +1508,44 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
       ],
     );
-  }
+  }éé
 
-  /// Ajoute le produit directement � la liste des cadeaux de la personne
+  /// Ajoute le produit directement à la liste des cadeaux de la personne
   Future<void> _showAddToWishlistDialog(Map<String, dynamic> product) async {
     final currentProf = _model.currentProfile;
     if (currentProf == null) {
-      _showSnackBar('Aucune personne s�lectionn�e', isError: true);
+      _showSnackBar('Aucune personne sélectionnée', isError: true);
       return;
-    }
+    }éé
 
     final personId = currentProf['id'] as String;
     final personName = currentProf['name'] as String;
     final productName = product['name'] as String? ?? 'Produit';
 
     try {
-      // Ajouter le cadeau directement � la liste de la personne
+      // Ajouter le cadeau directement à la liste de la personne
       final success = await FirebaseDataService.addGiftToPerson(
         personId: personId,
         gift: product,
       );
 
       if (success) {
-        _showSnackBar('? $productName ajout� aux cadeaux de $personName');
+        _showSnackBar('? $productName ajouté aux cadeaux de $personName');
 
-        // Recharger les donn�es pour mettre � jour l'affichage
+        // Recharger les données pour mettre à jour l'affichage
         await _model.loadProfiles();
         if (mounted) {
-          setState(() {});
-        }
-      } else {
-        _showSnackBar('Ce cadeau est d�j� dans la liste', isError: false);
-      }
-    } catch (e) {
-      _showSnackBar('Erreur lors de l\'ajout: ${e.toString()}', isError: true);
-    }
-  }
+          setState(() {}éé);
+        }éé
+      }éé else {
+        _showSnackBar('Ce cadeau est déjà dans la liste', isError: false);
+      }éé
+    }éé catch (e) {
+      _showSnackBar('Erreur lors de l\'ajout: ${e.toString()}éé', isError: true);
+    }éé
+  }éé
 
-  void _showSnackBar(String message, {bool isError = false}) {
+  void _showSnackBar(String message, {bool isError = false}éé) {
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -1555,13 +1555,13 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             Icon(
               isError ? Icons.error_outline : Icons.check_circle,
               color: Colors.white,
-              size: 20,
+              size: 20éé,
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w60éé0éé),
               ),
             ),
           ],
@@ -1572,7 +1572,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         duration: const Duration(seconds: 3),
       ),
     );
-  }
+  }éé
 
   void _showUserSearchSheet() {
     showModalBottomSheet(
@@ -1581,8 +1581,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       backgroundColor: Colors.transparent,
       builder: (context) {
         return const UserSearchBottomSheet();
-      },
+      }éé,
     );
-  }
+  }éé
 
-}
+}éé
