@@ -45,7 +45,7 @@ dependencies:
   firebase_messaging: ^14.7.19
   firebase_performance: 0.10.1+7
   firebase_storage: ^12.4.7
-  flutter_image_compress: ^7.0.4
+  flutter_image_compress: ^2.4.0
 
   # ── Auth sociale ───────────────────────────────────────────
   google_sign_in: 6.3.0
