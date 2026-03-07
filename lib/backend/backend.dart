@@ -380,7 +380,7 @@ Future maybeCreateUser(User user) async {
 
   await userRecord.set(userData);
 
-  AppLogger.debug('✅ maybeCreateUser: Document créé avec succès', 'Debug');
+  AppLogger.debug('✅ maybeCreateUser: Document cr avec succès', 'Debug');
   currentUserDocument = UsersRecord.getDocumentFromData(userData, userRecord);
   AppLogger.debug('✅ maybeCreateUser: Terminé', 'Debug');
 }

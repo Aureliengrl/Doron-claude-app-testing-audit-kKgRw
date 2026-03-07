@@ -12,41 +12,41 @@ import 'gift_results_model.dart';
 export 'gift_results_model.dart';
 
 class GiftResultsWidget extends StatefulWidget {
-  const GiftResultsWidget({super.key}éé);
+  const GiftResultsWidget({super.key});
 
   static String routeName = 'GiftResults';
   static String routePath = '/gift-results';
 
   @override
   State<GiftResultsWidget> createState() => _GiftResultsWidgetState();
-}éé
+}
 
 class _GiftResultsWidgetState extends State<GiftResultsWidget>
     with TickerProviderStateMixin {
   late GiftResultsModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  final Color violetColor = const Color(0ééxFF8A2BE2);
+  final Color violetColor = const Color(0xFF8A2BE2);
 
   @override
   void initState() {
     super.initState();
     _model = GiftResultsModel();
     _loadGiftsAndInitAnimations();
-  }éé
+  }
 
   Future<void> _loadGiftsAndInitAnimations() async {
     await _model.loadGifts();
     if (mounted) {
       _model.initAnimations(this);
-      setState(() {}éé);
-    }éé
-  }éé
+      setState(() {});
+    }
+  }
 
   @override
   void dispose() {
     _model.dispose();
     super.dispose();
-  }éé
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +65,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       color: violetColor,
-                      fontWeight: FontWeight.w60éé0éé,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -89,11 +89,11 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                 SliverToBoxAdapter(child: _buildActionButtons()),
 
                 // Espacement final
-                const SliverToBoxAdapter(child: SizedBox(height: 40éé)),
+                const SliverToBoxAdapter(child: SizedBox(height: 40)),
               ],
             ),
     );
-  }éé
+  }
 
   Widget _buildHeader() {
     return Container(
@@ -103,24 +103,24 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
           end: Alignment.bottomRight,
           colors: [
             violetColor,
-            const Color(0ééxFFEC4899),
+            const Color(0xFFEC4899),
           ],
         ),
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(20éé),
-          bottomRight: Radius.circular(20éé),
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
         ),
         boxShadow: [
           BoxShadow(
-            color: violetColor.withOpacity(0éé.15),
+            color: violetColor.withOpacity(0.15),
             blurRadius: 12,
-            offset: const Offset(0éé, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20éé, 8, 20éé, 12),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
           child: Row(
             children: [
               // Bouton retour
@@ -128,17 +128,17 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () => context.go('/home-pinterest'),
-                  borderRadius: BorderRadius.circular(50éé),
+                  borderRadius: BorderRadius.circular(50),
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0éé.2),
+                      color: Colors.white.withOpacity(0.2),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.arrow_back,
                       color: Colors.white,
-                      size: 20éé,
+                      size: 20,
                     ),
                   ),
                 ),
@@ -150,7 +150,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                   'Résultats IA',
                   style: GoogleFonts.poppins(
                     color: Colors.white,
-                    fontSize: 20éé,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -158,11 +158,11 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
               // Badge IA
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 10éé,
+                  horizontal: 10,
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0éé.2),
+                  color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -170,7 +170,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                   children: [
                     const Icon(
                       Icons.auto_awesome,
-                      color: Color(0ééxFFFBBF24),
+                      color: Color(0xFFFBBF24),
                       size: 13,
                     ),
                     const SizedBox(width: 4),
@@ -179,7 +179,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                       style: GoogleFonts.poppins(
                         color: Colors.white,
                         fontSize: 11,
-                        fontWeight: FontWeight.w60éé0éé,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -190,24 +190,24 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
         ),
       ),
     );
-  }éé
+  }
 
   Widget _buildAIMessage() {
     return Container(
-      margin: const EdgeInsets.fromLTRB(20éé, 20éé, 20éé, 16),
-      padding: const EdgeInsets.all(20éé),
+      margin: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            violetColor.withOpacity(0éé.1),
-            const Color(0ééxFFEC4899).withOpacity(0éé.1),
+            violetColor.withOpacity(0.1),
+            const Color(0xFFEC4899).withOpacity(0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: violetColor.withOpacity(0éé.2),
+          color: violetColor.withOpacity(0.2),
           width: 2,
         ),
       ),
@@ -243,7 +243,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                   'Sélectionnés selon ses passions et ton budget',
                   style: GoogleFonts.poppins(
                     fontSize: 13,
-                    color: Colors.white.withOpacity(0éé.55),
+                    color: Colors.white.withOpacity(0.55),
                   ),
                 ),
               ],
@@ -252,13 +252,13 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
         ],
       ),
     );
-  }éé
+  }
 
   Widget _buildFilters() {
     return SizedBox(
-      height: 50éé,
+      height: 50,
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 20éé),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         scrollDirection: Axis.horizontal,
         itemCount: _model.filters.length,
         itemBuilder: (context, index) {
@@ -273,32 +273,32 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                 onTap: () {
                   setState(() {
                     _model.activeFilter = filter;
-                  }éé);
-                }éé,
-                borderRadius: BorderRadius.circular(50éé),
+                  });
+                },
+                borderRadius: BorderRadius.circular(50),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 30éé0éé),
+                  duration: const Duration(milliseconds: 300),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 20éé,
+                    horizontal: 20,
                     vertical: 12,
                   ),
                   decoration: BoxDecoration(
                     color: isActive
                         ? violetColor
                         : Colors.white,
-                    borderRadius: BorderRadius.circular(50éé),
+                    borderRadius: BorderRadius.circular(50),
                     border: Border.all(
                       color: isActive
                           ? violetColor
-                          : Colors.grey[30éé0éé]!,
+                          : Colors.grey[300]!,
                       width: 2,
                     ),
                     boxShadow: isActive
                         ? [
                             BoxShadow(
-                              color: violetColor.withOpacity(0éé.3),
+                              color: violetColor.withOpacity(0.3),
                               blurRadius: 12,
-                              offset: const Offset(0éé, 4),
+                              offset: const Offset(0, 4),
                             ),
                           ]
                         : [],
@@ -307,22 +307,22 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                     filter,
                     style: GoogleFonts.poppins(
                       fontSize: 14,
-                      fontWeight: FontWeight.w60éé0éé,
-                      color: isActive ? Colors.white : const Color(0ééxFF6B7280éé),
+                      fontWeight: FontWeight.w600,
+                      color: isActive ? Colors.white : const Color(0xFF6B7280),
                     ),
                   ),
                 ),
               ),
             ),
           );
-        }éé,
+        },
       ),
     );
-  }éé
+  }
 
   Widget _buildResultsList() {
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(20éé, 24, 20éé, 0éé),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
@@ -334,12 +334,12 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                 child: _buildGiftCard(gift, index),
               ),
             );
-          }éé,
+          },
           childCount: _model.giftResults.length,
         ),
       ),
     );
-  }éé
+  }
 
   Widget _buildGiftCard(Map<String, dynamic> gift, int index) {
     final isLiked = _model.likedGifts.contains(gift['id']);
@@ -356,9 +356,9 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0éé.0éé8),
+              color: Colors.black.withOpacity(0.08),
               blurRadius: 12,
-              offset: const Offset(0éé, 4),
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -376,12 +376,12 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                       children: [
                         CachedNetworkImage(
                           imageUrl: gift['image'] as String,
-                          width: 140éé,
-                          height: 160éé,
+                          width: 140,
+                          height: 160,
                           fit: BoxFit.cover,
-                          memCacheWidth: 280éé,
-                          placeholder: (context, url) => Container(color: Colors.grey[20éé0éé]),
-                          errorWidget: (context, url, error) => Container(color: Colors.grey[20éé0éé], child: const Icon(Icons.error)),
+                          memCacheWidth: 280,
+                          placeholder: (context, url) => Container(color: Colors.grey[200]),
+                          errorWidget: (context, url, error) => Container(color: Colors.grey[200], child: const Icon(Icons.error)),
                         ),
                       // Match badge
                       Positioned(
@@ -389,7 +389,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                         left: 8,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 10éé,
+                            horizontal: 10,
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
@@ -397,9 +397,9 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0éé.2),
+                                color: Colors.black.withOpacity(0.2),
                                 blurRadius: 8,
-                                offset: const Offset(0éé, 2),
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
@@ -438,11 +438,11 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                           // Badge marque
                           Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 10éé,
+                            horizontal: 10,
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: violetColor.withOpacity(0éé.1),
+                            color: violetColor.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -473,7 +473,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '${gift['price']}ééé',
+                                '${gift['price']}€',
                                 style: GoogleFonts.poppins(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
@@ -492,23 +492,23 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                                   setState(() {
                                     // FIX: Cast sécurisé - ID peut être int, String ou autre
                                     final idRaw = gift['id'];
-                                    final giftId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0éé);
+                                    final giftId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0);
                                     _model.toggleLike(giftId);
-                                  }éé);
-                                }éé,
-                                borderRadius: BorderRadius.circular(50éé),
+                                  });
+                                },
+                                borderRadius: BorderRadius.circular(50),
                                 child: Container(
-                                  padding: const EdgeInsets.all(10éé),
+                                  padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
                                     color: isLiked
-                                        ? Colors.red.withOpacity(0éé.1)
-                                        : Colors.grey[10éé0éé],
+                                        ? Colors.red.withOpacity(0.1)
+                                        : Colors.grey[100],
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
                                     isLiked ? Icons.favorite : Icons.favorite_border,
-                                    color: isLiked ? Colors.red : const Color(0ééxFF9CA3AF),
-                                    size: 20éé,
+                                    color: isLiked ? Colors.red : const Color(0xFF9CA3AF),
+                                    size: 20,
                                   ),
                                 ),
                               ),
@@ -563,17 +563,17 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
             ),
           ),
         );
-  }éé
+  }
 
   Color _getMatchColor(int matchPercent) {
-    if (matchPercent >= 90éé) {
-      return const Color(0ééxFF10ééB981); // Vert
-    }éé else if (matchPercent >= 80éé) {
-      return const Color(0ééxFF3B82F6); // Bleu
-    }éé else {
-      return const Color(0ééxFFF59E0ééB); // Orange
-    }éé
-  }éé
+    if (matchPercent >= 90) {
+      return const Color(0xFF10B981); // Vert
+    } else if (matchPercent >= 80) {
+      return const Color(0xFF3B82F6); // Bleu
+    } else {
+      return const Color(0xFFF59E0B); // Orange
+    }
+  }
 
   void _showGiftDetail(Map<String, dynamic> gift) {
     final isLiked = _model.likedGifts.contains(gift['id']);
@@ -583,7 +583,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
 
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0éé.7),
+      barrierColor: Colors.black.withOpacity(0.7),
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
         insetPadding: const EdgeInsets.all(16),
@@ -592,12 +592,12 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
             child: Container(
-              constraints: const BoxConstraints(maxWidth: 50éé0éé),
+              constraints: const BoxConstraints(maxWidth: 500),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0éé.85),
+                color: Colors.white.withOpacity(0.85),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0éé.4),
+                  color: Colors.white.withOpacity(0.4),
                   width: 1.5,
                 ),
               ),
@@ -613,12 +613,12 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                     ),
                     child: CachedNetworkImage(
                       imageUrl: gift['image'] as String,
-                      height: 280éé,
+                      height: 280,
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      memCacheWidth: 60éé0éé,
-                      placeholder: (context, url) => Container(color: Colors.white10éé),
-                      errorWidget: (context, url, error) => Container(color: Colors.white10éé, child: const Icon(Icons.error, color: Colors.white)),
+                      memCacheWidth: 600,
+                      placeholder: (context, url) => Container(color: Colors.white10),
+                      errorWidget: (context, url, error) => Container(color: Colors.white10, child: const Icon(Icons.error, color: Colors.white)),
                     ),
                   ),
                   // Match badge
@@ -658,15 +658,15 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: () => context.pop(),
-                        borderRadius: BorderRadius.circular(50éé),
+                        borderRadius: BorderRadius.circular(50),
                         child: Container(
-                          width: 40éé,
-                          height: 40éé,
+                          width: 40,
+                          height: 40,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0éé.95),
+                            color: Colors.white.withOpacity(0.95),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.close, size: 20éé),
+                          child: const Icon(Icons.close, size: 20),
                         ),
                       ),
                     ),
@@ -674,7 +674,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                 ],
               ),
               Padding(
-                padding: const EdgeInsets.all(20éé),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -684,8 +684,8 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: violetColor.withOpacity(0éé.15),
-                        borderRadius: BorderRadius.circular(20éé),
+                        color: violetColor.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         gift['brand'] as String,
@@ -706,7 +706,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '${gift['price']}ééé',
+                      '${gift['price']}€',
                       style: GoogleFonts.poppins(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -718,24 +718,24 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                       gift['description'] as String,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        color: Colors.white.withOpacity(0éé.55),
+                        color: Colors.white.withOpacity(0.55),
                         height: 1.6,
                       ),
                     ),
-                    const SizedBox(height: 20éé),
+                    const SizedBox(height: 20),
                     // Raison du match
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0ééxFFF3F4F6),
+                        color: const Color(0xFFF3F4F6),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
                         children: [
                           const Icon(
                             Icons.auto_awesome,
-                            color: Color(0ééxFFFBBF24),
-                            size: 20éé,
+                            color: Color(0xFFFBBF24),
+                            size: 20,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -743,7 +743,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                               gift['reason'] as String,
                               style: GoogleFonts.poppins(
                                 fontSize: 13,
-                                color: const Color(0ééxFF4B5563),
+                                color: const Color(0xFF4B5563),
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
@@ -751,7 +751,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20éé),
+                    const SizedBox(height: 20),
                     Row(
                       children: [
                         // Bouton Like
@@ -762,25 +762,25 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                                 setState(() {
                                   // FIX: Cast sécurisé
                                   final idRaw = gift['id'];
-                                  final giftId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0éé);
+                                  final giftId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0);
                                   _model.toggleLike(giftId);
-                                }éé);
+                                });
                                 context.pop();
-                              }éé
-                            }éé,
+                              }
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isLiked
                                   ? Colors.red
-                                  : Colors.grey[20éé0éé],
+                                  : Colors.grey[200],
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
-                              elevation: 0éé,
+                              elevation: 0,
                             ),
                             child: Icon(
                               isLiked ? Icons.favorite : Icons.favorite_border,
-                              color: isLiked ? Colors.white : const Color(0ééxFF6B7280éé),
+                              color: isLiked ? Colors.white : const Color(0xFF6B7280),
                             ),
                           ),
                         ),
@@ -796,11 +796,11 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                                 final uri = Uri.parse(url);
                                 if (await canLaunchUrl(uri)) {
                                   await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                }éé else {
+                                } else {
                                   AppLogger.debug('? Cannot launch URL: $url', 'Debug');
-                                }éé
-                              }éé
-                            }éé,
+                                }
+                              }
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: violetColor,
                               padding: const EdgeInsets.symmetric(vertical: 14),
@@ -812,7 +812,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  'Voir sur ${gift['brand']}éé',
+                                  'Voir sur ${gift['brand']}',
                                   style: GoogleFonts.poppins(
                                     fontSize: 15,
                                     fontWeight: FontWeight.bold,
@@ -841,11 +841,11 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
         ),
       ),
     );
-  }éé
+  }
 
   Widget _buildActionButtons() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20éé, 24, 20éé, 24),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
       child: Row(
         children: [
           // Bouton REFAIRE (secondaire)
@@ -854,8 +854,8 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
               onPressed: () {
                 // Retour à l'onboarding (skip questions sur soi)
                 context.go('/onboarding-advanced?skipUserQuestions=true');
-              }éé,
-              icon: const Icon(Icons.refresh, size: 20éé),
+              },
+              icon: const Icon(Icons.refresh, size: 20),
               label: Text(
                 'Refaire',
                 style: GoogleFonts.poppins(
@@ -864,11 +864,11 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey[30éé0éé],
-                foregroundColor: Colors.white.withOpacity(0éé.55),
+                backgroundColor: Colors.grey[300],
+                foregroundColor: Colors.white.withOpacity(0.55),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20éé),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 elevation: 2,
               ),
@@ -885,9 +885,9 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                 // Navigation vers la page recherche
                 if (context.mounted) {
                   context.go('/search-page');
-                }éé
-              }éé,
-              icon: const Icon(Icons.check_circle, size: 20éé),
+                }
+              },
+              icon: const Icon(Icons.check_circle, size: 20),
               label: Text(
                 'Enregistrer',
                 style: GoogleFonts.poppins(
@@ -900,15 +900,15 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20éé),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 elevation: 6,
-                shadowColor: violetColor.withOpacity(0éé.5),
+                shadowColor: violetColor.withOpacity(0.5),
               ),
             ),
           ),
         ],
       ),
     );
-  }éé
-}éé
+  }
+}

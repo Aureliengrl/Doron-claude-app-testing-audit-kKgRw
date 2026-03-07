@@ -935,17 +935,17 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         decoration: BoxDecoration(
                           border: Border(
                             top: BorderSide(
-                              color: const Color(0xFFE5E7EB),
+                              color: Colors.white.withOpacity(0.2),
                               width: 1,
                             ),
                           ),
                         ),
                         child: Text(
-                          '${product['price']}é',
+                          '${product['price']}€',
                           style: GoogleFonts.poppins(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: violetColor,
+                            color: Colors.white,
                             height: 1,
                           ),
                         ),
@@ -1085,7 +1085,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '${product['price'] ?? 0}é',
+                      '${product['price'] ?? 0}€',
                       style: GoogleFonts.poppins(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -1409,7 +1409,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: const Color(0xFF1F2937),
                           height: 1.2,
                         ),
                       ),
@@ -1420,7 +1420,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          color: Colors.white.withOpacity(0.55),
+                          color: const Color(0xFF6B7280),
                         ),
                       ),
                       const Spacer(),
@@ -1428,7 +1428,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '${product['price']}é',
+                            '${product['price']}€',
                             style: GoogleFonts.poppins(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,

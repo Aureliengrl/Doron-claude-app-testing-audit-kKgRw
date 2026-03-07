@@ -383,7 +383,7 @@ class OnboardingAdvancedModel {
           isPendingFirstGen: true, // Flag pour génération post-auth
         );
 
-        AppLogger.debug('✅ Première personne créée: $personId (isPendingFirstGen=true)', 'Debug');
+        AppLogger.debug('✅ Première personne cre: $personId (isPendingFirstGen=true)', 'Debug');
         // =================================================================
 
         // 2. Sauvegarder aussi l'ancien format pour compatibilité

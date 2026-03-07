@@ -36,7 +36,7 @@ class TicketSessionService {
         'lastAccessedAt': FieldValue.serverTimestamp(),
       });
 
-      AppLogger.success('Session billetterie créée: $sessionId', 'TicketSession');
+      AppLogger.success('Session billetterie cre: $sessionId', 'TicketSession');
       return sessionId;
     } catch (e) {
       AppLogger.error('Erreur création session billetterie', 'TicketSession', e);

@@ -540,7 +540,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    'Liste créée avec succès !',
+                                    'Liste cre avec succès !',
                                     style: GoogleFonts.poppins(),
                                   ),
                                   backgroundColor: violetColor,

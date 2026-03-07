@@ -1020,7 +1020,7 @@ class FirebaseDataService {
   }
 
   /// FIX ONBOARDING: Synchronise une personne locale vers Firebase
-  /// Utilisé après le premier onboarding quand la personne a été créée AVANT la connexion
+  /// Utilisé après le premier onboarding quand la personne a été cre AVANT la connexion
   static Future<bool> syncLocalPersonToFirebase(String personId) async {
     if (!isLoggedIn) {
       AppLogger.error('Cannot sync: user not logged in', 'Firebase', null);
@@ -1075,7 +1075,7 @@ class FirebaseDataService {
     AppLogger.info('🔍 loadPeople: isLoggedIn=$isLoggedIn, currentUserId=$currentUserId', 'Firebase');
 
     // ⚠️ FIX ONBOARDING: TOUJOURS charger le local storage EN PREMIER
-    // Cela garantit que les personnes créées AVANT la connexion sont disponibles
+    // Cela garantit que les personnes cres AVANT la connexion sont disponibles
     List<Map<String, dynamic>> localPeople = [];
     try {
       final prefs = await SharedPreferences.getInstance();

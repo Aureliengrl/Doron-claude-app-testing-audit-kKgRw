@@ -1364,7 +1364,7 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget>
                                                                   return;
                                                                 }
 
-                                                                AppLogger.debug('✅ INSCRIPTION: Compte Firebase créé - UID: ${user.uid}', 'Debug');
+                                                                AppLogger.debug('✅ INSCRIPTION: Compte Firebase cr - UID: ${user.uid}', 'Debug');
 
                                                                 // Mise à jour du displayName et username - NON BLOQUANT
                                                                 try {
@@ -1462,7 +1462,7 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget>
                                                                   AppLogger.debug('🎯 PersonId depuis onboarding: $_pendingPersonId', 'Debug');
 
                                                                   // FIX ONBOARDING: Synchroniser la personne locale vers Firebase
-                                                                  // Car elle a été créée AVANT la connexion (donc seulement en local)
+                                                                  // Car elle a été cre AVANT la connexion (donc seulement en local)
                                                                   AppLogger.debug('🔄 Synchronisation de la personne vers Firebase...', 'Debug');
                                                                   final syncSuccess = await FirebaseDataService.syncLocalPersonToFirebase(_pendingPersonId!);
 

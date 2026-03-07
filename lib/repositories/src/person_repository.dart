@@ -8,7 +8,7 @@ class PersonRepository {
   const PersonRepository();
 
   /// Crée un nouveau destinataire.
-  /// Retourne l'ID du destinataire créé, ou null en cas d'erreur.
+  /// Retourne l'ID du destinataire cr, ou null en cas d'erreur.
   Future<String?> create({
     required Map<String, dynamic> tags,
     bool isPendingFirstGen = false,

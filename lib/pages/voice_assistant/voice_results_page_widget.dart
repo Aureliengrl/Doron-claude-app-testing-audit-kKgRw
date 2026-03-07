@@ -188,7 +188,7 @@ class _VoiceResultsPageWidgetState extends State<VoiceResultsPageWidget> {
                                     isPendingFirstGen: true,
                                   );
 
-                                  AppLogger.debug('✅ Personne créée: $personId', 'Debug');
+                                  AppLogger.debug('✅ Personne cre: $personId', 'Debug');
 
                                   if (mounted) {
                                     // 2. Rediriger vers la page de génération

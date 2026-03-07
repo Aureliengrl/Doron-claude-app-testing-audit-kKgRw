@@ -23,7 +23,7 @@ class VoiceListeningPageModel extends ChangeNotifier {
     AppLogger.debug('🎤 Initializing voice listening page...', 'Debug');
 
     // ✅ FIX: Reset les anciens callbacks avant de configurer les nouveaux
-    // (évite les callbacks stales si la page est recréée)
+    // (évite les callbacks stales si la page est recre)
     _voiceService.reset();
 
     // Setup callbacks
