@@ -249,8 +249,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         ],
       ),
       child: SafeArea(
+        bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
           child: Stack(
             children: [
               Align(
@@ -266,7 +267,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           color: Colors.white,
-                          fontSize: 28,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,
                         ),
@@ -278,7 +279,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         color: Colors.white.withOpacity(0.9),
-                        fontSize: 13,
+                        fontSize: 12,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
