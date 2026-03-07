@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '/components/liquid_glass.dart';
 
 class CreateChatBottomSheet extends StatefulWidget {
@@ -16,17 +19,44 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
   final TextEditingController _searchController = TextEditingController();
   final Color violetColor = const Color(0xFF8A2BE2);
   bool _isGroup = false;
+  bool _isLoading = true;
+  bool _isCreating = false;
   
-  // Dummy contacts
-  final List<Map<String, dynamic>> _contacts = [
-    {'id': '1', 'name': 'Marie', 'color': 0xFFEC4899},
-    {'id': '2', 'name': 'Thomas', 'color': 0xFF8A2BE2},
-    {'id': '3', 'name': 'Camille', 'color': 0xFF3B82F6},
-    {'id': '4', 'name': 'Sophie', 'color': 0xFF10B981},
-    {'id': '5', 'name': 'Lucas', 'color': 0xFFF59E0B},
-  ];
-  
+  List<Map<String, dynamic>> _contacts = [];
   final Set<String> _selectedContacts = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadContacts();
+  }
+
+  Future<void> _loadContacts() async {
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) return;
+      
+      final snapshot = await FirebaseFirestore.instance.collection('users').get();
+      
+      if (mounted) {
+        setState(() {
+          _contacts = snapshot.docs
+              .where((doc) => doc.id != currentUser.uid)
+              .map((doc) => {
+                    'id': doc.id,
+                    'name': doc.data()['display_name'] ?? doc.data()['first_name'] ?? 'Utilisateur',
+                    'photoUrl': doc.data()['photo_url'] ?? '',
+                    'color': 0xFF8A2BE2,
+                  })
+              .toList();
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading contacts: $e');
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -35,7 +65,7 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
     super.dispose();
   }
 
-  void _createChat() {
+  Future<void> _createChat() async {
     if (_selectedContacts.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Veuillez sélectionner au moins un contact', style: GoogleFonts.poppins())),
@@ -49,18 +79,47 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
       return;
     }
 
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
     HapticFeedback.mediumImpact();
-    context.pop(); // Close bottom sheet
-    
-    // Create dummy chat object and go to chat room
-    final chatData = {
-      'id': DateTime.now().millisecondsSinceEpoch.toString(),
-      'name': _isGroup ? _groupNameController.text.trim() : _contacts.firstWhere((c) => c['id'] == _selectedContacts.first)['name'],
-      'isGroup': _isGroup,
-      'participants': _selectedContacts.length + 1,
-    };
-    
-    context.push('/chat-room/${chatData['id']}', extra: chatData);
+    setState(() => _isCreating = true);
+
+    try {
+      final chatRef = FirebaseFirestore.instance.collection('chats').doc();
+      final participants = [currentUser.uid, ..._selectedContacts];
+      
+      String chatName = '';
+      if (_isGroup) {
+        chatName = _groupNameController.text.trim();
+      }
+      
+      final chatData = {
+        'id': chatRef.id,
+        'name': chatName,
+        'isGroup': _isGroup,
+        'participants': participants,
+        'lastMessage': '',
+        'lastMessageTime': FieldValue.serverTimestamp(),
+        'createdAt': FieldValue.serverTimestamp(),
+        'createdBy': currentUser.uid,
+      };
+
+      await chatRef.set(chatData);
+
+      if (mounted) {
+        context.pop();
+        context.push('/chat-room/${chatRef.id}', extra: chatData);
+      }
+    } catch (e) {
+      print('Erreur lors de la création du chat: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur: $e', style: GoogleFonts.poppins())),
+        );
+        setState(() => _isCreating = false);
+      }
+    }
   }
 
   @override
@@ -145,53 +204,64 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
 
           // Contacts List
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _contacts.length,
-              itemBuilder: (context, index) {
-                final contact = _contacts[index];
-                final isSelected = _selectedContacts.contains(contact['id']);
-                
-                return ListTile(
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    setState(() {
-                      if (isSelected) {
-                        _selectedContacts.remove(contact['id']);
-                      } else {
-                        _selectedContacts.add(contact['id']!);
-                      }
-                    });
-                  },
-                  leading: CircleAvatar(
-                    backgroundColor: Color(contact['color'] as int),
+            child: _isLoading 
+              ? const Center(child: CircularProgressIndicator(color: Color(0xFF8A2BE2)))
+              : _contacts.isEmpty 
+                ? Center(
                     child: Text(
-                      contact['name'].substring(0, 1),
-                      style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),
+                      'Aucun ami trouvé',
+                      style: GoogleFonts.poppins(color: Colors.white.withOpacity(0.5)),
                     ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: _contacts.length,
+                    itemBuilder: (context, index) {
+                      final contact = _contacts[index];
+                      final isSelected = _selectedContacts.contains(contact['id']);
+                      final photoUrl = contact['photoUrl'] as String;
+                      
+                      return ListTile(
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          setState(() {
+                            if (isSelected) {
+                              _selectedContacts.remove(contact['id']);
+                            } else {
+                              _selectedContacts.add(contact['id']!);
+                            }
+                          });
+                        },
+                        leading: CircleAvatar(
+                          backgroundColor: Color(contact['color'] as int),
+                          backgroundImage: photoUrl.isNotEmpty ? CachedNetworkImageProvider(photoUrl) : null,
+                          child: photoUrl.isEmpty ? Text(
+                            contact['name'].substring(0, 1).toUpperCase(),
+                            style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),
+                          ) : null,
+                        ),
+                        title: Text(
+                          contact['name'],
+                          style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
+                        ),
+                        trailing: Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected ? violetColor : Colors.white.withOpacity(0.3),
+                              width: 2,
+                            ),
+                            color: isSelected ? violetColor : Colors.transparent,
+                          ),
+                          child: isSelected
+                              ? const Icon(Icons.check, size: 16, color: Colors.white)
+                              : null,
+                        ),
+                      );
+                    },
                   ),
-                  title: Text(
-                    contact['name'],
-                    style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
-                  ),
-                  trailing: Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isSelected ? violetColor : Colors.white.withOpacity(0.3),
-                        width: 2,
-                      ),
-                      color: isSelected ? violetColor : Colors.transparent,
-                    ),
-                    child: isSelected
-                        ? const Icon(Icons.check, size: 16, color: Colors.white)
-                        : null,
-                  ),
-                );
-              },
-            ),
           ),
 
           // Create Button
@@ -209,7 +279,7 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
                     borderRadius: BorderRadius.circular(28),
                   ),
                 ),
-                child: Text(
+                child: _isCreating ? const CircularProgressIndicator(color: Colors.white) : Text(
                   _selectedContacts.length > 1 ? 'Créer le groupe' : 'Démarrer le chat',
                   style: GoogleFonts.poppins(
                     fontSize: 16,

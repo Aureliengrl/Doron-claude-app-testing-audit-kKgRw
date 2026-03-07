@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '/components/liquid_glass.dart';
 
 class ChatRoomPage extends StatefulWidget {
@@ -23,36 +25,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   final ScrollController _scrollController = ScrollController();
   final Color violetColor = const Color(0xFF8A2BE2);
   
-  final List<Map<String, dynamic>> _messages = [
-    {
-      'id': '1',
-      'sender': 'Marie',
-      'text': 'Vous avez vu les suggestions de cadeaux pour l\'anniv ?',
-      'isMe': false,
-      'time': '10:30',
-    },
-    {
-      'id': '2',
-      'sender': 'Moi',
-      'text': 'Oui ! Je trouve que la montre est super.',
-      'isMe': true,
-      'time': '10:35',
-    },
-    {
-      'id': '3',
-      'sender': 'Thomas',
-      'text': 'Moi j\'hésite avec le parfum, c\'est plus sûr.',
-      'isMe': false,
-      'time': '10:40',
-    },
-    {
-      'id': '4',
-      'sender': 'Marie',
-      'text': 'Est-ce qu\'on prend le parfum ou la montre pour maman ?',
-      'isMe': false,
-      'time': '10:42',
-    },
-  ];
+  String _formatMessageTime(Timestamp? timestamp) {
+    if (timestamp == null) return 'À l\'instant';
+    final date = timestamp.toDate();
+    return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  }
 
   @override
   void dispose() {
@@ -61,27 +38,40 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     super.dispose();
   }
 
-  void _sendMessage() {
-    if (_messageController.text.trim().isEmpty) return;
+  Future<void> _sendMessage() async {
+    final text = _messageController.text.trim();
+    if (text.isEmpty) return;
     
-    setState(() {
-      _messages.add({
-        'id': DateTime.now().millisecondsSinceEpoch.toString(),
-        'sender': 'Moi',
-        'text': _messageController.text,
-        'isMe': true,
-        'time': 'À l\'instant',
+    _messageController.clear();
+    
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+    
+    try {
+      final messageRef = FirebaseFirestore.instance
+          .collection('chats')
+          .doc(widget.chatId)
+          .collection('messages')
+          .doc();
+          
+      final messageData = {
+        'id': messageRef.id,
+        'senderId': currentUser.uid,
+        'text': text,
+        'timestamp': FieldValue.serverTimestamp(),
+      };
+      
+      await messageRef.set(messageData);
+      
+      await FirebaseFirestore.instance.collection('chats').doc(widget.chatId).update({
+        'lastMessage': text,
+        'lastMessageTime': FieldValue.serverTimestamp(),
       });
-      _messageController.clear();
-    });
-    
-    Future.delayed(const Duration(milliseconds: 100), () {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    });
+      
+      // We don't need to animate to bottom anymore since ListView is reversed
+    } catch (e) {
+      print('Erreur d\'envoi: $e');
+    }
   }
 
   @override
@@ -179,79 +169,121 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   Widget _buildMessagesList() {
-    return ListView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.all(20),
-      itemCount: _messages.length,
-      itemBuilder: (context, index) {
-        final message = _messages[index];
-        final isMe = message['isMe'] == true;
-        
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Column(
-            crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-            children: [
-              if (!isMe)
-                Padding(
-                  padding: const EdgeInsets.only(left: 12, bottom: 4),
-                  child: Text(
-                    message['sender'],
-                    style: GoogleFonts.poppins(
-                      fontSize: 11,
-                      color: Colors.white.withOpacity(0.5),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              Row(
-                mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.end,
+    final isGroup = widget.chatData?['isGroup'] == true;
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return const SizedBox();
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('chats')
+          .doc(widget.chatId)
+          .collection('messages')
+          .orderBy('timestamp', descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator(color: Color(0xFF8A2BE2)));
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(
+            child: Text(
+              'Aucun message',
+              style: GoogleFonts.poppins(color: Colors.white.withOpacity(0.5)),
+            ),
+          );
+        }
+
+        final messages = snapshot.data!.docs;
+
+        return ListView.builder(
+          reverse: true,
+          controller: _scrollController,
+          padding: const EdgeInsets.all(20),
+          itemCount: messages.length,
+          itemBuilder: (context, index) {
+            final messageData = messages[index].data() as Map<String, dynamic>;
+            final senderId = messageData['senderId'] as String?;
+            final isMe = senderId == currentUser.uid;
+            
+            final text = messageData['text'] as String? ?? '';
+            final timestamp = messageData['timestamp'] as Timestamp?;
+            final timeStr = _formatMessageTime(timestamp);
+            
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Column(
+                crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.75,
+                  if (!isMe && isGroup && senderId != null)
+                    FutureBuilder<DocumentSnapshot>(
+                      future: FirebaseFirestore.instance.collection('users').doc(senderId).get(),
+                      builder: (context, userSnap) {
+                        if (!userSnap.hasData) return const SizedBox();
+                        final userData = userSnap.data!.data() as Map<String, dynamic>? ?? {};
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 12, bottom: 4),
+                          child: Text(
+                            userData['display_name'] ?? userData['first_name'] ?? 'Utilisateur',
+                            style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              color: Colors.white.withOpacity(0.5),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        );
+                      }
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: isMe ? violetColor : Colors.white.withOpacity(0.12),
-                      borderRadius: BorderRadius.only(
-                        topLeft: const Radius.circular(20),
-                        topRight: const Radius.circular(20),
-                        bottomLeft: Radius.circular(isMe ? 20 : 4),
-                        bottomRight: Radius.circular(isMe ? 4 : 20),
+                  Row(
+                    mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width * 0.75,
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isMe ? violetColor : Colors.white.withOpacity(0.12),
+                          borderRadius: BorderRadius.only(
+                            topLeft: const Radius.circular(20),
+                            topRight: const Radius.circular(20),
+                            bottomLeft: Radius.circular(isMe ? 20 : 4),
+                            bottomRight: Radius.circular(isMe ? 4 : 20),
+                          ),
+                          border: isMe ? null : Border.all(
+                            color: Colors.white.withOpacity(0.1),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          text,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
-                      border: isMe ? null : Border.all(
-                        color: Colors.white.withOpacity(0.1),
-                        width: 1,
-                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(
+                      top: 4,
+                      left: isMe ? 0 : 12,
+                      right: isMe ? 12 : 0,
                     ),
                     child: Text(
-                      message['text'],
+                      timeStr,
                       style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.white,
+                        fontSize: 10,
+                        color: Colors.white.withOpacity(0.4),
                       ),
                     ),
                   ),
                 ],
-              ),
-              Padding(
-                padding: EdgeInsets.only(
-                  top: 4,
-                  left: isMe ? 0 : 12,
-                  right: isMe ? 12 : 0,
-                ),
-                child: Text(
-                  message['time'],
-                  style: GoogleFonts.poppins(
-                    fontSize: 10,
-                    color: Colors.white.withOpacity(0.4),
-                  ),
-                ),
-              ),
-            ],
-          ).animate().fadeIn().slideY(begin: 0.1, end: 0),
+              ).animate().fadeIn().slideY(begin: 0.1, end: 0),
+            );
+          },
         );
       },
     );
