@@ -79,7 +79,12 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
             top: 0,
             left: 0,
             right: 0,
-            child: _buildHeader(),
+            child: Column(
+              children: [
+                _buildHeader(),
+                _buildCategoryTabs(),
+              ],
+            ),
           ),
         ],
       ),
@@ -148,28 +153,77 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                 shimmerColor: Colors.white,
                 duration: const Duration(milliseconds: 3000),
                 child: Text(
-                  'Inspiration',
+                  'INSPIRATIONS',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     color: Colors.white,
-                    fontSize: 20,
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
+                    letterSpacing: 1.2,
                   ),
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                'Swipe pour découvrir de nouvelles idées',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  color: Colors.white.withOpacity(0.9),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryTabs() {
+    final List<String> categories = ['recommandé', 'amis', 'vêtements', 'activité'];
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        showsHorizontalScrollIndicator: false,
+        child: Row(
+          children: [
+            const SizedBox(width: 20),
+            ...categories.map((category) {
+              final isSelected = category == 'recommandé'; // Static selection for now
+              return Padding(
+                padding: const EdgeInsets.only(right: 24),
+                child: Column(
+                  children: [
+                    Text(
+                      category,
+                      style: GoogleFonts.poppins(
+                        color: Colors.white, // Inverted for dark background
+                        fontSize: 14,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.8),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          )
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    if (isSelected)
+                      Container(
+                        width: 40,
+                        height: 2,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.white.withOpacity(0.5),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }).toList(),
+            const SizedBox(width: 20),
+          ],
         ),
       ),
     );
@@ -467,7 +521,12 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
         _buildProductImage(image),
 
         // Overlay gradient en bas
-        Positioned.fill(
+        // Overlay gradient en bas, plus haut
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 350,
           child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -475,112 +534,156 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  Colors.transparent,
-                  Colors.black.withOpacity(0.8),
+                  Colors.black.withOpacity(0.6),
+                  Colors.black.withOpacity(0.9),
                 ],
-                stops: const [0.0, 0.5, 1.0],
+                stops: const [0.0, 0.4, 1.0],
               ),
             ),
           ),
         ),
 
-        // Informations produit en bas
+        // Informations produit en bas (remonté)
         Positioned(
-          bottom: 0,
-          left: 0,
-          right: 70, // Laisser de la place pour le bouton coeur
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Badge marque avec effet néon
-                if (brand.isNotEmpty)
-                  NeonBadge(
-                    text: brand.toUpperCase(),
-                    color: _violetColor,
-                  ),
-                if (brand.isNotEmpty) const SizedBox(height: 8),
-
-                // Nom du produit
-                Text(
-                  name,
-                  style: GoogleFonts.poppins(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    height: 1.2,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 6),
-
-                // Prix
-                Text(
-                  '${price}€',
-                  style: GoogleFonts.poppins(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Bouton voir le produit avec effet gradient
-                if (url.isNotEmpty)
-                  PrimaryGradientButton(
-                    onPressed: () => _openProductUrl(url),
-                    text: 'Voir le produit',
-                    icon: Icons.open_in_new,
-                    gradientColors: const [_violetColor, _pinkColor],
-                    height: 52,
-                  ),
-              ],
-            ),
-          ),
-        ),
-
-        // Bouton wishlist à droite
-        Positioned(
-          right: 16,
-          bottom: 190,
-          child: _buildWishlistButton(product),
-        ),
-
-        // Bouton coeur à droite
-        Positioned(
-          right: 16,
-          bottom: 120,
-          child: _buildLikeButton(product, isLiked),
-        ),
-
-        // Indicateur de swipe (seulement sur la première carte)
-        if (index == 0)
-          Positioned(
-            bottom: 200,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.keyboard_arrow_up,
-                    color: Colors.white.withOpacity(0.7),
-                    size: 32,
-                  ),
-                  Text(
-                    'Swipe infini ♾️',
-                    style: GoogleFonts.poppins(
-                      color: Colors.white.withOpacity(0.7),
-                      fontSize: 12,
+          bottom: 90, // Espace pour la navigation bar
+          left: 16,
+          right: 70, // Laisser de la place pour les boutons d'action
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Swipe indicator moved near product info
+              if (index == 0)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.keyboard_arrow_up,
+                          color: Colors.white.withOpacity(0.8),
+                          size: 32,
+                        ),
+                        Text(
+                          'swipe',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white.withOpacity(0.8),
+                            fontSize: 16,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
+
+              // Badge marque avec effet néon
+              if (brand.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    border: Border.all(color: _violetColor, width: 1.5),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    brand, // Plus original, majuscule/minuscule selon la DB
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              if (brand.isNotEmpty) const SizedBox(height: 8),
+
+              // Nom du produit
+              Text(
+                name,
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  color: Colors.white,
+                  height: 1.2,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
+              const SizedBox(height: 4),
+
+              // Prix
+              Text(
+                '${price}€',
+                style: GoogleFonts.poppins(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Bouton voir le produit énorme et stylisé
+              if (url.isNotEmpty)
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _openProductUrl(url),
+                    borderRadius: BorderRadius.circular(30),
+                    child: Container(
+                      width: double.infinity,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(
+                          color: _pinkColor,
+                          width: 2,
+                        ),
+                        color: _pinkColor.withOpacity(0.1),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Voir le produit',
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
+        ),
+
+        // Bouton actions en colonne à droite (remontés)
+        Positioned(
+          right: 16,
+          bottom: 110,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Bouton options ...
+              Container(
+                width: 46,
+                height: 36,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: _violetColor, width: 2),
+                  color: Colors.transparent,
+                ),
+                child: const Icon(Icons.more_horiz, color: Colors.white, size: 24),
+              ),
+              // Wishlist
+              _buildWishlistButton(product),
+              const SizedBox(height: 16),
+              // Like
+              _buildLikeButton(product, isLiked),
+            ],
+          ),
+        ),
       ],
     );
   }
