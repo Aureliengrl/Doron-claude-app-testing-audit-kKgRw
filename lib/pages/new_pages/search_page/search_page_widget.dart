@@ -17,6 +17,7 @@ import 'search_page_model.dart';
 export 'search_page_model.dart';
 import 'user_search_bottom_sheet.dart';
 import '/utils/pdf_export_utils.dart';
+import 'share_list_bottom_sheet.dart';
 
 class SearchPageWidget extends StatefulWidget {
   const SearchPageWidget({super.key});
@@ -505,48 +506,66 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   borderRadius: BorderRadius.circular(50),
                   child: Column(
                     children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        width: 72,
-                        height: 72,
-                        decoration: BoxDecoration(
-                          color: Color(int.parse(
-                              profile['color'].toString().replaceAll('#', '0xFF'))),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isSelected
-                                ? Color(int.parse(profile['color']
-                                    .toString()
-                                    .replaceAll('#', '0xFF')))
-                                : Colors.white,
-                            width: 4,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: isSelected
-                                  ? Color(int.parse(profile['color']
-                                          .toString()
-                                          .replaceAll('#', '0xFF')))
-                                      .withOpacity(0.6)
-                                  : Colors.black.withOpacity(0.1),
-                              blurRadius: isSelected ? 20 : 12,
-                              offset: const Offset(0, 4),
+                      Stack(
+                        children: [
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            width: 72,
+                            height: 72,
+                            decoration: BoxDecoration(
+                              color: Color(int.parse(
+                                  profile['color'].toString().replaceAll('#', '0xFF'))),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isSelected
+                                    ? Color(int.parse(profile['color']
+                                        .toString()
+                                        .replaceAll('#', '0xFF')))
+                                    : Colors.white,
+                                width: 4,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: isSelected
+                                      ? Color(int.parse(profile['color']
+                                              .toString()
+                                              .replaceAll('#', '0xFF')))
+                                          .withOpacity(0.6)
+                                      : Colors.black.withOpacity(0.1),
+                                  blurRadius: isSelected ? 20 : 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        transform: isSelected
-                            ? Matrix4.identity().scaled(1.05)
-                            : Matrix4.identity(),
-                        child: Center(
-                          child: Text(
-                            profile['initials'] as String,
-                            style: GoogleFonts.poppins(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                            transform: isSelected
+                                ? Matrix4.identity().scaled(1.05)
+                                : Matrix4.identity(),
+                            child: Center(
+                              child: Text(
+                                profile['initials'] as String,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
+                          if (profile['chatId'] != null || profile['isShared'] == true)
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF8A2BE2),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white, width: 1.5),
+                                ),
+                                child: const Icon(Icons.people, size: 10, color: Colors.white),
+                              ),
+                            ),
+                        ],
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -645,7 +664,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Row(
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
                       _buildProfileActionButton(
                         icon: Icons.ios_share,
@@ -667,7 +688,6 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           }
                         },
                       ),
-                      const SizedBox(width: 12),
                       _buildProfileActionButton(
                         icon: Icons.edit_outlined,
                         label: 'Modifier',
@@ -676,6 +696,43 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           context.go('/onboarding-advanced?skipUserQuestions=true&editProfileId=${profile['id']}&returnTo=/search-page');
                         },
                       ),
+                      _buildProfileActionButton(
+                        icon: Icons.group_add,
+                        label: 'Collaborer',
+                        onTap: () {
+                           showModalBottomSheet(
+                             context: context,
+                             isScrollControlled: true,
+                             backgroundColor: Colors.transparent,
+                             builder: (context) => Padding(
+                               padding: EdgeInsets.only(
+                                 bottom: MediaQuery.of(context).viewInsets.bottom,
+                                 top: MediaQuery.of(context).size.height * 0.2,
+                               ),
+                               child: ShareListBottomSheet(profile: profile),
+                             ),
+                           ).then((chatId) {
+                             if (chatId != null && mounted) {
+                               setState(() {
+                                 profile['chatId'] = chatId;
+                                 profile['isShared'] = true;
+                               });
+                             }
+                           });
+                        }
+                      ),
+                      if (profile['chatId'] != null)
+                        _buildProfileActionButton(
+                          icon: Icons.chat_bubble_outline,
+                          label: 'Chat',
+                          onTap: () {
+                             context.push('/chat-room/${profile['chatId']}', extra: {
+                               'id': profile['chatId'],
+                               'name': 'Cadeaux pour ${profile['name']}',
+                               'isGroup': true,
+                             });
+                          }
+                        ),
                     ],
                   ),
                 ],
