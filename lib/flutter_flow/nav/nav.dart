@@ -29,6 +29,8 @@ import '/pages/tiktok_inspiration/tiktok_inspiration_page_widget.dart';
 import '/pages/admin/admin_products_page.dart';
 import '/pages/new_pages/public_profile/public_profile_page.dart';
 import '/pages/wishlists/wishlist_details_widget.dart';
+import '/pages/new_pages/chat/chat_list_page.dart';
+import '/pages/new_pages/chat/chat_room_page.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -252,6 +254,21 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: GiftResultsWidget.routePath,
           requireAuth: true,
           builder: (context, params) => GiftResultsWidget(),
+        ),
+        FFRoute(
+          name: 'ChatList',
+          path: '/chat-list',
+          requireAuth: true,
+          builder: (context, params) => const ChatListPage(),
+        ),
+        FFRoute(
+          name: 'ChatRoom',
+          path: '/chat-room/:chatId',
+          requireAuth: true,
+          builder: (context, params) => ChatRoomPage(
+            chatId: params.getParam<String>('chatId', ParamType.String) ?? '',
+            chatData: params.extraMap,
+          ),
         ),
         // ── Voice Module ────────────────────────────────────────────────────
         FFRoute(

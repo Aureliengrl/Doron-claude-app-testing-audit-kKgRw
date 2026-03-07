@@ -16,6 +16,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import 'search_page_model.dart';
 export 'search_page_model.dart';
 import 'user_search_bottom_sheet.dart';
+import '/utils/pdf_export_utils.dart';
 
 class SearchPageWidget extends StatefulWidget {
   const SearchPageWidget({super.key});
@@ -210,7 +211,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 ),
               ),
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-              child: _buildAddPersonButton(),
+              child: _buildBottomActions(),
             ),
           ),
         ],
@@ -335,10 +336,10 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         scrollDirection: Axis.horizontal,
         itemCount: _model.profiles.length + 1, // +1 pour le bouton ajouter
         itemBuilder: (context, index) {
-          // Bouton ajouter à la fin
-          if (index == _model.profiles.length) {
+          // Bouton ajouter au dbut (gauche)
+          if (index == 0) {
             return Padding(
-              padding: const EdgeInsets.only(left: 16),
+              padding: const EdgeInsets.only(right: 16),
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
@@ -379,7 +380,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             );
           }
 
-          final profile = _model.profiles[index];
+          final profile = _model.profiles[index - 1];
           final profileId = profile['id'];
           final int profileIdInt = profileId is int ? profileId : (profileId as String).hashCode;
           final isSelected = _model.selectedProfileId == profileIdInt;
@@ -643,10 +644,87 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       color: Colors.white.withOpacity(0.55),
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      _buildProfileActionButton(
+                        icon: Icons.ios_share,
+                        label: 'Partager',
+                        onTap: () async {
+                          HapticFeedback.lightImpact();
+                          _showSnackBar('Génération du PDF en cours...', isError: false);
+                          
+                          // On récupère les cadeaux sauvegardés pour cette personne
+                          final products = _model.getFilteredProducts(); 
+                          
+                          try {
+                            await PdfExportUtils.generateAndShareWishlistPdf(
+                              profile: profile,
+                              products: products,
+                            );
+                          } catch (e) {
+                            _showSnackBar('Erreur lors de la génération du PDF', isError: true);
+                          }
+                        },
+                      ),
+                      const SizedBox(width: 12),
+                      _buildProfileActionButton(
+                        icon: Icons.edit_outlined,
+                        label: 'Modifier',
+                        onTap: () {
+                          // Retourner au quizz avec l'ID du profil
+                          context.go('/onboarding-advanced?skipUserQuestions=true&editProfileId=${profile['id']}&returnTo=/search-page');
+                        },
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: Colors.white, size: 14),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1478,42 +1556,94 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     );
   }
 
-  Widget _buildAddPersonButton() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+  Widget _buildBottomActions() {
+    return Row(
       children: [
-        // Bouton traditionnel avec formulaire
-        ElevatedButton(
-          onPressed: () => context.go('/onboarding-advanced?skipUserQuestions=true&returnTo=/search-page'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: violetColor,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(28),
-            ),
-            elevation: 8,
-            shadowColor: violetColor.withOpacity(0.5),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.add, color: Colors.white, size: 22),
-              const SizedBox(width: 10),
-              Flexible(
-                child: Text(
-                  'AJOUTER UNE PERSONNE',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 0.5,
-                  ),
+        // Bouton Messages/Chat (Rond)
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              HapticFeedback.mediumImpact();
+              // TODO: Naviguer vers la vue Chat
+              context.push('/chat-list');
+            },
+            borderRadius: BorderRadius.circular(30),
+            child: Container(
+              height: 56,
+              width: 56,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.12),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1.5,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-            ],
+              child: const Icon(
+                Icons.chat_bubble_outline_rounded,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
           ),
         ),
-
+        const SizedBox(width: 16),
+        
+        // Bouton Trouver des amis (Rectangle rargit)
+        Expanded(
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                HapticFeedback.heavyImpact();
+                _showUserSearchSheet();
+              },
+              borderRadius: BorderRadius.circular(28),
+              child: Container(
+                height: 56,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF8A2BE2).withOpacity(0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.person_search_rounded, color: Colors.white, size: 22),
+                    const SizedBox(width: 10),
+                    Text(
+                      'TROUVER DES AMIS',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
