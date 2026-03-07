@@ -24,6 +24,7 @@ import 'flutter_flow/nav/nav.dart';
 import 'package:showcaseview/showcaseview.dart';
 import '/components/connection_required_dialog.dart';
 import '/components/modern_nav_bar.dart';
+import '/components/offline_banner.dart';
 import '/services/push_notifications_service.dart';
 import 'index.dart';
 
@@ -223,6 +224,23 @@ class _MyAppState extends State<MyApp> {
       Duration(milliseconds: 1000),
       () => _appStateNotifier.stopShowingSplashImage(),
     );
+
+    // Initial check for pending routes from push notifications
+    if (PushNotificationsService.pendingChatRoute != null) {
+      Future.delayed(const Duration(milliseconds: 1500), () {
+        if (mounted) {
+          _router.push('/chat-room/${PushNotificationsService.pendingChatRoute}');
+          PushNotificationsService.pendingChatRoute = null;
+        }
+      });
+    }
+
+    // Listen to real-time notification clicks
+    PushNotificationsService.onNotificationClick.listen((chatId) {
+      if (mounted) {
+        _router.push('/chat-room/$chatId');
+      }
+    });
   }
 
   @override
@@ -244,28 +262,30 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return ShowCaseWidget(
-      builder: (context) => MaterialApp.router(
-        debugShowCheckedModeBanner: false,
-        title: 'DORON',
-        scrollBehavior: MyAppScrollBehavior(),
-        localizationsDelegates: [
-          FFLocalizationsDelegate(),
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-          FallbackMaterialLocalizationDelegate(),
-          FallbackCupertinoLocalizationDelegate(),
-        ],
-        locale: _locale,
-        supportedLocales: const [
-          Locale('fr'),
-          Locale('en'),
-          Locale('es'),
-        ],
-        theme: DoronTheme.light,
-        darkTheme: DoronTheme.dark,
-        themeMode: _themeMode,
-        routerConfig: _router,
+      builder: (context) => OfflineBannerWrapper(
+        child: MaterialApp.router(
+          debugShowCheckedModeBanner: false,
+          title: 'DORON',
+          scrollBehavior: MyAppScrollBehavior(),
+          localizationsDelegates: [
+            FFLocalizationsDelegate(),
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+            FallbackMaterialLocalizationDelegate(),
+            FallbackCupertinoLocalizationDelegate(),
+          ],
+          locale: _locale,
+          supportedLocales: const [
+            Locale('fr'),
+            Locale('en'),
+            Locale('es'),
+          ],
+          theme: DoronTheme.light,
+          darkTheme: DoronTheme.dark,
+          themeMode: _themeMode,
+          routerConfig: _router,
+        ),
       ),
     );
   }

@@ -77,31 +77,32 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
     final leftNavWidth = screenWidth - widget.margin.horizontal - spacing - rightWidth;
     final leftItemWidth = leftNavWidth / leftItems.length;
 
-    // Styles de base de Liquid Glass
+    // Styles de base de Liquid Glass améliorés
     final glassGradient = LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [
-        Colors.white.withOpacity(0.18),
-        Colors.white.withOpacity(0.08),
-        Colors.white.withOpacity(0.12),
+        Colors.white.withOpacity(0.4),
+        Colors.white.withOpacity(0.1),
+        Colors.white.withOpacity(0.2),
       ],
+      stops: const [0.0, 0.5, 1.0],
     );
     final glassBorder = Border.all(
-      color: Colors.white.withOpacity(0.25),
-      width: 1.0,
+      color: Colors.white.withOpacity(0.4),
+      width: 1.5,
     );
     final glassShadows = [
       BoxShadow(
-        color: primary.withOpacity(0.30),
-        blurRadius: 40,
-        offset: const Offset(0, 16),
-        spreadRadius: -8,
+        color: primary.withOpacity(0.4),
+        blurRadius: 50,
+        offset: const Offset(0, 20),
+        spreadRadius: -5,
       ),
       BoxShadow(
-        color: Colors.black.withOpacity(0.30),
-        blurRadius: 20,
-        offset: const Offset(0, 8),
+        color: Colors.black.withOpacity(0.4),
+        blurRadius: 30,
+        offset: const Offset(0, 10),
       ),
     ];
 
@@ -120,7 +121,7 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(widget.borderRadius),
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 45, sigmaY: 45),
+                  filter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
                   child: CustomPaint(
                     painter: _NavBarSpecularPainter(
                       borderRadius: widget.borderRadius,
@@ -195,7 +196,13 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: List.generate(
                               leftItems.length,
-                              (i) => _buildNavItem(leftItems[i], i, primary),
+                              (i) => _ModernNavItem(
+                                item: leftItems[i],
+                                isSelected: widget.currentIndex == i,
+                                primaryColor: primary,
+                                height: widget.height,
+                                onTap: () => widget.onTap(i),
+                              ),
                             ),
                           ),
                         ],
@@ -222,7 +229,7 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(widget.height / 2),
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 45, sigmaY: 45),
+                  filter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
                   child: CustomPaint(
                     painter: _NavBarSpecularPainter(
                       borderRadius: widget.height / 2,
@@ -257,7 +264,13 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
                           // L'item cliquable (passe l'index global)
                           Row(
                             children: [
-                              _buildNavItem(rightItem, rightIndex, primary),
+                              _ModernNavItem(
+                                item: rightItem,
+                                isSelected: widget.currentIndex == rightIndex,
+                                primaryColor: primary,
+                                height: widget.height,
+                                onTap: () => widget.onTap(rightIndex),
+                              ),
                             ],
                           ),
                         ],
@@ -274,15 +287,50 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
     );
   }
 
-  Widget _buildNavItem(NavBarItem item, int index, Color primary) {
-    final isSelected = widget.currentIndex == index;
+}
+
+class _ModernNavItem extends StatefulWidget {
+  final NavBarItem item;
+  final bool isSelected;
+  final Color primaryColor;
+  final double height;
+  final VoidCallback onTap;
+
+  const _ModernNavItem({
+    required this.item,
+    required this.isSelected,
+    required this.primaryColor,
+    required this.height,
+    required this.onTap,
+  });
+
+  @override
+  State<_ModernNavItem> createState() => _ModernNavItemState();
+}
+
+class _ModernNavItemState extends State<_ModernNavItem> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    // Si pressé, on réduit. Si sélectionné, on agrandit.
+    final scale = _isPressed ? 0.9 : (widget.isSelected ? 1.2 : 1.0);
 
     return Expanded(
       child: GestureDetector(
-        onTapDown: (_) => HapticFeedback.lightImpact(),
+        onTapDown: (_) {
+          HapticFeedback.lightImpact();
+          setState(() => _isPressed = true);
+        },
+        onTapUp: (_) {
+          setState(() => _isPressed = false);
+        },
+        onTapCancel: () {
+          setState(() => _isPressed = false);
+        },
         onTap: () {
           HapticFeedback.selectionClick();
-          widget.onTap(index);
+          widget.onTap();
         },
         behavior: HitTestBehavior.translucent,
         child: SizedBox(
@@ -291,40 +339,40 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               AnimatedScale(
-                scale: isSelected ? 1.2 : 1.0,
-                duration: const Duration(milliseconds: 350),
-                curve: Curves.elasticOut,
+                scale: scale,
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutBack,
                 child: Icon(
-                  isSelected ? item.activeIcon : item.icon,
-                  color: isSelected
+                  widget.isSelected ? widget.item.activeIcon : widget.item.icon,
+                  color: widget.isSelected
                       ? Colors.white
-                      : Colors.white.withOpacity(0.55),
-                  size: item.iconSize,
+                      : Colors.white.withOpacity(0.65),
+                  size: widget.item.iconSize,
                   shadows: [
-                    if (!isSelected)
+                    if (!widget.isSelected)
                       Shadow(
                         offset: const Offset(0, 1),
-                        blurRadius: 2.0,
-                        color: Colors.black.withOpacity(0.8),
+                        blurRadius: 3.0,
+                        color: Colors.black.withOpacity(0.5),
                       )
                     else
                       Shadow(
                         offset: const Offset(0, 2),
-                        blurRadius: 8.0,
-                        color: const Color(0xFF8A2BE2).withOpacity(0.5),
+                        blurRadius: 10.0,
+                        color: const Color(0xFF8A2BE2),
                       ),
                   ],
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               AnimatedOpacity(
-                opacity: isSelected ? 1.0 : 0.0,
+                opacity: widget.isSelected ? 1.0 : 0.0,
                 duration: const Duration(milliseconds: 200),
                 child: Text(
-                  item.label,
+                  widget.item.label,
                   style: GoogleFonts.poppins(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
                     color: Colors.white,
                     letterSpacing: 0.5,
                   ),

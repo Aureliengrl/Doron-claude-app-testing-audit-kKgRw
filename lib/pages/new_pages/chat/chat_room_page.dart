@@ -433,8 +433,12 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               ),
             ),
             child: IconButton(
-              icon: const Icon(Icons.send, color: Colors.white, size: 20),
-              onPressed: _sendMessage,
+              icon: Icon(
+                Icons.send,
+                color: _messageController.text.trim().isEmpty ? Colors.white54 : Colors.white,
+                size: 20,
+              ),
+              onPressed: _messageController.text.trim().isEmpty ? null : _sendMessage,
             ),
           ),
         ],

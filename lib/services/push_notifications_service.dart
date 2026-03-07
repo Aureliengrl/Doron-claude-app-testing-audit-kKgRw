@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,6 +17,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 class PushNotificationsService {
   static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  static final StreamController<String> onNotificationClick = StreamController<String>.broadcast();
+  static String? pendingChatRoute;
 
   /// Initialize Firebase Messaging
   static Future<void> initialize() async {
@@ -97,8 +100,8 @@ class PushNotificationsService {
     // Ex: Navigate to a chat room if the payload contains `chatId`
     if (message.data.containsKey('chatId')) {
       final chatId = message.data['chatId'];
-      // Routing logic depends on whether we have a global context or router 
-      // For now, we will log it. In a real scenario, use a global navigator key or GoRouter config.
+      pendingChatRoute = chatId;
+      onNotificationClick.add(chatId);
       AppLogger.debug('Should navigate to chat: $chatId', 'PushNotificationsService');
     }
   }

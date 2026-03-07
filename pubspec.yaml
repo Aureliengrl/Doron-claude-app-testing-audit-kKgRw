@@ -72,6 +72,7 @@ dependencies:
 
   # ── Utilitaires ────────────────────────────────────────────
   device_info_plus: ^9.1.0
+  connectivity_plus: ^6.0.3
   easy_debounce: 2.0.1
   flutter_cache_manager: 3.4.1
   flutter_native_splash: 2.4.1
@@ -103,9 +104,9 @@ flutter_launcher_icons:
   ios: true
   web:
     generate: true
-  image_path: 'assets/images/Icon.png'
+  image_path: 'assets/images/doron_logo.jpg'
   adaptive_icon_background: '#062248'
-  adaptive_icon_foreground: 'assets/images/Icon.png'
+  adaptive_icon_foreground: 'assets/images/doron_logo.jpg'
 
 flutter:
   uses-material-design: true
@@ -120,5 +121,8 @@ flutter:
     - assets/jsons/
     - assets/environment_values/
 
-
-
+flutter_native_splash:
+  color: "#8A2BE2"
+  image: assets/images/doron_logo.jpg
+  android: true
+  ios: true
