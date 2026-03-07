@@ -757,8 +757,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
               ),
             ),
 
-            // Message de bienvenue
-            SliverToBoxAdapter(child: _buildWelcomeMessage()),
+            // Message de bienvenue (retir pour design plus pur)
+            // SliverToBoxAdapter(child: _buildWelcomeMessage()),
 
             // Catégories
             SliverToBoxAdapter(child: _buildCategories()),
@@ -1023,17 +1023,6 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.only(left: 20, bottom: 8),
-          child: Text(
-            'Prix',
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF6B7280),
-            ),
-          ),
-        ),
         SizedBox(
           height: 50,
           child: ListView.builder(
@@ -1305,15 +1294,6 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF111827),
                         height: 1.3,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      '${product['price']}',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: violetColor,
                       ),
                     ),
                   ],
