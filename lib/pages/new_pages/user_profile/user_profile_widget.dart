@@ -422,6 +422,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         color: Colors.white70,
                       ),
                     ),
+                  // Bio Moved directly under username/handle (it's already here but ensure it's below the stats)
                   if (_model.userProfile?['bio'] != null && _model.userProfile!['bio'].toString().isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
@@ -550,9 +551,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
               icon: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.favorite),
+                  const Icon(Icons.list),
                   const SizedBox(width: 8),
-                  Text('Produits likés'),
+                  Text('Wishlists'),
                 ],
               ),
             ),
@@ -560,9 +561,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
               icon: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.list),
+                  const Icon(Icons.favorite),
                   const SizedBox(width: 8),
-                  Text('Wishlists'),
+                  Text('Produits likés'),
                 ],
               ),
             ),
@@ -578,8 +579,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       child: TabBarView(
         controller: _tabController,
         children: [
-          _buildLikedProducts(),
           _buildWishlists(),
+          _buildLikedProducts(),
         ],
       ),
     );
@@ -704,47 +705,141 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           );
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(20),
+        return GridView.builder(
+          padding: const EdgeInsets.all(16),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 0.85, // Pour donner une forme de portrait/polaroid
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+          ),
           itemCount: wishlists.length,
           itemBuilder: (context, index) {
             final wishlist = wishlists[index];
             final productCount = (wishlist['productIds'] as List?)?.length ?? 0;
+            final coverUrl = wishlist['coverPhoto'] as String?;
 
-            return Card(
-              margin: const EdgeInsets.only(bottom: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              elevation: 2,
-              child: InkWell(
-                onTap: () => _showWishlistDetail(wishlist),
-                borderRadius: BorderRadius.circular(16),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
+            return GestureDetector(
+              onTap: () => _showWishlistDetail(wishlist),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      LiquidGlassTokens.glassDark,
+                      LiquidGlassTokens.glassDarker,
+                    ],
+                  ),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.1),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Stack(
+                    fit: StackFit.expand,
                     children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: [violetColor, pinkColor]),
-                          borderRadius: BorderRadius.circular(12),
+                      // Photo de couverture ou fond par défaut
+                      if (coverUrl != null && coverUrl.isNotEmpty)
+                        CachedNetworkImage(
+                          imageUrl: coverUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: Colors.white.withOpacity(0.05),
+                            child: const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => _buildDefaultCover(),
+                        )
+                      else
+                        _buildDefaultCover(),
+
+                      // Overlay sombre en bas pour le texte
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: 80,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withOpacity(0.9),
+                              ],
+                            ),
+                          ),
                         ),
-                        child: const Icon(Icons.bookmark, color: Colors.white, size: 28),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
+
+                      // Informations de la wishlist
+                      Positioned(
+                        bottom: 12,
+                        left: 12,
+                        right: 12,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(wishlist['name'] as String? ?? 'Wishlist', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF111827))),
-                            if (wishlist['description'] != null && (wishlist['description'] as String).isNotEmpty)
-                              Text(wishlist['description'] as String, style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF6B7280)), maxLines: 1, overflow: TextOverflow.ellipsis),
-                            const SizedBox(height: 4),
-                            Text('$productCount produit${productCount > 1 ? 's' : ''}', style: GoogleFonts.poppins(fontSize: 12, color: violetColor, fontWeight: FontWeight.w600)),
+                            Text(
+                              wishlist['name'] as String? ?? 'Wishlist',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '$productCount produit${productCount > 1 ? 's' : ''}',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.white.withOpacity(0.7),
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      Icon(Icons.chevron_right, color: Colors.white.withOpacity(0.35)),
+
+                      // Bouton d'édition (si l'utilisateur veut changer la cover)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => _updateWishlistCover(wishlist['id'] as String),
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.4),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.add_a_photo,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -754,6 +849,71 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         );
       },
     );
+  }
+
+  Widget _buildDefaultCover() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF8A2BE2),
+            Color(0xFFEC4899),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.interests,
+          size: 48,
+          color: Colors.white.withOpacity(0.5),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _updateWishlistCover(String wishlistId) async {
+    // 1. Pick an image
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    
+    if (pickedFile == null || !mounted) return;
+
+    // Show loading indicator
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Upload de la couverture en cours...')),
+    );
+
+    try {
+      // 2. Upload to Firebase Storage
+      final String uid = _model.firebaseDataService.auth.currentUser!.uid;
+      final fileExtension = pickedFile.name.split('.').last;
+      final fileName = 'wishlist_$wishlistId.${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
+      final ref = FirebaseStorage.instance.ref().child('users/$uid/wishlist_covers/$fileName');
+      
+      final uploadTask = await ref.putFile(File(pickedFile.path));
+      final downloadUrl = await uploadTask.ref.getDownloadURL();
+
+      // 3. Update Firestore Document
+      await FirebaseFirestore.instance.collection('users').doc(uid).collection('wishlists').doc(wishlistId).update({
+        'coverPhoto': downloadUrl,
+      });
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Couverture mise à jour avec succès!')),
+      );
+
+      // Refresh UI by triggering a rebuild
+      setState(() {});
+
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur lors de l\'upload: $e')),
+      );
+    }
   }
 
   Future<void> _showWishlistDetail(Map<String, dynamic> wishlist) async {
@@ -808,16 +968,47 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
               )
             else
               Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(20),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.7,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                  ),
-                  itemCount: products.length,
-                  itemBuilder: (context, index) => _buildWishlistProductCard(products[index]),
+                child: StatefulBuilder(
+                  builder: (context, setModalState) {
+                    return ReorderableListView.builder(
+                      padding: const EdgeInsets.all(20),
+                      itemCount: products.length,
+                      onReorder: (oldIndex, newIndex) async {
+                        if (newIndex > oldIndex) newIndex -= 1;
+                        
+                        setModalState(() {
+                          final item = products.removeAt(oldIndex);
+                          products.insert(newIndex, item);
+                        });
+
+                        // Mettre à jour Firestore
+                        try {
+                          final String uid = _model.firebaseDataService.auth.currentUser!.uid;
+                          // Recalculer la liste des IDs dans le nouvel ordre
+                          final newProductIds = products.map((p) => p['id'] as String).toList();
+                          
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(uid)
+                              .collection('wishlists')
+                              .doc(wishlistId)
+                              .update({
+                            'productIds': newProductIds,
+                          });
+                        } catch (e) {
+                          print('Erreur de réorganisation: $e');
+                        }
+                      },
+                      itemBuilder: (context, index) {
+                        return Container(
+                          key: ValueKey(products[index]['id'] ?? index.toString()),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          height: 120, // Hauteur fixe pour le ReorderableListView
+                          child: _buildWishlistProductListCard(products[index]),
+                        );
+                      },
+                    );
+                  }
                 ),
               ),
           ],
@@ -825,7 +1016,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       ),
     );
   }
-  Widget _buildWishlistProductCard(Map<String, dynamic> product) {
+  Widget _buildWishlistProductListCard(Map<String, dynamic> product) {
     final title = product['title'] as String? ?? product['name'] as String? ?? 'Produit';
     final price = product['price'] != null ? product['price'].toString() : '';
     final imageUrl = product['imageUrl'] as String? ?? product['image'] as String? ?? '';
@@ -833,8 +1024,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
     return Card(
       margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 2,
       child: InkWell(
         onTap: () async {
           if (url.isNotEmpty) {
@@ -844,31 +1035,77 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             }
           }
         },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        borderRadius: BorderRadius.circular(16),
+        child: Row(
           children: [
-            Expanded(
-              child: imageUrl.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    errorWidget: (_, __, ___) => Container(
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.image_not_supported, color: Colors.grey),
-                    ),
-                  )
-                : Container(color: Colors.grey[200], child: const Icon(Icons.card_giftcard, color: Colors.grey)),
+            // Image à gauche
+            SizedBox(
+              width: 100,
+              height: 120,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  bottomLeft: Radius.circular(16),
+                ),
+                child: imageUrl.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: Colors.grey[200],
+                          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                        ),
+                        errorWidget: (_, __, ___) => Container(
+                          color: Colors.grey[200],
+                          child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                        ),
+                      )
+                    : Container(
+                        color: Colors.grey[200],
+                        child: const Icon(Icons.card_giftcard, color: Colors.grey),
+                      ),
+              ),
             ),
+            
+            // Infos au milieu
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF111827),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    if (price.isNotEmpty)
+                      Text(
+                        '$price€',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: violetColor,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Icône drag à droite
             Padding(
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600), maxLines: 2, overflow: TextOverflow.ellipsis),
-                  if (price.isNotEmpty)
-                    Text(price, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: violetColor)),
-                ],
+              padding: const EdgeInsets.only(right: 16),
+              child: Icon(
+                Icons.drag_indicator,
+                color: Colors.grey[400],
               ),
             ),
           ],
@@ -876,189 +1113,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       ),
     );
   }
+  // ─── Gamification & Stats ────────────────────────────────────────────────
+  // Removed "Ton activité" and "Badges" per user request.
 
-  // ─── Gamification: Stats ─────────────────────────────────────────────────
-  Widget _buildStatsSection() {
-    final favCount = _model.favourites.length;
-    final wishlistCount = _model.wishlists.length;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 12),
-            child: Text(
-              'Ton activité',
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Colors.white.withOpacity(0.5),
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-          Row(
-            children: [
-              Expanded(child: _buildStatTile(
-                icon: Icons.favorite,
-                label: 'Coups de ❤️',
-                value: '$favCount',
-                color: const Color(0xFFEC4899),
-              )),
-              const SizedBox(width: 12),
-              Expanded(child: _buildStatTile(
-                icon: Icons.bookmark,
-                label: 'Wishlists',
-                value: '$wishlistCount',
-                color: const Color(0xFF8A2BE2),
-              )),
-              const SizedBox(width: 12),
-              Expanded(child: _buildStatTile(
-                icon: Icons.auto_awesome,
-                label: 'Niveau',
-                value: favCount > 20 ? 'Expert' : favCount > 5 ? 'Pro' : 'Débutant',
-                color: const Color(0xFFFBBF24),
-              )),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatTile({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: color.withOpacity(0.25),
-              width: 1,
-            ),
-          ),
-          child: Column(
-            children: [
-              Icon(icon, color: color, size: 22),
-              const SizedBox(height: 8),
-              Text(
-                value,
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              Text(
-                label,
-                style: GoogleFonts.poppins(
-                  fontSize: 10,
-                  color: Colors.white.withOpacity(0.55),
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ─── Gamification: Badges ────────────────────────────────────────────────
-  Widget _buildBadgesSection() {
-    final favCount = _model.favourites.length;
-    final wishlistCount = _model.wishlists.length;
-
-    final badges = [
-      {'icon': '🎁', 'label': 'Explorateur', 'unlocked': true},
-      {'icon': '💝', 'label': 'Collectionneur', 'unlocked': favCount >= 5},
-      {'icon': '⭐', 'label': 'Expert', 'unlocked': favCount >= 20},
-      {'icon': '📋', 'label': 'Organisateur', 'unlocked': wishlistCount >= 1},
-      {'icon': '🎯', 'label': 'Pro', 'unlocked': favCount >= 10 && wishlistCount >= 2},
-    ];
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 12),
-            child: Text(
-              'Badges',
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Colors.white.withOpacity(0.5),
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: badges.map((badge) {
-              final unlocked = badge['unlocked'] as bool;
-              return Column(
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: unlocked
-                          ? const Color(0xFF8A2BE2).withOpacity(0.20)
-                          : Colors.white.withOpacity(0.05),
-                      border: Border.all(
-                        color: unlocked
-                            ? const Color(0xFF8A2BE2).withOpacity(0.5)
-                            : Colors.white.withOpacity(0.10),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        badge['icon'] as String,
-                        style: TextStyle(
-                          fontSize: 22,
-                          color: unlocked ? null : Colors.transparent,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    badge['label'] as String,
-                    style: GoogleFonts.poppins(
-                      fontSize: 9,
-                      color: unlocked
-                          ? Colors.white.withOpacity(0.8)
-                          : Colors.white.withOpacity(0.25),
-                      fontWeight: unlocked ? FontWeight.w600 : FontWeight.w400,
-                    ),
-                  ),
-                ],
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ─── Actions Profil (Partager / Modifier / Paramètres) ─────────────────
+  // ─── Actions & Modals ──────────────────────────────────────────────────────
   Future<void> _shareProfile() async {
     final handle = _model.userProfile?['handle'] as String?;
     if (handle == null || handle.isEmpty) {
