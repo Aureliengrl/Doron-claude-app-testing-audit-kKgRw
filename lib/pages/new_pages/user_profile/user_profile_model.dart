@@ -32,7 +32,7 @@ class UserProfileModel extends ChangeNotifier {
       final favQuery = await queryFavouritesRecordOnce(
         queryBuilder: (favouritesRecord) => favouritesRecord
             .where('uid', isEqualTo: currentUserReference)
-            .orderBy('created_at', descending: true),
+            .orderBy('TimeStamp', descending: true),
       );
 
       favourites = favQuery;
