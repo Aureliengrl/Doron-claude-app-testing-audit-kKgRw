@@ -31,6 +31,7 @@ import '/pages/new_pages/public_profile/public_profile_page.dart';
 import '/pages/wishlists/wishlist_details_widget.dart';
 import '/pages/new_pages/chat/chat_list_page.dart';
 import '/pages/new_pages/chat/chat_room_page.dart';
+import '/pages/authentification/choose_handle_widget.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -159,6 +160,15 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: AuthentificationWidget.routeName,
           path: AuthentificationWidget.routePath,
           builder: (context, params) => AuthentificationWidget(),
+        ),
+        FFRoute(
+          name: ChooseHandleWidget.routeName,
+          path: ChooseHandleWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => ChooseHandleWidget(
+            returnTo: params.getParam('returnTo', ParamType.String),
+            personId: params.getParam('personId', ParamType.String),
+          ),
         ),
         FFRoute(
           name: GiftGeneratorWidget.routeName,

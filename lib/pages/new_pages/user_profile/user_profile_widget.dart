@@ -16,8 +16,10 @@ import '/pages/pages/change_name/change_name_widget.dart';
 import '/pages/pages/components/change_password/change_password_widget.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'dart:io';
 import 'user_profile_model.dart';
+import '/components/liquid_glass_loader.dart';
+import '/utils/image_compress_utils.dart';
+import 'dart:io';
 export 'user_profile_model.dart';
 
 class UserProfileWidget extends StatefulWidget {
@@ -111,7 +113,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         SnackBar(
           content: Row(
             children: [
-              const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+              const LiquidGlassLoader(size: 24, isDark: false),
               const SizedBox(width: 16),
               Text('Mise à jour de la photo...', style: GoogleFonts.outfit()),
             ],
@@ -127,8 +129,11 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       final storageRef = FirebaseStorage.instance
           .ref()
           .child('users/${currentUserReference!.id}/profile_${DateTime.now().millisecondsSinceEpoch}.jpg');
-
-      final uploadTask = await storageRef.putFile(file);
+      // Compresser l'image avant l'upload
+      final compressedFile = await ImageCompressUtils.compressImage(file);
+      final fileToUpload = compressedFile ?? file;
+      
+      final uploadTask = await storageRef.putFile(fileToUpload);
       final downloadUrl = await uploadTask.ref.getDownloadURL();
 
       await currentUserReference!.update(createUsersRecordData(photoUrl: downloadUrl));
@@ -332,10 +337,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                         placeholder: (context, url) => Container(
                                           color: Colors.grey[300],
                                           child: const Center(
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                            ),
+                                            child: LiquidGlassLoader(size: 16, isDark: false),
                                           ),
                                         ),
                                         errorWidget: (context, url, error) => Container(
@@ -588,11 +590,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
   Widget _buildLikedProducts() {
     if (_model.isLoading) {
-      return Center(
-        child: CircularProgressIndicator(
-          color: violetColor,
-          strokeWidth: 3,
-        ),
+      return const Center(
+        child: LiquidGlassLoader(size: 32),
       );
     }
 
@@ -665,10 +664,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           placeholder: (context, url) => Container(
             color: Colors.grey[200],
             child: Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: violetColor,
-              ),
+              child: LiquidGlassLoader(size: 32),
             ),
           ),
           errorWidget: (context, url, error) => Container(
@@ -685,7 +681,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       future: FirebaseDataService.loadWishlists(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator(color: violetColor));
+          return Center(child: LiquidGlassLoader(size: 40));
         }
 
         final wishlists = snapshot.data ?? [];
@@ -757,7 +753,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                           placeholder: (context, url) => Container(
                             color: Colors.white.withOpacity(0.05),
                             child: const Center(
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                              child: LiquidGlassLoader(size: 24, isDark: false),
                             ),
                           ),
                           errorWidget: (context, url, error) => _buildDefaultCover(),
@@ -891,8 +887,12 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       final fileExtension = pickedFile.name.split('.').last;
       final fileName = 'wishlist_$wishlistId.${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
       final ref = FirebaseStorage.instance.ref().child('users/$uid/wishlist_covers/$fileName');
+      // Compresser l'image avant l'upload
+      final originalFile = File(pickedFile.path);
+      final compressedFile = await ImageCompressUtils.compressImage(originalFile);
+      final fileToUpload = compressedFile ?? originalFile;
       
-      final uploadTask = await ref.putFile(File(pickedFile.path));
+      final uploadTask = await ref.putFile(fileToUpload);
       final downloadUrl = await uploadTask.ref.getDownloadURL();
 
       // 3. Update Firestore Document
@@ -959,9 +959,18 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.card_giftcard, size: 64, color: Colors.white.withOpacity(0.35)),
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.05),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.favorite_border, size: 48, color: Colors.black.withOpacity(0.3)),
+                      ),
                       const SizedBox(height: 16),
-                      Text('Aucun produit', style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600])),
+                      Text('Aucun produit dans cette liste', style: GoogleFonts.poppins(fontSize: 16, color: Colors.black54, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Text('Sauvegardez des cadeaux pour les retrouver ici.', style: GoogleFonts.poppins(fontSize: 12, color: Colors.black38)),
                     ],
                   ),
                 ),

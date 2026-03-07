@@ -71,6 +71,11 @@ class AuthentificationModel extends FlutterFlowModel<AuthentificationWidget> {
       return 'Uniquement lettres, chiffres, - et _';
     }
 
+    // Éviter le "@" s'il a été tapé
+    if (val.startsWith('@')) {
+      return 'Ne pas inclure le @';
+    }
+
     // L'erreur d'unicité sera gérée séparément
     if (usernameError != null) {
       return usernameError;
@@ -175,10 +180,10 @@ class AuthentificationModel extends FlutterFlowModel<AuthentificationWidget> {
       isCheckingUsername = true;
       usernameError = null;
 
-      // Rechercher dans la collection users si le username existe déjà
+      // Rechercher dans la collection users si le handle existe déjà
       final querySnapshot = await FirebaseFirestore.instance
           .collection('users')
-          .where('username', isEqualTo: username.toLowerCase())
+          .where('searchName', isEqualTo: username.toLowerCase().replaceAll('@', ''))
           .limit(1)
           .get();
 

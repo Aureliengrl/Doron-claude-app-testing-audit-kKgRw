@@ -18,6 +18,8 @@ export 'search_page_model.dart';
 import 'user_search_bottom_sheet.dart';
 import '/utils/pdf_export_utils.dart';
 import 'share_list_bottom_sheet.dart';
+import '/components/liquid_glass_empty_state_widget.dart';
+import '/components/liquid_glass_loader.dart';
 
 class SearchPageWidget extends StatefulWidget {
   const SearchPageWidget({super.key});
@@ -792,90 +794,22 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
     // Si pas de profils du tout, afficher un message d'accueil
     if (_model.profiles.isEmpty) {
-      return SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.all(40),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: violetColor.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.person_add_alt_1,
-                  size: 64,
-                  color: violetColor,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Ajoutez votre première personne',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Cliquez sur le bouton + pour ajouter\nune personne et générer ses cadeaux',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.white.withOpacity(0.65),
-                ),
-              ),
-            ],
-          ),
+      return const SliverToBoxAdapter(
+        child: LiquidGlassEmptyStateWidget(
+          icon: Icons.person_add_alt_1,
+          title: 'Ajoutez votre première personne',
+          subtitle: 'Cliquez sur le bouton + pour ajouter ou rejoindre une liste existante et générer des idées de cadeaux personnalisées.',
         ),
       );
     }
 
     // Si profil sélectionné mais pas de produits, afficher message
     if (products.isEmpty) {
-      return SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.all(40),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: violetColor.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.card_giftcard,
-                  size: 64,
-                  color: violetColor,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Aucun cadeau pour le moment',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Les cadeaux de cette personne apparaîtront ici',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.white.withOpacity(0.65),
-                ),
-              ),
-            ],
-          ),
+      return const SliverToBoxAdapter(
+        child: LiquidGlassEmptyStateWidget(
+          icon: Icons.card_giftcard,
+          title: 'Aucun cadeau pour le moment',
+          subtitle: 'Les cadeaux de cette personne apparaîtront ici. Générez des idées de cadeaux ou ajoutez-les manuellement.',
         ),
       );
     }
@@ -1304,10 +1238,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
           child: Center(
             child: Column(
               children: [
-                CircularProgressIndicator(
-                  color: violetColor,
-                  strokeWidth: 3,
-                ),
+                const LiquidGlassLoader(size: 32),
                 const SizedBox(height: 16),
                 Text(
                   'Génération de suggestions...',

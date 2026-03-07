@@ -63,10 +63,14 @@ class _TicketPaymentWebViewState extends State<TicketPaymentWebView> {
         deviceId = 'web-${DateTime.now().millisecondsSinceEpoch}';
       }
 
+      // Get app version
+      final packageInfo = await PackageInfo.fromPlatform();
+      final appVersion = packageInfo.version;
+
       // Créer la session
       final sessionId = await TicketSessionService.createSession(
         deviceId: deviceId,
-        appVersion: '1.0.0', // TODO: Récupérer depuis package_info
+        appVersion: appVersion, 
       );
 
       if (sessionId == null) {

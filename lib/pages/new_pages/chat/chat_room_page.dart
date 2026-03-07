@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 import '/components/liquid_glass.dart';
+import '/components/liquid_glass_loader.dart';
 
 class ChatRoomPage extends StatefulWidget {
   final String chatId;
@@ -25,6 +27,64 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   final ScrollController _scrollController = ScrollController();
   final Color violetColor = const Color(0xFF8A2BE2);
   
+  Timer? _typingTimer;
+  bool _isTyping = false;
+  Map<String, dynamic> _chatDocData = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _updateReadStatus();
+  }
+  
+  Future<void> _updateReadStatus() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    
+    try {
+      await FirebaseFirestore.instance.collection('chats').doc(widget.chatId).set({
+        'readStatus': {
+          user.uid: FieldValue.serverTimestamp(),
+        }
+      }, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint('Failed to update read status: $e');
+    }
+  }
+
+  void _onTextChanged(String text) {
+    if (text.isNotEmpty && !_isTyping) {
+      _setTypingStatus(true);
+    } else if (text.isEmpty && _isTyping) {
+      _setTypingStatus(false);
+    }
+
+    _typingTimer?.cancel();
+    if (text.isNotEmpty) {
+      _typingTimer = Timer(const Duration(seconds: 2), () {
+        _setTypingStatus(false);
+      });
+    }
+  }
+
+  Future<void> _setTypingStatus(bool isTyping) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    
+    if (_isTyping == isTyping) return;
+    _isTyping = isTyping;
+
+    try {
+      await FirebaseFirestore.instance.collection('chats').doc(widget.chatId).set({
+        'typingUsers': {
+          user.uid: isTyping ? DateTime.now().millisecondsSinceEpoch : FieldValue.delete(),
+        }
+      }, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint('Failed to update typing status: $e');
+    }
+  }
+  
   String _formatMessageTime(Timestamp? timestamp) {
     if (timestamp == null) return 'À l\'instant';
     final date = timestamp.toDate();
@@ -33,6 +93,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   @override
   void dispose() {
+    _setTypingStatus(false);
+    _typingTimer?.cancel();
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -43,6 +105,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     if (text.isEmpty) return;
     
     _messageController.clear();
+    _setTypingStatus(false);
+    _typingTimer?.cancel();
+    
+    _updateReadStatus();
     
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) return;
@@ -88,6 +154,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             Expanded(
               child: _buildMessagesList(),
             ),
+            _buildTypingIndicator(),
             _buildMessageInput(),
           ],
         ),
@@ -182,7 +249,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFF8A2BE2)));
+          return const Center(child: LiquidGlassLoader(size: 40));
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -209,6 +276,22 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             final text = messageData['text'] as String? ?? '';
             final timestamp = messageData['timestamp'] as Timestamp?;
             final timeStr = _formatMessageTime(timestamp);
+            
+            // Check read receipt
+            bool isReadByOthers = false;
+            if (isMe && timestamp != null && _chatDocData.containsKey('readStatus')) {
+              final readStatuses = _chatDocData['readStatus'] as Map<String, dynamic>;
+              for (final key in readStatuses.keys) {
+                if (key != currentUser.uid) {
+                  final otherReadTime = readStatuses[key] as Timestamp?;
+                  if (otherReadTime != null && otherReadTime.compareTo(timestamp) >= 0) {
+                    isReadByOthers = true;
+                    // If at least one other person read it, we mark as read (or for groups, we could require all)
+                    break;
+                  }
+                }
+              }
+            }
             
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
@@ -272,12 +355,25 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       left: isMe ? 0 : 12,
                       right: isMe ? 12 : 0,
                     ),
-                    child: Text(
-                      timeStr,
-                      style: GoogleFonts.poppins(
-                        fontSize: 10,
-                        color: Colors.white.withOpacity(0.4),
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          timeStr,
+                          style: GoogleFonts.poppins(
+                            fontSize: 10,
+                            color: Colors.white.withOpacity(0.4),
+                          ),
+                        ),
+                        if (isMe) ...[
+                          const SizedBox(width: 4),
+                          Icon(
+                            isReadByOthers ? Icons.done_all : Icons.check,
+                            size: 14,
+                            color: isReadByOthers ? const Color(0xFF34D399) : Colors.white.withOpacity(0.4),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ],
@@ -323,6 +419,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   hintStyle: GoogleFonts.poppins(color: Colors.white.withOpacity(0.4)),
                   border: InputBorder.none,
                 ),
+                onChanged: _onTextChanged,
                 onSubmitted: (_) => _sendMessage(),
               ),
             ),
@@ -343,5 +440,62 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         ],
       ),
     );
+  }
+
+  Widget _buildTypingIndicator() {
+    if (_chatDocData.isEmpty || !_chatDocData.containsKey('typingUsers')) return const SizedBox.shrink();
+    
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return const SizedBox.shrink();
+    
+    final typingUsers = _chatDocData['typingUsers'] as Map<String, dynamic>;
+    final othersTyping = typingUsers.entries.where((e) {
+      if (e.key == currentUser.uid) return false;
+      final time = e.value as int?;
+      if (time == null) return false;
+      // if it's older than 3 seconds, ignore
+      return DateTime.now().millisecondsSinceEpoch - time < 3000;
+    }).toList();
+    
+    if (othersTyping.isEmpty) return const SizedBox.shrink();
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Row(
+        children: [
+          Row(
+            spacing: 4,
+            children: [
+              _buildTypingDot(0),
+              _buildTypingDot(200),
+              _buildTypingDot(400),
+            ],
+          ),
+          const SizedBox(width: 8),
+          Text(
+            othersTyping.length == 1 ? 'Quelqu\'un écrit...' : 'Plusieurs personnes écrivent...',
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              color: Colors.white.withOpacity(0.6),
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+      ).animate().fadeIn(),
+    );
+  }
+
+  Widget _buildTypingDot(int delayMs) {
+    return Container(
+      width: 4,
+      height: 4,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.6),
+        shape: BoxShape.circle,
+      ),
+    ).animate(onPlay: (controller) => controller.repeat())
+      .fadeIn(duration: 300.ms, delay: delayMs.ms)
+      .then(delay: 200.ms)
+      .fadeOut(duration: 300.ms);
   }
 }

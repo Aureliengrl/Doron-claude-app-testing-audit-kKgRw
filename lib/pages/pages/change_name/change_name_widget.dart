@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '/services/firebase_data_service.dart';
+import '/services/user_search_service.dart';
 import 'change_name_model.dart';
 export 'change_name_model.dart';
 
@@ -243,8 +244,37 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
                         return;
                       }
 
+                      final handleRaw = _model.handleController?.text.replaceAll('@', '');
+                      
+                      // Check uniqueness if handle is chosen
+                      if (handleRaw != null && handleRaw.isNotEmpty) {
+                        try {
+                          final isAvailable = await UserSearchService.isHandleAvailable(handleRaw, currentUserUid);
+                          if (!isAvailable) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Ce nom d\\'utilisateur est d\u00E9j\u00E0 pris.'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Erreur lors de la v\u00E9rification du nom d\\'utilisateur.'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                          return;
+                        }
+                      }
+
                       final updateData = createUsersRecordData(displayName: _model.textController.text);
-                      updateData['handle'] = _model.handleController?.text;
+                      if (handleRaw != null && handleRaw.isNotEmpty) {
+                        updateData['handle'] = handleRaw;
+                        updateData['searchName'] = handleRaw.toLowerCase();
+                      }
                       updateData['bio'] = _model.bioController?.text;
 
                       await currentUserReference!.update(updateData);

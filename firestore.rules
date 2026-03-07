@@ -27,7 +27,8 @@ service cloud.firestore {
     // ─────────────────────────────────────────────────────────────────────────
 
     match /users/{userId} {
-      allow read: if isOwner(userId);
+      // Un utilisateur connecté peut lire les profils (pour la recherche d'amis)
+      allow read: if isAuth();
       allow write: if isOwner(userId);
 
       // Onboarding answers
@@ -98,6 +99,27 @@ service cloud.firestore {
       allow read: if isAuth() && resource.data.uid == request.auth.uid;
       allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
       allow update, delete: if isAuth() && resource.data.uid == request.auth.uid;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // COLLECTION: chats & messages (collaborative lists)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    match /chats/{chatId} {
+      // Un utilisateur peut lire/modifier un chat s'il fait partie des participants
+      allow read, update: if isAuth() && request.auth.uid in resource.data.participants;
+      // Tout utilisateur connecté peut créer un chat s'il s'inclut dans les participants
+      allow create: if isAuth() && request.auth.uid in request.resource.data.participants;
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        // Pour lire ou écrire un message, l'utilisateur doit faire partie des participants du chat parent
+        allow read: if isAuth() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow create: if isAuth() 
+                   && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants
+                   && request.resource.data.senderId == request.auth.uid;
+        allow update, delete: if isAuth() && resource.data.senderId == request.auth.uid;
+      }
     }
 
     // ─────────────────────────────────────────────────────────────────────────

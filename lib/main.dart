@@ -24,6 +24,7 @@ import 'flutter_flow/nav/nav.dart';
 import 'package:showcaseview/showcaseview.dart';
 import '/components/connection_required_dialog.dart';
 import '/components/modern_nav_bar.dart';
+import '/services/push_notifications_service.dart';
 import 'index.dart';
 
 /// Service de logging d'erreurs global pour capturer les crashs en release
@@ -147,6 +148,7 @@ void main() async {
   await environmentValues.initialize();
 
   await initFirebase();
+  await PushNotificationsService.initialize();
 
   // Start initial custom actions code
   await actions.lockOrientation();

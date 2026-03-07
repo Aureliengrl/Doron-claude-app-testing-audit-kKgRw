@@ -6,6 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '/components/liquid_glass.dart';
+import '/components/liquid_glass_empty_state_widget.dart';
+import '/components/liquid_glass_loader.dart';
 import 'create_chat_bottom_sheet.dart';
 
 class ChatListPage extends StatefulWidget {
@@ -118,15 +120,14 @@ class _ChatListPageState extends State<ChatListPage> {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFF8A2BE2)));
+          return const Center(child: LiquidGlassLoader(size: 40));
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Center(
-            child: Text(
-              'Aucun message',
-              style: GoogleFonts.poppins(color: Colors.white.withOpacity(0.5)),
-            ),
+          return const LiquidGlassEmptyStateWidget(
+            icon: Icons.chat_bubble_outline,
+            title: 'Aucun message',
+            subtitle: 'Commencez à discuter avec vos proches ou collaborez sur une liste de cadeaux.',
           );
         }
 
