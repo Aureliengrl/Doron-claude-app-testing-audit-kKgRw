@@ -53,11 +53,11 @@ class _ChooseHandleWidgetState extends State<ChooseHandleWidget> {
 
     try {
       // Check Uniqueness
-      final isAvailable = await UserSearchService.isHandleAvailable(rawHandle, currentUserUid);
+      final isAvailable = await UserSearchService.isHandleAvailable(rawHandle);
       
       if (!isAvailable) {
         setState(() {
-          _errorMessage = 'Ce nom d\\'utilisateur existe déjà.';
+          _errorMessage = "Ce nom d'utilisateur existe déjà.";
           _isLoading = false;
         });
         return;
@@ -80,7 +80,7 @@ class _ChooseHandleWidgetState extends State<ChooseHandleWidget> {
             : '';
         context.go('/onboarding-gifts-result?personId=${widget.personId}$returnParam');
       } else {
-        context.goNamedAuth('HomePinterest', context.mounted);
+        context.goNamed('HomePinterest');
       }
 
     } catch (e) {
@@ -128,9 +128,8 @@ class _ChooseHandleWidgetState extends State<ChooseHandleWidget> {
                   ),
                 ),
                 const SizedBox(height: 48),
-                LiquidGlassTextInput(
+                LiquidGlassInput(
                   controller: _handleController,
-                  focusNode: _handleFocusNode,
                   hintText: 'ex: marc_dupont',
                   prefixIcon: Icons.alternate_email_rounded,
                   keyboardType: TextInputType.text,

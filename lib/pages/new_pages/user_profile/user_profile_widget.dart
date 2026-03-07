@@ -174,12 +174,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       body: CustomScrollView(
         slivers: [
           // App Bar avec photo de profil et bouton paramêtres
-          _buildAppBar(),          // Gamification Stats
-          SliverToBoxAdapter(child: _buildStatsSection()),
-          // Gamification Badges
-          SliverToBoxAdapter(child: _buildBadgesSection()),
-
-          // Tabs (Produits likés / Wishlists)
+          _buildAppBar(),          // Tabs (Produits likés / Wishlists)
           _buildTabBar(),
 
           // Contenu des tabs
@@ -724,8 +719,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      LiquidGlassTokens.glassDark,
-                      LiquidGlassTokens.glassDarker,
+                      Color(0x1AFFFFFF),
+                      Color(0x0AFFFFFF),
                     ],
                   ),
                   border: Border.all(
@@ -883,7 +878,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
     try {
       // 2. Upload to Firebase Storage
-      final String uid = _model.firebaseDataService.auth.currentUser!.uid;
+      final String uid = FirebaseAuth.instance.currentUser!.uid;
       final fileExtension = pickedFile.name.split('.').last;
       final fileName = 'wishlist_$wishlistId.${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
       final ref = FirebaseStorage.instance.ref().child('users/$uid/wishlist_covers/$fileName');
@@ -992,7 +987,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
                         // Mettre à jour Firestore
                         try {
-                          final String uid = _model.firebaseDataService.auth.currentUser!.uid;
+                          final String uid = FirebaseAuth.instance.currentUser!.uid;
                           // Recalculer la liste des IDs dans le nouvel ordre
                           final newProductIds = products.map((p) => p['id'] as String).toList();
                           

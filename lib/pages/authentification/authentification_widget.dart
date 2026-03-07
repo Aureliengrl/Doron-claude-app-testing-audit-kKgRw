@@ -1833,7 +1833,8 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget>
                                                                             // 4. Vérifier s'il y a une personne en attente de génération
                                                                             try {
                                                                               // Vérifier si l'utilisateur a un pseudo
-                                                                              final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+                                                                              final currentUserUidLocal = FirebaseAuth.instance.currentUser!.uid;
+                                                                              final userDoc = await FirebaseFirestore.instance.collection('users').doc(currentUserUidLocal).get();
                                                                               final hasHandle = userDoc.exists && userDoc.data()!.containsKey('handle') && userDoc.data()!['handle'].toString().isNotEmpty;
 
                                                                               String? targetPersonId;

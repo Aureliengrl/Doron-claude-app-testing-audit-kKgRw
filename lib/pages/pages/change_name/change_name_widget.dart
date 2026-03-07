@@ -249,11 +249,11 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
                       // Check uniqueness if handle is chosen
                       if (handleRaw != null && handleRaw.isNotEmpty) {
                         try {
-                          final isAvailable = await UserSearchService.isHandleAvailable(handleRaw, currentUserUid);
+                          final isAvailable = await UserSearchService.isHandleAvailable(handleRaw);
                           if (!isAvailable) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Ce nom d\\'utilisateur est d\u00E9j\u00E0 pris.'),
+                                content: Text("Ce nom d'utilisateur est d\u00E9j\u00E0 pris."),
                                 backgroundColor: Colors.red,
                               ),
                             );
@@ -262,7 +262,7 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Erreur lors de la v\u00E9rification du nom d\\'utilisateur.'),
+                              content: Text("Erreur lors de la v\u00E9rification du nom d'utilisateur."),
                               backgroundColor: Colors.red,
                             ),
                           );

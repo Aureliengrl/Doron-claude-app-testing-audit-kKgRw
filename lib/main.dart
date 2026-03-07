@@ -236,7 +236,7 @@ class _MyAppState extends State<MyApp> {
     }
 
     // Listen to real-time notification clicks
-    PushNotificationsService.onNotificationClick.listen((chatId) {
+    PushNotificationsService.onNotificationClick.stream.listen((chatId) {
       if (mounted) {
         _router.push('/chat-room/$chatId');
       }

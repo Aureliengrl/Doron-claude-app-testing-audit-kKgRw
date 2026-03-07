@@ -277,7 +277,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           requireAuth: true,
           builder: (context, params) => ChatRoomPage(
             chatId: params.getParam<String>('chatId', ParamType.String) ?? '',
-            chatData: params.extraMap,
+            chatData: null,
           ),
         ),
         // ── Voice Module ────────────────────────────────────────────────────
