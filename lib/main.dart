@@ -142,30 +142,60 @@ void main() async {
     );
   };
 
-  GoRouter.optionURLReflectsImperativeAPIs = true;
-  usePathUrlStrategy();
+  try {
+    GoRouter.optionURLReflectsImperativeAPIs = true;
+    usePathUrlStrategy();
 
-  final environmentValues = FFDevEnvironmentValues();
-  await environmentValues.initialize();
+    final environmentValues = FFDevEnvironmentValues();
+    await environmentValues.initialize();
 
-  await initFirebase();
-  await PushNotificationsService.initialize();
+    await initFirebase();
+    // Do not await push notification setup, as the native permission prompt can block runApp and cause a white screen.
+    PushNotificationsService.initialize();
 
-  // Start initial custom actions code
-  await actions.lockOrientation();
-  // End initial custom actions code
+    // Start initial custom actions code
+    await actions.lockOrientation();
+    // End initial custom actions code
 
-  await FlutterFlowTheme.initialize();
+    await FlutterFlowTheme.initialize();
 
-  final appState = FFAppState(); // Initialize FFAppState
-  await appState.initializePersistedState();
+    final appState = FFAppState(); // Initialize FFAppState
+    await appState.initializePersistedState();
 
-  runApp(ProviderScope(
-    child: provider_pkg.ChangeNotifierProvider(
-      create: (context) => appState,
-      child: MyApp(),
-    ),
-  ));
+    runApp(ProviderScope(
+      child: provider_pkg.ChangeNotifierProvider(
+        create: (context) => appState,
+        child: MyApp(),
+      ),
+    ));
+  } catch (e, stack) {
+    AppLogger.debug('FATAL ERROR DURING INIT: $e\n$stack', 'Main');
+    ErrorLogService.logError('MainInitialization', e, stack);
+    runApp(
+      MaterialApp(
+        home: Scaffold(
+          backgroundColor: Colors.red.shade900,
+          body: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.white, size: 48),
+                  const SizedBox(height: 16),
+                  const Text('CRITICAL INIT ERROR', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+                  Text(e.toString(), style: const TextStyle(color: Colors.yellow, fontSize: 14)),
+                  const SizedBox(height: 16),
+                  Text(stack.toString(), style: const TextStyle(color: Colors.white70, fontSize: 10)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class MyApp extends StatefulWidget {
