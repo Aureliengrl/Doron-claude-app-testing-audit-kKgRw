@@ -3,7 +3,7 @@ description: Doron — Application de suggestion de cadeaux personnalisés.
 
 publish_to: 'none'
 
-version: 2.2.7+124
+version: 2.2.7+125
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -75,7 +75,6 @@ dependencies:
   connectivity_plus: ^6.0.3
   easy_debounce: 2.0.1
   flutter_cache_manager: 3.4.1
-  flutter_native_splash: 2.4.1
   image_picker: ^1.1.2
   mime_type: 1.0.0
   path_provider: 2.1.4
@@ -123,8 +122,4 @@ flutter:
     - assets/jsons/
     - assets/environment_values/
 
-flutter_native_splash:
-  color: "#8A2BE2"
-  image: assets/images/doron_logo.jpg
-  android: true
-  ios: true
+
