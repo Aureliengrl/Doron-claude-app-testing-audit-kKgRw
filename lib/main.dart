@@ -146,22 +146,29 @@ void main() async {
     GoRouter.optionURLReflectsImperativeAPIs = true;
     usePathUrlStrategy();
 
-    final environmentValues = FFDevEnvironmentValues();
-    await environmentValues.initialize();
+    try {
+      final environmentValues = FFDevEnvironmentValues();
+      await environmentValues.initialize().timeout(const Duration(seconds: 4), onTimeout: () => throw Exception('environmentValues timeout'));
+    } catch (e) { AppLogger.debug('Init Error: $e', 'Main'); }
 
-    await initFirebase();
+    await initFirebase().timeout(const Duration(seconds: 8), onTimeout: () => throw Exception('Firebase init timeout! Native iOS config is missing or blocking.'));
+    
     // Do not await push notification setup, as the native permission prompt can block runApp and cause a white screen.
     PushNotificationsService.initialize();
 
-    // Start initial custom actions code
-    await actions.lockOrientation();
-    // End initial custom actions code
+    try {
+      // Start initial custom actions code
+      await actions.lockOrientation().timeout(const Duration(seconds: 2));
+      // End initial custom actions code
+    } catch (e) { AppLogger.debug('Init Error: $e', 'Main'); }
 
-    await FlutterFlowTheme.initialize();
+    try {
+      await FlutterFlowTheme.initialize().timeout(const Duration(seconds: 4), onTimeout: () => throw Exception('FlutterFlowTheme (SharedPreferences) timeout!'));
+    } catch (e) { AppLogger.debug('Init Error: $e', 'Main'); }
 
     final appState = FFAppState(); // Initialize FFAppState
     try {
-      await appState.initializePersistedState();
+      await appState.initializePersistedState().timeout(const Duration(seconds: 4));
     } catch (e, stack) {
       AppLogger.debug('Non-fatal error initializing persisted state: $e\n$stack', 'Main');
     }
@@ -318,9 +325,12 @@ class _MyAppState extends State<MyApp> {
       themeMode: _themeMode,
       routerConfig: _router,
       builder: (context, child) {
+        if (child == null) {
+          return const Scaffold(backgroundColor: Color(0xFF062248), body: Center(child: CircularProgressIndicator()));
+        }
         return ShowCaseWidget(
           builder: (context) => OfflineBannerWrapper(
-            child: child!,
+            child: child,
           ),
         );
       },
