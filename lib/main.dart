@@ -160,7 +160,11 @@ void main() async {
     await FlutterFlowTheme.initialize();
 
     final appState = FFAppState(); // Initialize FFAppState
-    await appState.initializePersistedState();
+    try {
+      await appState.initializePersistedState();
+    } catch (e, stack) {
+      AppLogger.debug('Non-fatal error initializing persisted state: $e\n$stack', 'Main');
+    }
 
     runApp(ProviderScope(
       child: provider_pkg.ChangeNotifierProvider(
@@ -291,32 +295,35 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return ShowCaseWidget(
-      builder: (context) => OfflineBannerWrapper(
-        child: MaterialApp.router(
-          debugShowCheckedModeBanner: false,
-          title: 'DORON',
-          scrollBehavior: MyAppScrollBehavior(),
-          localizationsDelegates: [
-            FFLocalizationsDelegate(),
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-            FallbackMaterialLocalizationDelegate(),
-            FallbackCupertinoLocalizationDelegate(),
-          ],
-          locale: _locale,
-          supportedLocales: const [
-            Locale('fr'),
-            Locale('en'),
-            Locale('es'),
-          ],
-          theme: DoronTheme.light,
-          darkTheme: DoronTheme.dark,
-          themeMode: _themeMode,
-          routerConfig: _router,
-        ),
-      ),
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+      title: 'DORON',
+      scrollBehavior: MyAppScrollBehavior(),
+      localizationsDelegates: [
+        FFLocalizationsDelegate(),
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        FallbackMaterialLocalizationDelegate(),
+        FallbackCupertinoLocalizationDelegate(),
+      ],
+      locale: _locale,
+      supportedLocales: const [
+        Locale('fr'),
+        Locale('en'),
+        Locale('es'),
+      ],
+      theme: DoronTheme.light,
+      darkTheme: DoronTheme.dark,
+      themeMode: _themeMode,
+      routerConfig: _router,
+      builder: (context, child) {
+        return ShowCaseWidget(
+          builder: (context) => OfflineBannerWrapper(
+            child: child!,
+          ),
+        );
+      },
     );
   }
 }

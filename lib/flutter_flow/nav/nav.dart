@@ -125,30 +125,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: '_initialize',
           path: '/',
-          builder: (context, _) {
-            // Redirection intelligente selon l'état de l'utilisateur
-            // Le splash screen s'affiche automatiquement pendant le chargement
-            return FutureBuilder(
-              future: _determineInitialRoute(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  // Pendant le chargement, on affiche rien (le splash natif est déjà là)
-                  return const SizedBox.shrink();
-                }
-
-                final route = snapshot.data as String? ?? '/authentification';
-
-                // Navigation immédiate après chargement
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (context.mounted) {
-                    context.go(route);
-                  }
-                });
-
-                return const SizedBox.shrink();
-              },
-            );
-          },
+          builder: (context, _) => const RootSplashWidget(),
         ),
         FFRoute(
           name: WelcomeScreen.routeName,
@@ -612,5 +589,57 @@ extension GoRouterLocationExtension on GoRouter {
         ? lastMatch.matches
         : routerDelegate.currentConfiguration;
     return matchList.uri.toString();
+  }
+}
+
+class RootSplashWidget extends StatefulWidget {
+  const RootSplashWidget({Key? key}) : super(key: key);
+
+  @override
+  State<RootSplashWidget> createState() => _RootSplashWidgetState();
+}
+
+class _RootSplashWidgetState extends State<RootSplashWidget> {
+  @override
+  void initState() {
+    super.initState();
+    _resolveRoute();
+  }
+
+  Future<void> _resolveRoute() async {
+    // Determine the route async safely
+    final route = await _determineInitialRoute();
+    
+    // Add small delay to prevent jarring flash on very fast loads
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    if (mounted) {
+      context.go(route);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF062248), // Dark blue from DoronTheme
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Standard splash screen image loading from assets
+            Image.asset(
+              'assets/images/splash_screen.jpeg',
+              width: 150,
+              height: 150,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(height: 32),
+            const CircularProgressIndicator(
+              color: Color(0xFF8A2BE2), // Violet color
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
