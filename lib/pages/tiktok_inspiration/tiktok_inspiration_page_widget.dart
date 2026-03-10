@@ -177,7 +177,6 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        showsHorizontalScrollIndicator: false,
         child: Row(
           children: [
             const SizedBox(width: 20),
