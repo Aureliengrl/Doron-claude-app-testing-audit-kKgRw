@@ -600,6 +600,8 @@ class RootSplashWidget extends StatefulWidget {
 }
 
 class _RootSplashWidgetState extends State<RootSplashWidget> {
+  String _status = "Initialisation...";
+
   @override
   void initState() {
     super.initState();
@@ -607,14 +609,30 @@ class _RootSplashWidgetState extends State<RootSplashWidget> {
   }
 
   Future<void> _resolveRoute() async {
-    // Determine the route async safely
-    final route = await _determineInitialRoute();
-    
-    // Add small delay to prevent jarring flash on very fast loads
-    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      safeSetState(() => _status = "Détermination de la route...");
+      final route = await _determineInitialRoute();
+      
+      safeSetState(() => _status = "Route trouvée : $route. Pause...");
+      await Future.delayed(const Duration(milliseconds: 500));
 
+      if (mounted) {
+        safeSetState(() => _status = "Navigation vers $route...");
+        context.go(route);
+        // Do not update status after go, since it should unmount if successful.
+      } else {
+        safeSetState(() => _status = "Erreur: Widget démonté avant navigation.");
+      }
+    } catch (e, stack) {
+      if (mounted) {
+        safeSetState(() => _status = "CRASH DANS SPLASH: $e\n$stack");
+      }
+    }
+  }
+
+  void safeSetState(VoidCallback fn) {
     if (mounted) {
-      context.go(route);
+      setState(fn);
     }
   }
 
@@ -623,21 +641,34 @@ class _RootSplashWidgetState extends State<RootSplashWidget> {
     return Scaffold(
       backgroundColor: const Color(0xFF062248), // Dark blue from DoronTheme
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Standard splash screen image loading from assets
-            Image.asset(
-              'assets/images/splash_screen.jpeg',
-              width: 150,
-              height: 150,
-              fit: BoxFit.contain,
-            ),
-            const SizedBox(height: 32),
-            const CircularProgressIndicator(
-              color: Color(0xFF8A2BE2), // Violet color
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/images/splash_screen.jpeg',
+                width: 150,
+                height: 150,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(height: 32),
+              const CircularProgressIndicator(
+                color: Color(0xFF8A2BE2), // Violet color
+              ),
+              const SizedBox(height: 32),
+              Text(
+                _status,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.yellow,
+                  fontFamily: 'monospace',
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
