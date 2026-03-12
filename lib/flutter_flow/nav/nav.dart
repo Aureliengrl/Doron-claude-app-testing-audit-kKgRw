@@ -511,10 +511,11 @@ class FFRoute {
               : builder(context, ffParams);
           final child = appStateNotifier.loading
               ? Container(
-                  color: Colors.black,
-                  child: Image.asset(
-                    'assets/images/splash_screen.jpeg',
-                    fit: BoxFit.cover,
+                  color: const Color(0xFF062248),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF8A2BE2),
+                    ),
                   ),
                 )
               : page;
@@ -610,16 +611,38 @@ class _RootSplashWidgetState extends State<RootSplashWidget> {
 
   Future<void> _resolveRoute() async {
     try {
-      safeSetState(() => _status = "Détermination de la route...");
+      safeSetState(() => _status = "[1] Détermination...");
       final route = await _determineInitialRoute();
       
-      safeSetState(() => _status = "Route trouvée : $route. Pause...");
+      safeSetState(() => _status = "[2] Route = $route. Pause 500ms...");
       await Future.delayed(const Duration(milliseconds: 500));
 
       if (mounted) {
-        safeSetState(() => _status = "Navigation vers $route...");
-        context.go(route);
-        // Do not update status after go, since it should unmount if successful.
+        safeSetState(() => _status = "[3] Avant context.go()");
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        if (mounted) {
+          // Attempting navigation. If GoRouter is deadlocking, it will show [3]. 
+          // If GoRouter succeeds but the destination deadlocks, it will briefly show [4] or be completely replaced by the destination frame.
+          safeSetState(() => _status = "[4] Exécution context.go($route)...");
+          
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              try {
+                context.go(route);
+                
+                // If context.go returns successfully, queue another frame update to prove it executed.
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                   if (mounted) {
+                     safeSetState(() => _status = "[5] SUCCESS context.go() returned! Waiting for new Page to paint...");
+                   }
+                });
+              } catch (e) {
+                safeSetState(() => _status = "[FATAL] Exception dans context.go: $e");
+              }
+            }
+          });
+        }
       } else {
         safeSetState(() => _status = "Erreur: Widget démonté avant navigation.");
       }

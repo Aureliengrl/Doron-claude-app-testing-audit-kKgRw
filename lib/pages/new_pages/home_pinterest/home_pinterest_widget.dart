@@ -716,96 +716,98 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             );
           }
         },
-        child: CustomScrollView(
-          controller: _scrollController,
-          physics: const BouncingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics(),
-          ),
-          slivers: [
-            // Header violet arrondi
-            SliverToBoxAdapter(child: _buildHeader()),
-
-            // Barre de recherche
-            SliverToBoxAdapter(
-              child: SearchBarWidget(
-                controller: _searchController,
-                onChanged: (value) {
-                  setState(() {
-                    _model.setSearchQuery(value);
-                  });
-                },
-                onClear: () {
-                  _searchController.clear();
-                  setState(() {
-                    _model.setSearchQuery('');
-                  });
-                },
-                violetColor: violetColor,
-              ),
+        child: AnimationLimiter(
+          child: CustomScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
             ),
+            slivers: [
+              // Header violet arrondi
+              SliverToBoxAdapter(child: _buildHeader()),
 
-            // Quick filters
-            SliverToBoxAdapter(
-              child: QuickFiltersWidget(
-                showOnlyFavorites: _model.showOnlyFavorites,
-                onToggleFilter: (filter) {
-                  setState(() {
-                    _model.toggleQuickFilter(filter);
-                  });
-                },
-                violetColor: violetColor,
-              ),
-            ),
-
-            // Message de bienvenue (retir pour design plus pur)
-            // SliverToBoxAdapter(child: _buildWelcomeMessage()),
-
-            // Catégories
-            SliverToBoxAdapter(child: _buildCategories()),
-
-            // Filtres par marques
-            SliverToBoxAdapter(
-              child: BrandFiltersWidget(
-                activeBrandId: _model.activeBrand,
-                onBrandSelected: (brandId) {
-                  setState(() {
-                    _model.activeBrand = brandId;
-                  });
-                },
-                primaryColor: violetColor,
-              ),
-            ),
-
-            // Filtres par prix
-            SliverToBoxAdapter(child: _buildPriceFilters()),
-
-            // Sections thématiques désactivées - Pinterest uniquement
-            // if (_model.sections.isNotEmpty) ...[
-            //   SliverToBoxAdapter(child: _buildSections()),
-            //   const SliverToBoxAdapter(child: SizedBox(height: 16)),
-            // ],
-
-            // Grille Pinterest 2 colonnes
-            _buildPinterestGrid(),
-
-            // Loader pour infinite scroll
-            if (_model.isLoadingMore)
+              // Barre de recherche
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: violetColor,
-                      strokeWidth: 2,
-                    ),
-                  ),
+                child: SearchBarWidget(
+                  controller: _searchController,
+                  onChanged: (value) {
+                    setState(() {
+                      _model.setSearchQuery(value);
+                    });
+                  },
+                  onClear: () {
+                    _searchController.clear();
+                    setState(() {
+                      _model.setSearchQuery('');
+                    });
+                  },
+                  violetColor: violetColor,
                 ),
               ),
 
-            // Espacement pour la bottom nav
-            const SliverToBoxAdapter(child: SizedBox(height: 100)),
-          ],
-        ), // CustomScrollView
+              // Quick filters
+              SliverToBoxAdapter(
+                child: QuickFiltersWidget(
+                  showOnlyFavorites: _model.showOnlyFavorites,
+                  onToggleFilter: (filter) {
+                    setState(() {
+                      _model.toggleQuickFilter(filter);
+                    });
+                  },
+                  violetColor: violetColor,
+                ),
+              ),
+
+              // Message de bienvenue (retir pour design plus pur)
+              // SliverToBoxAdapter(child: _buildWelcomeMessage()),
+
+              // Catégories
+              SliverToBoxAdapter(child: _buildCategories()),
+
+              // Filtres par marques
+              SliverToBoxAdapter(
+                child: BrandFiltersWidget(
+                  activeBrandId: _model.activeBrand,
+                  onBrandSelected: (brandId) {
+                    setState(() {
+                      _model.activeBrand = brandId;
+                    });
+                  },
+                  primaryColor: violetColor,
+                ),
+              ),
+
+              // Filtres par prix
+              SliverToBoxAdapter(child: _buildPriceFilters()),
+
+              // Sections thématiques désactivées - Pinterest uniquement
+              // if (_model.sections.isNotEmpty) ...[
+              //   SliverToBoxAdapter(child: _buildSections()),
+              //   const SliverToBoxAdapter(child: SizedBox(height: 16)),
+              // ],
+
+              // Grille Pinterest 2 colonnes
+              _buildPinterestGrid(),
+
+              // Loader pour infinite scroll
+              if (_model.isLoadingMore)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: violetColor,
+                        strokeWidth: 2,
+                      ),
+                    ),
+                  ),
+                ),
+
+              // Espacement pour la bottom nav
+              const SliverToBoxAdapter(child: SizedBox(height: 100)),
+            ],
+          ), // CustomScrollView
+        ), // AnimationLimiter
       ), // RefreshIndicator
     ), // DarkPageBackground
     );

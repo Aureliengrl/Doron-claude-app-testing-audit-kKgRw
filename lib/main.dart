@@ -360,15 +360,17 @@ class _NavBarPageState extends State<NavBarPage> {
   late Widget? _currentPage;
   int _currentIndex = 0;
 
-  // Créer les widgets UNE SEULE FOIS pour éviter les rebuilds
+  // Créer les widgets UNE SEULE FOIS
   late final List<Widget> _pages;
   late final List<String> _pageNames;
+
+  // Track historically loaded pages for lazy-loading IndexedStack behavior
+  final Set<int> _loadedPages = {0}; // Always load the initial page
 
   @override
   void initState() {
     super.initState();
 
-    // Initialiser les pages une seule fois
     _pageNames = ['HomePinterest', 'SearchPage', 'Inspiration', 'UserProfile'];
     _pages = [
       HomePinterestWidget(),
@@ -379,7 +381,8 @@ class _NavBarPageState extends State<NavBarPage> {
 
     _currentPageName = widget.initialPage ?? _currentPageName;
     _currentPage = widget.page;
-    _currentIndex = _pageNames.indexOf(_currentPageName);
+    _currentIndex = _pageNames.indexOf(_currentPageName).clamp(0, 3);
+    _loadedPages.add(_currentIndex);
   }
 
   @override
@@ -388,10 +391,22 @@ class _NavBarPageState extends State<NavBarPage> {
       resizeToAvoidBottomInset: !widget.disableResizeToAvoidBottomInset,
       body: Stack(
         children: [
-          // Contenu principal
-          _currentPage ?? IndexedStack(
-            index: _currentIndex,
-            children: _pages,
+          // Contenu principal: Lazy-loaded IndexedStack equivalent
+          _currentPage ?? Stack(
+            children: List.generate(_pages.length, (index) {
+              final isCurrent = index == _currentIndex;
+              final isLoaded = _loadedPages.contains(index);
+
+              if (!isLoaded) return const SizedBox.shrink();
+
+              return Offstage(
+                offstage: !isCurrent,
+                child: TickerMode(
+                  enabled: isCurrent,
+                  child: _pages[index],
+                ),
+              );
+            }),
           ),
 
           // Navbar flottante moderne
@@ -402,11 +417,11 @@ class _NavBarPageState extends State<NavBarPage> {
             child: FloatingModernNavBar(
               currentIndex: _currentIndex,
               onTap: (i) async {
-                // Navigation normale — utilisateur toujours authentifié
                 safeSetState(() {
                   _currentPage = null;
                   _currentIndex = i;
                   _currentPageName = _pageNames[i];
+                  _loadedPages.add(i); // Mark page as loaded when visited
                 });
               },
               items: const [
