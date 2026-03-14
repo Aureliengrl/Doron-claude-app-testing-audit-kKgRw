@@ -76,8 +76,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       await Future.delayed(const Duration(milliseconds: 1000));
       if (!mounted) return;
 
-      // Start the animated showcase tutorial
-      ShowCaseWidget.of(context).startShowCase([_one, _two, _three]);
+      // FIX: ShowCase widget was called with [_one, _two, _three] which are NEVER defined in the tree!
+      // This causes a catastrophic Showcase finding loop or crash on fresh installs.
+      // ShowCaseWidget.of(context).startShowCase([_one, _two, _three]);
       
       // Keep it marked as complete so it never shows again
       await prefs.setBool('first_time_showcase', false);
@@ -1576,11 +1577,17 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12), // Coins moins arrondis
-                    child: ProductImage(
-                      imageUrl: product['image'] as String? ?? '',
-                      height: null,
-                      fit: BoxFit.cover,
-                      borderRadius: BorderRadius.zero,
+                    // FIX: Ensure Image always has a fixed size via AspectRatio before it loads
+                    // This explicitly prevents SliverMasonryGrid from infinite layout shift loops on image load.
+                    // We use pseudo-random aspect ratios for a stable Pinterest look without image size thrashing.
+                    child: AspectRatio(
+                      aspectRatio: [0.8, 1.25, 0.9, 1.1, 1.4, 0.75][index % 6],
+                      child: ProductImage(
+                        imageUrl: product['image'] as String? ?? '',
+                        height: null,
+                        fit: BoxFit.cover,
+                        borderRadius: BorderRadius.zero,
+                      ),
                     ),
                   ),
 
