@@ -603,6 +603,9 @@ class RootSplashWidget extends StatefulWidget {
 class _RootSplashWidgetState extends State<RootSplashWidget> {
   String _status = "Initialisation...";
 
+  String? _determinedRoute;
+  bool _readyToNavigate = false;
+
   @override
   void initState() {
     super.initState();
@@ -611,46 +614,42 @@ class _RootSplashWidgetState extends State<RootSplashWidget> {
 
   Future<void> _resolveRoute() async {
     try {
-      safeSetState(() => _status = "[1] Détermination...");
+      safeSetState(() => _status = "[1] Analyse de session en cours...");
       final route = await _determineInitialRoute();
       
-      safeSetState(() => _status = "[2] Route = $route. Pause 500ms...");
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      if (mounted) {
-        safeSetState(() => _status = "[3] Avant context.go()");
-        await Future.delayed(const Duration(milliseconds: 500));
-
-        if (mounted) {
-          // Attempting navigation. If GoRouter is deadlocking, it will show [3]. 
-          // If GoRouter succeeds but the destination deadlocks, it will briefly show [4] or be completely replaced by the destination frame.
-          safeSetState(() => _status = "[4] Exécution context.go($route)...");
-          
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              try {
-                context.go(route);
-                
-                // If context.go returns successfully, queue another frame update to prove it executed.
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                   if (mounted) {
-                     safeSetState(() => _status = "[5] SUCCESS context.go() returned! Waiting for new Page to paint...");
-                   }
-                });
-              } catch (e) {
-                safeSetState(() => _status = "[FATAL] Exception dans context.go: $e");
-              }
-            }
-          });
-        }
-      } else {
-        safeSetState(() => _status = "Erreur: Widget démonté avant navigation.");
-      }
+      safeSetState(() {
+        _determinedRoute = route;
+        _status = "[2] Prêt ! Route assignée : $route";
+        _readyToNavigate = true;
+      });
+      
     } catch (e, stack) {
       if (mounted) {
         safeSetState(() => _status = "CRASH DANS SPLASH: $e\n$stack");
       }
     }
+  }
+
+  void _executeNavigation() {
+    if (_determinedRoute == null) return;
+    
+    safeSetState(() => _status = "[3] Lancement de context.go...");
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        try {
+          context.go(_determinedRoute!);
+          
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+             if (mounted) {
+               safeSetState(() => _status = "[4] Succès ! En attente du nouveau layout...");
+             }
+          });
+        } catch (e) {
+          safeSetState(() => _status = "[FATAL] Exception GoRouter: $e");
+        }
+      }
+    });
   }
 
   void safeSetState(VoidCallback fn) {
@@ -690,6 +689,32 @@ class _RootSplashWidgetState extends State<RootSplashWidget> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              const SizedBox(height: 48),
+              if (_readyToNavigate)
+                ElevatedButton(
+                  onPressed: _executeNavigation,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF8A2BE2),
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text(
+                    'LANCER L\'APPLICATION',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              if (!_readyToNavigate && !_status.contains("CRASH"))
+                const Padding(
+                  padding: EdgeInsets.only(top: 20),
+                  child: Text(
+                    "Patience, analyse des données...",
+                    style: TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
+                ),
             ],
           ),
         ),

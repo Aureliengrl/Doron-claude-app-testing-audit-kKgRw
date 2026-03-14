@@ -3,7 +3,7 @@ description: Doron — Application de suggestion de cadeaux personnalisés.
 
 publish_to: 'none'
 
-version: 2.2.8+131
+version: 2.2.9+132
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
