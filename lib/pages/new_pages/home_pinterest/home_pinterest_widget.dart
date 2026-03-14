@@ -716,8 +716,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             );
           }
         },
-        child: AnimationLimiter(
-          child: CustomScrollView(
+        // FIX: Removed AnimationLimiter wrapper which is unnecessary and problematic without stagger children
+        child: CustomScrollView(
             controller: _scrollController,
             physics: const BouncingScrollPhysics(
               parent: AlwaysScrollableScrollPhysics(),
@@ -807,7 +807,6 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
               const SliverToBoxAdapter(child: SizedBox(height: 100)),
             ],
           ), // CustomScrollView
-        ), // AnimationLimiter
       ), // RefreshIndicator
     ), // DarkPageBackground
     );
@@ -1521,17 +1520,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         childCount: filteredProducts.length,
         itemBuilder: (context, index) {
           final product = filteredProducts[index];
-          return AnimationConfiguration.staggeredGrid(
-            position: index,
-            duration: const Duration(milliseconds: 300), // Plus rapide pour effet dynamique
-            columnCount: 2,
-            child: SlideAnimation(
-              verticalOffset: 40.0,
-              child: FadeInAnimation(
-                child: _buildProductCard(product, index),
-              ),
-            ),
-          );
+          // FIX: Removed flutter_staggered_animations wrappers (AnimationConfiguration, SlideAnimation, FadeInAnimation).
+          // These wrappers combined with SliverMasonryGrid cause an infinite layout measure deadlock on iOS.
+          // The product card already uses flutter_animate (.animate().fadeIn().slideY()) which is much safer.
+          return _buildProductCard(product, index);
         },
       ),
     );
