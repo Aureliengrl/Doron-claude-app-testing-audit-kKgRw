@@ -468,10 +468,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       child: Row(
         children: [
           Row(
-            spacing: 4,
             children: [
               _buildTypingDot(0),
+              const SizedBox(width: 4),
               _buildTypingDot(200),
+              const SizedBox(width: 4),
               _buildTypingDot(400),
             ],
           ),

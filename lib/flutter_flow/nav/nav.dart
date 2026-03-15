@@ -102,7 +102,6 @@ Future<String> _determineInitialRoute() async {
 
     AppLogger.debug('🔍 Route initiale — loggedIn:$isLoggedIn', 'Nav');
 
-    // Routage Binaire: Si connecté -> Accueil. Sinon -> Auth. Plus de tutoriel.
     if (isLoggedIn) {
         return '/home-pinterest';
     } else {
@@ -614,42 +613,30 @@ class _RootSplashWidgetState extends State<RootSplashWidget> {
 
   Future<void> _resolveRoute() async {
     try {
-      safeSetState(() => _status = "[1] Analyse de session en cours...");
+      safeSetState(() => _status = "Analyse de session en cours...");
       final route = await _determineInitialRoute();
       
-      safeSetState(() {
-        _determinedRoute = route;
-        _status = "[2] Prêt ! Route assignée : $route";
-        _readyToNavigate = true;
-      });
+      safeSetState(() => _status = "Démarrage de l'application...");
       
+      // Laisser le temps à Firebase de stabiliser le cache et le Splash de s'afficher
+      await Future.delayed(const Duration(milliseconds: 1500));
+
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            try {
+              context.go(route);
+            } catch (e) {
+              safeSetState(() => _status = "Erreur de routage: $e");
+            }
+          }
+        });
+      }
     } catch (e, stack) {
       if (mounted) {
-        safeSetState(() => _status = "CRASH DANS SPLASH: $e\n$stack");
+        safeSetState(() => _status = "EXCEPTION CRITIQUE: $e\n$stack");
       }
     }
-  }
-
-  void _executeNavigation() {
-    if (_determinedRoute == null) return;
-    
-    safeSetState(() => _status = "[3] Lancement de context.go...");
-    
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        try {
-          context.go(_determinedRoute!);
-          
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-             if (mounted) {
-               safeSetState(() => _status = "[4] Succès ! En attente du nouveau layout...");
-             }
-          });
-        } catch (e) {
-          safeSetState(() => _status = "[FATAL] Exception GoRouter: $e");
-        }
-      }
-    });
   }
 
   void safeSetState(VoidCallback fn) {
@@ -683,38 +670,11 @@ class _RootSplashWidgetState extends State<RootSplashWidget> {
                 _status,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  color: Colors.yellow,
-                  fontFamily: 'monospace',
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                  color: Colors.white70,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 48),
-              if (_readyToNavigate)
-                ElevatedButton(
-                  onPressed: _executeNavigation,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF8A2BE2),
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text(
-                    'LANCER L\'APPLICATION',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              if (!_readyToNavigate && !_status.contains("CRASH"))
-                const Padding(
-                  padding: EdgeInsets.only(top: 20),
-                  child: Text(
-                    "Patience, analyse des données...",
-                    style: TextStyle(color: Colors.white54, fontSize: 12),
-                  ),
-                ),
             ],
           ),
         ),
