@@ -19,8 +19,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'user_profile_model.dart';
 import '/components/liquid_glass_loader.dart';
-import '/utils/image_compress_utils.dart';
 import 'dart:io';
+import '/components/product_detail_modal.dart';
 export 'user_profile_model.dart';
 
 class UserProfileWidget extends StatefulWidget {
@@ -625,12 +625,12 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.all(2),
+      padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        childAspectRatio: 1.0,
-        crossAxisSpacing: 2,
-        mainAxisSpacing: 2,
+        crossAxisCount: 2,
+        childAspectRatio: 0.65,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
       ),
       itemCount: _model.favourites.length,
       itemBuilder: (context, index) {
@@ -645,27 +645,113 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       color: Colors.transparent,
       child: InkWell(
         onTap: () async {
-          // Ouvrir l'URL du produit
-          final url = favourite.product.productUrl;
-          if (url.isNotEmpty) {
-            final uri = Uri.parse(url);
-            if (await canLaunchUrl(uri)) {
-              await launchUrl(uri, mode: LaunchMode.externalApplication);
-            }
-          }
+          HapticFeedback.lightImpact();
+          final productMap = {
+            'id': favourite.reference.id,
+            'name': favourite.product.productTitle,
+            'product_title': favourite.product.productTitle,
+            'price': favourite.product.productPrice.replaceAll('€', '').trim(),
+            'product_price': favourite.product.productPrice.replaceAll('€', '').trim(),
+            'url': favourite.product.productUrl,
+            'product_url': favourite.product.productUrl,
+            'image': favourite.product.productPhoto,
+            'product_photo': favourite.product.productPhoto,
+            'brand': favourite.product.platform,
+            'platform': favourite.product.platform,
+          };
+          
+          GlobalProductDetailModal.show(
+            context,
+            productMap,
+            initialIsLiked: true,
+            onLikeToggled: () {
+              if (mounted) {
+                // Remove from local list if unliked
+                setState(() {
+                  _model.favourites.removeWhere((f) => f.reference.id == favourite.reference.id);
+                });
+              }
+            },
+          );
         },
-        child: CachedNetworkImage(
-          imageUrl: favourite.product.productPhoto,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => Container(
-            color: Colors.grey[200],
-            child: Center(
-              child: LiquidGlassLoader(size: 32),
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white.withOpacity(0.14), Colors.white.withOpacity(0.06)],
             ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withOpacity(0.18)),
           ),
-          errorWidget: (context, url, error) => Container(
-            color: Colors.grey[200],
-            child: const Icon(Icons.error, size: 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Photo de couverture (haut de la carte)
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+                child: CachedNetworkImage(
+                  imageUrl: favourite.product.productPhoto,
+                  width: double.infinity,
+                  height: 140,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: Colors.grey[200],
+                    child: Center(child: LiquidGlassLoader(size: 32)),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.error, size: 40),
+                  ),
+                ),
+              ),
+              // Détails textuels (Bas de la carte)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Titre ou Marque
+                      Text(
+                        favourite.product.platform.isNotEmpty 
+                            ? favourite.product.platform 
+                            : favourite.product.productTitle,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const Spacer(),
+                      // Prix
+                      if (favourite.product.productPrice.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            favourite.product.productPrice,
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

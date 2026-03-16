@@ -924,7 +924,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 20, bottom: 8),
+          padding: const EdgeInsets.only(left: 24, bottom: 8), // Aligné avec 24
           child: Text(
             'Categories',
             style: GoogleFonts.poppins(
@@ -935,9 +935,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           ),
         ),
         SizedBox(
-          height: 50,
+          height: 56, // Hauteur uniformisée avec les marques (56)
           child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 24), // Padding uniforme
             scrollDirection: Axis.horizontal,
             itemCount: _model.categories.length,
             itemBuilder: (context, index) {
@@ -945,7 +945,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
               final isActive = _model.activeCategory == category['name'];
 
           return Padding(
-            padding: const EdgeInsets.only(right: 10),
+            padding: const EdgeInsets.only(right: 16), // Espacement uniforme constant (16)
             child: Material(
               color: Colors.transparent,
               child: InkWell(
@@ -1036,7 +1036,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
               final isActive = _model.activePriceFilter == filter['id'];
 
               return Padding(
-                padding: const EdgeInsets.only(right: 10),
+                padding: const EdgeInsets.only(right: 16),
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(

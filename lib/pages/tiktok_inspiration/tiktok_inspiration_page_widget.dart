@@ -181,12 +181,17 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
           children: [
             const SizedBox(width: 20),
             ...categories.map((category) {
-              final isSelected = category == 'recommandé'; // Static selection for now
+              final isSelected = category.toLowerCase() == _model.activeCategory.toLowerCase();
               return Padding(
                 padding: const EdgeInsets.only(right: 24),
-                child: Column(
-                  children: [
-                    Text(
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    _model.setCategory(category.toLowerCase());
+                  },
+                  child: Column(
+                    children: [
+                      Text(
                       category,
                       style: GoogleFonts.poppins(
                         color: Colors.white, // Inverted for dark background
@@ -219,8 +224,9 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                       ),
                   ],
                 ),
-              );
-            }).toList(),
+              ),
+            );
+          }).toList(),
             const SizedBox(width: 20),
           ],
         ),

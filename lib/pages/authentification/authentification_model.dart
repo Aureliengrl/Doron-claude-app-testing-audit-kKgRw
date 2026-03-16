@@ -198,6 +198,14 @@ class AuthentificationModel extends FlutterFlowModel<AuthentificationWidget> {
     } catch (e) {
       AppLogger.debug('❌ Erreur vérification username: $e', 'Debug');
       isCheckingUsername = false;
+      
+      // FIX IGNITION: Firestore bloque l'accès non-authentifié à Users. 
+      // Si c'est un permission-denied généré avant la création du compte e-mail,
+      // on bypass l'erreur au lieu de bloquer faussement le formulaire en "Déjà pris".
+      if (e.toString().contains('permission-denied')) {
+        return true; 
+      }
+      
       usernameError = 'Erreur de vérification';
       return false;
     }

@@ -68,6 +68,7 @@ class _TextFieldWithHeadingWidgetState
                   fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                 ),
                 fontSize: 16.0,
+                color: Colors.white,
                 letterSpacing: 0.0,
                 fontWeight: FontWeight.w500,
                 fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
@@ -108,6 +109,7 @@ class _TextFieldWithHeadingWidgetState
                           FlutterFlowTheme.of(context).labelMedium.fontStyle,
                     ),
                     fontSize: 12.0,
+                    color: Colors.white54,
                     letterSpacing: 0.0,
                     fontWeight:
                         FlutterFlowTheme.of(context).labelMedium.fontWeight,
@@ -116,34 +118,34 @@ class _TextFieldWithHeadingWidgetState
                   ),
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(
-                  color: FlutterFlowTheme.of(context).primary,
-                  width: 2.0,
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1.0,
                 ),
-                borderRadius: BorderRadius.circular(8.0),
+                borderRadius: BorderRadius.circular(12.0),
               ),
               focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: const Color(0xFF8A2BE2),
                   width: 2.0,
                 ),
-                borderRadius: BorderRadius.circular(8.0),
+                borderRadius: BorderRadius.circular(12.0),
               ),
               errorBorder: OutlineInputBorder(
                 borderSide: BorderSide(
                   color: FlutterFlowTheme.of(context).error,
                   width: 2.0,
                 ),
-                borderRadius: BorderRadius.circular(8.0),
+                borderRadius: BorderRadius.circular(12.0),
               ),
               focusedErrorBorder: OutlineInputBorder(
                 borderSide: BorderSide(
                   color: FlutterFlowTheme.of(context).error,
                   width: 2.0,
                 ),
-                borderRadius: BorderRadius.circular(8.0),
+                borderRadius: BorderRadius.circular(12.0),
               ),
               filled: true,
-              fillColor: FlutterFlowTheme.of(context).secondaryBackground,
+              fillColor: Colors.white.withOpacity(0.05),
             ),
             style: FlutterFlowTheme.of(context).bodyMedium.override(
                   font: GoogleFonts.inter(
@@ -152,11 +154,12 @@ class _TextFieldWithHeadingWidgetState
                         FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                   ),
                   fontSize: 16.0,
+                  color: Colors.white,
                   letterSpacing: 0.0,
                   fontWeight: FontWeight.w500,
                   fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                 ),
-            cursorColor: FlutterFlowTheme.of(context).primaryText,
+            cursorColor: Colors.white,
             validator: _model.textControllerValidator.asValidator(context),
           ),
         ),

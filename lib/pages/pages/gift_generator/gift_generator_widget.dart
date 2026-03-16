@@ -243,7 +243,7 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: const Color(0xFF062248),
         body: Container(
           decoration: BoxDecoration(),
           child: Column(
@@ -251,9 +251,8 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
             children: [
               Container(
                 width: double.infinity,
-                height: MediaQuery.sizeOf(context).height * 0.15,
                 decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).primary,
+                  color: const Color(0xFF062248),
                   borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(30.0),
                     bottomRight: Radius.circular(30.0),
@@ -263,7 +262,7 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                 ),
                 child: Padding(
                   padding:
-                      EdgeInsetsDirectional.fromSTEB(20.0, 60.0, 20.0, 0.0),
+                      EdgeInsetsDirectional.fromSTEB(20.0, 60.0, 20.0, 20.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -373,6 +372,7 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                                                   .bodyMedium
                                                   .fontStyle,
                                         ),
+                                        color: Colors.white,
                                         fontSize: 16.0,
                                         letterSpacing: 0.0,
                                         fontWeight: FontWeight.w500,
@@ -469,23 +469,19 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                                                       ),
                                               enabledBorder: OutlineInputBorder(
                                                 borderSide: BorderSide(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primary,
-                                                  width: 2.0,
+                                                  color: Colors.white.withOpacity(0.2),
+                                                  width: 1.0,
                                                 ),
                                                 borderRadius:
-                                                    BorderRadius.circular(8.0),
+                                                    BorderRadius.circular(12.0),
                                               ),
                                               focusedBorder: OutlineInputBorder(
                                                 borderSide: BorderSide(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primary,
+                                                  color: const Color(0xFF8A2BE2),
                                                   width: 2.0,
                                                 ),
                                                 borderRadius:
-                                                    BorderRadius.circular(8.0),
+                                                    BorderRadius.circular(12.0),
                                               ),
                                               errorBorder: OutlineInputBorder(
                                                 borderSide: BorderSide(
@@ -495,7 +491,7 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                                                   width: 2.0,
                                                 ),
                                                 borderRadius:
-                                                    BorderRadius.circular(8.0),
+                                                    BorderRadius.circular(12.0),
                                               ),
                                               focusedErrorBorder:
                                                   OutlineInputBorder(
@@ -506,12 +502,10 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                                                   width: 2.0,
                                                 ),
                                                 borderRadius:
-                                                    BorderRadius.circular(8.0),
+                                                    BorderRadius.circular(12.0),
                                               ),
                                               filled: true,
-                                              fillColor:
-                                                  FlutterFlowTheme.of(context)
-                                                      .secondaryBackground,
+                                              fillColor: Colors.white.withOpacity(0.05),
                                             ),
                                             style: FlutterFlowTheme.of(context)
                                                 .bodyMedium
@@ -524,6 +518,7 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                                                             .bodyMedium
                                                             .fontStyle,
                                                   ),
+                                                  color: Colors.white,
                                                   fontSize: 16.0,
                                                   letterSpacing: 0.0,
                                                   fontWeight: FontWeight.w500,
@@ -625,23 +620,19 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                                                     ),
                                             enabledBorder: OutlineInputBorder(
                                               borderSide: BorderSide(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primary,
-                                                width: 2.0,
+                                                color: Colors.white.withOpacity(0.2),
+                                                width: 1.0,
                                               ),
                                               borderRadius:
-                                                  BorderRadius.circular(8.0),
+                                                  BorderRadius.circular(12.0),
                                             ),
                                             focusedBorder: OutlineInputBorder(
                                               borderSide: BorderSide(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primary,
+                                                color: const Color(0xFF8A2BE2),
                                                 width: 2.0,
                                               ),
                                               borderRadius:
-                                                  BorderRadius.circular(8.0),
+                                                  BorderRadius.circular(12.0),
                                             ),
                                             errorBorder: OutlineInputBorder(
                                               borderSide: BorderSide(
@@ -651,7 +642,7 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                                                 width: 2.0,
                                               ),
                                               borderRadius:
-                                                  BorderRadius.circular(8.0),
+                                                  BorderRadius.circular(12.0),
                                             ),
                                             focusedErrorBorder:
                                                 OutlineInputBorder(
@@ -662,12 +653,10 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                                                 width: 2.0,
                                               ),
                                               borderRadius:
-                                                  BorderRadius.circular(8.0),
+                                                  BorderRadius.circular(12.0),
                                             ),
                                             filled: true,
-                                            fillColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .secondaryBackground,
+                                            fillColor: Colors.white.withOpacity(0.05),
                                           ),
                                           style: FlutterFlowTheme.of(context)
                                               .bodyMedium
@@ -680,6 +669,7 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                                                           .bodyMedium
                                                           .fontStyle,
                                                 ),
+                                                color: Colors.white,
                                                 fontSize: 16.0,
                                                 letterSpacing: 0.0,
                                                 fontWeight: FontWeight.w500,
@@ -734,13 +724,11 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                                   width: double.infinity,
                                   height: 100.0,
                                   decoration: BoxDecoration(
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondaryBackground,
-                                    borderRadius: BorderRadius.circular(8.0),
+                                    color: Colors.white.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(12.0),
                                     border: Border.all(
-                                      color:
-                                          FlutterFlowTheme.of(context).primary,
-                                      width: 2.0,
+                                      color: Colors.white.withOpacity(0.2),
+                                      width: 1.0,
                                     ),
                                   ),
                                   child: Padding(
@@ -961,21 +949,19 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                                             ),
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
-                                                .primary,
-                                            width: 2.0,
+                                            color: Colors.white.withOpacity(0.2),
+                                            width: 1.0,
                                           ),
                                           borderRadius:
-                                              BorderRadius.circular(8.0),
+                                              BorderRadius.circular(12.0),
                                         ),
                                         focusedBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
-                                            color: FlutterFlowTheme.of(context)
-                                                .primary,
+                                            color: const Color(0xFF8A2BE2),
                                             width: 2.0,
                                           ),
                                           borderRadius:
-                                              BorderRadius.circular(8.0),
+                                              BorderRadius.circular(12.0),
                                         ),
                                         errorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
@@ -984,7 +970,7 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                                             width: 2.0,
                                           ),
                                           borderRadius:
-                                              BorderRadius.circular(8.0),
+                                              BorderRadius.circular(12.0),
                                         ),
                                         focusedErrorBorder: OutlineInputBorder(
                                           borderSide: BorderSide(
@@ -993,11 +979,10 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                                             width: 2.0,
                                           ),
                                           borderRadius:
-                                              BorderRadius.circular(8.0),
+                                              BorderRadius.circular(12.0),
                                         ),
                                         filled: true,
-                                        fillColor: FlutterFlowTheme.of(context)
-                                            .secondaryBackground,
+                                        fillColor: Colors.white.withOpacity(0.05),
                                       ),
                                       style: FlutterFlowTheme.of(context)
                                           .bodyMedium
@@ -1009,6 +994,7 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                                                       .bodyMedium
                                                       .fontStyle,
                                             ),
+                                            color: Colors.white,
                                             fontSize: 16.0,
                                             letterSpacing: 0.0,
                                             fontWeight: FontWeight.w500,

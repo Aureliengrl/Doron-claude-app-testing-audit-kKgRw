@@ -140,7 +140,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: ChooseHandleWidget.routeName,
           path: ChooseHandleWidget.routePath,
-          requireAuth: true,
+          requireAuth: false,
           builder: (context, params) => ChooseHandleWidget(
             returnTo: params.getParam('returnTo', ParamType.String),
             personId: params.getParam('personId', ParamType.String),
@@ -154,7 +154,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: FavouritesWidget.routeName,
           path: FavouritesWidget.routePath,
-          requireAuth: true,
+          requireAuth: false,
           builder: (context, params) => params.isEmpty
               ? NavBarPage(initialPage: 'Favourites')
               : FavouritesWidget(),
@@ -163,7 +163,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         // FFRoute(
         //     name: ChatHistoryWidget.routeName,
         //     path: ChatHistoryWidget.routePath,
-        //     requireAuth: true,
+        //     requireAuth: false,
         //     builder: (context, params) => params.isEmpty
         //         ? NavBarPage(initialPage: 'ChatHistory')
         //         : NavBarPage(
@@ -173,7 +173,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: OpenAiSuggestedGiftsWidget.routeName,
           path: OpenAiSuggestedGiftsWidget.routePath,
-          requireAuth: true,
+          requireAuth: false,
           builder: (context, params) => OpenAiSuggestedGiftsWidget(
             fetchproducts: params.getParam<ProductsStruct>(
               'fetchproducts',
@@ -210,19 +210,19 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: OnboardingAdvancedWidget.routeName,
           path: OnboardingAdvancedWidget.routePath,
-          requireAuth: true,
+          requireAuth: false,
           builder: (context, params) => OnboardingAdvancedWidget(),
         ),
         FFRoute(
           name: OnboardingGiftsResultWidget.routeName,
           path: OnboardingGiftsResultWidget.routePath,
-          requireAuth: true,
+          requireAuth: false,
           builder: (context, params) => OnboardingGiftsResultWidget(),
         ),
         FFRoute(
           name: HomePinterestWidget.routeName,
           path: HomePinterestWidget.routePath,
-          requireAuth: true,
+          requireAuth: false,
           builder: (context, params) => params.isEmpty
               ? NavBarPage(initialPage: 'HomePinterest')
               : HomePinterestWidget(),
@@ -230,7 +230,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: SearchPageWidget.routeName,
           path: SearchPageWidget.routePath,
-          requireAuth: true,
+          requireAuth: false,
           builder: (context, params) => params.isEmpty
               ? NavBarPage(initialPage: 'SearchPage')
               : SearchPageWidget(),
@@ -238,19 +238,19 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: GiftResultsWidget.routeName,
           path: GiftResultsWidget.routePath,
-          requireAuth: true,
+          requireAuth: false,
           builder: (context, params) => GiftResultsWidget(),
         ),
         FFRoute(
           name: 'ChatList',
           path: '/chat-list',
-          requireAuth: true,
+          requireAuth: false,
           builder: (context, params) => const ChatListPage(),
         ),
         FFRoute(
           name: 'ChatRoom',
           path: '/chat-room/:chatId',
-          requireAuth: true,
+          requireAuth: false,
           builder: (context, params) => ChatRoomPage(
             chatId: params.getParam<String>('chatId', ParamType.String) ?? '',
             chatData: null,
@@ -265,13 +265,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: 'VoiceListening',
           path: '/voiceListening',
-          requireAuth: true,
+          requireAuth: false,
           builder: (context, params) => const VoiceListeningPageWidget(),
         ),
         FFRoute(
           name: 'VoiceAnalysis',
           path: '/voiceAnalysis',
-          requireAuth: true,
+          requireAuth: false,
           builder: (context, params) => VoiceAnalysisPageWidget(
             transcript: params.getParam<String>('transcript', ParamType.String) ?? '',
           ),
@@ -286,7 +286,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: TikTokInspirationPageWidget.routeName,
           path: TikTokInspirationPageWidget.routePath,
-          requireAuth: true,
+          requireAuth: false,
           builder: (context, params) => TikTokInspirationPageWidget(),
         ),
         // Admin Products Page
@@ -299,19 +299,19 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: WishlistsPageWidget.routeName,
           path: WishlistsPageWidget.routePath,
-          requireAuth: true,
+          requireAuth: false,
           builder: (context, params) => WishlistsPageWidget(),
         ),
         FFRoute(
           name: LikedProductsPageWidget.routeName,
           path: LikedProductsPageWidget.routePath,
-          requireAuth: true,
+          requireAuth: false,
           builder: (context, params) => LikedProductsPageWidget(),
         ),
         FFRoute(
           name: WishlistDetailsWidget.routeName,
           path: WishlistDetailsWidget.routePath,
-          requireAuth: true,
+          requireAuth: false,
           builder: (context, params) => WishlistDetailsWidget(
             wishlistId: params.getParam<String>('wishlistId', ParamType.String) ?? '',
           ),
@@ -648,33 +648,44 @@ class _RootSplashWidgetState extends State<RootSplashWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF062248), // Dark blue from DoronTheme
+      backgroundColor: const Color(0xFF062248), // Dark blue
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Clean Splash Image
               Image.asset(
                 'assets/images/splash_screen.jpeg',
-                width: 150,
-                height: 150,
+                width: 180,
+                height: 180,
                 fit: BoxFit.contain,
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 48),
+              // Loader
               const CircularProgressIndicator(
-                color: Color(0xFF8A2BE2), // Violet color
+                color: Color(0xFF8A2BE2), // Violet
               ),
               const SizedBox(height: 32),
-              Text(
-                _status,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+              // N'afficher le texte que s'il y a une erreur critique
+              if (_status.toLowerCase().contains('erreur') || _status.toLowerCase().contains('exception'))
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    _status,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.redAccent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
-              ),
             ],
           ),
         ),

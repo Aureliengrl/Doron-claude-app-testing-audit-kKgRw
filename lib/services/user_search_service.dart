@@ -196,7 +196,8 @@ class UserSearchService {
     try {
       final normalized = handle.replaceAll('@', '').toLowerCase().trim();
       if (normalized.isEmpty || normalized.length < 3) return false;
-      if (!RegExp(r'^[a-z0-9_.]+$').hasMatch(normalized)) return false;
+      // FIX IGNITION: Allouer les tirets (-) pour correspondre à l'UI
+      if (!RegExp(r'^[a-z0-9_.-]+$').hasMatch(normalized)) return false;
 
       final snapshot = await _db
           .collection('users')
@@ -206,6 +207,11 @@ class UserSearchService {
 
       return snapshot.docs.isEmpty;
     } catch (e) {
+      AppLogger.debug('❌ UserSearchService.isHandleAvailable error: $e', 'Social');
+      if (e.toString().contains('permission-denied')) {
+        // Bypass permission denied errors during onboarding
+        return true;
+      }
       return false;
     }
   }

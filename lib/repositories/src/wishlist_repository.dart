@@ -31,7 +31,7 @@ class WishlistRepository {
 
   /// Retire un produit d'une wishlist.
   Future<bool> removeProduct(String wishlistId, String favoriteId) =>
-      FirebaseDataService.removeFromWishlist(wishlistId, favoriteId);
+      FirebaseDataService.removeProductFromWishlist(wishlistId, favoriteId);
 
   /// Charge tous les produits d'une wishlist (taille illimitée, batches de 30).
   Future<List<FavouritesRecord>> loadProducts(String wishlistId) =>

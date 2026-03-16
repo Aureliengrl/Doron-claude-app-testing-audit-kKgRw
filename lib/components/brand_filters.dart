@@ -27,7 +27,11 @@ class BrandModel {
 }
 
 /// Liste des marques populaires
-class PopularBrands {
+  // Utilisation de l'API Favicon de Google pour une fiabilité à 100% sur mobile et web.
+  static String _getLogoUrl(String domain) {
+    return 'https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://$domain&size=128';
+  }
+
   static final List<BrandModel> all = [
     const BrandModel(
       id: 'all',
@@ -36,68 +40,59 @@ class PopularBrands {
       icon: Icons.apps_rounded,
       color: Color(0xFF8A2BE2),
     ),
-    const BrandModel(
+    BrandModel(
       id: 'amazon',
       name: 'Amazon',
-      displayName: '📦 Amazon',
-      icon: Icons.shopping_cart_rounded,
-      color: Color(0xFFFF9900),
+      logo: _getLogoUrl('amazon.com'),
+      color: const Color(0xFFFF9900),
     ),
-    const BrandModel(
+    BrandModel(
       id: 'zara',
       name: 'Zara',
-      displayName: '👗 Zara',
-      icon: Icons.checkroom_rounded,
-      color: Color(0xFF000000),
+      logo: _getLogoUrl('zara.com'),
+      color: const Color(0xFF000000),
     ),
-    const BrandModel(
+    BrandModel(
       id: 'hm',
       name: 'H&M',
-      displayName: '👕 H&M',
-      icon: Icons.shopping_bag_rounded,
-      color: Color(0xFFE50914),
+      logo: _getLogoUrl('hm.com'),
+      color: const Color(0xFFE50914),
     ),
-    const BrandModel(
+    BrandModel(
       id: 'nike',
       name: 'Nike',
-      displayName: '👟 Nike',
-      icon: Icons.directions_run_rounded,
-      color: Color(0xFF111111),
+      logo: _getLogoUrl('nike.com'),
+      color: const Color(0xFF111111),
     ),
-    const BrandModel(
+    BrandModel(
       id: 'sephora',
       name: 'Sephora',
-      displayName: '💄 Sephora',
-      icon: Icons.face_rounded,
-      color: Color(0xFF000000),
+      logo: _getLogoUrl('sephora.fr'),
+      color: const Color(0xFF000000),
     ),
-    const BrandModel(
+    BrandModel(
       id: 'apple',
-      name: 'Apple Store',
-      displayName: ' Apple',
-      icon: Icons.phone_iphone_rounded,
-      color: Color(0xFF555555),
+      name: 'Apple',
+      logo: _getLogoUrl('apple.com'),
+      color: const Color(0xFF555555),
     ),
-    const BrandModel(
+    BrandModel(
       id: 'fnac',
       name: 'Fnac',
-      displayName: '📚 Fnac',
-      icon: Icons.local_library_rounded,
-      color: Color(0xFFFFCC00),
+      logo: _getLogoUrl('fnac.com'),
+      color: const Color(0xFFFFCC00),
     ),
-    const BrandModel(
+    BrandModel(
       id: 'decathlon',
       name: 'Decathlon',
-      displayName: '⚽ Decathlon',
-      icon: Icons.sports_soccer_rounded,
-      color: Color(0xFF0082C3),
+      logo: _getLogoUrl('decathlon.fr'),
+      color: const Color(0xFF0082C3),
     ),
-    const BrandModel(
+    BrandModel(
       id: 'ikea',
       name: 'IKEA',
-      displayName: '🏠 IKEA',
-      icon: Icons.weekend_rounded,
-      color: Color(0xFF0051BA),
+      logo: _getLogoUrl('ikea.com'),
+      color: const Color(0xFF0051BA),
     ),
   ];
 
@@ -140,9 +135,9 @@ class _BrandFiltersWidgetState extends State<BrandFiltersWidget> {
         // Titre
         // Liste des marques
         SizedBox(
-          height: widget.height,
+          height: 56, // Homogénéisation de la hauteur des bulles
           child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 24), // Uniformisation du padding global
             scrollDirection: Axis.horizontal,
             itemCount: PopularBrands.all.length,
             physics: const BouncingScrollPhysics(),
@@ -153,7 +148,7 @@ class _BrandFiltersWidgetState extends State<BrandFiltersWidget> {
           ),
         ),
 
-        const SizedBox(height: 8),
+        const SizedBox(height: 16),
       ],
     );
   }
@@ -161,9 +156,10 @@ class _BrandFiltersWidgetState extends State<BrandFiltersWidget> {
   Widget _buildBrandChip(BrandModel brand, Color primaryColor, int index) {
     final isActive = widget.activeBrandId == brand.id;
     final brandColor = brand.color ?? primaryColor;
+    final isAll = brand.id == 'all';
 
     return Padding(
-      padding: const EdgeInsets.only(right: 10),
+      padding: const EdgeInsets.only(right: 16), // Espacement constant entre bulles
       child: GestureDetector(
         onTap: () {
           HapticFeedback.lightImpact();
@@ -172,20 +168,15 @@ class _BrandFiltersWidgetState extends State<BrandFiltersWidget> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          width: isAll ? null : 56,
+          height: 56,
+          padding: isAll ? const EdgeInsets.symmetric(horizontal: 16, vertical: 10) : EdgeInsets.zero,
           decoration: BoxDecoration(
-            gradient: isActive
-                ? LinearGradient(
-                    colors: [brandColor, brandColor.withOpacity(0.8)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  )
-                : null,
-            color: isActive ? null : Colors.white,
-            borderRadius: BorderRadius.circular(25),
+            color: isActive ? brandColor : Colors.white,
+            borderRadius: BorderRadius.circular(28),
             border: Border.all(
               color: isActive
-                  ? brandColor.withOpacity(0.3)
+                  ? brandColor.withOpacity(0.5)
                   : const Color(0xFFE5E7EB),
               width: isActive ? 2 : 1.5,
             ),
@@ -199,34 +190,66 @@ class _BrandFiltersWidgetState extends State<BrandFiltersWidget> {
                   ]
                 : [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
                     ),
                   ],
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (brand.icon != null) ...[
-                Icon(
-                  brand.icon,
-                  size: 18,
-                  color: isActive ? Colors.white : brandColor,
+          child: isAll
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (brand.icon != null) ...[
+                      Icon(
+                        brand.icon,
+                        size: 20,
+                        color: isActive ? Colors.white : brandColor,
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Text(
+                      brand.label,
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: isActive ? Colors.white : const Color(0xFF374151),
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                )
+              : ClipRRect(
+                  borderRadius: BorderRadius.circular(28),
+                  child: brand.logo != null
+                      ? Container(
+                          padding: EdgeInsets.all(isAll ? 0 : 8), // Padding pour éviter que le logo touche les bords
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.network(
+                              brand.logo!,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) => Center(
+                                child: Text(
+                                  brand.name.substring(0, 1).toUpperCase(),
+                                  style: TextStyle(
+                                      color: isActive ? Colors.white : brandColor,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18),
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      : Center(
+                          child: Icon(
+                            brand.icon ?? Icons.storefront,
+                            color: isActive ? Colors.white : brandColor,
+                          ),
+                        ),
                 ),
-                const SizedBox(width: 8),
-              ],
-              Text(
-                brand.label,
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: isActive ? Colors.white : const Color(0xFF374151),
-                  letterSpacing: 0.3,
-                ),
-              ),
-            ],
-          ),
         ).animate(target: isActive ? 1 : 0)
           .scale(
             begin: const Offset(1.0, 1.0),

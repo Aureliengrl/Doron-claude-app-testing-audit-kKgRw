@@ -1660,9 +1660,10 @@ class FirebaseDataService {
           .doc(userId)
           .collection('wishlists')
           .doc(wishlistId)
-          .collection('products')
-          .doc(productDocId)
-          .set({'addedAt': FieldValue.serverTimestamp()}, SetOptions(merge: true));
+          .update({
+        'productIds': FieldValue.arrayUnion([productDocId]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
     } catch (e) {
       print('❌ addToWishlist error: $e');
     }

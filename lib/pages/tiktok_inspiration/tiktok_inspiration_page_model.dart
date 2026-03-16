@@ -13,6 +13,7 @@ class TikTokInspirationPageModel extends ChangeNotifier {
   bool _hasError = false;
   String _errorMessage = '';
   int _currentIndex = 0;
+  String _activeCategory = 'recommandé';
 
   // Favoris
   Set<String> likedProductTitles = {};
@@ -30,6 +31,30 @@ class TikTokInspirationPageModel extends ChangeNotifier {
   bool get hasError => _hasError;
   String get errorMessage => _errorMessage;
   int get currentIndex => _currentIndex;
+  String get activeCategory => _activeCategory;
+
+  void setCategory(String category) {
+    if (_activeCategory != category) {
+      _activeCategory = category;
+      notifyListeners();
+      loadProducts();
+    }
+  }
+
+  String? _getFilterForCategory() {
+    switch (_activeCategory.toLowerCase()) {
+      case 'recommandé':
+      case 'amis':
+        return null;
+      case 'vêtements':
+        return 'Mode';
+      case 'activités':
+      case 'activité':
+        return 'Tech'; // Ou tout tag pertinent
+      default:
+        return null;
+    }
+  }
 
   /// Charge les produits - MÊME SOURCE que "Pour toi"
   Future<void> loadProducts() async {
@@ -50,6 +75,7 @@ class TikTokInspirationPageModel extends ChangeNotifier {
       final rawProducts = await ProductMatchingService.getPersonalizedProducts(
         userTags: _cachedUserTags!,
         count: 30,
+        category: _getFilterForCategory(),
         filteringMode: "discovery",
       );
 
@@ -116,6 +142,7 @@ class TikTokInspirationPageModel extends ChangeNotifier {
       final rawProducts = await ProductMatchingService.getPersonalizedProducts(
         userTags: userTags,
         count: 30,
+        category: _getFilterForCategory(),
         filteringMode: "discovery",
         excludeProductIds: _seenProductIds.toList(),
       );
@@ -131,6 +158,7 @@ class TikTokInspirationPageModel extends ChangeNotifier {
         final refreshedProducts = await ProductMatchingService.getPersonalizedProducts(
           userTags: userTags,
           count: 30,
+          category: _getFilterForCategory(),
           filteringMode: "discovery",
         );
 

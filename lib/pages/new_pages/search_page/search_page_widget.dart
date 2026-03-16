@@ -20,6 +20,7 @@ import '/utils/pdf_export_utils.dart';
 import 'share_list_bottom_sheet.dart';
 import '/components/liquid_glass_empty_state_widget.dart';
 import '/components/liquid_glass_loader.dart';
+import '/components/product_detail_modal.dart';
 
 class SearchPageWidget extends StatefulWidget {
   const SearchPageWidget({super.key});
@@ -198,7 +199,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
           // CTA fixe en bas de l'écran
           Positioned(
-            bottom: 0,
+            bottom: 90,
             left: 0,
             right: 0,
             child: Container(
@@ -607,7 +608,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.white.withOpacity(0.10),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: Color(
@@ -950,44 +951,20 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 ],
               ),
 
-              // Info produit avec hiérarchie claire
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Badge source/marque discret en haut
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: violetColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          product['brand'] as String? ?? product['source'] as String? ?? 'Amazon',
-                          style: GoogleFonts.poppins(
-                            fontSize: 10,
-                            color: violetColor,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      // Nom du produit (hiérarchie principale)
+                      // Nom de la marque
                       Expanded(
                         child: Text(
-                          productName,
+                          product['brand'] as String? ?? product['source'] as String? ?? 'Amazon',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.poppins(
-                            fontSize: 14,
+                            fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
                             height: 1.3,
@@ -1036,142 +1013,22 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   void _showProductDetail(Map<String, dynamic> product) {
     final isLiked = _model.likedProducts.contains(product['id']);
 
-    showDialog(
-      context: context,
-      barrierColor: Colors.black.withOpacity(0.7),
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(16),
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 500),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Stack(
-                children: [
-                  ProductImage(
-                    imageUrl: product['image'] as String? ?? '',
-                    height: 280,
-                    fit: BoxFit.contain,
-                    backgroundColor: Colors.white.withOpacity(0.05),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(24),
-                      topRight: Radius.circular(24),
-                    ),
-                  ),
-                  Positioned(
-                    top: 12,
-                    left: 12,
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () => Navigator.pop(context),
-                        borderRadius: BorderRadius.circular(50),
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.95),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.close, size: 20),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () {
-                          if (mounted) {
-                            setState(() {
-                              // FIX: Cast sécurisé - ID peut être String ou int
-                              final idRaw = product['id'];
-                              final productId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0);
-                              _model.toggleLike(productId);
-                            });
-                            Navigator.pop(context);
-                            _showProductDetail(product);
-                          }
-                        },
-                        borderRadius: BorderRadius.circular(50),
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: isLiked
-                                ? Colors.red
-                                : Colors.white.withOpacity(0.95),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            isLiked ? Icons.favorite : Icons.favorite_border,
-                            color: isLiked ? Colors.white : Colors.black,
-                            size: 18,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: violetColor.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        product['brand'] as String? ?? product['source'] as String? ?? 'Amazon',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: violetColor,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      product['name'] as String? ?? 'Produit',
-                      style: GoogleFonts.poppins(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      '${product['price'] ?? 0}€',
-                      style: GoogleFonts.poppins(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: violetColor,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    if (product['brand'] != null && (product['brand'] as String).isNotEmpty)
-                      Text(
-                        'Par ${product['brand']}',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: Colors.white.withOpacity(0.55),
-                          height: 1.6,
-                        ),
-                      ),
+    final idRaw = product['id'];
+    final productId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0);
+
+    GlobalProductDetailModal.show(
+      context,
+      product,
+      initialIsLiked: isLiked,
+      onLikeToggled: () {
+        if (mounted) {
+          setState(() {
+            _model.toggleLike(productId);
+          });
+        }
+      },
+    );
+  }
                     const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
@@ -1470,24 +1327,14 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        product['name'] as String? ?? 'Produit',
+                        product['brand'] as String? ?? product['source'] as String? ?? 'Amazon',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
-                          fontSize: 14,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF1F2937),
                           height: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        product['brand'] as String? ?? 'Amazon',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: const Color(0xFF6B7280),
                         ),
                       ),
                       const Spacer(),
