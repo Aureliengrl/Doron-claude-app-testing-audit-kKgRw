@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '/components/liquid_glass.dart';
+import '/services/friend_service.dart';
 
 class ShareListBottomSheet extends StatefulWidget {
   final Map<String, dynamic> profile;
@@ -33,27 +34,19 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet> {
 
   Future<void> _loadContacts() async {
     try {
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) return;
-      
-      final snapshot = await FirebaseFirestore.instance.collection('users').get();
-      
+      final friends = await FriendService.getFriendsStream().first;
       if (mounted) {
         setState(() {
-          _contacts = snapshot.docs
-              .where((doc) => doc.id != currentUser.uid)
-              .map((doc) => {
-                    'id': doc.id,
-                    'name': doc.data()['display_name'] ?? doc.data()['first_name'] ?? 'Utilisateur',
-                    'photoUrl': doc.data()['photo_url'] ?? '',
-                    'color': 0xFF8A2BE2,
-                  })
-              .toList();
+          _contacts = friends.map((f) => {
+            'id': f['uid'] as String? ?? f['id'] as String? ?? '',
+            'name': f['displayName'] as String? ?? 'Ami',
+            'photoUrl': f['photoUrl'] as String? ?? '',
+            'color': 0xFF8A2BE2,
+          }).toList();
           _isLoading = false;
         });
       }
     } catch (e) {
-      print('Error loading contacts: $e');
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -126,13 +119,22 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet> {
       }
 
       if (mounted) {
-        context.pop(chatRef.id); // Return the chatId to the page to update local state
+        Navigator.pop(context, chatRef.id); // Return the chatId to the page
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: violetColor,
             content: Text('Liste partagée ! Groupe de discussion créé.', style: GoogleFonts.poppins(color: Colors.white)),
           ),
         );
+        // Naviguer directement dans le chat de groupe
+        Future.delayed(const Duration(milliseconds: 400), () {
+          if (mounted) {
+            context.push('/chat-room/${chatRef.id}', extra: {
+              'name': chatName,
+              'isGroup': true,
+            });
+          }
+        });
       }
     } catch (e) {
       print('Erreur lors du partage de la liste: $e');

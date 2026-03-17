@@ -13,14 +13,15 @@ import '/services/product_url_service.dart';
 import '/services/firebase_data_service.dart';
 import '/backend/backend.dart';
 import '/auth/firebase_auth/auth_util.dart';
+import '/utils/pdf_export_utils.dart';
 import 'search_page_model.dart';
 export 'search_page_model.dart';
 import 'user_search_bottom_sheet.dart';
-import '/utils/pdf_export_utils.dart';
 import 'share_list_bottom_sheet.dart';
 import '/components/liquid_glass_empty_state_widget.dart';
 import '/components/liquid_glass_loader.dart';
 import '/components/product_detail_modal.dart';
+import '/services/friend_service.dart';
 
 class SearchPageWidget extends StatefulWidget {
   const SearchPageWidget({super.key});
@@ -506,6 +507,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       setState(() {});
                     }
                   },
+                  onLongPress: () => _showProfileAvatarOptions(context, profile),
                   borderRadius: BorderRadius.circular(50),
                   child: Column(
                     children: [
@@ -1378,14 +1380,14 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         ),
         const SizedBox(width: 16),
         
-        // Bouton Trouver des amis (Rectangle rargit)
+        // Bouton Trouver des amis (navigue vers FriendsPage)
         Expanded(
           child: Material(
             color: Colors.transparent,
             child: InkWell(
               onTap: () {
                 HapticFeedback.heavyImpact();
-                _showUserSearchSheet();
+                context.push('/friends');
               },
               borderRadius: BorderRadius.circular(28),
               child: Container(
@@ -1501,6 +1503,128 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       builder: (context) {
         return const UserSearchBottomSheet();
       },
+    );
+  }
+  void _showProfileAvatarOptions(BuildContext context, Map<String, dynamic> profile) {
+    HapticFeedback.mediumImpact();
+    final name = profile['name'] as String? ?? 'Personne';
+    // Chercher si ce profil a un uid Firebase (personne réelle vs profil local)
+    final uid = profile['uid'] as String?;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF16002E),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Poignée
+            Container(
+              width: 40, height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Text(name, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+            const SizedBox(height: 20),
+            // Bouton Collaborer sur la liste (chat de groupe)
+            _buildAvatarOption(
+              icon: Icons.group_add,
+              label: 'Collaborer sur la liste de cadeaux',
+              onTap: () {
+                Navigator.pop(ctx);
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => Padding(
+                    padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.2),
+                    child: ShareListBottomSheet(profile: profile),
+                  ),
+                ).then((chatId) {
+                  if (chatId != null && mounted) {
+                    setState(() {
+                      profile['chatId'] = chatId;
+                      profile['isShared'] = true;
+                    });
+                    context.push('/chat-room/$chatId', extra: {
+                      'name': 'Cadeaux pour $name',
+                      'isGroup': true,
+                    });
+                  }
+                });
+              },
+            ),
+            if (uid != null) ...[
+              const SizedBox(height: 12),
+              _buildAvatarOption(
+                icon: Icons.person_add_outlined,
+                label: 'Ajouter en ami',
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  await FriendService.addFriend(profile);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('$name ajouté(e) en ami !', style: GoogleFonts.poppins()),
+                        backgroundColor: const Color(0xFF8A2BE2),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    );
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
+              _buildAvatarOption(
+                icon: Icons.chat_bubble_outline,
+                label: 'Envoyer un message',
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  try {
+                    final chatId = await FriendService.getOrCreateDirectChat(uid);
+                    if (mounted) {
+                      context.push('/chat-room/$chatId', extra: {'name': name, 'isGroup': false});
+                    }
+                  } catch (e) {
+                    if (mounted) _showSnackBar('Impossible d\'ouvrir le chat', isError: true);
+                  }
+                },
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvatarOption({required IconData icon, required String label, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.07),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.white, size: 22),
+            const SizedBox(width: 14),
+            Text(label, style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.white)),
+          ],
+        ),
+      ),
     );
   }
 
