@@ -679,7 +679,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           _showSnackBar('Génération du PDF en cours...', isError: false);
                           
                           // On récupère les cadeaux sauvegardés pour cette personne
-                          final products = widget.model.getFilteredProducts(); 
+                          final products = _model.getFilteredProducts(); 
                           
                           try {
                             await PdfExportUtils.generateAndShareWishlistPdf(
@@ -791,10 +791,10 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   }
 
   Widget _buildProductsGrid() {
-    final products = widget.model.getFilteredProducts();
+    final products = _model.getFilteredProducts();
 
     // Si pas de profils du tout, afficher un message d'accueil
-    if (widget.model.profiles.isEmpty) {
+    if (_model.profiles.isEmpty) {
       return const SliverToBoxAdapter(
         child: LiquidGlassEmptyStateWidget(
           icon: Icons.person_add_alt_1,
@@ -838,7 +838,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   Widget _buildProductCard(Map<String, dynamic> product) {
     // Vérifier si ce produit est dans les favoris de cette personne (dans Firebase)
     final productName = product['name'] as String? ?? product['title'] as String? ?? '';
-    final isLikedInFirebase = widget.model.isProductLiked(productName);
+    final isLikedInFirebase = _model.isProductLiked(productName);
     final matchScore = product['match'] as int? ?? 0;
 
     return Material(
@@ -1011,7 +1011,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   }
 
   void _showProductDetail(Map<String, dynamic> product) {
-    final isLiked = widget.model.likedProducts.contains(product['id']);
+    final isLiked = _model.likedProducts.contains(product['id']);
 
     final idRaw = product['id'];
     final productId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0);
@@ -1023,21 +1023,18 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       onLikeToggled: () {
         if (mounted) {
           setState(() {
-            widget.model.toggleLike(productId);
+            _model.toggleLike(productId);
           });
         }
       },
-    );
-  }
-
-  }
+    );  }
 
   Widget _buildSuggestionsSection() {
-    final suggestions = widget.model.getSuggestions();
-    final profile = widget.model.currentProfile;
+    final suggestions = _model.getSuggestions();
+    final profile = _model.currentProfile;
 
     // Si en cours de chargement
-    if (widget.model.isLoadingSuggestions) {
+    if (_model.isLoadingSuggestions) {
       return SliverToBoxAdapter(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -1152,7 +1149,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
   Widget _buildSuggestionCard(Map<String, dynamic> product) {
     final productName = product['name'] as String? ?? product['title'] as String? ?? '';
-    final isLikedInFirebase = widget.model.isProductLiked(productName);
+    final isLikedInFirebase = _model.isProductLiked(productName);
 
     return Material(
       color: Colors.transparent,
@@ -1434,7 +1431,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
   /// Ajoute le produit directement à la liste des cadeaux de la personne
   Future<void> _showAddToWishlistDialog(Map<String, dynamic> product) async {
-    final currentProf = widget.model.currentProfile;
+    final currentProf = _model.currentProfile;
     if (currentProf == null) {
       _showSnackBar('Aucune personne sélectionnée', isError: true);
       return;
@@ -1455,7 +1452,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
           _showSnackBar('? $productName ajouté aux cadeaux de $personName');
 
           // Recharger les données pour mettre à jour l'affichage
-          await widget.model.loadProfiles();
+          await _model.loadProfiles();
           if (mounted) {
             setState(() {});
           }
