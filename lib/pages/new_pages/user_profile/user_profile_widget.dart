@@ -21,6 +21,7 @@ import 'user_profile_model.dart';
 import '/components/liquid_glass_loader.dart';
 import 'dart:io';
 import '/components/product_detail_modal.dart';
+import '/utils/image_compress_utils.dart';
 export 'user_profile_model.dart';
 
 class UserProfileWidget extends StatefulWidget {

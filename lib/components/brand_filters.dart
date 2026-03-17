@@ -27,6 +27,7 @@ class BrandModel {
 }
 
 /// Liste des marques populaires
+class PopularBrands {
   // Utilisation de l'API Favicon de Google pour une fiabilité à 100% sur mobile et web.
   static String _getLogoUrl(String domain) {
     return 'https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://$domain&size=128';

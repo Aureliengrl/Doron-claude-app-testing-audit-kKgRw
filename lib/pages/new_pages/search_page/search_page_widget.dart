@@ -679,7 +679,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           _showSnackBar('Génération du PDF en cours...', isError: false);
                           
                           // On récupère les cadeaux sauvegardés pour cette personne
-                          final products = _model.getFilteredProducts(); 
+                          final products = widget.model.getFilteredProducts(); 
                           
                           try {
                             await PdfExportUtils.generateAndShareWishlistPdf(
@@ -791,10 +791,10 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   }
 
   Widget _buildProductsGrid() {
-    final products = _model.getFilteredProducts();
+    final products = widget.model.getFilteredProducts();
 
     // Si pas de profils du tout, afficher un message d'accueil
-    if (_model.profiles.isEmpty) {
+    if (widget.model.profiles.isEmpty) {
       return const SliverToBoxAdapter(
         child: LiquidGlassEmptyStateWidget(
           icon: Icons.person_add_alt_1,
@@ -838,7 +838,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   Widget _buildProductCard(Map<String, dynamic> product) {
     // Vérifier si ce produit est dans les favoris de cette personne (dans Firebase)
     final productName = product['name'] as String? ?? product['title'] as String? ?? '';
-    final isLikedInFirebase = _model.isProductLiked(productName);
+    final isLikedInFirebase = widget.model.isProductLiked(productName);
     final matchScore = product['match'] as int? ?? 0;
 
     return Material(
@@ -886,16 +886,16 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
+                          gradient: const LinearGradient(
                             colors: [
-                              violetColor,
-                              const Color(0xFFEC4899),
+                              Color(0xFF8A2BE2),
+                              Color(0xFFEC4899),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: violetColor.withOpacity(0.3),
+                              color: const Color(0xFF8A2BE2).withOpacity(0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -1011,7 +1011,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   }
 
   void _showProductDetail(Map<String, dynamic> product) {
-    final isLiked = _model.likedProducts.contains(product['id']);
+    final isLiked = widget.model.likedProducts.contains(product['id']);
 
     final idRaw = product['id'];
     final productId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0);
@@ -1023,72 +1023,21 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       onLikeToggled: () {
         if (mounted) {
           setState(() {
-            _model.toggleLike(productId);
+            widget.model.toggleLike(productId);
           });
         }
       },
     );
   }
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          // Générer une URL de produit intelligente (=95% précision)
-                          final url = ProductUrlService.generateProductUrl(product);
-                          if (url.isNotEmpty) {
-                            final uri = Uri.parse(url);
-                            if (await canLaunchUrl(uri)) {
-                              await launchUrl(uri, mode: LaunchMode.externalApplication);
-                            } else {
-                              AppLogger.debug('? Cannot launch URL: $url', 'Debug');
-                            }
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: violetColor,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Voir sur ${product['brand'] ?? product['source'] ?? 'Amazon'}',
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            const Icon(
-                              Icons.open_in_new,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+
   }
 
   Widget _buildSuggestionsSection() {
-    final suggestions = _model.getSuggestions();
-    final profile = _model.currentProfile;
+    final suggestions = widget.model.getSuggestions();
+    final profile = widget.model.currentProfile;
 
     // Si en cours de chargement
-    if (_model.isLoadingSuggestions) {
+    if (widget.model.isLoadingSuggestions) {
       return SliverToBoxAdapter(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -1145,7 +1094,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               children: [
                 Icon(
                   Icons.lightbulb_outline,
-                  color: violetColor,
+                  color: const Color(0xFF8A2BE2),
                   size: 28,
                 ),
                 const SizedBox(width: 12),
@@ -1203,7 +1152,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
   Widget _buildSuggestionCard(Map<String, dynamic> product) {
     final productName = product['name'] as String? ?? product['title'] as String? ?? '';
-    final isLikedInFirebase = _model.isProductLiked(productName);
+    final isLikedInFirebase = widget.model.isProductLiked(productName);
 
     return Material(
       color: Colors.transparent,
@@ -1216,12 +1165,12 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: violetColor.withOpacity(0.3),
+              color: const Color(0xFF8A2BE2).withOpacity(0.3),
               width: 2,
             ),
             boxShadow: [
               BoxShadow(
-                color: violetColor.withOpacity(0.15),
+                color: const Color(0xFF8A2BE2).withOpacity(0.15),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -1253,16 +1202,16 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
+                        gradient: const LinearGradient(
                           colors: [
-                            violetColor,
-                            const Color(0xFFEC4899),
+                            Color(0xFF8A2BE2),
+                            Color(0xFFEC4899),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: violetColor.withOpacity(0.3),
+                            color: const Color(0xFF8A2BE2).withOpacity(0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -1346,7 +1295,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                             style: GoogleFonts.poppins(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: violetColor,
+                              color: const Color(0xFF8A2BE2),
                             ),
                           ),
                           // Bouton "+" pour ajout direct à wishlist
@@ -1358,13 +1307,13 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                               child: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [violetColor, const Color(0xFFEC4899)],
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
                                   ),
                                   borderRadius: BorderRadius.circular(12),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: violetColor.withOpacity(0.3),
+                                      color: const Color(0xFF8A2BE2).withOpacity(0.3),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
                                     ),
@@ -1485,7 +1434,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
   /// Ajoute le produit directement à la liste des cadeaux de la personne
   Future<void> _showAddToWishlistDialog(Map<String, dynamic> product) async {
-    final currentProf = _model.currentProfile;
+    final currentProf = widget.model.currentProfile;
     if (currentProf == null) {
       _showSnackBar('Aucune personne sélectionnée', isError: true);
       return;
@@ -1502,14 +1451,14 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         gift: product,
       );
 
-      if (success) {
-        _showSnackBar('? $productName ajouté aux cadeaux de $personName');
+        if (success) {
+          _showSnackBar('? $productName ajouté aux cadeaux de $personName');
 
-        // Recharger les données pour mettre à jour l'affichage
-        await _model.loadProfiles();
-        if (mounted) {
-          setState(() {});
-        }
+          // Recharger les données pour mettre à jour l'affichage
+          await widget.model.loadProfiles();
+          if (mounted) {
+            setState(() {});
+          }
       } else {
         _showSnackBar('Ce cadeau est déjà dans la liste', isError: false);
       }
@@ -1539,7 +1488,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             ),
           ],
         ),
-        backgroundColor: isError ? Colors.red : violetColor,
+        backgroundColor: isError ? Colors.red : const Color(0xFF8A2BE2),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         duration: const Duration(seconds: 3),
