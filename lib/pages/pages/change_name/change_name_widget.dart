@@ -24,6 +24,7 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
   late ChangeNameModel _model;
 
   bool _isLoading = true;
+  String _originalHandle = ''; // Mémorise le handle au chargement
 
   @override
   void setState(VoidCallback callback) {
@@ -37,12 +38,11 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
     final profile = await FirebaseDataService.loadUserProfile();
     if (mounted) {
       setState(() {
+        _originalHandle = profile?['handle'] as String? ?? '';
         _model.bioController ??= TextEditingController(text: profile?['bio'] as String? ?? '');
         _model.bioFocusNode ??= FocusNode();
-
-        _model.handleController ??= TextEditingController(text: profile?['handle'] as String? ?? '');
+        _model.handleController ??= TextEditingController(text: _originalHandle);
         _model.handleFocusNode ??= FocusNode();
-
         _isLoading = false;
       });
     }
@@ -52,10 +52,8 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
   void initState() {
     super.initState();
     _model = createModel(context, () => ChangeNameModel());
-
     _model.textController ??= TextEditingController(text: currentUserDisplayName);
     _model.textFieldFocusNode ??= FocusNode();
-
     _loadData();
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
@@ -63,7 +61,6 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
   @override
   void dispose() {
     _model.maybeDispose();
-
     super.dispose();
   }
 
@@ -77,15 +74,13 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
           colors: [const Color(0xFF1A0035).withOpacity(0.96), const Color(0xFF0A0014).withOpacity(0.98)],
         ),
         border: Border.all(color: Colors.white.withOpacity(0.15)),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(0.0),
-          bottomRight: Radius.circular(0.0),
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(16.0),
           topRight: Radius.circular(16.0),
         ),
       ),
       child: Padding(
-        padding: EdgeInsetsDirectional.fromSTEB(20.0, 8.0, 20.0, 20.0),
+        padding: const EdgeInsetsDirectional.fromSTEB(20.0, 8.0, 20.0, 20.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -103,30 +98,18 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
               children: [
                 Expanded(
                   child: Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 16.0, 0.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 16.0, 0.0),
                     child: Text(
-                      FFLocalizations.of(context).getText(
-                        '94z2e6d2' /* Changer le nom */,
-                      ),
-                      style:
-                          FlutterFlowTheme.of(context).headlineMedium.override(
-                                font: GoogleFonts.interTight(
-                                  fontWeight: FlutterFlowTheme.of(context)
-                                      .headlineMedium
-                                      .fontWeight,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .headlineMedium
-                                      .fontStyle,
-                                ),
-                                letterSpacing: 0.0,
-                                fontWeight: FlutterFlowTheme.of(context)
-                                    .headlineMedium
-                                    .fontWeight,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .headlineMedium
-                                    .fontStyle,
-                              ),
+                      FFLocalizations.of(context).getText('94z2e6d2' /* Modifier le profil */),
+                      style: FlutterFlowTheme.of(context).headlineMedium.override(
+                            font: GoogleFonts.interTight(
+                              fontWeight: FlutterFlowTheme.of(context).headlineMedium.fontWeight,
+                              fontStyle: FlutterFlowTheme.of(context).headlineMedium.fontStyle,
+                            ),
+                            letterSpacing: 0.0,
+                            fontWeight: FlutterFlowTheme.of(context).headlineMedium.fontWeight,
+                            fontStyle: FlutterFlowTheme.of(context).headlineMedium.fontStyle,
+                          ),
                     ),
                   ),
                 ),
@@ -136,61 +119,73 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
               key: _model.formKey,
               autovalidateMode: AutovalidateMode.disabled,
               child: AuthUserStreamWidget(
-                builder: (context) => _isLoading 
-                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF8A2BE2))) 
+                builder: (context) => _isLoading
+                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF8A2BE2)))
                     : Column(
-                  children: [
-                    // --- NOM D'AFFICHAGE ---
-                    Align(alignment: Alignment.centerLeft, child: Text("Nom d'affichage", style: TextStyle(color: Colors.white54, fontSize: 12))),
-                    const SizedBox(height: 4),
-                    Container(
-                      width: double.infinity,
-                      child: TextFormField(
-                        controller: _model.textController,
-                        focusNode: _model.textFieldFocusNode,
-                        autofocus: false,
-                        obscureText: false,
-                        decoration: _buildInputDecoration(context, 'Nom d\'affichage'),
-                        style: _buildInputStyle(context),
-                        cursorColor: FlutterFlowTheme.of(context).primaryText,
-                        validator: _model.textControllerValidator.asValidator(context),
+                        children: [
+                          // --- NOM D'AFFICHAGE ---
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text("Nom d'affichage", style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                          ),
+                          const SizedBox(height: 4),
+                          SizedBox(
+                            width: double.infinity,
+                            child: TextFormField(
+                              controller: _model.textController,
+                              focusNode: _model.textFieldFocusNode,
+                              autofocus: false,
+                              obscureText: false,
+                              decoration: _buildInputDecoration(context, "Nom d'affichage"),
+                              style: _buildInputStyle(context),
+                              cursorColor: FlutterFlowTheme.of(context).primaryText,
+                              validator: _model.textControllerValidator.asValidator(context),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // --- USERNAME ---
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text("Nom d'utilisateur (@)", style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                          ),
+                          const SizedBox(height: 4),
+                          SizedBox(
+                            width: double.infinity,
+                            child: TextFormField(
+                              controller: _model.handleController,
+                              focusNode: _model.handleFocusNode,
+                              autofocus: false,
+                              obscureText: false,
+                              decoration: _buildInputDecoration(context, 'ex: jean_dupont').copyWith(
+                                prefixText: '@',
+                                prefixStyle: const TextStyle(color: Color(0xFF8A2BE2), fontWeight: FontWeight.w600),
+                              ),
+                              style: _buildInputStyle(context),
+                              cursorColor: FlutterFlowTheme.of(context).primaryText,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // --- BIO ---
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text("Biographie", style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                          ),
+                          const SizedBox(height: 4),
+                          SizedBox(
+                            width: double.infinity,
+                            child: TextFormField(
+                              controller: _model.bioController,
+                              focusNode: _model.bioFocusNode,
+                              autofocus: false,
+                              obscureText: false,
+                              maxLines: 4,
+                              decoration: _buildInputDecoration(context, 'Parlez un peu de vous...'),
+                              style: _buildInputStyle(context),
+                              cursorColor: FlutterFlowTheme.of(context).primaryText,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    // --- USERNAME ---
-                    Align(alignment: Alignment.centerLeft, child: Text("Nom d'utilisateur (@)", style: TextStyle(color: Colors.white54, fontSize: 12))),
-                    const SizedBox(height: 4),
-                    Container(
-                      width: double.infinity,
-                      child: TextFormField(
-                        controller: _model.handleController,
-                        focusNode: _model.handleFocusNode,
-                        autofocus: false,
-                        obscureText: false,
-                        decoration: _buildInputDecoration(context, 'ex: jean_dupont'),
-                        style: _buildInputStyle(context),
-                        cursorColor: FlutterFlowTheme.of(context).primaryText,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // --- BIO ---
-                    Align(alignment: Alignment.centerLeft, child: Text("Biographie", style: TextStyle(color: Colors.white54, fontSize: 12))),
-                    const SizedBox(height: 4),
-                    Container(
-                      width: double.infinity,
-                      child: TextFormField(
-                        controller: _model.bioController,
-                        focusNode: _model.bioFocusNode,
-                        autofocus: false,
-                        obscureText: false,
-                        maxLines: 4,
-                        decoration: _buildInputDecoration(context, 'Parlez un peu de vous...'),
-                        style: _buildInputStyle(context),
-                        cursorColor: FlutterFlowTheme.of(context).primaryText,
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
             Row(
@@ -202,36 +197,20 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
                     onPressed: () async {
                       Navigator.pop(context);
                     },
-                    text: FFLocalizations.of(context).getText(
-                      'f0pr4sri' /* Annuler */,
-                    ),
+                    text: FFLocalizations.of(context).getText('f0pr4sri' /* Annuler */),
                     options: FFButtonOptions(
-                      padding: EdgeInsetsDirectional.fromSTEB(
-                          12.0, 20.0, 12.0, 20.0),
-                      iconPadding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(12.0, 20.0, 12.0, 20.0),
+                      iconPadding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                       color: FlutterFlowTheme.of(context).primaryBackground,
-                      textStyle:
-                          FlutterFlowTheme.of(context).labelMedium.override(
-                                font: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w600,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .labelMedium
-                                      .fontStyle,
-                                ),
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryBackground,
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.w600,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .labelMedium
-                                    .fontStyle,
-                              ),
+                      textStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                            font: GoogleFonts.inter(fontWeight: FontWeight.w600, fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle),
+                            color: FlutterFlowTheme.of(context).secondaryBackground,
+                            letterSpacing: 0.0,
+                            fontWeight: FontWeight.w600,
+                            fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
+                          ),
                       elevation: 2.0,
-                      borderSide: BorderSide(
-                        color: Colors.transparent,
-                        width: 1.0,
-                      ),
+                      borderSide: const BorderSide(color: Colors.transparent, width: 1.0),
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                   ),
@@ -239,33 +218,37 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
                 Expanded(
                   child: FFButtonWidget(
                     onPressed: () async {
-                      if (_model.formKey.currentState == null ||
-                          !_model.formKey.currentState!.validate()) {
+                      if (_model.formKey.currentState == null || !_model.formKey.currentState!.validate()) {
                         return;
                       }
 
-                      final handleRaw = _model.handleController?.text.replaceAll('@', '');
-                      
-                      // Check uniqueness if handle is chosen
-                      if (handleRaw != null && handleRaw.isNotEmpty) {
+                      final handleRaw = _model.handleController?.text.replaceAll('@', '').trim();
+
+                      // Vérifier la disponibilité SEULEMENT si le handle a changé
+                      final handleChanged = handleRaw != null && handleRaw.isNotEmpty && handleRaw != _originalHandle;
+                      if (handleChanged) {
                         try {
-                          final isAvailable = await UserSearchService.isHandleAvailable(handleRaw);
+                          final isAvailable = await UserSearchService.isHandleAvailable(handleRaw!);
                           if (!isAvailable) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text("Ce nom d'utilisateur est d\u00E9j\u00E0 pris."),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Ce nom d'utilisateur est déjà pris."),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
                             return;
                           }
                         } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text("Erreur lors de la v\u00E9rification du nom d'utilisateur."),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Erreur lors de la vérification du nom d'utilisateur."),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
                           return;
                         }
                       }
@@ -278,45 +261,30 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
                       updateData['bio'] = _model.bioController?.text;
 
                       await currentUserReference!.update(updateData);
-                      Navigator.pop(context);
+                      if (mounted) Navigator.pop(context);
                     },
-                    text: FFLocalizations.of(context).getText(
-                      'ulhryxaj' /* Enregistrer les modifications */,
-                    ),
+                    text: FFLocalizations.of(context).getText('ulhryxaj' /* Enregistrer les modifications */),
                     options: FFButtonOptions(
-                      padding: EdgeInsetsDirectional.fromSTEB(
-                          12.0, 20.0, 12.0, 20.0),
-                      iconPadding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                      padding: const EdgeInsetsDirectional.fromSTEB(12.0, 20.0, 12.0, 20.0),
+                      iconPadding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                       color: FlutterFlowTheme.of(context).primary,
-                      textStyle:
-                          FlutterFlowTheme.of(context).titleSmall.override(
-                                font: GoogleFonts.lexendDeca(
-                                  fontWeight: FontWeight.normal,
-                                  fontStyle: FlutterFlowTheme.of(context)
-                                      .titleSmall
-                                      .fontStyle,
-                                ),
-                                color: Colors.white,
-                                fontSize: 16.0,
-                                letterSpacing: 0.0,
-                                fontWeight: FontWeight.normal,
-                                fontStyle: FlutterFlowTheme.of(context)
-                                    .titleSmall
-                                    .fontStyle,
-                              ),
+                      textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                            font: GoogleFonts.lexendDeca(fontWeight: FontWeight.normal, fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle),
+                            color: Colors.white,
+                            fontSize: 16.0,
+                            letterSpacing: 0.0,
+                            fontWeight: FontWeight.normal,
+                            fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                          ),
                       elevation: 2.0,
-                      borderSide: BorderSide(
-                        color: Colors.transparent,
-                        width: 1.0,
-                      ),
+                      borderSide: const BorderSide(color: Colors.transparent, width: 1.0),
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                   ),
                 ),
-              ].divide(SizedBox(width: 5.0)),
+              ].divide(const SizedBox(width: 5.0)),
             ),
-          ].divide(SizedBox(height: 20.0)),
+          ].divide(const SizedBox(height: 20.0)),
         ),
       ),
     );
@@ -339,7 +307,7 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
         borderRadius: BorderRadius.circular(8.0),
       ),
       focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: Color(0x00000000), width: 1.0),
+        borderSide: const BorderSide(color: Color(0x00000000), width: 1.0),
         borderRadius: BorderRadius.circular(8.0),
       ),
       errorBorder: OutlineInputBorder(

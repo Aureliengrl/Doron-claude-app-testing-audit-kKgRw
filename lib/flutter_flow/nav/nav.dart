@@ -32,6 +32,7 @@ import '/pages/wishlists/wishlist_details_widget.dart';
 import '/pages/new_pages/chat/chat_list_page.dart';
 import '/pages/new_pages/chat/chat_room_page.dart';
 import '/pages/authentification/choose_handle_widget.dart';
+import '/pages/new_pages/social/friends_page.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -323,6 +324,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => PublicProfilePage(
             handle: params.getParam<String>('handle', ParamType.String),
           ),
+        ),
+        // Page Amis
+        FFRoute(
+          name: FriendsPage.routeName,
+          path: FriendsPage.routePath,
+          requireAuth: false,
+          builder: (context, params) => const FriendsPage(),
         ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );

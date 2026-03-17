@@ -52,7 +52,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     // Vérifier le mode anonyme
     _checkAnonymousMode();
 
-    // Charger les favoris après le premier frame
+    // Charger les favoris et le profil après le premier frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && !_isAnonymous) {
         _model.loadFavourites();
@@ -458,12 +458,33 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         child: LiquidGlassCard(
                           blur: LiquidGlassTokens.blurLight,
                           padding: const EdgeInsets.symmetric(vertical: 8),
+                          onTap: () => context.push('/friends'),
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.people_outline, color: Colors.white, size: 16),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Amis',
+                                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: LiquidGlassCard(
+                          blur: LiquidGlassTokens.blurLight,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
                           onTap: () {
                              _shareProfile();
                           },
                           child: Center(
                             child: Text(
-                              'Partager le profil',
+                              'Partager',
                               style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
                             ),
                           ),

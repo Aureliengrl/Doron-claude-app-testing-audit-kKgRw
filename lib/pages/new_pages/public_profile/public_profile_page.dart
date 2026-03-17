@@ -5,9 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '/components/liquid_glass.dart';
 import '/components/bounce_button.dart'; // Added import for BounceCard
 import '/services/user_search_service.dart';
+import '/services/friend_service.dart';
 import '/utils/app_logger.dart';
 
 /// Page de profil public d'un utilisateur Doron.
@@ -36,6 +38,7 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
   Map<String, dynamic>? _profile;
   List<Map<String, dynamic>> _wishlists = [];
   String? _error;
+  bool _isFriend = false;
 
   @override
   void initState() {
@@ -67,6 +70,10 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
         _wishlists = wishlists;
         _isLoading = false;
       });
+
+      // Vérifier le statut ami en arrière-plan
+      final alreadyFriend = await FriendService.isFriend(ownerUid);
+      if (mounted) setState(() => _isFriend = alreadyFriend);
     } catch (e) {
       AppLogger.debug('❌ PublicProfilePage: $e', 'Social');
       setState(() {
@@ -205,39 +212,29 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                       ),
                     ),
                   const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 36,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        HapticFeedback.lightImpact();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Vous suivez maintenant $displayName',
-                              style: GoogleFonts.poppins(),
-                            ),
-                            backgroundColor: const Color(0xFF10B981),
+                  // Cacher les boutons si c'est son propre profil
+                  if (FirebaseAuth.instance.currentUser?.uid != (profile['uid'] as String?))
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildActionButton(
+                            label: _isFriend ? 'Ami(e) ✓' : 'Ajouter en ami',
+                            icon: _isFriend ? Icons.check : Icons.person_add_outlined,
+                            isSecondary: _isFriend,
+                            onTap: _isFriend ? null : _addFriend,
                           ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: _violet,
-                        padding: const EdgeInsets.symmetric(vertical: 0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
                         ),
-                      ),
-                      child: Text(
-                        'Suivre',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildActionButton(
+                            label: 'Message',
+                            icon: Icons.chat_bubble_outline,
+                            isSecondary: false,
+                            onTap: _openDirectChat,
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ),
                 ],
               ),
             ),
@@ -403,6 +400,85 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                 fontSize: 13, color: const Color(0xFF6B7280)),
           ),
           trailing: const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF)),
+        ),
+      ),
+    );
+  }
+
+  // ─── Actions amis / chat ─────────────────────────────────────────────────
+
+  Future<void> _addFriend() async {
+    if (_profile == null) return;
+    HapticFeedback.lightImpact();
+    try {
+      await FriendService.addFriend(_profile!);
+      if (mounted) {
+        setState(() => _isFriend = true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '👥 ${_profile!['displayName']} ajouté(e) comme ami(e) !',
+              style: GoogleFonts.poppins(),
+            ),
+            backgroundColor: const Color(0xFF8A2BE2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur: $e', style: GoogleFonts.poppins()), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _openDirectChat() async {
+    if (_profile == null) return;
+    final uid = _profile!['uid'] as String?;
+    final name = _profile!['displayName'] as String? ?? 'Utilisateur';
+    if (uid == null) return;
+    try {
+      final chatId = await FriendService.getOrCreateDirectChat(uid);
+      if (mounted) {
+        context.push('/chat-room/$chatId', extra: {'name': name, 'isGroup': false});
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Impossible d\'ouvrir le chat.', style: GoogleFonts.poppins()), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Widget _buildActionButton({
+    required String label,
+    required IconData icon,
+    required bool isSecondary,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 36,
+        decoration: BoxDecoration(
+          gradient: isSecondary
+              ? null
+              : const LinearGradient(colors: [_violet, _pink]),
+          color: isSecondary ? Colors.white.withOpacity(0.15) : null,
+          borderRadius: BorderRadius.circular(8),
+          border: isSecondary ? Border.all(color: Colors.white30) : null,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.white, size: 16),
+            const SizedBox(width: 6),
+            Text(label, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
+          ],
         ),
       ),
     );
