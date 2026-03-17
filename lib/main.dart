@@ -84,63 +84,66 @@ void main() async {
     return true; // Indique qu'on a géré l'erreur
   };
 
-  // 3. Widget d'erreur personnalisé - AU LIEU d'un écran gris
-  // Affiche l'erreur réelle pour pouvoir la diagnostiquer
-  ErrorWidget.builder = (FlutterErrorDetails details) {
-    return Container(
-      color: Colors.red.shade900,
-      padding: const EdgeInsets.all(16),
-      child: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, color: Colors.white, size: 48),
-              const SizedBox(height: 16),
-              const Text(
-                'ERREUR WIDGET',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  decoration: TextDecoration.none,
+
+  // 3. Widget d'erreur personnalisé - UNIQUEMENT en debug
+  // En production (TestFlight), utiliser le widget d'erreur par défaut (silencieux)
+  if (kDebugMode) {
+    ErrorWidget.builder = (FlutterErrorDetails details) {
+      return Container(
+        color: Colors.red.shade900,
+        padding: const EdgeInsets.all(16),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 48),
+                const SizedBox(height: 16),
+                const Text(
+                  'ERREUR WIDGET',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    decoration: TextDecoration.none,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(8),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    details.exceptionAsString(),
+                    style: const TextStyle(
+                      color: Colors.yellow,
+                      fontSize: 12,
+                      fontFamily: 'monospace',
+                      decoration: TextDecoration.none,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-                child: Text(
-                  details.exceptionAsString(),
+                const SizedBox(height: 8),
+                Text(
+                  'Stack: ${details.stack?.toString().split('\n').take(5).join('\n') ?? 'N/A'}',
                   style: const TextStyle(
-                    color: Colors.yellow,
-                    fontSize: 12,
+                    color: Colors.white70,
+                    fontSize: 10,
                     fontFamily: 'monospace',
                     decoration: TextDecoration.none,
                   ),
-                  textAlign: TextAlign.center,
+                  textAlign: TextAlign.left,
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Stack: ${details.stack?.toString().split('\n').take(5).join('\n') ?? 'N/A'}',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 10,
-                  fontFamily: 'monospace',
-                  decoration: TextDecoration.none,
-                ),
-                textAlign: TextAlign.left,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
-    );
-  };
+      );
+    };
+  }
 
   try {
     GoRouter.optionURLReflectsImperativeAPIs = true;
@@ -262,7 +265,7 @@ class _MyAppState extends State<MyApp> {
       });
     jwtTokenStream.listen((_) {});
     Future.delayed(
-      Duration(milliseconds: 1000),
+      Duration.zero,
       () => _appStateNotifier.stopShowingSplashImage(),
     );
 

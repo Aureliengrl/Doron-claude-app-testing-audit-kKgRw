@@ -617,9 +617,6 @@ class _RootSplashWidgetState extends State<RootSplashWidget> {
       final route = await _determineInitialRoute();
       
       safeSetState(() => _status = "Démarrage de l'application...");
-      
-      // Laisser le temps à Firebase de stabiliser le cache et le Splash de s'afficher
-      await Future.delayed(const Duration(milliseconds: 1500));
 
       if (mounted) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
