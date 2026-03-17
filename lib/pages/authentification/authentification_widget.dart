@@ -87,7 +87,7 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
 
   Future<void> _afterSignIn() async {
     try {
-      await PushNotificationService.initialize();
+      await PushNotificationsService.initialize();
     } catch (_) {}
 
     if (!mounted) return;
