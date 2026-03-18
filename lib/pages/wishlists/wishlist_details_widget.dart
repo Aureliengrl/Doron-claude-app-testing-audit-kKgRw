@@ -8,6 +8,8 @@ import '/components/liquid_glass.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '/components/product_detail_modal.dart';
+import '/components/wishlist_picker_sheet.dart';
+import 'package:flutter/services.dart';
 
 class WishlistDetailsWidget extends StatefulWidget {
   final String wishlistId;
@@ -250,6 +252,40 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
                                 color: Colors.white10,
                                 child: const Icon(Icons.image, color: Colors.white),
                               ),
+                      ),
+                      // 3 petits points — ajouter dans une autre wishlist
+                      Positioned(
+                        top: 8,
+                        left: 8,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              WishlistPickerSheet.show(context, {
+                                'id': productId,
+                                'name': title,
+                                'brand': brand,
+                                'image': imageUrl,
+                                'price': price,
+                                'url': productUrl,
+                              });
+                            },
+                            borderRadius: BorderRadius.circular(50),
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.4),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.more_vert,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                       // Bouton de suppression
                       Positioned(

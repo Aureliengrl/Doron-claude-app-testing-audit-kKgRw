@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '/services/product_url_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '/components/bounce_button.dart';
+import '/components/wishlist_picker_sheet.dart';
 import 'gift_results_model.dart';
 export 'gift_results_model.dart';
 
@@ -429,6 +430,25 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                           placeholder: (context, url) => Container(color: Colors.grey[200]),
                           errorWidget: (context, url, error) => Container(color: Colors.grey[200], child: const Icon(Icons.error)),
                         ),
+                      // 3 petits points — ajouter dans une wishlist
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            WishlistPickerSheet.show(context, gift);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.45),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.more_vert, color: Colors.white, size: 16),
+                          ),
+                        ),
+                      ),
                       // Match badge
                       Positioned(
                         top: 8,

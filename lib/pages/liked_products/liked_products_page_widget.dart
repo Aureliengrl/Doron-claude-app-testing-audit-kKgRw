@@ -11,6 +11,8 @@ import '/backend/backend.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/components/liquid_glass.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
+import '/components/wishlist_picker_sheet.dart';
+import '/components/product_detail_modal.dart';
 
 class LikedProductsPageWidget extends StatefulWidget {
   const LikedProductsPageWidget({super.key});
@@ -303,106 +305,157 @@ class _LikedProductsPageWidgetState extends State<LikedProductsPageWidget> {
   }
 
   Widget _buildProductCard(ProductsStruct product, int index, {bool isReordering = false}) {
-    return Container(
-      key: ValueKey('${product.productTitle}_$index'),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isReordering
-              ? [violetColor.withOpacity(0.2), Colors.white.withOpacity(0.08)]
-              : [Colors.white.withOpacity(0.14), Colors.white.withOpacity(0.06)],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isReordering ? violetColor.withOpacity(0.5) : Colors.white.withOpacity(0.18),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-                child: CachedNetworkImage(
-                  imageUrl: product.productPhoto,
-                  width: double.infinity,
-                  height: 140,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: const Color(0xFFF3F4F6),
-                    child: Center(child: CircularProgressIndicator(color: goldColor, strokeWidth: 2)),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: const Color(0xFFF3F4F6),
-                    child: const Icon(Icons.image_not_supported, color: Color(0xFF9CA3AF), size: 40),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: isReordering ? [violetColor, const Color(0xFFEC4899)] : [goldColor, redColor]),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isReordering ? violetColor : goldColor).withOpacity(0.4),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    isReordering ? Icons.drag_handle_rounded : Icons.thumb_up_rounded,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                ),
-              ),
-            ],
+    // Normalize product fields from FavouritesRecord ProductsStruct
+    final String brand = product.platform.isNotEmpty ? product.platform : '';
+    final String title = product.productTitle.isNotEmpty ? product.productTitle : 'Produit';
+    final String price = product.productPrice.isNotEmpty ? product.productPrice : '';
+    final String imageUrl = product.productPhoto;
+    final String productUrl = product.productUrl;
+    final Map<String, dynamic> productMap = {
+      'name': title,
+      'brand': brand,
+      'image': imageUrl,
+      'price': price,
+      'url': productUrl,
+    };
+
+    return GestureDetector(
+      key: ValueKey('${title}_$index'),
+      onTap: isReordering ? null : () => GlobalProductDetailModal.show(context, productMap),
+      onLongPress: isReordering ? null : () {
+        HapticFeedback.mediumImpact();
+        setState(() => _isReordering = true);
+      },
+      child: Container(
+        key: ValueKey('card_${title}_$index'),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isReordering
+                ? [violetColor.withOpacity(0.2), Colors.white.withOpacity(0.08)]
+                : [Colors.white.withOpacity(0.14), Colors.white.withOpacity(0.06)],
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    product.productTitle,
-                    style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isReordering ? violetColor.withOpacity(0.5) : Colors.white.withOpacity(0.18),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
                   ),
-                  const Spacer(),
-                  if (product.productPrice.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [goldColor.withOpacity(0.1), redColor.withOpacity(0.1)],
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    width: double.infinity,
+                    height: 120,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      color: const Color(0xFFF3F4F6),
+                      child: Center(child: CircularProgressIndicator(color: goldColor, strokeWidth: 2)),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: const Color(0xFFF3F4F6),
+                      child: const Icon(Icons.image_not_supported, color: Color(0xFF9CA3AF), size: 40),
+                    ),
+                  ),
+                ),
+                // Bouton 3 points (en haut à droite)
+                if (!isReordering)
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        WishlistPickerSheet.show(context, productMap);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.45),
+                          shape: BoxShape.circle,
                         ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        product.productPrice,
-                        style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold, color: goldColor),
+                        child: const Icon(Icons.more_vert, color: Colors.white, size: 15),
                       ),
                     ),
-                ],
+                  ),
+                if (isReordering)
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: violetColor.withOpacity(0.7),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.drag_handle_rounded, color: Colors.white, size: 15),
+                    ),
+                  ),
+              ],
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (brand.isNotEmpty)
+                      Text(
+                        brand,
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: violetColor,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    Text(
+                      title,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const Spacer(),
+                    if (price.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [goldColor.withOpacity(0.15), redColor.withOpacity(0.1)],
+                          ),
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                        child: Text(
+                          price.contains('€') ? price : '$price €',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: goldColor,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-    ).animate()
+          ],
+        ),
+      ).animate()
         .fadeIn(delay: Duration(milliseconds: index * 40))
-        .scale(begin: const Offset(0.9, 0.9), end: const Offset(1.0, 1.0), duration: 250.ms, curve: Curves.easeOutCubic);
+        .scale(begin: const Offset(0.9, 0.9), end: const Offset(1.0, 1.0), duration: 250.ms, curve: Curves.easeOutCubic),
+    );
   }
 }
