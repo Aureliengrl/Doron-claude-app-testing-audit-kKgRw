@@ -429,27 +429,28 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                           memCacheWidth: 280,
                           placeholder: (context, url) => Container(color: Colors.grey[200]),
                           errorWidget: (context, url, error) => Container(color: Colors.grey[200], child: const Icon(Icons.error)),
-                        ),
-                      // 3 petits points — ajouter dans une wishlist
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: GestureDetector(
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            WishlistPickerSheet.show(context, gift);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.45),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.more_vert, color: Colors.white, size: 16),
-                          ),
-                        ),
-                      ),
-                      // Match badge
+                         ),
+                       // 3 petits points — ajouter dans une wishlist
+                       if (!isReordering)
+                         Positioned(
+                           top: 8,
+                           right: 8,
+                           child: GestureDetector(
+                             onTap: () {
+                               HapticFeedback.lightImpact();
+                               WishlistPickerSheet.show(context, gift);
+                             },
+                             child: Container(
+                               padding: const EdgeInsets.all(6),
+                               decoration: BoxDecoration(
+                                 color: Colors.black.withOpacity(0.45),
+                                 shape: BoxShape.circle,
+                               ),
+                               child: const Icon(Icons.more_vert, color: Colors.white, size: 16),
+                             ),
+                           ),
+                         ),
+                       // Match badge
                       Positioned(
                         top: 8,
                         left: 8,
