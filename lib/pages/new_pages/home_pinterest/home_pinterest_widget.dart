@@ -1,4 +1,4 @@
-import '/utils/app_logger.dart';
+﻿import '/utils/app_logger.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -468,15 +468,13 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     }
   }
 
-  /// Toggle favorite avec sauvegarde Firebase ou locale
-  /// FIX Bug 3: Amélioration de la sauvegarde des favoris avec les bonnes données
+  /// Toggle favorite — écrit dans users/{uid}/favorites (Firestore rules autorisent)
   Future<void> _toggleFavorite(Map<String, dynamic> product) async {
-    final productId = product['id'];
+    final user = FirebaseAuth.instance.currentUser;
     final productTitle = product['name'] ?? product['title'] ?? '';
     final isCurrentlyLiked = _model.likedProductTitles.contains(productTitle);
-    final isLoggedIn = FirebaseAuth.instance.currentUser != null;
 
-    // FIX Bug 3: Récupérer l'image depuis plusieurs clés possibles
+    // Récupérer l'image
     String productImage = '';
     for (final key in ['image', 'imageUrl', 'photo', 'productPhoto', 'product_photo']) {
       if (product[key] != null && product[key].toString().isNotEmpty) {
@@ -485,157 +483,110 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       }
     }
 
-    AppLogger.debug('?? Toggle favori AVANT: isLiked=$isCurrentlyLiked, ID=$productId, Titre=$productTitle', 'Debug');
-    AppLogger.debug('?? Image trouvée: $productImage', 'Debug');
-    AppLogger.debug('?? likedProductTitles AVANT: ${_model.likedProductTitles}', 'Debug');
-    AppLogger.debug('?? UID: ${FirebaseAuth.instance.currentUser?.uid}', 'Debug');
-
-    // Haptic feedback
     HapticFeedback.mediumImpact();
 
-    // FIX Bug 3: Convertir productId en int si nécessaire
-    int productIdInt = 0;
-    if (productId is int) {
-      productIdInt = productId;
-    } else if (productId != null) {
-      productIdInt = int.tryParse(productId.toString()) ?? productTitle.hashCode;
-    } else {
-      productIdInt = productTitle.hashCode; // Fallback sur le hash du titre
-    }
+    // Convertir productId en int
+    final productId = product['id'];
+    int productIdInt = productId is int
+        ? productId
+        : int.tryParse(productId?.toString() ?? '') ?? productTitle.hashCode;
 
-    // Toggle l'état local immédiatement pour l'UI
+    // Toggle état local immédiatement pour l'UI
     if (mounted) {
       setState(() {
         _model.toggleLike(productIdInt, productTitle);
-        AppLogger.debug('?? likedProductTitles APRéS toggle: ${_model.likedProductTitles}', 'Debug');
       });
     }
 
-    // Sauvegarder toujours en local (pour persistance même sans connexion)
+    // Sauvegarder toujours en local
     try {
       final prefs = await SharedPreferences.getInstance();
       final localFavorites = prefs.getStringList('local_favorite_titles') ?? [];
       if (isCurrentlyLiked) {
         localFavorites.remove(productTitle);
       } else {
-        if (!localFavorites.contains(productTitle)) {
-          localFavorites.add(productTitle);
-        }
+        if (!localFavorites.contains(productTitle)) localFavorites.add(productTitle);
       }
       await prefs.setStringList('local_favorite_titles', localFavorites);
-      AppLogger.debug('?? Favoris locaux mis à jour: ${localFavorites.length} favoris', 'Debug');
-    } catch (e) {
-      AppLogger.debug('? Erreur sauvegarde favoris locaux: $e', 'Debug');
-    }
+    } catch (_) {}
 
-    // Si non connecté, afficher un message suggérant la connexion
-    if (!isLoggedIn) {
+    // Si non connecté → message de connexion
+    if (user == null) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              isCurrentlyLiked
-                ? '?? Retiré des favoris (connectez-vous pour synchroniser)'
-                : '?? Ajouté aux favoris (connectez-vous pour synchroniser)',
-              style: GoogleFonts.poppins(),
-            ),
-            backgroundColor: isCurrentlyLiked ? Colors.grey[600] : const Color(0xFF10B981),
-            duration: const Duration(seconds: 2),
-            action: SnackBarAction(
-              label: 'Connexion',
-              textColor: Colors.white,
-              onPressed: () {
-                context.go('/authentification');
-              },
-            ),
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+            isCurrentlyLiked
+                ? 'Retiré des favoris (connectez-vous pour synchroniser)'
+                : 'Ajouté aux favoris (connectez-vous pour synchroniser)',
+            style: GoogleFonts.poppins(),
           ),
-        );
+          backgroundColor: isCurrentlyLiked ? Colors.grey[600] : const Color(0xFF10B981),
+          duration: const Duration(seconds: 2),
+          action: SnackBarAction(
+            label: 'Connexion',
+            textColor: Colors.white,
+            onPressed: () => context.go('/authentification'),
+          ),
+        ));
       }
-      return; // Ne pas tenter de sauvegarder sur Firebase
+      return;
     }
 
-    // Sauvegarder sur Firebase si connecté
+    // Sauvegarder dans users/{uid}/favorites (règles Firestore autorisent isOwner)
     try {
+      final uid = user.uid;
+      final favoritesRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('favorites');
+
       if (isCurrentlyLiked) {
-        // Retirer des favoris Firebase
-        final favorites = await queryFavouritesRecordOnce(
-          queryBuilder: (favoritesRecord) => favoritesRecord
-              .where('uid', isEqualTo: currentUserReference)
-              .where('product.product_title', isEqualTo: product['name'] ?? ''),
-        );
-
-        for (var fav in favorites) {
-          if (!fav.hasPersonId() || fav.personId == null || fav.personId!.isEmpty) {
-            await fav.reference.delete();
-            AppLogger.debug('? Favori supprimé de Firebase: ${fav.reference.id}', 'Debug');
-          }
+        // Supprimer le favori correspondant
+        final snap = await favoritesRef
+            .where('name', isEqualTo: productTitle)
+            .limit(1)
+            .get();
+        for (final doc in snap.docs) {
+          await doc.reference.delete();
         }
-
-        AppLogger.debug('? Retiré des favoris Firebase: ${product['name']}', 'Debug');
       } else {
-        // FIX Bug 3: Ajouter aux favoris Firebase avec les bonnes données
-        // S'assurer que l'URL est correcte
-        final productUrl = product['url'] ??
-            ProductUrlService.generateProductUrl(product);
+        // Ajouter le favori
+        final productUrl = product['url'] ?? ProductUrlService.generateProductUrl(product);
+        final brand = product['brand'] ?? product['source'] ?? '';
 
-        // Récupérer la marque/source
-        final brandOrSource = product['brand'] ?? product['source'] ?? 'Amazon';
+        await favoritesRef.add({
+          'id': productIdInt,
+          'name': productTitle,
+          'brand': brand,
+          'image': productImage,
+          'price': product['price']?.toString() ?? '',
+          'url': productUrl,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
 
-        // Créer le favori avec toutes les données correctes
-        final docRef = await FavouritesRecord.collection.add(
-          createFavouritesRecordData(
-            uid: currentUserReference,
-            platform: brandOrSource.toString().toLowerCase(),
-            timeStamp: DateTime.now(),
-            personId: null, // Favoris "en vrac" sans personne
-            product: ProductsStruct(
-              productTitle: productTitle,
-              productPrice: '${product['price'] ?? 0}€',
-              productUrl: productUrl,
-              productPhoto: productImage, // FIX: Utiliser productImage trouvé
-              productStarRating: '',
-              productOriginalPrice: '',
-              productNumRatings: 0,
-              platform: brandOrSource.toString().toLowerCase(),
-            ),
-          ),
-        );
-
-        AppLogger.debug('? Ajouté aux favoris Firebase: $productTitle (ID: ${docRef.id})', 'Debug');
-        AppLogger.debug('? Image sauvegardée: $productImage', 'Debug');
-
-        // Afficher une confirmation
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                '?? Ajouté aux favoris !',
-                style: GoogleFonts.poppins(),
-              ),
-              backgroundColor: const Color(0xFF10B981),
-              duration: const Duration(seconds: 2),
-            ),
-          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('❤️ Ajouté aux favoris !', style: GoogleFonts.poppins()),
+            backgroundColor: const Color(0xFF10B981),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ));
         }
       }
-    } catch (e, stackTrace) {
-      AppLogger.debug('? Erreur toggle favori Firebase: $e', 'Debug');
-      AppLogger.debug('Stack trace: $stackTrace', 'Debug');
-      // Ne PAS rollback l'état local - le favori reste localement
+    } catch (e, st) {
+      AppLogger.debug('Erreur toggle favori Firebase: $e\n$st', 'Debug');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '?? Favori sauvegardé localement (erreur sync Firebase)',
-              style: GoogleFonts.poppins(),
-            ),
-            backgroundColor: Colors.orange[700],
-            duration: const Duration(seconds: 3),
-          ),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Erreur: ${e.toString().substring(0, e.toString().length.clamp(0, 80))}',
+              style: GoogleFonts.poppins()),
+          backgroundColor: Colors.red[700],
+          duration: const Duration(seconds: 3),
+        ));
       }
     }
   }
+
 
   /// Retourne un emoji + texte court pour la catégorie
   String _getCategoryEmoji(String category) {
