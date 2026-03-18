@@ -195,20 +195,23 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    displayName,
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+                  // @handle en grand (identité principale)
                   if (handle.isNotEmpty)
                     Text(
                       '@$handle',
                       style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  // displayName en secondaire
+                  if (displayName.isNotEmpty && displayName != handle)
+                    Text(
+                      displayName,
+                      style: GoogleFonts.poppins(
                         fontSize: 14,
-                        color: Colors.white.withOpacity(0.85),
+                        color: Colors.white.withOpacity(0.70),
                       ),
                     ),
                   const SizedBox(height: 12),

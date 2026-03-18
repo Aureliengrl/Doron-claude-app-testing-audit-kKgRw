@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '/services/firebase_data_service.dart';
 import '/services/push_notifications_service.dart';
 import 'authentification_model.dart';
@@ -92,11 +93,30 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
 
     if (!mounted) return;
 
-    // Rediriger vers la page retour ou l'onboarding par défaut
+    // Si returnTo est défini, on le prioritise
     if (_returnTo != null && _returnTo!.isNotEmpty) {
       context.go(_returnTo!);
-    } else {
-      context.goNamedAuth(OnboardingGiftsResultWidget.routeName, context.mounted);
+      return;
+    }
+
+    // Vérifier si c'est une première inscription (pas de handle encore)
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        final handle = doc.data()?['handle'] as String?;
+        if (!mounted) return;
+        if (handle == null || handle.trim().isEmpty) {
+          // Nouvel utilisateur → setup username
+          context.go('/setup-profile');
+          return;
+        }
+      }
+    } catch (_) {}
+
+    // Utilisateur existant → accueil direct
+    if (mounted) {
+      context.go('/search-page');
     }
   }
 

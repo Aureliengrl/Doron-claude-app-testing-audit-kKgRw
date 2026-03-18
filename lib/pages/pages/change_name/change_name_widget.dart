@@ -126,7 +126,7 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
                           // --- NOM D'AFFICHAGE ---
                           Align(
                             alignment: Alignment.centerLeft,
-                            child: Text("Nom d'affichage", style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                            child: Text("Prénom affiché (optionnel)", style: const TextStyle(color: Colors.white54, fontSize: 12)),
                           ),
                           const SizedBox(height: 4),
                           SizedBox(

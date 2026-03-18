@@ -33,6 +33,7 @@ import '/pages/new_pages/chat/chat_list_page.dart';
 import '/pages/new_pages/chat/chat_room_page.dart';
 import '/pages/authentification/choose_handle_widget.dart';
 import '/pages/new_pages/social/friends_page.dart';
+import '/pages/new_pages/setup_profile/setup_profile_page.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -331,6 +332,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: FriendsPage.routePath,
           requireAuth: false,
           builder: (context, params) => const FriendsPage(),
+        ),
+        // Setup profil (première connexion)
+        FFRoute(
+          name: SetupProfilePage.routeName,
+          path: SetupProfilePage.routePath,
+          requireAuth: true,
+          builder: (context, params) => const SetupProfilePage(),
         ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
