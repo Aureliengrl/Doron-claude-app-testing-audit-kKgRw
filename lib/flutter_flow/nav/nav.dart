@@ -318,12 +318,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             wishlistId: params.getParam<String>('wishlistId', ParamType.String) ?? '',
           ),
         ),
-        // Profil public @handle
+        // Profil public par UID
         FFRoute(
           name: PublicProfilePage.routeName,
           path: PublicProfilePage.routePath,
+          requireAuth: false,
           builder: (context, params) => PublicProfilePage(
-            handle: params.getParam<String>('handle', ParamType.String),
+            uid: params.getParam<String>('uid', ParamType.String) ?? '',
           ),
         ),
         // Page Amis

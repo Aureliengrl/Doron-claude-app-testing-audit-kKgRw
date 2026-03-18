@@ -68,21 +68,40 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
   }
 
   Future<void> _showInteractiveTutorialIfNeeded() async {
-    // Check if it's the very first time launching the app with an account
-    final prefs = await SharedPreferences.getInstance();
-    final isFirstLaunch = prefs.getBool('first_time_showcase') ?? true;
+    await Future.delayed(const Duration(milliseconds: 1500));
+    if (!mounted) return;
 
-    if (isFirstLaunch) {
-      await Future.delayed(const Duration(milliseconds: 1000));
-      if (!mounted) return;
-
-      // FIX: ShowCase widget was called with [_one, _two, _three] which are NEVER defined in the tree!
-      // This causes a catastrophic Showcase finding loop or crash on fresh installs.
-      // ShowCaseWidget.of(context).startShowCase([_one, _two, _three]);
-      
-      // Keep it marked as complete so it never shows again
-      await prefs.setBool('first_time_showcase', false);
-    }
+    await TutorialOverlay.showIfNeeded(
+      context,
+      tutorialKey: 'main_v2',
+      steps: [
+        TutorialStep(
+          icon: '🏠',
+          title: 'Bienvenue sur Doron !',
+          description: 'Découvre des idées cadeaux personnalisées pour toi et tes proches. Fais défiler pour explorer.',
+        ),
+        TutorialStep(
+          icon: '🔍',
+          title: 'Recherche des cadeaux',
+          description: 'Tape sur l\'onglet Recherche pour trouver le cadeau parfait pour quelqu\'un de spécial.',
+        ),
+        TutorialStep(
+          icon: '❤️',
+          title: 'Sauvegarde tes favoris',
+          description: 'Appuie sur le cœur d\'un produit pour l\'ajouter à tes favoris et le retrouver facilement.',
+        ),
+        TutorialStep(
+          icon: '🎁',
+          title: 'Crée des wishlists',
+          description: 'Dans ton profil, crée des listes de souhaits et partage-les avec tes amis.',
+        ),
+        TutorialStep(
+          icon: '👥',
+          title: 'Ajoute des amis',
+          description: 'Recherche tes amis par @pseudo, envoie-leur une demande et vois leurs wishlists publiques.',
+        ),
+      ],
+    );
   }
 
   /// Charge les favoris depuis Firebase (FlutterFlow system)

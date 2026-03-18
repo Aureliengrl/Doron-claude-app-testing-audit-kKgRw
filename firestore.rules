@@ -123,6 +123,27 @@ service cloud.firestore {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // COLLECTION: friend_requests
+    // ─────────────────────────────────────────────────────────────────────────
+
+    match /friend_requests/{requestId} {
+      // Seuls l'expéditeur et le destinataire peuvent lire
+      allow read: if isAuth() && (
+        resource.data.fromUid == request.auth.uid ||
+        resource.data.toUid == request.auth.uid
+      );
+      // Seul l'expéditeur peut créer (son uid doit être dans fromUid)
+      allow create: if isAuth() && request.resource.data.fromUid == request.auth.uid;
+      // Seul le destinataire peut accepter/refuser (update)
+      allow update: if isAuth() && resource.data.toUid == request.auth.uid;
+      // Expéditeur ou destinataire peuvent supprimer
+      allow delete: if isAuth() && (
+        resource.data.fromUid == request.auth.uid ||
+        resource.data.toUid == request.auth.uid
+      );
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // COLLECTION: handles (index pseudo → uid, pour l'unicité)
     // ─────────────────────────────────────────────────────────────────────────
 
