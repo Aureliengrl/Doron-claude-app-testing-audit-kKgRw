@@ -541,35 +541,46 @@ class FirebaseDataService {
   }
 
   /// Ajoute un produit (Map) à une wishlist.
-  /// Sauvegarde localement ET dans Firebase.
+  /// FIX: stocke les données du produit directement dans
+  ///      users/{uid}/wishlists/{wishlistId}/products/{productId}
+  ///      (élimine l'indirection productIds → favorites qui causait le bug)
   static Future<bool> addProductToWishlist(
     String wishlistId,
     Map<String, dynamic> product,
   ) async {
-    final productId = product['id']?.toString() ?? const Uuid().v4();
+    // Générer un ID stable basé sur le nom du produit (déterministe)
+    final productName = product['name'] ?? product['title'] ?? product['product_title'] ?? '';
+    final existingId = product['id']?.toString();
+    final productId = (existingId != null && existingId.isNotEmpty && existingId != 'null')
+        ? existingId
+        : (productName.isNotEmpty ? productName.hashCode.abs().toString() : const Uuid().v4());
 
-    // ── Sauvegarder le produit dans les favoris d'abord ───────────────────
-    await addToFavorites({...product, 'id': productId});
+    // Normaliser le produit
+    final normalizedProduct = {
+      'id': productId,
+      'name': productName.isNotEmpty ? productName : 'Produit',
+      'brand': product['brand'] ?? product['platform'] ?? product['source'] ?? '',
+      'image': product['image'] ?? product['imageUrl'] ?? product['product_photo'] ?? product['photo'] ?? '',
+      'price': (product['price'] ?? product['product_price'] ?? '').toString(),
+      'url': product['url'] ?? product['product_url'] ?? product['link'] ?? '',
+      'description': product['description'] ?? product['reason'] ?? '',
+      'addedAt': DateTime.now().toIso8601String(),
+    };
 
-    // ── Mettre à jour la wishlist locale ──────────────────────────────────
+    // ── Local (SharedPreferences) ─────────────────────────────────────────
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString('local_wishlists') ?? '[]';
+      final localJson = prefs.getString('wishlist_products_$wishlistId') ?? '[]';
       final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
-      final idx = localList.indexWhere((w) => w['id']?.toString() == wishlistId);
-      if (idx != -1) {
-        final existingIds = (localList[idx]['productIds'] as List? ?? []).cast<String>();
-        if (!existingIds.contains(productId)) {
-          localList[idx]['productIds'] = [...existingIds, productId];
-        }
-        await prefs.setString('local_wishlists', json.encode(localList));
-      }
-      AppLogger.success('Product added to wishlist locally: $productId', 'Firebase');
+      localList.removeWhere((p) => p['id']?.toString() == productId);
+      localList.insert(0, normalizedProduct);
+      await prefs.setString('wishlist_products_$wishlistId', json.encode(localList));
+      AppLogger.success('Product saved locally in wishlist $wishlistId: $productId', 'Firebase');
     } catch (e) {
-      AppLogger.error('Error updating wishlist locally', 'Firebase', e);
+      AppLogger.error('Error saving wishlist product locally', 'Firebase', e);
     }
 
-    // ── Firebase ──────────────────────────────────────────────────────────
+    // ── Firebase : sous-collection products ──────────────────────────────
     if (!isLoggedIn) return true;
     try {
       await _firestore
@@ -577,19 +588,49 @@ class FirebaseDataService {
           .doc(currentUserId)
           .collection('wishlists')
           .doc(wishlistId)
+          .collection('products')
+          .doc(productId)
+          .set({
+        ...normalizedProduct,
+        'addedAt': FieldValue.serverTimestamp(),
+      });
+      // Mettre à jour le compteur dans la wishlist parente
+      await _firestore
+          .collection('users')
+          .doc(currentUserId)
+          .collection('wishlists')
+          .doc(wishlistId)
           .update({
-        'productIds': FieldValue.arrayUnion([productId]),
+        'productCount': FieldValue.increment(1),
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      AppLogger.firebase('Product added to wishlist: $productId');
+      AppLogger.firebase('Product added to wishlist in Firebase: $productId');
       return true;
     } catch (e) {
       AppLogger.error('Error adding product to wishlist (Firebase)', 'Firebase', e);
-      return false;
+      // Essai de set sans productCount si l'update échoue
+      try {
+        await _firestore
+            .collection('users')
+            .doc(currentUserId)
+            .collection('wishlists')
+            .doc(wishlistId)
+            .collection('products')
+            .doc(productId)
+            .set({
+          ...normalizedProduct,
+          'addedAt': FieldValue.serverTimestamp(),
+        });
+        return true;
+      } catch (e2) {
+        AppLogger.error('Second attempt failed: $e2', 'Firebase', e2);
+        return false;
+      }
     }
   }
 
   /// Retire un produit d'une wishlist.
+  /// FIX: supprime depuis la sous-collection products
   static Future<bool> removeProductFromWishlist(
     String wishlistId,
     String productId,
@@ -597,14 +638,10 @@ class FirebaseDataService {
     // ── Local ──────────────────────────────────────────────────────────────
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString('local_wishlists') ?? '[]';
+      final localJson = prefs.getString('wishlist_products_$wishlistId') ?? '[]';
       final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
-      final idx = localList.indexWhere((w) => w['id']?.toString() == wishlistId);
-      if (idx != -1) {
-        final existingIds = (localList[idx]['productIds'] as List? ?? []).cast<String>();
-        localList[idx]['productIds'] = existingIds.where((id) => id != productId).toList();
-        await prefs.setString('local_wishlists', json.encode(localList));
-      }
+      localList.removeWhere((p) => p['id']?.toString() == productId);
+      await prefs.setString('wishlist_products_$wishlistId', json.encode(localList));
     } catch (e) {
       AppLogger.error('Error removing from wishlist locally', 'Firebase', e);
     }
@@ -617,10 +654,21 @@ class FirebaseDataService {
           .doc(currentUserId)
           .collection('wishlists')
           .doc(wishlistId)
-          .update({
-        'productIds': FieldValue.arrayRemove([productId]),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+          .collection('products')
+          .doc(productId)
+          .delete();
+      // Décrémenter le compteur (ignore si déjà à 0)
+      try {
+        await _firestore
+            .collection('users')
+            .doc(currentUserId)
+            .collection('wishlists')
+            .doc(wishlistId)
+            .update({
+          'productCount': FieldValue.increment(-1),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      } catch (_) {}
       AppLogger.firebase('Product removed from wishlist: $productId');
       return true;
     } catch (e) {
@@ -629,51 +677,33 @@ class FirebaseDataService {
     }
   }
 
+
   /// Charge les produits d'une wishlist (retourne des Maps directement).
+  /// FIX: lit depuis la sous-collection products (pas l'indirection productIds)
   static Future<List<Map<String, dynamic>>> loadWishlistProducts(
     String wishlistId,
   ) async {
     // ── Local d'abord ─────────────────────────────────────────────────────
     try {
       final prefs = await SharedPreferences.getInstance();
-      // Charger la wishlist pour avoir les productIds
-      final wishlistJson = prefs.getString('local_wishlists') ?? '[]';
-      final wishlists = (json.decode(wishlistJson) as List).cast<Map<String, dynamic>>();
-      final wishlist = wishlists.firstWhere(
-        (w) => w['id']?.toString() == wishlistId,
-        orElse: () => {},
-      );
-
-      if (wishlist.isEmpty) {
-        // Pas en local → tenter Firebase
-        return _loadWishlistProductsFromFirebase(wishlistId);
+      final localJson = prefs.getString('wishlist_products_$wishlistId') ?? '[]';
+      final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
+      if (localList.isNotEmpty) {
+        AppLogger.success('Loaded ${localList.length} products from wishlist (local)', 'Firebase');
+        // Si connecté, fusionner avec Firebase en arrière-plan
+        if (isLoggedIn) {
+          _loadWishlistProductsFromFirebase(wishlistId).then((fbProducts) {
+            // Sync silencieuse — les nouveaux IDs venant d'autres appareils
+            // seront disponibles au prochain chargement
+          });
+        }
+        return localList;
       }
-
-      final productIds = (wishlist['productIds'] as List? ?? []).cast<String>();
-      if (productIds.isEmpty) return [];
-
-      // Charger les produits depuis les favoris locaux
-      final favJson = prefs.getString('local_favorites') ?? '[]';
-      final allFavorites = (json.decode(favJson) as List).cast<Map<String, dynamic>>();
-      final products = allFavorites
-          .where((f) => productIds.contains(f['id']?.toString()))
-          .toList();
-
-      AppLogger.success('Loaded ${products.length} products from wishlist (local)', 'Firebase');
-
-      // Si des produits sont manquants en local, compléter avec Firebase
-      if (products.length < productIds.length && isLoggedIn) {
-        final firebaseProducts = await _loadWishlistProductsFromFirebase(wishlistId);
-        final localIds = products.map((p) => p['id']?.toString()).toSet();
-        final missing = firebaseProducts.where((p) => !localIds.contains(p['id']?.toString()));
-        return [...products, ...missing];
-      }
-
-      return products;
     } catch (e) {
-      AppLogger.error('Error loading wishlist products', 'Firebase', e);
-      return [];
+      AppLogger.error('Error loading wishlist products (local)', 'Firebase', e);
     }
+    // Pas de données locales → Firebase
+    return _loadWishlistProductsFromFirebase(wishlistId);
   }
 
   static Future<List<Map<String, dynamic>>> _loadWishlistProductsFromFirebase(
@@ -681,36 +711,35 @@ class FirebaseDataService {
   ) async {
     if (!isLoggedIn) return [];
     try {
-      // Charger les productIds depuis Firebase
-      final wishlistDoc = await _firestore
+      // Lire directement depuis la sous-collection products
+      final snapshot = await _firestore
           .collection('users')
           .doc(currentUserId)
           .collection('wishlists')
           .doc(wishlistId)
+          .collection('products')
+          .orderBy('addedAt', descending: true)
           .get();
 
-      if (!wishlistDoc.exists) return [];
+      final products = snapshot.docs
+          .map((d) => {'id': d.id, ...d.data()})
+          .toList();
 
-      final productIds = (wishlistDoc.data()?['productIds'] as List? ?? []).cast<String>();
-      if (productIds.isEmpty) return [];
-
-      // Charger depuis favorites subcollection par batches de 30
-      const int batchSize = 30;
-      final List<Map<String, dynamic>> allProducts = [];
-
-      for (int i = 0; i < productIds.length; i += batchSize) {
-        final batch = productIds.skip(i).take(batchSize).toList();
-        final snapshot = await _firestore
-            .collection('users')
-            .doc(currentUserId)
-            .collection('favorites')
-            .where(FieldPath.documentId, whereIn: batch)
-            .get();
-        allProducts.addAll(snapshot.docs.map((d) => {'id': d.id, ...d.data()}));
+      // Sauvegarder en local pour la prochaine fois
+      if (products.isNotEmpty) {
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          // Convertir les Timestamps en string pour JSON
+          final serializable = products.map((p) => {
+            ...p,
+            'addedAt': (p['addedAt'] is String) ? p['addedAt'] : DateTime.now().toIso8601String(),
+          }).toList();
+          await prefs.setString('wishlist_products_$wishlistId', json.encode(serializable));
+        } catch (_) {}
       }
 
-      AppLogger.firebase('Loaded ${allProducts.length} products from wishlist (Firebase)');
-      return allProducts;
+      AppLogger.firebase('Loaded ${products.length} products from wishlist (Firebase)');
+      return products;
     } catch (e) {
       AppLogger.error('Error loading wishlist products from Firebase', 'Firebase', e);
       return [];

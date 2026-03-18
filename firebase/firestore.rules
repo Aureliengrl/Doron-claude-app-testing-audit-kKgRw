@@ -48,6 +48,11 @@ service cloud.firestore {
       // Listes de souhaits
       match /wishlists/{wishlistId} {
         allow read, write: if isOwner(userId);
+
+        // Produits dans la wishlist (sous-collection directe)
+        match /products/{productId} {
+          allow read, write: if isOwner(userId);
+        }
       }
 
       // Destinataires (people)
