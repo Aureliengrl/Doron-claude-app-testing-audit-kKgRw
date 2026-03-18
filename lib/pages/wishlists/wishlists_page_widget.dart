@@ -192,15 +192,32 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
       child: ReorderableListView.builder(
         padding: const EdgeInsets.all(20),
         itemCount: _wishlists.length,
-        onReorder: (int oldIndex, int newIndex) {
+        proxyDecorator: (child, index, animation) => Material(
+          color: Colors.transparent,
+          child: Opacity(opacity: 0.85, child: child),
+        ),
+        onReorder: (int oldIndex, int newIndex) async {
+          HapticFeedback.selectionClick();
           setState(() {
-            if (oldIndex < newIndex) {
-              newIndex -= 1;
-            }
+            if (oldIndex < newIndex) newIndex -= 1;
             final item = _wishlists.removeAt(oldIndex);
             _wishlists.insert(newIndex, item);
           });
-          // Update order in backend if there is an ordered index field.
+          // Persist order in Firestore
+          final uid = currentUserReference?.id;
+          if (uid != null) {
+            final batch = FirebaseFirestore.instance.batch();
+            for (int i = 0; i < _wishlists.length; i++) {
+              final id = _wishlists[i]['id'] as String?;
+              if (id != null) {
+                batch.update(
+                  FirebaseFirestore.instance.collection('wishlists').doc(id),
+                  {'order': i},
+                );
+              }
+            }
+            await batch.commit();
+          }
         },
         itemBuilder: (context, index) {
           final wishlist = _wishlists[index];

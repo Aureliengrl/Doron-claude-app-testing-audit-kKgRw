@@ -550,7 +550,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
 
         // Informations produit en bas (remonté)
         Positioned(
-          bottom: 90, // Espace pour la navigation bar
+          bottom: 120, // Espace pour la navbar flottante (72px) + marge + safe area
           left: 16,
           right: 70, // Laisser de la place pour les boutons d'action
           child: Column(
@@ -664,7 +664,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
         // Bouton actions en colonne à droite (remontés)
         Positioned(
           right: 16,
-          bottom: 110,
+          bottom: 140,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

@@ -1,6 +1,7 @@
 import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '/components/liquid_glass.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -26,6 +27,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
   late GiftResultsModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final Color violetColor = const Color(0xFF8A2BE2);
+  bool _isReordering = false;
 
   @override
   void initState() {
@@ -321,17 +323,56 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
   }
 
   Widget _buildResultsList() {
+    if (_isReordering) {
+      // Mode réorganisation : liste réordonnable
+      return SliverToBoxAdapter(
+        child: ReorderableListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+          itemCount: _model.giftResults.length,
+          proxyDecorator: (child, index, animation) => Material(
+            color: Colors.transparent,
+            elevation: 8,
+            child: Opacity(opacity: 0.85, child: child),
+          ),
+          onReorder: (int oldIndex, int newIndex) {
+            HapticFeedback.selectionClick();
+            setState(() {
+              if (oldIndex < newIndex) newIndex -= 1;
+              final item = _model.giftResults.removeAt(oldIndex);
+              _model.giftResults.insert(newIndex, item);
+            });
+          },
+          itemBuilder: (context, index) {
+            final gift = _model.giftResults[index];
+            return Container(
+              key: ValueKey(gift['id']?.toString() ?? '$index'),
+              child: _buildGiftCard(gift, index, isReordering: true),
+            );
+          },
+        ),
+      );
+    }
+
     return SliverPadding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             final gift = _model.giftResults[index];
-            return FadeTransition(
-              opacity: _model.fadeAnimations[index],
-              child: SlideTransition(
-                position: _model.slideAnimations[index],
-                child: _buildGiftCard(gift, index),
+            return GestureDetector(
+              key: ValueKey(gift['id']?.toString() ?? '$index'),
+              onLongPress: () {
+                HapticFeedback.mediumImpact();
+                setState(() => _isReordering = true);
+              },
+              child: FadeTransition(
+                opacity: _model.fadeAnimations[index],
+                child: SlideTransition(
+                  position: _model.slideAnimations[index],
+                  child: _buildGiftCard(gift, index),
+                ),
               ),
             );
           },
@@ -341,7 +382,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
     );
   }
 
-  Widget _buildGiftCard(Map<String, dynamic> gift, int index) {
+  Widget _buildGiftCard(Map<String, dynamic> gift, int index, {bool isReordering = false}) {
     final isLiked = _model.likedGifts.contains(gift['id']);
     // FIX: Cast sécurisé pour éviter crash si type inattendu
     final matchRaw = gift['match'];
@@ -349,19 +390,24 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      child: BounceCard(
-        onTap: () => _showGiftDetail(gift),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+      child: Stack(
+        children: [
+          BounceCard(
+            onTap: isReordering ? null : () => _showGiftDetail(gift),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: isReordering
+                  ? Border.all(color: violetColor.withOpacity(0.5), width: 2)
+                  : null,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-          ],
-        ),
         child: IntrinsicHeight(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
