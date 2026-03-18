@@ -144,23 +144,52 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          // Même padding que home/search : fromLTRB(20, 12, 20, 20)
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              micro.ShimmerEffect(
-                shimmerColor: Colors.white,
-                duration: const Duration(milliseconds: 3000),
-                child: Text(
-                  'INSPIRATIONS',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
+              // Bouton retour (comme home/search)
+              GestureDetector(
+                onTap: () => Navigator.of(context).maybePop(),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
                   ),
+                  child: const Icon(Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white, size: 18),
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Titre + sous-titre (aligné comme home/search)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    micro.ShimmerEffect(
+                      shimmerColor: Colors.white,
+                      duration: const Duration(milliseconds: 3000),
+                      child: Text(
+                        'Inspirations ✨',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      'Des idées cadeaux qui vous correspondent',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white.withOpacity(0.85),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

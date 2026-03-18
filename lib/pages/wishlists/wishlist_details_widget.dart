@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '/components/product_detail_modal.dart';
 import '/components/wishlist_picker_sheet.dart';
 import 'package:flutter/services.dart';
+import '/components/shared_product_card.dart';
 
 class WishlistDetailsWidget extends StatefulWidget {
   final String wishlistId;
@@ -187,182 +188,31 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.65,
+        childAspectRatio: 0.75,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
       ),
       itemCount: _products.length,
       itemBuilder: (context, index) {
         final docData = _products[index];
-        final productId = docData['id']; // Firestore document ID
-        
-        // Extract the nested 'product' struct from FavouritesRecord data
-        final productMap = docData['product'] as Map<String, dynamic>? ?? {};
-        
-        final title = productMap['product_title'] ?? docData['product_name'] ?? 'Inconnu';
-        final price = productMap['product_price'] ?? docData['price']?.toString() ?? 'N/A';
-        final imageUrl = productMap['product_photo'] ?? docData['image_url'] ?? '';
-        final brand = productMap['platform'] ?? docData['brand'] ?? docData['source'] ?? '';
-        final productUrl = productMap['product_url'] ?? docData['product_url'] ?? '';
+        final productId = docData['id'] as String? ?? '';
 
-        return Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () async {
-              GlobalProductDetailModal.show(
-                context,
-                productMap,
-                initialIsLiked: true, // Assuming generally saved gifts are liked, but we let modal handle toggle if needed
-              );
-            },
-            borderRadius: BorderRadius.circular(20),
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Colors.white.withOpacity(0.14), Colors.white.withOpacity(0.06)],
-                ),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withOpacity(0.18)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Image
-                  Stack(
-                    children: [
-                      ClipRRect(
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20),
-                        ),
-                        child: imageUrl.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: imageUrl,
-                                width: double.infinity,
-                                height: 160,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => Container(color: Colors.white10),
-                                errorWidget: (context, url, error) => Container(color: Colors.white10, child: const Icon(Icons.error, color: Colors.white)),
-                              )
-                            : Container(
-                                width: double.infinity,
-                                height: 160,
-                                color: Colors.white10,
-                                child: const Icon(Icons.image, color: Colors.white),
-                              ),
-                      ),
-                      // 3 petits points — ajouter dans une autre wishlist
-                      Positioned(
-                        top: 8,
-                        left: 8,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              WishlistPickerSheet.show(context, {
-                                'id': productId,
-                                'name': title,
-                                'brand': brand,
-                                'image': imageUrl,
-                                'price': price,
-                                'url': productUrl,
-                              });
-                            },
-                            borderRadius: BorderRadius.circular(50),
-                            child: Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.4),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.more_vert,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      // Bouton de suppression
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () => _removeProduct(productId),
-                            borderRadius: BorderRadius.circular(50),
-                            child: Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.4),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.close,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  // Détails : Marque, Titre, Prix
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (brand.isNotEmpty) ...[
-                            Text(
-                              brand,
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: violetColor,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                          ],
-                          Text(
-                            title,
-                            style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const Spacer(),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              price.toString().endsWith('€') ? price : '$price €',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ).animate().fadeIn(delay: Duration(milliseconds: 50 * index)).slideY(begin: 0.1, end: 0),
+        // Normaliser depuis FavouritesRecord ou Map plat
+        final nested = docData['product'] as Map<String, dynamic>? ?? {};
+        final normalizedProduct = {
+          'id': productId,
+          'name': nested['product_title'] ?? docData['name'] ?? docData['product_name'] ?? 'Inconnu',
+          'brand': nested['platform'] ?? docData['brand'] ?? docData['source'] ?? '',
+          'image': nested['product_photo'] ?? docData['image'] ?? docData['image_url'] ?? '',
+          'price': nested['product_price'] ?? docData['price']?.toString() ?? '',
+          'url': nested['product_url'] ?? docData['product_url'] ?? docData['url'] ?? '',
+        };
+
+        return SharedProductCard(
+          product: normalizedProduct,
+          index: index,
+          showWishlistButton: true,
+          onRemove: productId.isNotEmpty ? () => _removeProduct(productId) : null,
         );
       },
     );
