@@ -385,247 +385,123 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
 
   Widget _buildGiftCard(Map<String, dynamic> gift, int index, {bool isReordering = false}) {
     final isLiked = _model.likedGifts.contains(gift['id']);
-    // FIX: Cast sÃ©curisÃ© pour Ã©viter crash si type inattendu
     final matchRaw = gift['match'];
     final matchPercent = matchRaw is int ? matchRaw : (matchRaw is double ? matchRaw.toInt() : 85);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: BounceCard(
-            onTap: isReordering ? null : () => _showGiftDetail(gift),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: isReordering
-                  ? Border.all(color: violetColor.withOpacity(0.5), width: 2)
-                  : null,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
+        onTap: isReordering ? null : () => _showGiftDetail(gift),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: isReordering ? Border.all(color: violetColor.withOpacity(0.5), width: 2) : null,
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 12, offset: const Offset(0, 4))],
+        ),
         child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Image
-                  ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(24),
-                      bottomLeft: Radius.circular(24),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(24), bottomLeft: Radius.circular(24)),
+                child: Stack(
+                  children: [
+                    CachedNetworkImage(
+                      imageUrl: gift['image'] as String? ?? '',
+                      width: 140, height: 160, fit: BoxFit.cover, memCacheWidth: 280,
+                      placeholder: (context, url) => Container(color: Colors.grey[200]),
+                      errorWidget: (context, url, error) => Container(color: Colors.grey[200], child: const Icon(Icons.error)),
                     ),
-                    child: Stack(
-                      children: [
-                        CachedNetworkImage(
-                          imageUrl: gift['image'] as String,
-                          width: 140,
-                          height: 160,
-                          fit: BoxFit.cover,
-                          memCacheWidth: 280,
-                          placeholder: (context, url) => Container(color: Colors.grey[200]),
-                          errorWidget: (context, url, error) => Container(color: Colors.grey[200], child: const Icon(Icons.error)),
-                         ),
-                       // 3 petits points â€” ajouter dans une wishlist
-                       if (!isReordering)
-                         Positioned(
-                           top: 8,
-                           right: 8,
-                           child: GestureDetector(
-                             onTap: () {
-                               HapticFeedback.lightImpact();
-                               WishlistPickerSheet.show(context, gift);
-                             },
-                             child: Container(
-                               padding: const EdgeInsets.all(6),
-                               decoration: BoxDecoration(
-                                 color: Colors.black.withOpacity(0.45),
-                                 shape: BoxShape.circle,
-                               ),
-                               child: const Icon(Icons.more_vert, color: Colors.white, size: 16),
-                             ),
-                           ),
-                         ),
-                       // Match badge
-                      Positioned(
-                        top: 8,
-                        left: 8,
+                    if (!isReordering) Positioned(
+                      top: 8, right: 8,
+                      child: GestureDetector(
+                        onTap: () { HapticFeedback.lightImpact(); WishlistPickerSheet.show(context, gift); },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _getMatchColor(matchPercent),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.star,
-                                color: Colors.white,
-                                size: 14,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '$matchPercent%',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(color: Colors.black.withOpacity(0.45), shape: BoxShape.circle),
+                          child: const Icon(Icons.more_vert, color: Colors.white, size: 16),
                         ),
                       ),
-                    ],
-                  ),
-                  ),
-                  // Info
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
+                    ),
+                    Positioned(
+                      top: 8, left: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: _getMatchColor(matchPercent),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 2))],
+                        ),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          const Icon(Icons.star, color: Colors.white, size: 14),
+                          const SizedBox(width: 4),
+                          Text('$matchPercent%', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                        ]),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(color: violetColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                        child: Text(gift['brand'] as String? ?? '', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.bold, color: violetColor)),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        gift['name'] as String? ?? '',
+                        maxLines: 2, overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold, color: const Color(0xFF111827), height: 1.3),
+                      ),
+                      const SizedBox(height: 8),
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Badge marque
-                          Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: violetColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            gift['brand'] as String,
-                            style: GoogleFonts.poppins(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: violetColor,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        // Nom du produit
-                        Text(
-                          gift['name'] as String,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            height: 1.3,
-                          ),
-                        ),
+                          Text('${gift['price']}€', style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: violetColor)),
                           const SizedBox(height: 8),
-                          // Prix toujours visible en bas
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${gift['price']}â‚¬',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: violetColor,
-                                ),
+                          Row(children: [
+                            Material(color: Colors.transparent, child: InkWell(
+                              onTap: () { setState(() { final idRaw = gift['id']; final giftId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0); _model.toggleLike(giftId); }); },
+                              borderRadius: BorderRadius.circular(50),
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(color: isLiked ? Colors.red.withOpacity(0.1) : Colors.grey[100], shape: BoxShape.circle),
+                                child: Icon(isLiked ? Icons.favorite : Icons.favorite_border, color: isLiked ? Colors.red : const Color(0xFF9CA3AF), size: 20),
                               ),
-                              const SizedBox(height: 8),
-                              // Boutons
-                              Row(
-                          children: [
-                            // Bouton coeur
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    // FIX: Cast sÃ©curisÃ© - ID peut Ãªtre int, String ou autre
-                                    final idRaw = gift['id'];
-                                    final giftId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0);
-                                    _model.toggleLike(giftId);
-                                  });
-                                },
-                                borderRadius: BorderRadius.circular(50),
-                                child: Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: isLiked
-                                        ? Colors.red.withOpacity(0.1)
-                                        : Colors.grey[100],
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    isLiked ? Icons.favorite : Icons.favorite_border,
-                                    color: isLiked ? Colors.red : const Color(0xFF9CA3AF),
-                                    size: 20,
-                                  ),
-                                ),
-                              ),
-                            ),
+                            )),
                             const Spacer(),
-                            // Bouton voir
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () => _showGiftDetail(gift),
-                                borderRadius: BorderRadius.circular(12),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: violetColor,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        'Voir',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      const Icon(
-                                        Icons.arrow_forward,
-                                        color: Colors.white,
-                                        size: 16,
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                            Material(color: Colors.transparent, child: InkWell(
+                              onTap: () => _showGiftDetail(gift),
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                decoration: BoxDecoration(color: violetColor, borderRadius: BorderRadius.circular(12)),
+                                child: Row(children: [
+                                  Text('Voir', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
+                                  const SizedBox(width: 4),
+                                  const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
+                                ]),
                               ),
-                            ),
-                            ],
-                          ),
+                            )),
+                          ]),
                         ],
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
+            ],
           ),
-        );
+        ),
+      ),
+    );
   }
 
   Color _getMatchColor(int matchPercent) {
