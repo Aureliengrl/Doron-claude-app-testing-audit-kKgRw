@@ -1,4 +1,4 @@
-import '/utils/app_logger.dart';
+﻿import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -64,7 +64,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                   CircularProgressIndicator(color: violetColor),
                   const SizedBox(height: 24),
                   Text(
-                    '?? Génération des cadeaux...',
+                    '?? GÃ©nÃ©ration des cadeaux...',
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       color: violetColor,
@@ -76,16 +76,16 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
             )
           : CustomScrollView(
               slivers: [
-                // Header violet arrondi avec résumé
+                // Header violet arrondi avec rÃ©sumÃ©
                 SliverToBoxAdapter(child: _buildHeader()),
 
-                // Message IA personnalisé
+                // Message IA personnalisÃ©
                 SliverToBoxAdapter(child: _buildAIMessage()),
 
-                // Filtres de catégories
+                // Filtres de catÃ©gories
                 SliverToBoxAdapter(child: _buildFilters()),
 
-                // Liste des résultats
+                // Liste des rÃ©sultats
                 _buildResultsList(),
 
                 // Boutons Enregistrer / Refaire (dans le scroll, pas fixes)
@@ -150,7 +150,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
               // Titre
               Expanded(
                 child: Text(
-                  'Résultats IA',
+                  'RÃ©sultats IA',
                   style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 20,
@@ -234,7 +234,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '12 cadeaux parfaits trouvés !',
+                  '12 cadeaux parfaits trouvÃ©s !',
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -243,7 +243,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Sélectionnés selon ses passions et ton budget',
+                  'SÃ©lectionnÃ©s selon ses passions et ton budget',
                   style: GoogleFonts.poppins(
                     fontSize: 13,
                     color: Colors.white.withOpacity(0.55),
@@ -325,7 +325,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
 
   Widget _buildResultsList() {
     if (_isReordering) {
-      // Mode réorganisation : liste réordonnable
+      // Mode rÃ©organisation : liste rÃ©ordonnable
       return SliverToBoxAdapter(
         child: ReorderableListView.builder(
           shrinkWrap: true,
@@ -385,15 +385,13 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
 
   Widget _buildGiftCard(Map<String, dynamic> gift, int index, {bool isReordering = false}) {
     final isLiked = _model.likedGifts.contains(gift['id']);
-    // FIX: Cast sécurisé pour éviter crash si type inattendu
+    // FIX: Cast sÃ©curisÃ© pour Ã©viter crash si type inattendu
     final matchRaw = gift['match'];
     final matchPercent = matchRaw is int ? matchRaw : (matchRaw is double ? matchRaw.toInt() : 85);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      child: Stack(
-        children: [
-          BounceCard(
+      child: BounceCard(
             onTap: isReordering ? null : () => _showGiftDetail(gift),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -430,7 +428,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                           placeholder: (context, url) => Container(color: Colors.grey[200]),
                           errorWidget: (context, url, error) => Container(color: Colors.grey[200], child: const Icon(Icons.error)),
                          ),
-                       // 3 petits points — ajouter dans une wishlist
+                       // 3 petits points â€” ajouter dans une wishlist
                        if (!isReordering)
                          Positioned(
                            top: 8,
@@ -540,7 +538,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '${gift['price']}€',
+                                '${gift['price']}â‚¬',
                                 style: GoogleFonts.poppins(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
@@ -557,7 +555,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                               child: InkWell(
                                 onTap: () {
                                   setState(() {
-                                    // FIX: Cast sécurisé - ID peut être int, String ou autre
+                                    // FIX: Cast sÃ©curisÃ© - ID peut Ãªtre int, String ou autre
                                     final idRaw = gift['id'];
                                     final giftId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0);
                                     _model.toggleLike(giftId);
@@ -625,8 +623,6 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                   ),
                 ),
               ),
-                ],
-              ),
             ),
           ),
         );
@@ -644,7 +640,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
 
   void _showGiftDetail(Map<String, dynamic> gift) {
     final isLiked = _model.likedGifts.contains(gift['id']);
-    // FIX: Cast sécurisé pour éviter crash
+    // FIX: Cast sÃ©curisÃ© pour Ã©viter crash
     final matchRaw = gift['match'];
     final matchPercent = matchRaw is int ? matchRaw : (matchRaw is double ? matchRaw.toInt() : 85);
 
@@ -773,7 +769,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '${gift['price']}€',
+                      '${gift['price']}â‚¬',
                       style: GoogleFonts.poppins(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -827,7 +823,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                             onPressed: () {
                               if (mounted) {
                                 setState(() {
-                                  // FIX: Cast sécurisé
+                                  // FIX: Cast sÃ©curisÃ©
                                   final idRaw = gift['id'];
                                   final giftId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0);
                                   _model.toggleLike(giftId);
@@ -857,7 +853,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                           flex: 3,
                           child: ElevatedButton(
                             onPressed: () async {
-                              // Générer une URL de produit intelligente (=95% précision)
+                              // GÃ©nÃ©rer une URL de produit intelligente (=95% prÃ©cision)
                               final url = ProductUrlService.generateProductUrl(gift);
                               if (url.isNotEmpty) {
                                 final uri = Uri.parse(url);
@@ -919,7 +915,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
           Expanded(
             child: ElevatedButton.icon(
               onPressed: () {
-                // Retour à l'onboarding (skip questions sur soi)
+                // Retour Ã  l'onboarding (skip questions sur soi)
                 context.go('/onboarding-advanced?skipUserQuestions=true');
               },
               icon: const Icon(Icons.refresh, size: 20),
