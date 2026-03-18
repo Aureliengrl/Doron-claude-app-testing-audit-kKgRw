@@ -123,6 +123,19 @@ service cloud.firestore {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // COLLECTION: handles (index pseudo → uid, pour l'unicité)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    match /handles/{handle} {
+      // Tout utilisateur connecté peut vérifier si un handle est dispo
+      allow read: if isAuth();
+      // Seul l'utilisateur dont l'uid correspond peut créer/modifier son handle
+      allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
+      allow update: if isAuth() && resource.data.uid == request.auth.uid;
+      allow delete: if isAuth() && resource.data.uid == request.auth.uid;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // FALLBACK — Tout le reste est refusé
     // ─────────────────────────────────────────────────────────────────────────
 

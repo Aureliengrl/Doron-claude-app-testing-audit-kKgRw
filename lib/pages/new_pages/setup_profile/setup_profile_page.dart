@@ -50,6 +50,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
     });
 
     try {
+      // 1. Vérifier disponibilité
       final available = await _isHandleAvailable(handle);
       if (!available) {
         setState(() {
@@ -59,26 +60,41 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
         return;
       }
 
-      final uid = FirebaseAuth.instance.currentUser!.uid;
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Session expirée. Reconnecte-toi.';
+        });
+        return;
+      }
+
+      // 2. Sauvegarder le handle dans le profil utilisateur (critique)
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'handle': handle,
         'handle_lower': handle,
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
-      // Also update the handles index
-      await FirebaseFirestore.instance.collection('handles').doc(handle).set({
-        'uid': uid,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      // 3. Mettre à jour l'index handles (non critique — ne bloque pas si ça échoue)
+      try {
+        await FirebaseFirestore.instance.collection('handles').doc(handle).set({
+          'uid': uid,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      } catch (indexErr) {
+        // L'index handles est secondaire — on continue quand même
+        debugPrint('[SetupProfile] handles index write failed: $indexErr');
+      }
 
       if (mounted) {
         context.go('/search-page');
       }
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('[SetupProfile] _save error: $e\n$st');
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Une erreur est survenue. Réessaie.';
+        _errorMessage = 'Une erreur est survenue. Réessaie. ($e)';
       });
     }
   }
