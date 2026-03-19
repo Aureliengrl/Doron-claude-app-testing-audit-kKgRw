@@ -97,7 +97,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet> {
       // Create a welcomed initial message
       await chatRef.collection('messages').add({
         'senderId': currentUser.uid,
-        'text': 'Salut ! J\'ai créé cette discussion pour qu\'on puisse collaborer sur la liste de cadeaux pour $profileName. Cliquez sur "Chat" sur la page Inspiration pour y accéder.',
+        'text': '🎁 Bienvenue dans notre groupe de collaboration pour les cadeaux de $profileName ! Partagez vos idées ici et ajoutez des produits à la liste sur la page Recherche.',
         'timestamp': FieldValue.serverTimestamp(),
       });
 

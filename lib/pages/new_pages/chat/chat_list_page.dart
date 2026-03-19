@@ -52,33 +52,30 @@ class _ChatListPageState extends State<ChatListPage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          HapticFeedback.mediumImpact();
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder: (context) => Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
-              child: const FractionallySizedBox(
-                heightFactor: 0.85,
-                child: CreateChatBottomSheet(),
-              ),
-            ),
-          );
-        },
-        backgroundColor: violetColor,
-        child: const Icon(Icons.add_comment, color: Colors.white),
+    );
+  }
+
+  void _openCreateChat({bool forceGroup = false}) {
+    HapticFeedback.mediumImpact();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: FractionallySizedBox(
+          heightFactor: 0.85,
+          child: CreateChatBottomSheet(forceGroup: forceGroup),
+        ),
       ),
     );
   }
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+      padding: const EdgeInsets.fromLTRB(4, 16, 20, 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -100,10 +97,56 @@ class _ChatListPageState extends State<ChatListPage> {
               ),
             ],
           ),
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () {},
-            splashRadius: 24,
+          // Boutons d'action à droite
+          Row(
+            children: [
+              // Bouton Nouveau Groupe
+              Tooltip(
+                message: 'Nouveau groupe',
+                child: GestureDetector(
+                  onTap: () => _openCreateChat(forceGroup: true),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF8A2BE2).withOpacity(0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.group_add_rounded, color: Colors.white, size: 18),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Groupe',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Bouton Nouveau Message (icône)
+              IconButton(
+                icon: const Icon(Icons.edit_rounded, color: Colors.white),
+                onPressed: () => _openCreateChat(forceGroup: false),
+                splashRadius: 24,
+                tooltip: 'Nouveau message',
+              ),
+            ],
           ),
         ],
       ),

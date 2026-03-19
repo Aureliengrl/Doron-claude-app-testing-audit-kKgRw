@@ -9,7 +9,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '/components/liquid_glass.dart';
 
 class CreateChatBottomSheet extends StatefulWidget {
-  const CreateChatBottomSheet({super.key});
+  /// Si true, force le mode création de groupe (nom requis, titre "Nouveau Groupe")
+  final bool forceGroup;
+  const CreateChatBottomSheet({super.key, this.forceGroup = false});
 
   @override
   State<CreateChatBottomSheet> createState() => _CreateChatBottomSheetState();
@@ -120,7 +122,7 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
   @override
   Widget build(BuildContext context) {
     // Determine automatically if it should be a group
-    _isGroup = _selectedContacts.length > 1 || _groupNameController.text.isNotEmpty;
+    _isGroup = widget.forceGroup || _selectedContacts.length > 1 || _groupNameController.text.isNotEmpty;
 
     return Container(
       decoration: BoxDecoration(
@@ -145,13 +147,21 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
           ),
           
           Text(
-            'Nouvelle Conversation',
+            widget.forceGroup ? '👥 Nouveau Groupe' : 'Nouvelle Conversation',
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
           ),
+          if (widget.forceGroup)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                'Sélectionnez vos amis pour créer un groupe',
+                style: GoogleFonts.poppins(fontSize: 12, color: Colors.white.withOpacity(0.5)),
+              ),
+            ),
           const SizedBox(height: 24),
           
           // Group Name Input (appears if multi-select or manually typing)
@@ -275,7 +285,7 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
                   ),
                 ),
                 child: _isCreating ? const CircularProgressIndicator(color: Colors.white) : Text(
-                  _selectedContacts.length > 1 ? 'Créer le groupe' : 'Démarrer le chat',
+                  _isGroup ? 'Créer le groupe' : 'Démarrer le chat',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
