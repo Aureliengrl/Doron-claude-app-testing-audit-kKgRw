@@ -103,19 +103,7 @@ class _FriendsPageState extends State<FriendsPage>
   }
 
   // ─── Demandes ───────────────────────────────────────────────────────────
-
-  Future<void> _loadPendingRequests() async {
-    setState(() => _isLoadingRequests = true);
-    try {
-      final requests = await FriendService.getPendingRequests();
-      if (mounted) {
-        setState(() { _pendingRequests = requests; _isLoadingRequests = false; });
-      }
-    } catch (e) {
-      AppLogger.debug('❌ loadPendingRequests: $e', 'Social');
-      if (mounted) setState(() => _isLoadingRequests = false);
-    }
-  }
+  // Les demandes sont gérées via _requestsStream (StreamBuilder) — pas de chargement manuel.
 
   Future<void> _acceptRequest(String requestId, String fromUid) async {
     setState(() => _processingRequestIds.add(requestId));

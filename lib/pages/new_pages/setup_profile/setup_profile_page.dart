@@ -71,7 +71,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
       }
 
       // Nom d'affichage pour les index de recherche
-      final displayNameRaw = currentUser.displayName ?? '';
+      final displayNameRaw = currentUser?.displayName ?? '';
       final displayNameLower = displayNameRaw.toLowerCase().trim();
       // searchName = handle OU prénom (le plus utile pour être trouvé)
       final searchName = displayNameLower.isNotEmpty ? displayNameLower : handle;
