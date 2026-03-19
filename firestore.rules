@@ -127,6 +127,25 @@ service cloud.firestore {
       }
     }
 
+    // ─────────────────────────────────────────────────────────────────────────────
+    // COLLECTION: wishlists (collection racine — albums utilisateurs)
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    match /wishlists/{wishlistId} {
+      // Propriétaire : accès complet
+      allow read, write: if isAuth() && resource != null && resource.data.ownerUid == request.auth.uid;
+      // Création : l'utilisateur doit signer comme propriétaire
+      allow create: if isAuth() && request.resource.data.ownerUid == request.auth.uid;
+      // Lecture publique : uniquement si isPublic == true et utilisateur connecté
+      allow read: if isAuth() && resource.data.isPublic == true;
+
+      // Produits/photos dans la wishlist
+      match /products/{productId} {
+        allow read: if isAuth();
+        allow write: if isAuth() && get(/databases/$(database)/documents/wishlists/$(wishlistId)).data.ownerUid == request.auth.uid;
+      }
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // COLLECTION: friend_requests
     // ─────────────────────────────────────────────────────────────────────────

@@ -21,6 +21,7 @@ import 'user_profile_model.dart';
 import '/components/liquid_glass_loader.dart';
 import 'dart:io';
 import '/components/product_detail_modal.dart';
+import '/components/shared_product_card.dart';
 import '/utils/image_compress_utils.dart';
 export 'user_profile_model.dart';
 
@@ -42,6 +43,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   final Color pinkColor = const Color(0xFFEC4899);
 
   bool _isAnonymous = false;
+  List<Map<String, dynamic>> _wishlists = [];
+  bool _wishlistsLoading = true;
+  int _friendsCount = 0;
 
   @override
   void initState() {
@@ -51,6 +55,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
     // Vérifier le mode anonyme
     _checkAnonymousMode();
+    // Charger les wishlists initiales + nb amis
+    _loadWishlists();
+    _loadFriendsCount();
 
     // Charger les favoris et le profil après le premier frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -91,6 +98,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       source: ImageSource.gallery,
       maxWidth: 800,
       imageQuality: 85,
+      requestFullMetadata: false,
     );
 
     if (pickedFile == null) return;
@@ -388,14 +396,14 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         ],
                       ),
                       const SizedBox(width: 24),
-                      // Stats
+                      // Stats — Amis / Wishlists / Cadeaux
                       Expanded(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            _buildProfileStat('Cadeaux', '${_model.favourites.length}'), // Number of liked gifts
-                            _buildProfileStat('Abonnés', '0'),
-                            _buildProfileStat('Abonnements', '0'),
+                            _buildProfileStat('Amis', '$_friendsCount'),
+                            _buildProfileStat('Wishlists', '${_wishlists.length}'),
+                            _buildProfileStat('Cadeaux', '${_model.favourites.length}'),
                           ],
                         ),
                       ),
@@ -646,149 +654,80 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       );
     }
 
-    return GridView.builder(
+    // ── Grille avec drag & drop natif (appui long) ─────────────────────
+    return ReorderableListView(
       padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.65,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-      ),
-      itemCount: _model.favourites.length,
-      itemBuilder: (context, index) {
-        final favourite = _model.favourites[index];
-        return _buildProductCard(favourite);
+      buildDefaultDragHandles: false,
+      onReorder: (oldIndex, newIndex) {
+        HapticFeedback.mediumImpact();
+        if (newIndex > oldIndex) newIndex -= 1;
+        setState(() {
+          final item = _model.favourites.removeAt(oldIndex);
+          _model.favourites.insert(newIndex, item);
+        });
       },
+      children: [
+        for (int i = 0; i < _model.favourites.length; i++)
+          _buildLikedProductCard(_model.favourites[i], i),
+      ],
     );
   }
 
-  Widget _buildProductCard(FavouritesRecord favourite) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () async {
-          HapticFeedback.lightImpact();
-          final productMap = {
-            'id': favourite.reference.id,
-            'name': favourite.product.productTitle,
-            'product_title': favourite.product.productTitle,
-            'price': favourite.product.productPrice.replaceAll('€', '').trim(),
-            'product_price': favourite.product.productPrice.replaceAll('€', '').trim(),
-            'url': favourite.product.productUrl,
-            'product_url': favourite.product.productUrl,
-            'image': favourite.product.productPhoto,
-            'product_photo': favourite.product.productPhoto,
-            'brand': favourite.product.platform,
-            'platform': favourite.product.platform,
-          };
-          
-          GlobalProductDetailModal.show(
-            context,
-            productMap,
-            initialIsLiked: true,
-            onLikeToggled: () {
-              if (mounted) {
-                // Remove from local list if unliked
-                setState(() {
-                  _model.favourites.removeWhere((f) => f.reference.id == favourite.reference.id);
-                });
-              }
-            },
-          );
-        },
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.white.withOpacity(0.14), Colors.white.withOpacity(0.06)],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.18)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Photo de couverture (haut de la carte)
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-                child: CachedNetworkImage(
-                  imageUrl: favourite.product.productPhoto,
-                  width: double.infinity,
-                  height: 140,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: Colors.grey[200],
-                    child: Center(child: LiquidGlassLoader(size: 32)),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.error, size: 40),
-                  ),
-                ),
-              ),
-              // Détails textuels (Bas de la carte)
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Titre ou Marque
-                      Text(
-                        favourite.product.platform.isNotEmpty 
-                            ? favourite.product.platform 
-                            : favourite.product.productTitle,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const Spacer(),
-                      // Prix
-                      if (favourite.product.productPrice.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            favourite.product.productPrice,
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+  Widget _buildLikedProductCard(FavouritesRecord favourite, int index) {
+    final productMap = {
+      'id': favourite.reference.id,
+      'name': favourite.product.productTitle,
+      'brand': favourite.product.platform,
+      'price': favourite.product.productPrice.replaceAll('€', '').trim(),
+      'image': favourite.product.productPhoto,
+      'url': favourite.product.productUrl,
+    };
+    return ReorderableDragStartListener(
+      key: ValueKey(favourite.reference.id),
+      index: index,
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: 16,
+          right: index.isEven ? 8 : 0,
+          left: index.isEven ? 0 : 8,
+        ),
+        child: SharedProductCard(
+          product: productMap,
+          index: index,
+          showWishlistButton: true,
+          onRemove: null,
         ),
       ),
     );
   }
 
-  Widget _buildWishlists() {
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: FirebaseDataService.loadWishlists(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: LiquidGlassLoader(size: 40));
-        }
+  Future<void> _loadFriendsCount() async {
+    try {
+      final uid = currentUserReference?.id;
+      if (uid == null) return;
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (!mounted) return;
+      final friends = (doc.data()?['friends'] as List?) ?? [];
+      setState(() => _friendsCount = friends.length);
+    } catch (_) {}
+  }
 
-        final wishlists = snapshot.data ?? [];
+  Future<void> _loadWishlists() async {
+    if (!mounted) return;
+    setState(() => _wishlistsLoading = true);
+    final data = await FirebaseDataService.loadWishlists();
+    if (!mounted) return;
+    setState(() {
+      _wishlists = data;
+      _wishlistsLoading = false;
+    });
+  }
+
+  Widget _buildWishlists() {
+    if (_wishlistsLoading) {
+      return Center(child: LiquidGlassLoader(size: 40));
+    }
+    final wishlists = _wishlists;
 
         if (wishlists.isEmpty) {
           return Center(
@@ -805,149 +744,266 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           );
         }
 
-        return GridView.builder(
-          padding: const EdgeInsets.all(16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 0.85, // Pour donner une forme de portrait/polaroid
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-          ),
-          itemCount: wishlists.length,
-          itemBuilder: (context, index) {
-            final wishlist = wishlists[index];
-            final productCount = (wishlist['productIds'] as List?)?.length ?? 0;
-            final coverUrl = wishlist['coverPhoto'] as String?;
+        return Stack(
+          children: [
+            GridView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.85,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+              ),
+              itemCount: wishlists.length,
+              itemBuilder: (context, index) {
+                final wishlist = wishlists[index];
+                final productCount = (wishlist['productCount'] as int?) ?? (wishlist['productIds'] as List?)?.length ?? 0;
+                final coverUrl = wishlist['coverPhoto'] as String?;
 
-            return GestureDetector(
-              onTap: () => _showWishlistDetail(wishlist),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0x1AFFFFFF),
-                      Color(0x0AFFFFFF),
-                    ],
-                  ),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.1),
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                return GestureDetector(
+                  onTap: () async {
+                    await _showWishlistDetail(wishlist);
+                    // Recharger la liste pour mettre à jour le compteur sur la pochette
+                    _loadWishlists();
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0x1AFFFFFF),
+                          Color(0x0AFFFFFF),
+                        ],
+                      ),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.1),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      // Photo de couverture ou fond par défaut
-                      if (coverUrl != null && coverUrl.isNotEmpty)
-                        CachedNetworkImage(
-                          imageUrl: coverUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
-                            color: Colors.white.withOpacity(0.05),
-                            child: const Center(
-                              child: LiquidGlassLoader(size: 24, isDark: false),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          if (coverUrl != null && coverUrl.isNotEmpty)
+                            CachedNetworkImage(
+                              imageUrl: coverUrl,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                color: Colors.white.withOpacity(0.05),
+                                child: const Center(
+                                  child: LiquidGlassLoader(size: 24, isDark: false),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => _buildDefaultCover(),
+                            )
+                          else
+                            _buildDefaultCover(),
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            height: 80,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [Colors.transparent, Colors.black.withOpacity(0.9)],
+                                ),
+                              ),
                             ),
                           ),
-                          errorWidget: (context, url, error) => _buildDefaultCover(),
-                        )
-                      else
-                        _buildDefaultCover(),
-
-                      // Overlay sombre en bas pour le texte
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: 80,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                Colors.black.withOpacity(0.9),
+                          Positioned(
+                            bottom: 12,
+                            left: 12,
+                            right: 12,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  wishlist['name'] as String? ?? 'Wishlist',
+                                  style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '$productCount produit${productCount > 1 ? 's' : ''}',
+                                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.white.withOpacity(0.7)),
+                                ),
                               ],
                             ),
                           ),
-                        ),
-                      ),
-
-                      // Informations de la wishlist
-                      Positioned(
-                        bottom: 12,
-                        left: 12,
-                        right: 12,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              wishlist['name'] as String? ?? 'Wishlist',
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '$productCount produit${productCount > 1 ? 's' : ''}',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white.withOpacity(0.7),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Bouton d'édition (si l'utilisateur veut changer la cover)
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () => _updateWishlistCover(wishlist['id'] as String),
-                            borderRadius: BorderRadius.circular(20),
-                            child: Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.4),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.add_a_photo,
-                                color: Colors.white,
-                                size: 16,
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => _updateWishlistCover(wishlist['id'] as String),
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.4),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.add_a_photo, color: Colors.white, size: 16),
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            // — Bouton Créer un album —
+            Positioned(
+              bottom: 90,
+              left: 24,
+              right: 24,
+              child: GestureDetector(
+                onTap: () async {
+                  final created = await _showCreateAlbumDialog();
+                  if (created == true) setState(() {});
+                },
+                child: Container(
+                  height: 52,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
+                    ),
+                    borderRadius: BorderRadius.circular(26),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF8A2BE2).withOpacity(0.45),
+                        blurRadius: 20,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.add_rounded, color: Colors.white, size: 22),
+                      const SizedBox(width: 8),
+                      Text('Créer un album', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
                     ],
                   ),
                 ),
               ),
-            );
-          },
+            ),
+          ],
         );
-      },
+  }
+
+  /// Dialog de création d'un nouvel album (wishlist)
+  Future<bool?> _showCreateAlbumDialog() async {
+    final nameController = TextEditingController();
+    final emojiController = TextEditingController(text: '🎁');
+    bool isCreating = false;
+
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF1A0030),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Row(
+            children: [
+              const Icon(Icons.bookmark_add_rounded, color: Color(0xFF8A2BE2), size: 24),
+              const SizedBox(width: 10),
+              Text('Nouvel album', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                autofocus: true,
+                style: GoogleFonts.poppins(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Nom de l\'album (ex : pour Noël)',
+                  hintStyle: GoogleFonts.poppins(color: Colors.white38),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.07),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: emojiController,
+                style: GoogleFonts.poppins(color: Colors.white, fontSize: 22),
+                decoration: InputDecoration(
+                  hintText: 'Emoji (optionnel)',
+                  hintStyle: GoogleFonts.poppins(color: Colors.white38),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.07),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text('Annuler', style: GoogleFonts.poppins(color: Colors.white54)),
+            ),
+            TextButton(
+              onPressed: isCreating
+                  ? null
+                  : () {
+                      final name = nameController.text.trim();
+                      if (name.isEmpty) return;
+                      final emoji = emojiController.text.trim().isEmpty ? '🎁' : emojiController.text.trim();
+
+                      // ── OPTIMISTIC UI :
+                      // 1. Fermer le dialog immédiatement
+                      Navigator.pop(ctx, true);
+
+                      // 2. Ajouter localement pour affichage instantané
+                      final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
+                      final optimisticWishlist = {
+                        'id': tempId,
+                        'name': name,
+                        'emoji': emoji,
+                        'productCount': 0,
+                        'coverPhoto': null,
+                        'createdAt': DateTime.now().toIso8601String(),
+                      };
+                      setState(() => _wishlists.insert(0, optimisticWishlist));
+
+                      // 3. Créer en arrière-plan dans Firestore
+                      FirebaseDataService.createWishlist(name: name, emoji: emoji).then((realId) {
+                        if (realId != null && mounted) {
+                          setState(() {
+                            final idx = _wishlists.indexWhere((w) => w['id'] == tempId);
+                            if (idx != -1) _wishlists[idx] = {...optimisticWishlist, 'id': realId};
+                          });
+                        }
+                      });
+                    },
+              child: Text('Créer', style: GoogleFonts.poppins(color: const Color(0xFF8A2BE2), fontWeight: FontWeight.w700)),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -976,7 +1032,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   Future<void> _updateWishlistCover(String wishlistId) async {
     // 1. Pick an image
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70, requestFullMetadata: false);
     
     if (pickedFile == null || !mounted) return;
 
@@ -1026,205 +1082,230 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
     if (!mounted) return;
 
+    // Normaliser les clés pour SharedProductCard (conserver le type pour routing photo/product)
+    final normalizedProducts = products.map((p) => {
+      'id': p['id'] ?? '',
+      'type': p['type'] ?? 'product',  // phénomène clé pour le routing PhotoItemCard
+      'name': p['title'] ?? p['name'] ?? p['product_title'] ?? 'Produit',
+      'brand': p['brand'] ?? p['platform'] ?? p['source'] ?? '',
+      'price': (p['price'] ?? p['product_price'] ?? '').toString(),
+      'image': p['imageUrl'] ?? p['image'] ?? p['product_photo'] ?? p['photo'] ?? '',
+      'caption': p['caption'] ?? '',
+      'url': p['url'] ?? p['productUrl'] ?? p['product_url'] ?? '',
+    }).toList();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.85,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(20),
+      builder: (bsCtx) {
+        final sheetProducts = List<Map<String, dynamic>>.from(normalizedProducts);
+        return StatefulBuilder(
+          builder: (bsCtx, setSheetState) => Container(
+            height: MediaQuery.of(bsCtx).size.height * 0.88,
+            decoration: BoxDecoration(
+              color: LiquidGlassTokens.pageDark,
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(28), topRight: Radius.circular(28)),
+            border: Border.all(color: Colors.white.withOpacity(0.12)),
+          ),
+          child: Column(
+            children: [
+              // Poignée
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40, height: 4,
+                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
+              ),
+              // En-tête
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 12, 0),
               child: Row(
                 children: [
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(wishlist['name'] as String? ?? 'Wishlist', style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold)),
-                        if (wishlist['description'] != null)
-                          Text(wishlist['description'] as String, style: GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF6B7280))),
+                        Text(
+                          wishlist['name'] as String? ?? 'Wishlist',
+                          style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                        if (wishlist['description'] != null && (wishlist['description'] as String).isNotEmpty)
+                          Text(
+                            wishlist['description'] as String,
+                            style: GoogleFonts.poppins(fontSize: 13, color: Colors.white54),
+                          ),
+                            Text(
+                              '${sheetProducts.length} article${sheetProducts.length > 1 ? 's' : ''}',
+                              style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF8A2BE2)),
+                        ),
                       ],
                     ),
-                  ),
-                  IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
+                      ),
+                      // Bouton + Photo (cyan)
+                      GestureDetector(
+                        onTap: () async {
+                          final newPhoto = await _addPhotoToAlbum(wishlistId);
+                          if (newPhoto != null) setSheetState(() => sheetProducts.insert(0, newPhoto));
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF00D4FF).withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: const Color(0xFF00D4FF).withOpacity(0.5)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.add_photo_alternate_rounded, color: Color(0xFF00D4FF), size: 16),
+                              const SizedBox(width: 4),
+                              Text('Photo', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF00D4FF))),
+                            ],
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(bsCtx),
+                        icon: const Icon(Icons.close_rounded, color: Colors.white54),
+                      ),
                 ],
               ),
             ),
-            const Divider(height: 1),
-            if (products.isEmpty)
+            const SizedBox(height: 8),
+            Divider(color: Colors.white.withOpacity(0.08), height: 1),
+            // Contenu
+                if (sheetProducts.isEmpty)
               Expanded(
                 child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.05),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(Icons.favorite_border, size: 48, color: Colors.black.withOpacity(0.3)),
-                      ),
+                      Icon(Icons.favorite_border_rounded, size: 64, color: Colors.white.withOpacity(0.2)),
                       const SizedBox(height: 16),
-                      Text('Aucun produit dans cette liste', style: GoogleFonts.poppins(fontSize: 16, color: Colors.black54, fontWeight: FontWeight.bold)),
+                      Text('Aucun produit dans cette liste', style: GoogleFonts.poppins(fontSize: 16, color: Colors.white38, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
-                      Text('Sauvegardez des cadeaux pour les retrouver ici.', style: GoogleFonts.poppins(fontSize: 12, color: Colors.black38)),
+                      Text('Ajoute des cadeaux via le bouton \u22ee sur chaque produit.', style: GoogleFonts.poppins(fontSize: 12, color: Colors.white24)),
                     ],
                   ),
                 ),
               )
             else
               Expanded(
-                child: StatefulBuilder(
-                  builder: (context, setModalState) {
-                    return ReorderableListView.builder(
-                      padding: const EdgeInsets.all(20),
-                      itemCount: products.length,
-                      onReorder: (oldIndex, newIndex) async {
-                        if (newIndex > oldIndex) newIndex -= 1;
-                        
-                        setModalState(() {
-                          final item = products.removeAt(oldIndex);
-                          products.insert(newIndex, item);
-                        });
-
-                        // Mettre à jour Firestore
-                        try {
-                          final String uid = FirebaseAuth.instance.currentUser!.uid;
-                          // Recalculer la liste des IDs dans le nouvel ordre
-                          final newProductIds = products.map((p) => p['id'] as String).toList();
-                          
-                          await FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(uid)
-                              .collection('wishlists')
-                              .doc(wishlistId)
-                              .update({
-                            'productIds': newProductIds,
-                          });
-                        } catch (e) {
-                          print('Erreur de réorganisation: $e');
-                        }
-                      },
-                      itemBuilder: (context, index) {
-                        return Container(
-                          key: ValueKey(products[index]['id'] ?? index.toString()),
-                          margin: const EdgeInsets.only(bottom: 12),
-                          height: 120, // Hauteur fixe pour le ReorderableListView
-                          child: _buildWishlistProductListCard(products[index]),
-                        );
-                      },
-                    );
-                  }
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(12),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    childAspectRatio: 0.75,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                  ),
+                  itemCount: sheetProducts.length,
+                  itemBuilder: (context, index) => SharedProductCard(
+                    product: sheetProducts[index],
+                    index: index,
+                    showWishlistButton: false,
+                  ),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
-      ),
+        );
+      },
     );
   }
-  Widget _buildWishlistProductListCard(Map<String, dynamic> product) {
-    final title = product['title'] as String? ?? product['name'] as String? ?? 'Produit';
-    final price = product['price'] != null ? product['price'].toString() : '';
-    final imageUrl = product['imageUrl'] as String? ?? product['image'] as String? ?? '';
-    final url = product['url'] as String? ?? product['productUrl'] as String? ?? '';
 
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 2,
-      child: InkWell(
-        onTap: () async {
-          if (url.isNotEmpty) {
-            final uri = Uri.parse(url);
-            if (await canLaunchUrl(uri)) {
-              await launchUrl(uri, mode: LaunchMode.externalApplication);
-            }
-          }
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Row(
+  /// Ouvre un picker pour ajouter une photo dans un album wishlist.
+  Future<Map<String, dynamic>?> _addPhotoToAlbum(String wishlistId) async {
+    ImageSource? source;
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: LiquidGlassTokens.pageDark,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Image à gauche
-            SizedBox(
-              width: 100,
-              height: 120,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  bottomLeft: Radius.circular(16),
-                ),
-                child: imageUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: imageUrl,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          color: Colors.grey[200],
-                          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                        ),
-                        errorWidget: (_, __, ___) => Container(
-                          color: Colors.grey[200],
-                          child: const Icon(Icons.image_not_supported, color: Colors.grey),
-                        ),
-                      )
-                    : Container(
-                        color: Colors.grey[200],
-                        child: const Icon(Icons.card_giftcard, color: Colors.grey),
-                      ),
-              ),
+            Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 20), decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+            ListTile(
+              leading: const Icon(Icons.photo_library_rounded, color: Color(0xFF00D4FF)),
+              title: Text('Depuis la galerie', style: GoogleFonts.poppins(color: Colors.white)),
+              onTap: () { source = ImageSource.gallery; Navigator.pop(ctx); },
             ),
-            
-            // Infos au milieu
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF111827),
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    if (price.isNotEmpty)
-                      Text(
-                        '$price€',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: violetColor,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Icône drag à droite
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Icon(
-                Icons.drag_indicator,
-                color: Colors.grey[400],
-              ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_rounded, color: Color(0xFF00D4FF)),
+              title: Text('Prendre une photo', style: GoogleFonts.poppins(color: Colors.white)),
+              onTap: () { source = ImageSource.camera; Navigator.pop(ctx); },
             ),
           ],
         ),
       ),
     );
+    if (source == null || !mounted) return null;
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: source!, imageQuality: 80, requestFullMetadata: false);
+    if (picked == null || !mounted) return null;
+    // Légende optionnelle
+    String caption = '';
+    final captionCtrl = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A0030),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Légende (optionnel)', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700)),
+        content: TextField(
+          controller: captionCtrl, autofocus: true,
+          style: GoogleFonts.poppins(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: 'Ex : Pour Noël ✨',
+            hintStyle: GoogleFonts.poppins(color: Colors.white38),
+            filled: true, fillColor: Colors.white.withOpacity(0.07),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Passer', style: GoogleFonts.poppins(color: Colors.white54))),
+          TextButton(
+            onPressed: () { caption = captionCtrl.text.trim(); Navigator.pop(ctx); },
+            child: Text('OK', style: GoogleFonts.poppins(color: const Color(0xFF00D4FF), fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return null;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Row(children: [
+        const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+        const SizedBox(width: 12),
+        Text('Upload en cours...', style: GoogleFonts.poppins(color: Colors.white)),
+      ]),
+      backgroundColor: const Color(0xFF0A1F3D),
+      duration: const Duration(seconds: 10),
+    ));
+    final ok = await FirebaseDataService.addPhotoToWishlist(wishlistId, picked.path, caption: caption.isEmpty ? null : caption);
+    if (!mounted) return null;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur upload', style: GoogleFonts.poppins()), backgroundColor: Colors.red));
+      return null;
+    }
+    final updated = await FirebaseDataService.loadWishlistProducts(wishlistId);
+    final newest = updated.isNotEmpty ? updated.first : null;
+    if (newest == null) return null;
+    return {
+      'id': newest['id'] ?? '',
+      'type': 'photo',
+      'image': newest['image'] ?? newest['imageUrl'] ?? '',
+      'caption': newest['caption'] ?? caption,
+      'url': '',
+    };
   }
   // ─── Gamification & Stats ────────────────────────────────────────────────
   // Removed "Ton activité" and "Badges" per user request.

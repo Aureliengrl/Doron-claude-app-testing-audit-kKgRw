@@ -1,4 +1,4 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -105,9 +105,40 @@ Future<String> _determineInitialRoute() async {
     AppLogger.debug('🔍 Route initiale — loggedIn:$isLoggedIn', 'Nav');
 
     if (isLoggedIn) {
-        return '/home-pinterest';
-    } else {
+      // ── Force le refresh du token JWT avant tout appel Firestore ──────────
+      // Sur iOS, auth.currentUser peut être non-null mais le token peut ne pas
+      // encore être valide, ce qui déclenche [permission-denied] sur Firestore.
+      try {
+        await currentUser.getIdToken(true);
+      } catch (tokenErr) {
+        AppLogger.debug('⚠️ Impossible de rafraîchir le token: $tokenErr', 'Nav');
+        // Si le token ne peut pas être rafraîchi, l'utilisateur est probablement
+        // déconnecté → aller à l'écran d'auth
         return '/authentification';
+      }
+
+      // Vérifier que l'utilisateur a bien un @handle (nom d'utilisateur)
+      // Sans handle, on ne peut jamais accéder à l'app principale
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUser.uid)
+            .get();
+        final handle = doc.data()?['handle'] as String?;
+        if (handle == null || handle.trim().isEmpty) {
+          AppLogger.debug('⚠️ Compte sans handle — redirection setup-profile', 'Nav');
+          return '/setup-profile';
+        }
+      } on FirebaseException catch (e) {
+        // permission-denied = token non prêt ou règles Firestore — utilisateur
+        // existant, on le laisse passer à l'accueil plutôt que de bloquer
+        AppLogger.debug('⚠️ Firestore erreur vérif handle: ${e.code} — fallback home', 'Nav');
+      } catch (e) {
+        AppLogger.debug('⚠️ Erreur vérif handle: $e — fallback home', 'Nav');
+      }
+      return '/home-pinterest';
+    } else {
+      return '/authentification';
     }
   } catch (e) {
     AppLogger.debug('❌ Erreur détermination route: $e', 'Nav');

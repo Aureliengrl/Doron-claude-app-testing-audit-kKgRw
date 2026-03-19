@@ -1,4 +1,4 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -122,74 +122,43 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
             Color(0xFFEC4899),
           ],
         ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
-        ),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF8A2BE2).withOpacity(0.4),
-            blurRadius: 30,
-            spreadRadius: 2,
-            offset: const Offset(0, 10),
-          ),
-          BoxShadow(
-            color: const Color(0xFFEC4899).withOpacity(0.3),
             blurRadius: 20,
-            spreadRadius: 0,
-            offset: const Offset(0, 6),
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          // Même padding que home/search : fromLTRB(20, 12, 20, 20)
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-          child: Row(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Bouton retour (comme home/search)
-              GestureDetector(
-                onTap: () => Navigator.of(context).maybePop(),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
+              micro.ShimmerEffect(
+                shimmerColor: Colors.white,
+                duration: const Duration(milliseconds: 3000),
+                child: Text(
+                  'Inspirations ✨',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
                   ),
-                  child: const Icon(Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white, size: 18),
                 ),
               ),
-              const SizedBox(width: 16),
-              // Titre + sous-titre (aligné comme home/search)
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    micro.ShimmerEffect(
-                      shimmerColor: Colors.white,
-                      duration: const Duration(milliseconds: 3000),
-                      child: Text(
-                        'Inspirations ✨',
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      'Des idées cadeaux qui vous correspondent',
-                      style: GoogleFonts.poppins(
-                        color: Colors.white.withOpacity(0.85),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
+              const SizedBox(height: 4),
+              Text(
+                'Des idées cadeaux qui vous correspondent',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  color: Colors.white.withOpacity(0.9),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ],
@@ -1163,34 +1132,10 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
   /// Ajoute un produit à une wishlist
   Future<void> _addToWishlist(Map<String, dynamic> product, String wishlistId) async {
     try {
-      // Créer d'abord le favori avec le produit
-      final productTitle = product['name'] as String? ?? '';
-      final productImage = product['image'] as String? ?? '';
-      final productUrl = product['url'] ?? ProductUrlService.generateProductUrl(product);
-      final brandOrSource = product['brand'] ?? product['source'] ?? 'Amazon';
-
-      // Ajouter aux favoris Firebase avec wishlistId
-      final docRef = await FavouritesRecord.collection.add(
-        createFavouritesRecordData(
-          uid: currentUserReference,
-          platform: brandOrSource.toString().toLowerCase(),
-          timeStamp: DateTime.now(),
-          personId: null,
-          product: ProductsStruct(
-            productTitle: productTitle,
-            productPrice: '${product['price'] ?? 0}€',
-            productUrl: productUrl,
-            productPhoto: productImage,
-            productStarRating: '',
-            productOriginalPrice: '',
-            productNumRatings: 0,
-            platform: brandOrSource.toString().toLowerCase(),
-          ),
-        ),
-      );
-
-      // Ajouter à la wishlist
-      await FirebaseDataService.addToWishlist(wishlistId, docRef.id);
+      // Utilise addProductToWishlist qui écrit dans la sous-collection products/
+      // (cohérent avec loadWishlistProducts et WishlistPickerSheet)
+      final ok = await FirebaseDataService.addProductToWishlist(wishlistId, product);
+      if (!ok) throw Exception('addProductToWishlist returned false');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

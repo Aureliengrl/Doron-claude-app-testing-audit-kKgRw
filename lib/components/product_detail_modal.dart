@@ -457,7 +457,7 @@ class GlobalProductDetailModal {
                     itemCount: wishlists.length,
                     itemBuilder: (context, index) {
                       final wishlist = wishlists[index];
-                      final giftCount = (wishlist['giftIds'] as List?)?.length ?? 0;
+                      final giftCount = (wishlist['productCount'] as int?) ?? (wishlist['productIds'] as List?)?.length ?? 0;
 
                       return ListTile(
                         leading: Container(
@@ -633,31 +633,10 @@ class GlobalProductDetailModal {
 
   static Future<void> _addToWishlist(BuildContext context, Map<String, dynamic> product, String wishlistId) async {
     try {
-      final productTitle = product['name'] as String? ?? product['product_title'] as String? ?? '';
-      final productImage = product['image'] as String? ?? product['product_photo'] as String? ?? product['image_url'] as String? ?? '';
-      final productUrl = product['url'] ?? product['product_url'] ?? ProductUrlService.generateProductUrl(product);
-      final brandOrSource = product['brand'] ?? product['source'] ?? product['platform'] ?? 'Amazon';
-
-      final docRef = await FavouritesRecord.collection.add(
-        createFavouritesRecordData(
-          uid: currentUserReference,
-          platform: brandOrSource.toString().toLowerCase(),
-          timeStamp: DateTime.now(),
-          personId: null,
-          product: ProductsStruct(
-            productTitle: productTitle,
-            productPrice: '${product['price'] ?? product['product_price'] ?? 0}€'.replaceAll('€€', '€'),
-            productUrl: productUrl,
-            productPhoto: productImage,
-            productStarRating: '',
-            productOriginalPrice: '',
-            productNumRatings: 0,
-            platform: brandOrSource.toString().toLowerCase(),
-          ),
-        ),
-      );
-
-      await FirebaseDataService.addToWishlist(wishlistId, docRef.id);
+      // Utilise addProductToWishlist qui écrit dans la sous-collection products/
+      // (cohérent avec loadWishlistProducts et WishlistPickerSheet)
+      final ok = await FirebaseDataService.addProductToWishlist(wishlistId, product);
+      if (!ok) throw Exception('addProductToWishlist returned false');
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -1,10 +1,11 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'dart:ui';
 import '/index.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -53,35 +54,91 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
   }
 
   Future<void> _signInWithGoogle() async {
+    if (_isLoading) return;
     setState(() => _isLoading = true);
     HapticFeedback.mediumImpact();
     try {
       GoRouter.of(context).prepareAuthEvent();
       final user = await authManager.signInWithGoogle(context);
+      if (!mounted) return;
       if (user == null) {
+        // Annulé par l'utilisateur — pas d'erreur à afficher
         setState(() => _isLoading = false);
         return;
       }
       await _afterSignIn();
     } catch (e) {
       AppLogger.debug('❌ Google SignIn: $e', 'Auth');
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+        _showAuthError('Connexion Google impossible', e.toString());
+      }
     }
   }
 
   Future<void> _signInWithApple() async {
+    if (_isLoading) return;
     setState(() => _isLoading = true);
     HapticFeedback.mediumImpact();
     try {
       GoRouter.of(context).prepareAuthEvent();
       final user = await authManager.signInWithApple(context);
+      if (!mounted) return;
       if (user == null) {
+        // Annulé par l'utilisateur
         setState(() => _isLoading = false);
         return;
       }
       await _afterSignIn();
     } catch (e) {
       AppLogger.debug('❌ Apple SignIn: $e', 'Auth');
+      if (mounted) {
+        setState(() => _isLoading = false);
+        _showAuthError('Connexion Apple impossible', e.toString());
+      }
+    }
+  }
+
+  void _showAuthError(String title, String detail) {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A0030),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.redAccent, size: 22),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          detail.length > 200 ? '${detail.substring(0, 200)}…' : detail,
+          style: GoogleFonts.poppins(color: Colors.white70, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('OK', style: GoogleFonts.poppins(color: const Color(0xFF8A2BE2), fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _signInAnonymously() async {
+    setState(() => _isLoading = true);
+    try {
+      await FirebaseAuth.instance.signInAnonymously();
+      await _afterSignIn();
+    } catch (e) {
+      AppLogger.debug('❌ Anonymous SignIn: $e', 'Auth');
       setState(() => _isLoading = false);
     }
   }
@@ -218,7 +275,9 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
                   else ...[
                     _buildAuthButton(
                       onTap: _signInWithGoogle,
-                      icon: 'assets/images/googleg_standard_color_64px.png',
+                      iconWidget: kIsWeb
+                          ? const Icon(Icons.g_mobiledata, size: 26, color: Color(0xFF4285F4))
+                          : Image.asset('assets/images/googleg_standard_color_64px.png', width: 22, height: 22),
                       label: 'Continuer avec Google',
                       backgroundColor: Colors.white,
                       textColor: const Color(0xFF1A1A1A),
@@ -232,6 +291,38 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
                       backgroundColor: const Color(0xFF1A1A1A),
                       textColor: Colors.white,
                       borderColor: Colors.white24,
+                    ),
+                  ],
+
+                  // 🛠️ BOUTON DEBUG — visible uniquement en local (kDebugMode)
+                  if (kDebugMode) ...[
+                    const SizedBox(height: 16),
+                    GestureDetector(
+                      onTap: _signInAnonymously,
+                      child: Container(
+                        width: double.infinity,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.orange.withOpacity(0.6), width: 1.5),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.bug_report, color: Colors.orange.withOpacity(0.8), size: 18),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Mode test local (debug)',
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.orange.withOpacity(0.8),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
 
@@ -288,7 +379,13 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (icon != null)
-              Image.asset(icon, width: 22, height: 22)
+              Image.asset(
+                icon,
+                width: 22,
+                height: 22,
+                errorBuilder: (_, __, ___) =>
+                    const Icon(Icons.g_mobiledata, size: 24, color: Color(0xFF4285F4)),
+              )
             else if (iconWidget != null)
               iconWidget,
             const SizedBox(width: 12),

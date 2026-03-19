@@ -1,4 +1,5 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
+import 'package:device_preview/device_preview.dart';
 import '/custom_code/actions/index.dart' as actions;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart' as provider_pkg;
@@ -176,12 +177,18 @@ void main() async {
       AppLogger.debug('Non-fatal error initializing persisted state: $e\n$stack', 'Main');
     }
 
-    runApp(ProviderScope(
-      child: provider_pkg.ChangeNotifierProvider(
-        create: (context) => appState,
-        child: MyApp(),
+    runApp(
+      DevicePreview(
+        enabled: kDebugMode,
+        defaultDevice: Devices.ios.iPhone13,
+        builder: (context) => ProviderScope(
+          child: provider_pkg.ChangeNotifierProvider(
+            create: (context) => appState,
+            child: MyApp(),
+          ),
+        ),
       ),
-    ));
+    );
   } catch (e, stack) {
     AppLogger.debug('FATAL ERROR DURING INIT: $e\n$stack', 'Main');
     ErrorLogService.logError('MainInitialization', e, stack);
@@ -309,6 +316,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'DORON',
       scrollBehavior: MyAppScrollBehavior(),
+      locale: DevicePreview.locale(context) ?? _locale,
       localizationsDelegates: [
         FFLocalizationsDelegate(),
         GlobalMaterialLocalizations.delegate,
@@ -317,7 +325,6 @@ class _MyAppState extends State<MyApp> {
         FallbackMaterialLocalizationDelegate(),
         FallbackCupertinoLocalizationDelegate(),
       ],
-      locale: _locale,
       supportedLocales: const [
         Locale('fr'),
         Locale('en'),
@@ -331,9 +338,12 @@ class _MyAppState extends State<MyApp> {
         if (child == null) {
           return const Scaffold(backgroundColor: Color(0xFF062248), body: Center(child: CircularProgressIndicator()));
         }
-        return ShowCaseWidget(
-          builder: (context) => OfflineBannerWrapper(
-            child: child,
+        // DevicePreview builder doit englober ShowCaseWidget
+        return DevicePreview.appBuilder(context,
+          ShowCaseWidget(
+            builder: (context) => OfflineBannerWrapper(
+              child: child,
+            ),
           ),
         );
       },

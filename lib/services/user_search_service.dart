@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '/utils/app_logger.dart';
 
 /// Service de recherche d'utilisateurs Doron par @pseudo ou prénom.
@@ -38,18 +39,27 @@ class UserSearchService {
     try {
       if (query.trim().isEmpty) return [];
 
+      final currentUid = FirebaseAuth.instance.currentUser?.uid;
       final queryLower = query.toLowerCase().trim();
 
-      // Firestore ne supporte pas la recherche LIKE, on utilise la range query
-      final snapshot = await _db
+      // Recherche par searchName (champ index)
+      final nameSnap = await _db
           .collection('users')
           .where('searchName', isGreaterThanOrEqualTo: queryLower)
           .where('searchName', isLessThan: '${queryLower}z')
           .limit(20)
           .get();
 
-      // Chercher aussi par handle
-      final handleSnapshot = await _db
+      // Recherche aussi par display_name (lowercase prefix) pour les users sans searchName
+      final displayNameSnap = await _db
+          .collection('users')
+          .where('display_name_lower', isGreaterThanOrEqualTo: queryLower)
+          .where('display_name_lower', isLessThan: '${queryLower}z')
+          .limit(10)
+          .get();
+
+      // Recherche par handle
+      final handleSnap = await _db
           .collection('users')
           .where('handle', isGreaterThanOrEqualTo: queryLower)
           .where('handle', isLessThan: '${queryLower}z')
@@ -58,7 +68,9 @@ class UserSearchService {
 
       final results = <String, Map<String, dynamic>>{};
 
-      for (final doc in [...snapshot.docs, ...handleSnapshot.docs]) {
+      for (final doc in [...nameSnap.docs, ...displayNameSnap.docs, ...handleSnap.docs]) {
+        // Exclure soi-même des résultats
+        if (doc.id == currentUid) continue;
         results[doc.id] = _buildPublicProfile(doc.id, doc.data());
       }
 
@@ -72,9 +84,19 @@ class UserSearchService {
   /// Construit un profil public depuis un document Firestore.
   static Map<String, dynamic> _buildPublicProfile(
       String uid, Map<String, dynamic> data) {
+    // Chaîne de fallback exhaustive sur tous les champs nom possibles
+    final displayName = (data['display_name'] as String?)?.trim().isNotEmpty == true
+        ? data['display_name'] as String
+        : (data['name'] as String?)?.trim().isNotEmpty == true
+            ? data['name'] as String
+            : (data['first_name'] as String?)?.trim().isNotEmpty == true
+                ? data['first_name'] as String
+                : (data['username'] as String?)?.trim().isNotEmpty == true
+                    ? data['username'] as String
+                    : (data['email'] as String?)?.split('@').first ?? 'Utilisateur';
     return {
       'uid': uid,
-      'displayName': data['display_name'] ?? data['name'] ?? 'Utilisateur',
+      'displayName': displayName,
       'handle': data['handle'] ?? '',
       'photoUrl': data['photo_url'] ?? '',
       'bio': data['bio'] ?? '',
@@ -104,12 +126,17 @@ class UserSearchService {
 
       return snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
+        // Compter les produits : giftIds + photos
+        final giftCount = (data['giftIds'] as List?)?.length ?? 0;
+        final photoCount = (data['photos'] as List?)?.length ?? 0;
         return {
           'id': doc.id,
           'name': data['name'] ?? 'Wishlist',
+          'emoji': data['emoji'] ?? '🎁',
           'description': data['description'] ?? '',
           'isPublic': data['isPublic'] ?? false,
-          'productCount': (data['giftIds'] as List?)?.length ?? 0,
+          'productCount': giftCount + photoCount,
+          'coverPhoto': data['coverPhoto'] ?? '',
           'ownerUid': ownerUid,
         };
       }).toList();

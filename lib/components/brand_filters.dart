@@ -148,8 +148,6 @@ class _BrandFiltersWidgetState extends State<BrandFiltersWidget> {
             },
           ),
         ),
-
-        const SizedBox(height: 16),
       ],
     );
   }

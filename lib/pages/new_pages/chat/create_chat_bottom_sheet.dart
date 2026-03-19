@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '/services/friend_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '/components/liquid_glass.dart';
 
@@ -33,27 +34,21 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
 
   Future<void> _loadContacts() async {
     try {
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) return;
-      
-      final snapshot = await FirebaseFirestore.instance.collection('users').get();
-      
+      // Charge uniquement les amis (pas tous les utilisateurs)
+      final friends = await FriendService.getFriendsStream().first;
       if (mounted) {
         setState(() {
-          _contacts = snapshot.docs
-              .where((doc) => doc.id != currentUser.uid)
-              .map((doc) => {
-                    'id': doc.id,
-                    'name': doc.data()['display_name'] ?? doc.data()['first_name'] ?? 'Utilisateur',
-                    'photoUrl': doc.data()['photo_url'] ?? '',
-                    'color': 0xFF8A2BE2,
-                  })
-              .toList();
+          _contacts = friends.map((f) => {
+                'id': f['uid'] as String? ?? f['id'] as String? ?? '',
+                'name': f['displayName'] as String? ?? 'Ami',
+                'photoUrl': f['photoUrl'] as String? ?? '',
+                'color': 0xFF8A2BE2,
+              }).toList();
           _isLoading = false;
         });
       }
     } catch (e) {
-      print('Error loading contacts: $e');
+      debugPrint('Error loading contacts: $e');
       if (mounted) setState(() => _isLoading = false);
     }
   }

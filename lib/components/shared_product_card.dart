@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '/components/wishlist_picker_sheet.dart';
 import '/components/product_detail_modal.dart';
+import '/components/photo_item_card.dart';
 
 /// Carte produit unifiée — utilisée sur :
 ///   · Page Recherche (liste de cadeaux)
@@ -56,8 +57,15 @@ class SharedProductCard extends StatelessWidget {
     'id': product['id'] ?? _name.hashCode,
   };
 
+  bool get _isPhotoItem => product['type'] == 'photo';
+
   @override
   Widget build(BuildContext context) {
+    // Déléguer au PhotoItemCard si c'est un item photo
+    if (_isPhotoItem) {
+      return PhotoItemCard(photo: product, index: index);
+    }
+
     return GestureDetector(
       key: ValueKey('${_name}_$index'),
       onTap: isReordering

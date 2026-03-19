@@ -3,7 +3,7 @@ description: Doron — Application de suggestion de cadeaux personnalisés.
 
 publish_to: 'none'
 
-version: 2.2.11+143
+version: 2.2.11+152
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -92,6 +92,7 @@ dependencies:
   cross_file: ^0.3.3
 
 dev_dependencies:
+  device_preview: ^1.2.0
   flutter_launcher_icons: 0.13.1
   flutter_lints: 4.0.0
   mockito: ^5.4.4               # Mocks pour tests unitaires

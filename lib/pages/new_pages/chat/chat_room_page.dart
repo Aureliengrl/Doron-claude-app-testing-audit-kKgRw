@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:async';
 import '/components/liquid_glass.dart';
 import '/components/liquid_glass_loader.dart';
@@ -30,11 +31,43 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   Timer? _typingTimer;
   bool _isTyping = false;
   Map<String, dynamic> _chatDocData = {};
+  StreamSubscription<DocumentSnapshot>? _chatDocSub;
+  
+  // Pour les chats 1-to-1 : profil de l'interlocuteur
+  Map<String, dynamic>? _otherUserData;
 
   @override
   void initState() {
     super.initState();
     _updateReadStatus();
+    _loadOtherUserIfDirect();
+    // ── Brancher le stream du document chat pour lire readStatus + typingUsers ──
+    _chatDocSub = FirebaseFirestore.instance
+        .collection('chats')
+        .doc(widget.chatId)
+        .snapshots()
+        .listen((snap) {
+      if (mounted && snap.exists) {
+        setState(() => _chatDocData = snap.data() as Map<String, dynamic>);
+      }
+    });
+  }
+
+  /// Charge le profil de l'interlocuteur pour les chats directs (1-to-1)
+  Future<void> _loadOtherUserIfDirect() async {
+    final isGroup = widget.chatData?['isGroup'] == true;
+    if (isGroup) return;
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUid == null) return;
+    final participants = List<String>.from(widget.chatData?['participants'] ?? []);
+    final otherUid = participants.firstWhere((id) => id != currentUid, orElse: () => '');
+    if (otherUid.isEmpty) return;
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(otherUid).get();
+      if (mounted && doc.exists) {
+        setState(() => _otherUserData = doc.data());
+      }
+    } catch (_) {}
   }
   
   Future<void> _updateReadStatus() async {
@@ -95,6 +128,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   void dispose() {
     _setTypingStatus(false);
     _typingTimer?.cancel();
+    _chatDocSub?.cancel();
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -125,6 +159,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         'senderId': currentUser.uid,
         'text': text,
         'timestamp': FieldValue.serverTimestamp(),
+        'type': 'text',
       };
       
       await messageRef.set(messageData);
@@ -133,10 +168,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         'lastMessage': text,
         'lastMessageTime': FieldValue.serverTimestamp(),
       });
-      
-      // We don't need to animate to bottom anymore since ListView is reversed
     } catch (e) {
-      print('Erreur d\'envoi: $e');
+      debugPrint('Erreur d\'envoi: $e');
     }
   }
 
@@ -163,6 +196,14 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   Widget _buildHeader(String title, bool isGroup) {
+    // Pour un chat 1-to-1, utiliser les infos de l'interlocuteur chargé
+    final displayName = !isGroup && _otherUserData != null
+        ? (_otherUserData!['display_name'] ?? _otherUserData!['first_name'] ?? title)
+        : title;
+    final photoUrl = !isGroup && _otherUserData != null
+        ? (_otherUserData!['photo_url'] as String? ?? '')
+        : '';
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -181,24 +222,33 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
             onPressed: () => context.pop(),
           ),
+          // Avatar : vrai photo pour 1-to-1, icône groupe sinon
           Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              gradient: RadialGradient(
-                colors: isGroup 
-                  ? [const Color(0xFF8A2BE2), const Color(0xFF4A148C)]
-                  : [const Color(0xFFEC4899), const Color(0xFF9C27B0)],
-              ),
               shape: BoxShape.circle,
+              gradient: (!isGroup && photoUrl.isEmpty) ? RadialGradient(
+                colors: [const Color(0xFFEC4899), const Color(0xFF9C27B0)],
+              ) : (isGroup ? RadialGradient(
+                colors: [const Color(0xFF8A2BE2), const Color(0xFF4A148C)],
+              ) : null),
+              image: (!isGroup && photoUrl.isNotEmpty)
+                  ? DecorationImage(
+                      image: CachedNetworkImageProvider(photoUrl),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
             ),
-            child: Center(
-              child: Icon(
-                isGroup ? Icons.groups : Icons.person,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
+            child: (isGroup || photoUrl.isEmpty)
+                ? Center(
+                    child: Icon(
+                      isGroup ? Icons.groups : Icons.person,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  )
+                : null,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -206,7 +256,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  displayName,
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -217,7 +267,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 ),
                 if (isGroup)
                   Text(
-                    '${widget.chatData?['participants'] ?? 0} participants',
+                    '${(widget.chatData?['participants'] as List?)?.length ?? 0} participants',
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: Colors.white.withOpacity(0.6),
@@ -398,7 +448,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         children: [
           IconButton(
             icon: const Icon(Icons.add_circle_outline, color: Colors.white, size: 28),
-            onPressed: () {},
+            onPressed: () => _showShareSheet(),
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -425,21 +475,30 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             ),
           ),
           const SizedBox(width: 8),
-          Container(
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
-              ),
-            ),
-            child: IconButton(
-              icon: Icon(
-                Icons.send,
-                color: _messageController.text.trim().isEmpty ? Colors.white54 : Colors.white,
-                size: 20,
-              ),
-              onPressed: _messageController.text.trim().isEmpty ? null : _sendMessage,
-            ),
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _messageController,
+            builder: (context, value, _) {
+              final hasText = value.text.trim().isNotEmpty;
+              return Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: hasText
+                      ? const LinearGradient(
+                          colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
+                        )
+                      : null,
+                  color: hasText ? null : Colors.white12,
+                ),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.send,
+                    color: hasText ? Colors.white : Colors.white30,
+                    size: 20,
+                  ),
+                  onPressed: hasText ? _sendMessage : null,
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -502,5 +561,139 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       .fadeIn(duration: 300.ms, delay: delayMs.ms)
       .then(delay: 200.ms)
       .fadeOut(duration: 300.ms);
+  }
+
+  // ── Bottom sheet : partager un produit ou une wishlist ──
+
+  void _showShareSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A0030),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text('Partager',
+                style: GoogleFonts.poppins(
+                    color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 16),
+            _buildShareOption(
+              icon: Icons.card_giftcard_rounded,
+              color: const Color(0xFF8A2BE2),
+              label: 'Partager un produit',
+              sublabel: 'Envoie une fiche produit dans le chat',
+              onTap: () {
+                Navigator.pop(context);
+                _sendTextMessage('📦 [Produit partagé] — fonctionnalité bientôt disponible');
+              },
+            ),
+            const SizedBox(height: 12),
+            _buildShareOption(
+              icon: Icons.bookmark_rounded,
+              color: const Color(0xFFEC4899),
+              label: 'Partager une wishlist',
+              sublabel: 'Envoie un album complet',
+              onTap: () {
+                Navigator.pop(context);
+                _sendTextMessage('📚 [Wishlist partagée] — fonctionnalité bientôt disponible');
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _sendTextMessage(String text) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+    try {
+      final messageRef = FirebaseFirestore.instance
+          .collection('chats')
+          .doc(widget.chatId)
+          .collection('messages')
+          .doc();
+      await messageRef.set({
+        'id': messageRef.id,
+        'senderId': currentUser.uid,
+        'text': text,
+        'timestamp': FieldValue.serverTimestamp(),
+        'type': 'system',
+      });
+      await FirebaseFirestore.instance.collection('chats').doc(widget.chatId).update({
+        'lastMessage': text,
+        'lastMessageTime': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      debugPrint('_sendTextMessage: $e');
+    }
+  }
+
+  Widget _buildShareOption({
+    required IconData icon,
+    required Color color,
+    required String label,
+    required String sublabel,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600)),
+                Text(sublabel,
+                    style: GoogleFonts.poppins(
+                        color: Colors.white54, fontSize: 12)),
+              ],
+            ),
+            const Spacer(),
+            Icon(Icons.arrow_forward_ios_rounded, color: Colors.white30, size: 16),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:uuid/uuid.dart';
@@ -11,6 +13,7 @@ import '/auth/firebase_auth/auth_util.dart';
 class FirebaseDataService {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   static final FirebaseAuth _auth = FirebaseAuth.instance;
+  static final FirebaseStorage _storage = FirebaseStorage.instance;
 
   /// Retourne l'ID de l'utilisateur connecté
   static String? get currentUserId => _auth.currentUser?.uid;
@@ -558,6 +561,7 @@ class FirebaseDataService {
     // Normaliser le produit
     final normalizedProduct = {
       'id': productId,
+      'type': 'product',
       'name': productName.isNotEmpty ? productName : 'Produit',
       'brand': product['brand'] ?? product['platform'] ?? product['source'] ?? '',
       'image': product['image'] ?? product['imageUrl'] ?? product['product_photo'] ?? product['photo'] ?? '',
@@ -570,11 +574,21 @@ class FirebaseDataService {
     // ── Local (SharedPreferences) ─────────────────────────────────────────
     try {
       final prefs = await SharedPreferences.getInstance();
+      // 1) Mettre à jour la liste de produits du cache
       final localJson = prefs.getString('wishlist_products_$wishlistId') ?? '[]';
       final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
       localList.removeWhere((p) => p['id']?.toString() == productId);
       localList.insert(0, normalizedProduct);
       await prefs.setString('wishlist_products_$wishlistId', json.encode(localList));
+      // 2) Mettre à jour productCount dans le cache des wishlists
+      final wishlistsJson = prefs.getString('local_wishlists') ?? '[]';
+      final wishlistsList = (json.decode(wishlistsJson) as List).cast<Map<String, dynamic>>();
+      final idx = wishlistsList.indexWhere((w) => w['id']?.toString() == wishlistId);
+      if (idx != -1) {
+        final current = (wishlistsList[idx]['productCount'] as int?) ?? 0;
+        wishlistsList[idx]['productCount'] = current + 1;
+        await prefs.setString('local_wishlists', json.encode(wishlistsList));
+      }
       AppLogger.success('Product saved locally in wishlist $wishlistId: $productId', 'Firebase');
     } catch (e) {
       AppLogger.error('Error saving wishlist product locally', 'Firebase', e);
@@ -626,6 +640,83 @@ class FirebaseDataService {
         AppLogger.error('Second attempt failed: $e2', 'Firebase', e2);
         return false;
       }
+    }
+  }
+
+  /// Ajoute une photo (depuis le disque local) à une wishlist.
+  /// Upload sur Firebase Storage, puis écrit un item `type:'photo'`
+  /// dans la sous-collection `products` et incrémente `productCount`.
+  static Future<bool> addPhotoToWishlist(
+    String wishlistId,
+    String localImagePath, {
+    String? caption,
+  }) async {
+    try {
+      final uid = currentUserId;
+      if (uid == null || uid.isEmpty) return false;
+
+      final photoId = '${DateTime.now().millisecondsSinceEpoch}';
+      final file = File(localImagePath);
+
+      // ── Upload Firebase Storage ───────────────────────────────────────
+      final ref = _storage
+          .ref()
+          .child('users/$uid/wishlist_photos/$wishlistId/$photoId.jpg');
+      final uploadTask = await ref.putFile(file);
+      final downloadUrl = await uploadTask.ref.getDownloadURL();
+
+      final photoItem = {
+        'id': photoId,
+        'type': 'photo',
+        'image': downloadUrl,
+        'caption': caption ?? '',
+        'addedAt': DateTime.now().toIso8601String(),
+      };
+
+      // ── Local cache ────────────────────────────────────────────────────
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        // liste produits
+        final localJson = prefs.getString('wishlist_products_$wishlistId') ?? '[]';
+        final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
+        localList.insert(0, photoItem);
+        await prefs.setString('wishlist_products_$wishlistId', json.encode(localList));
+        // compteur
+        final wishlistsJson = prefs.getString('local_wishlists') ?? '[]';
+        final wishlistsList = (json.decode(wishlistsJson) as List).cast<Map<String, dynamic>>();
+        final idx = wishlistsList.indexWhere((w) => w['id']?.toString() == wishlistId);
+        if (idx != -1) {
+          final current = (wishlistsList[idx]['productCount'] as int?) ?? 0;
+          wishlistsList[idx]['productCount'] = current + 1;
+          await prefs.setString('local_wishlists', json.encode(wishlistsList));
+        }
+      } catch (_) {}
+
+      // ── Firestore ─────────────────────────────────────────────────────
+      await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('wishlists')
+          .doc(wishlistId)
+          .collection('products')
+          .doc(photoId)
+          .set({...photoItem, 'addedAt': FieldValue.serverTimestamp()});
+
+      await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('wishlists')
+          .doc(wishlistId)
+          .update({
+        'productCount': FieldValue.increment(1),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      AppLogger.firebase('Photo added to wishlist $wishlistId: $photoId');
+      return true;
+    } catch (e) {
+      AppLogger.error('Error adding photo to wishlist', 'Firebase', e);
+      return false;
     }
   }
 

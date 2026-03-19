@@ -22,6 +22,7 @@ import '/components/liquid_glass_empty_state_widget.dart';
 import '/components/liquid_glass_loader.dart';
 import '/components/product_detail_modal.dart';
 import '/services/friend_service.dart';
+import 'package:image_picker/image_picker.dart';
 
 class SearchPageWidget extends StatefulWidget {
   const SearchPageWidget({super.key});
@@ -37,6 +38,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   late SearchPageModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final Color violetColor = const Color(0xFF8A2BE2);
+  bool _searchReorderMode = false;
 
   @override
   void initState() {
@@ -258,46 +260,31 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         bottom: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-          child: Stack(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Align(
-                alignment: Alignment.center,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    micro.ShimmerEffect(
-                      shimmerColor: Colors.white,
-                      duration: const Duration(milliseconds: 3000),
-                      child: Text(
-                        'Recherche',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Trouvez le cadeau parfait pour vos proches',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        color: Colors.white.withOpacity(0.9),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
+              micro.ShimmerEffect(
+                shimmerColor: Colors.white,
+                duration: const Duration(milliseconds: 3000),
+                child: Text(
+                  'Recherche',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
-              Positioned(
-                top: 0,
-                right: 0,
-                child: IconButton(
-                  icon: const Icon(Icons.person_search, color: Colors.white),
-                  onPressed: _showUserSearchSheet,
+              const SizedBox(height: 4),
+              Text(
+                'Trouvez le cadeau parfait pour vos proches',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  color: Colors.white.withOpacity(0.9),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ],
@@ -306,6 +293,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       ),
     );
   }
+
 
   Widget _buildWelcomeMessage() {
     return Padding(
@@ -738,6 +726,11 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                              });
                           }
                         ),
+                      _buildProfileActionButton(
+                        icon: Icons.add_photo_alternate_rounded,
+                        label: 'Photo',
+                        onTap: () => _addPhotoForPerson(profile),
+                      ),
                     ],
                   ),
                 ],
@@ -817,6 +810,130 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       );
     }
 
+    if (_searchReorderMode) {
+      // ── Mode réorganisation ──────────────────────────────────
+      final products = _model.getFilteredProducts();
+      return SliverToBoxAdapter(
+        child: Column(
+          children: [
+            Container(
+              color: violetColor.withOpacity(0.85),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Row(
+                children: [
+                  const Icon(Icons.drag_indicator, color: Colors.white, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Maintenez et glissez pour réorganiser',
+                      style: GoogleFonts.poppins(color: Colors.white, fontSize: 13),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => setState(() => _searchReorderMode = false),
+                    child: Text('Terminé', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.65,
+              child: ReorderableListView.builder(
+                padding: const EdgeInsets.all(12),
+                itemCount: products.length,
+                onReorder: (oldIndex, newIndex) async {
+                  if (newIndex > oldIndex) newIndex -= 1;
+                  final profile = _model.currentProfile;
+                  if (profile == null) return;
+                  final personId = profile['id'].toString();
+                  setState(() {
+                    final item = _model.personGifts[personId]!.removeAt(oldIndex);
+                    _model.personGifts[personId]!.insert(newIndex, item);
+                  });
+                  // Sauvegarder dans Firebase
+                  try {
+                    await FirebaseDataService.saveGiftListForPerson(
+                      personId: personId,
+                      gifts: _model.personGifts[personId]!,
+                      listName: 'Liste réorganisée',
+                    );
+                  } catch (_) {}
+                },
+                itemBuilder: (context, index) {
+                  final product = products[index];
+                  final imageUrl = product['image'] as String? ?? '';
+                  final brand = product['brand'] as String? ?? product['source'] as String? ?? '';
+                  final price = product['price']?.toString() ?? '';
+                  return Container(
+                    key: ValueKey(product['id'] ?? index.toString()),
+                    margin: const EdgeInsets.only(bottom: 10),
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.white.withOpacity(0.15)),
+                    ),
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(14),
+                            bottomLeft: Radius.circular(14),
+                          ),
+                          child: CachedImage(
+                              imageUrl: imageUrl,
+                              width: 80,
+                              height: 80,
+                              fit: BoxFit.cover,
+                              errorWidget: Container(
+                                width: 80,
+                                color: Colors.grey[800],
+                                child: const Icon(Icons.image_not_supported, color: Colors.white54),
+                              ),
+                            ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                brand,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (price.isNotEmpty)
+                                Text(
+                                  '${price}€',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    color: Colors.white60,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.only(right: 8),
+                          child: Icon(Icons.drag_handle, color: Colors.white38),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return SliverPadding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
       sliver: SliverGrid(
@@ -847,6 +964,10 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () => _showProductDetail(product),
+        onLongPress: () {
+          HapticFeedback.mediumImpact();
+          setState(() => _searchReorderMode = true);
+        },
         borderRadius: BorderRadius.circular(20),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
@@ -1628,4 +1749,70 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     );
   }
 
+  /// Ajoute une photo dans la wishlist d'une personne (page Recherche).
+  Future<void> _addPhotoForPerson(Map<String, dynamic> profile) async {
+    final personId = profile['id']?.toString() ?? '';
+    final wishlists = await FirebaseDataService.loadWishlists(personId: personId);
+    final personName = (profile["name"] as String?) ?? 'Personne';
+    String wishlistId;
+    if (wishlists.isEmpty) {
+      final newId = await FirebaseDataService.createWishlist(
+        name: 'Cadeaux pour $personName',
+        emoji: '\uD83C\uDF81',
+      );
+      if (newId == null || !mounted) return;
+      wishlistId = newId;
+    } else {
+      wishlistId = wishlists.first['id'] as String;
+    }
+    ImageSource? source;
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: const Color(0xFF16002E),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+          ListTile(
+            leading: const Icon(Icons.photo_library_rounded, color: Color(0xFF00D4FF)),
+            title: Text('Depuis la galerie', style: GoogleFonts.poppins(color: Colors.white)),
+            onTap: () { source = ImageSource.gallery; Navigator.pop(ctx); },
+          ),
+          ListTile(
+            leading: const Icon(Icons.camera_alt_rounded, color: Color(0xFF00D4FF)),
+            title: Text('Prendre une photo', style: GoogleFonts.poppins(color: Colors.white)),
+            onTap: () { source = ImageSource.camera; Navigator.pop(ctx); },
+          ),
+        ]),
+      ),
+    );
+    if (source == null || !mounted) return;
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: source!, imageQuality: 80, requestFullMetadata: false);
+    if (picked == null || !mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Row(children: [
+        const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+        const SizedBox(width: 12),
+        Text('Upload en cours...', style: GoogleFonts.poppins(color: Colors.white)),
+      ]),
+      backgroundColor: const Color(0xFF0A1F3D), duration: const Duration(seconds: 10),
+    ));
+    final ok = await FirebaseDataService.addPhotoToWishlist(wishlistId, picked.path);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(ok ? '\ud83d\udcf7 Photo ajout\u00e9e !' : 'Erreur upload', style: GoogleFonts.poppins(color: Colors.white)),
+      backgroundColor: ok ? const Color(0xFF00D4FF).withOpacity(0.85) : Colors.red,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ));
+    if (ok && mounted) setState(() {});
+  }
 }

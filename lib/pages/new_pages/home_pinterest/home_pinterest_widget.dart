@@ -1,4 +1,4 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -74,29 +74,30 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     await TutorialOverlay.showIfNeeded(
       context,
       tutorialKey: 'main_v2',
+      onComplete: () {},
       steps: [
         TutorialStep(
-          icon: '🏠',
+          icon: Icons.home_rounded,
           title: 'Bienvenue sur Doron !',
           description: 'Découvre des idées cadeaux personnalisées pour toi et tes proches. Fais défiler pour explorer.',
         ),
         TutorialStep(
-          icon: '🔍',
+          icon: Icons.search_rounded,
           title: 'Recherche des cadeaux',
           description: 'Tape sur l\'onglet Recherche pour trouver le cadeau parfait pour quelqu\'un de spécial.',
         ),
         TutorialStep(
-          icon: '❤️',
+          icon: Icons.favorite_rounded,
           title: 'Sauvegarde tes favoris',
           description: 'Appuie sur le cœur d\'un produit pour l\'ajouter à tes favoris et le retrouver facilement.',
         ),
         TutorialStep(
-          icon: '🎁',
+          icon: Icons.card_giftcard_rounded,
           title: 'Crée des wishlists',
           description: 'Dans ton profil, crée des listes de souhaits et partage-les avec tes amis.',
         ),
         TutorialStep(
-          icon: '👥',
+          icon: Icons.group_rounded,
           title: 'Ajoute des amis',
           description: 'Recherche tes amis par @pseudo, envoie-leur une demande et vois leurs wishlists publiques.',
         ),
@@ -735,6 +736,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
               // Catégories
               SliverToBoxAdapter(child: _buildCategories()),
 
+              // Espace uniforme (16px) entre chaque bloc de filtres
+              const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
               // Filtres par marques
               SliverToBoxAdapter(
                 child: BrandFiltersWidget(
@@ -747,6 +751,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                   primaryColor: violetColor,
                 ),
               ),
+
+              // Espace uniforme (16px)
+              const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
               // Filtres par prix
               SliverToBoxAdapter(child: _buildPriceFilters()),
@@ -994,7 +1001,6 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 16),
         SizedBox(
           height: 50,
           child: ListView.builder(
@@ -2255,34 +2261,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
   /// Ajoute un produit à une wishlist
   Future<void> _addToWishlist(Map<String, dynamic> product, String wishlistId) async {
     try {
-      // Créer d'abord le favori avec le produit
-      final productTitle = product['name'] as String? ?? '';
-      final productImage = product['image'] as String? ?? '';
-      final productUrl = product['url'] ?? ProductUrlService.generateProductUrl(product);
-      final brandOrSource = product['brand'] ?? product['source'] ?? 'Amazon';
-
-      // Ajouter aux favoris Firebase avec wishlistId
-      final docRef = await FavouritesRecord.collection.add(
-        createFavouritesRecordData(
-          uid: currentUserReference,
-          platform: brandOrSource.toString().toLowerCase(),
-          timeStamp: DateTime.now(),
-          personId: null,
-          product: ProductsStruct(
-            productTitle: productTitle,
-            productPrice: '${product['price'] ?? 0}€',
-            productUrl: productUrl,
-            productPhoto: productImage,
-            productStarRating: '',
-            productOriginalPrice: '',
-            productNumRatings: 0,
-            platform: brandOrSource.toString().toLowerCase(),
-          ),
-        ),
-      );
-
-      // Ajouter à la wishlist
-      await FirebaseDataService.addToWishlist(wishlistId, docRef.id);
+      // Utilise addProductToWishlist qui écrit dans la sous-collection products/
+      // (cohérent avec loadWishlistProducts et WishlistPickerSheet)
+      final ok = await FirebaseDataService.addProductToWishlist(wishlistId, product);
+      if (!ok) throw Exception('addProductToWishlist returned false');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

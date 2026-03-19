@@ -89,9 +89,11 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Doron utilise votre position pour trouver les magasins physiques proches qui vendent ce cadeau.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Doron a besoin d'accéder à votre galerie pour vous permettre de changer votre photo de profil.</string>
+	<string>Doron a besoin d'accéder à votre galerie pour changer votre photo de profil, ajouter une pochette à vos albums de cadeaux, et enregistrer des photos dans vos wishlists.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Doron a besoin d'accéder à votre galerie pour enregistrer et charger des photos dans vos wishlists et albums de cadeaux.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Doron a besoin d'accéder à l'appareil photo pour vous permettre de prendre une nouvelle photo de profil.</string>
+	<string>Doron a besoin d'accéder à l'appareil photo pour prendre des photos de profil, des pochettes d'albums et des photos de cadeaux à ajouter à vos wishlists.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Doron utilise votre position pour trouver les magasins physiques proches qui vendent ce cadeau.</string>
 

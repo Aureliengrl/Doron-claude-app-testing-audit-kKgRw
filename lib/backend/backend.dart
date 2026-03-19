@@ -1,4 +1,4 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../auth/firebase_auth/auth_util.dart';
@@ -349,40 +349,60 @@ Future<FFFirestorePage<T>> queryCollectionPage<T>(
 Future maybeCreateUser(User user) async {
   AppLogger.debug('🔄 maybeCreateUser: Début pour UID: ${user.uid}', 'Debug');
 
+  // ── Attendre que le token JWT soit valide avant tout appel Firestore ────────
+  // Sur iOS, juste après une connexion Google/Apple, le token peut ne pas encore
+  // être propagé, ce qui génère un [permission-denied] lors de la lecture Firestore.
+  try {
+    await user.getIdToken(true);
+    // Petit délai supplémentaire pour que Firebase propagé le token côté serveur
+    await Future.delayed(const Duration(milliseconds: 500));
+  } catch (tokenErr) {
+    AppLogger.debug('⚠️ maybeCreateUser: impossible de rafraîchir le token: $tokenErr', 'Debug');
+    // On continue quand même, le token est peut-être déjà valide
+  }
+
   final userRecord = UsersRecord.collection.doc(user.uid);
 
   AppLogger.debug('🔄 maybeCreateUser: Vérification si utilisateur existe...', 'Debug');
-  final userExists = await userRecord.get().then((u) => u.exists);
+  try {
+    final userExists = await userRecord.get().then((u) => u.exists);
 
-  if (userExists) {
-    AppLogger.debug('✅ maybeCreateUser: Utilisateur existe déjà, chargement du document', 'Debug');
-    currentUserDocument = await UsersRecord.getDocumentOnce(userRecord);
-    AppLogger.debug('✅ maybeCreateUser: Document chargé', 'Debug');
-    return;
+    if (userExists) {
+      AppLogger.debug('✅ maybeCreateUser: Utilisateur existe déjà, chargement du document', 'Debug');
+      currentUserDocument = await UsersRecord.getDocumentOnce(userRecord);
+      AppLogger.debug('✅ maybeCreateUser: Document chargé', 'Debug');
+      return;
+    }
+
+    AppLogger.debug('🔄 maybeCreateUser: Utilisateur n\'existe pas, création du document...', 'Debug');
+    final userData = createUsersRecordData(
+      email: user.email ??
+          FirebaseAuth.instance.currentUser?.email ??
+          user.providerData.firstOrNull?.email,
+      displayName:
+          user.displayName ?? FirebaseAuth.instance.currentUser?.displayName,
+      photoUrl: user.photoURL,
+      uid: user.uid,
+      phoneNumber: user.phoneNumber,
+      createdTime: getCurrentTimestamp,
+    );
+
+    AppLogger.debug('🔄 maybeCreateUser: Enregistrement dans Firestore...', 'Debug');
+    AppLogger.debug('   Email: ${userData['email']}', 'Debug');
+    AppLogger.debug('   DisplayName: ${userData['display_name']}', 'Debug');
+
+    await userRecord.set(userData);
+
+    AppLogger.debug('✅ maybeCreateUser: Document créé avec succès', 'Debug');
+    currentUserDocument = UsersRecord.getDocumentFromData(userData, userRecord);
+    AppLogger.debug('✅ maybeCreateUser: Terminé', 'Debug');
+  } on FirebaseException catch (e) {
+    // Si permission-denied = token non encore propagé, on ne bloque pas la connexion
+    // L'utilisateur sera authentifié même si le document Firestore n'est pas encore pret
+    AppLogger.debug('⚠️ maybeCreateUser: FirebaseException ${e.code} — connexion continue quand même', 'Debug');
+  } catch (e) {
+    AppLogger.debug('⚠️ maybeCreateUser: erreur non-critique: $e', 'Debug');
   }
-
-  AppLogger.debug('🔄 maybeCreateUser: Utilisateur n\'existe pas, création du document...', 'Debug');
-  final userData = createUsersRecordData(
-    email: user.email ??
-        FirebaseAuth.instance.currentUser?.email ??
-        user.providerData.firstOrNull?.email,
-    displayName:
-        user.displayName ?? FirebaseAuth.instance.currentUser?.displayName,
-    photoUrl: user.photoURL,
-    uid: user.uid,
-    phoneNumber: user.phoneNumber,
-    createdTime: getCurrentTimestamp,
-  );
-
-  AppLogger.debug('🔄 maybeCreateUser: Enregistrement dans Firestore...', 'Debug');
-  AppLogger.debug('   Email: ${userData['email']}', 'Debug');
-  AppLogger.debug('   DisplayName: ${userData['display_name']}', 'Debug');
-
-  await userRecord.set(userData);
-
-  AppLogger.debug('✅ maybeCreateUser: Document cr avec succès', 'Debug');
-  currentUserDocument = UsersRecord.getDocumentFromData(userData, userRecord);
-  AppLogger.debug('✅ maybeCreateUser: Terminé', 'Debug');
 }
 
 Future updateUserDocument({String? email}) async {

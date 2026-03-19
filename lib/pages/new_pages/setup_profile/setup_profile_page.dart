@@ -60,7 +60,8 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
         return;
       }
 
-      final uid = FirebaseAuth.instance.currentUser?.uid;
+      final currentUser = FirebaseAuth.instance.currentUser;
+      final uid = currentUser?.uid;
       if (uid == null) {
         setState(() {
           _isLoading = false;
@@ -69,10 +70,19 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
         return;
       }
 
+      // Nom d'affichage pour les index de recherche
+      final displayNameRaw = currentUser.displayName ?? '';
+      final displayNameLower = displayNameRaw.toLowerCase().trim();
+      // searchName = handle OU prénom (le plus utile pour être trouvé)
+      final searchName = displayNameLower.isNotEmpty ? displayNameLower : handle;
+
       // 2. Sauvegarder le handle dans le profil utilisateur (critique)
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'handle': handle,
         'handle_lower': handle,
+        // Champs index pour la recherche
+        'searchName': searchName,
+        'display_name_lower': displayNameLower,
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 

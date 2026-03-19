@@ -35,10 +35,45 @@ class FriendService {
     final myUid = _myUid;
     if (myUid == null) return const Stream.empty();
 
+    // Écoute le document user. À chaque modification, récupère les profils amis.
     return _db.collection('users').doc(myUid).snapshots().asyncMap((snap) async {
       final friendUids = (snap.data()?['friends'] as List?)?.cast<String>() ?? [];
       if (friendUids.isEmpty) return <Map<String, dynamic>>[];
       return await getFriends(myUid);
+    });
+  }
+
+  // ─── Stream des demandes reçues (temps réel) ───────────────────────────────────────
+
+  /// Stream des demandes d'amis reçues non traitées.
+  /// Permet une mise à jour automatique du badge de l'onglet Demandes.
+  static Stream<List<Map<String, dynamic>>> getPendingRequestsStream() {
+    final myUid = _myUid;
+    if (myUid == null) return const Stream.empty();
+
+    return _db
+        .collection('friend_requests')
+        .where('toUid', isEqualTo: myUid)
+        .where('status', isEqualTo: 'pending')
+        .snapshots()
+        .asyncMap((snap) async {
+      final requests = <Map<String, dynamic>>[];
+      for (final doc in snap.docs) {
+        final data = doc.data();
+        try {
+          final senderDoc = await _db.collection('users').doc(data['fromUid']).get();
+          final sender = senderDoc.data() ?? {};
+          requests.add({
+            'requestId': doc.id,
+            'fromUid': data['fromUid'],
+            'displayName': sender['display_name'] ?? sender['name'] ?? 'Utilisateur',
+            'handle': sender['handle'] ?? '',
+            'photoUrl': sender['photo_url'] ?? '',
+            'createdAt': data['createdAt'],
+          });
+        } catch (_) {}
+      }
+      return requests;
     });
   }
 
