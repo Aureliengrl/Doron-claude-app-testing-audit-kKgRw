@@ -46,19 +46,25 @@ class FriendService {
   // ─── Stream des demandes reçues (temps réel) ───────────────────────────────────────
 
   /// Stream des demandes d'amis reçues non traitées.
-  /// Permet une mise à jour automatique du badge de l'onglet Demandes.
+  /// N'utilise qu'un seul filtre (toUid) pour éviter la dépendance à un index
+  /// composite Firestore qui peut ne pas encore être actif.
+  /// Le filtre sur status='pending' est appliqué côté client.
   static Stream<List<Map<String, dynamic>>> getPendingRequestsStream() {
     final myUid = _myUid;
-    if (myUid == null) return const Stream.empty();
+    if (myUid == null) return Stream.value([]);
 
     return _db
         .collection('friend_requests')
         .where('toUid', isEqualTo: myUid)
-        .where('status', isEqualTo: 'pending')
         .snapshots()
+        .handleError((e) {
+          AppLogger.debug('❌ getPendingRequestsStream error: $e', 'FriendService');
+        })
         .asyncMap((snap) async {
       final requests = <Map<String, dynamic>>[];
-      for (final doc in snap.docs) {
+      // Filtre status côté client pour éviter l'index composite
+      final pendingDocs = snap.docs.where((d) => d.data()['status'] == 'pending').toList();
+      for (final doc in pendingDocs) {
         final data = doc.data();
         try {
           final senderDoc = await _db.collection('users').doc(data['fromUid']).get();

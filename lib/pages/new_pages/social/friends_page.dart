@@ -41,7 +41,6 @@ class _FriendsPageState extends State<FriendsPage>
 
   // Onglet Demandes — stream temps réel
   Stream<List<Map<String, dynamic>>>? _requestsStream;
-  List<Map<String, dynamic>> _pendingRequests = [];
   final Set<String> _processingRequestIds = {};
 
   @override
@@ -731,10 +730,32 @@ class _FriendsPageState extends State<FriendsPage>
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: _requestsStream,
       builder: (context, snapshot) {
+        // Erreur Firestore → afficher état vide plutôt que spinner infini
+        if (snapshot.hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.wifi_off_rounded, size: 48, color: Colors.white24),
+                const SizedBox(height: 16),
+                Text('Impossible de charger les demandes',
+                    style: GoogleFonts.poppins(fontSize: 15, color: Colors.white54)),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => setState(() {
+                    _requestsStream = FriendService.getPendingRequestsStream();
+                  }),
+                  child: Text('Réessayer', style: GoogleFonts.poppins(color: _violet)),
+                ),
+              ],
+            ),
+          );
+        }
+        // Spinner seulement si on attend ET qu'on n'a jamais eu de données
         if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
           return const Center(child: CircularProgressIndicator(color: _violet, strokeWidth: 2));
         }
-        final requests = snapshot.data ?? _pendingRequests;
+        final requests = snapshot.data ?? [];
         if (requests.isEmpty) {
           return Center(
             child: Column(
