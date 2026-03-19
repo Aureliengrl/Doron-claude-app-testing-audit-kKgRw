@@ -7,10 +7,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import '/services/friend_service.dart';
 import '/services/user_search_service.dart';
-import '/services/firebase_data_service.dart';
 import '/components/liquid_glass.dart';
+import '/components/liquid_glass_loader.dart';
+import '/components/shared_product_card.dart';
 
-/// Page de profil public d'un utilisateur — design unifié avec le profil perso.
+/// Page de profil public — même layout que user_profile_widget.dart
 /// Route : /public-profile/:uid
 class PublicProfilePage extends StatefulWidget {
   final String uid;
@@ -29,17 +30,16 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   static const _pink = Color(0xFFEC4899);
   static const _green = Color(0xFF10B981);
 
+  late TabController _tabController;
+
   Map<String, dynamic>? _profile;
   List<Map<String, dynamic>> _wishlists = [];
+  List<Map<String, dynamic>> _likedProducts = [];
   FriendshipStatus _friendshipStatus = FriendshipStatus.none;
   String? _requestId;
   bool _isLoading = true;
   bool _isFriendActionLoading = false;
-
-  // Stats
   int _friendsCount = 0;
-  int _wishlistsCount = 0;
-  int _giftsCount = 0;
 
   bool get _isMyProfile =>
       FirebaseAuth.instance.currentUser?.uid == widget.uid;
@@ -47,13 +47,21 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _load();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
     await Future.wait([
       _loadProfile(),
       _loadWishlists(),
+      _loadLikedProducts(),
       if (!_isMyProfile) _loadFriendshipStatus(),
     ]);
     if (mounted) setState(() => _isLoading = false);
@@ -71,12 +79,10 @@ class _PublicProfilePageState extends State<PublicProfilePage>
         _friendsCount = friends.length;
         _profile = {
           'uid': doc.id,
-          'displayName': data['display_name'] ?? data['name'] ?? 'Utilisateur',
+          'displayName': data['display_name'] ?? data['displayName'] ?? data['name'] ?? 'Utilisateur',
           'handle': data['handle'] ?? '',
-          'photoUrl': data['photo_url'] ?? '',
+          'photoUrl': data['photo_url'] ?? data['photoUrl'] ?? '',
           'bio': data['bio'] ?? '',
-          'city': data['city'] ?? '',
-          'friendsCount': friends.length,
         };
       }
     } catch (_) {}
@@ -89,12 +95,29 @@ class _PublicProfilePageState extends State<PublicProfilePage>
       viewerUid: myUid,
     );
     _wishlists = wishlists;
-    _wishlistsCount = wishlists.length;
-    // Compter les produits dans toutes les wishlists
-    _giftsCount = wishlists.fold(0, (sum, w) {
-      final count = (w['productCount'] as int?) ?? 0;
-      return sum + count;
-    });
+  }
+
+  Future<void> _loadLikedProducts() async {
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.uid)
+          .collection('favorites')
+          .orderBy('createdAt', descending: true)
+          .limit(50)
+          .get();
+      _likedProducts = snap.docs.map((doc) {
+        final d = doc.data();
+        return <String, dynamic>{
+          'id': doc.id,
+          'name': d['name'] ?? '',
+          'brand': d['brand'] ?? '',
+          'price': d['price']?.toString() ?? '',
+          'image': d['image'] ?? '',
+          'url': d['url'] ?? '',
+        };
+      }).toList();
+    } catch (_) {}
   }
 
   Future<void> _loadFriendshipStatus() async {
@@ -156,7 +179,6 @@ class _PublicProfilePageState extends State<PublicProfilePage>
         }
         break;
     }
-
     setState(() => _isFriendActionLoading = false);
   }
 
@@ -183,401 +205,319 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     ));
   }
 
+  // ══════════════════════════════════════════════════════
+  // BUILD
+  // ══════════════════════════════════════════════════════
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: LiquidGlassTokens.pageDark,
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: _violet, strokeWidth: 2))
+          ? const Center(child: CircularProgressIndicator(color: _violet, strokeWidth: 2))
           : _profile == null
               ? _buildNotFound()
-              : _buildContent(),
+              : CustomScrollView(
+                  slivers: [
+                    _buildAppBar(),
+                    _buildTabBar(),
+                    _buildTabContent(),
+                  ],
+                ),
     );
   }
 
-  Widget _buildContent() {
-    return CustomScrollView(
-      slivers: [
-        _buildSliverAppBar(),
-        SliverToBoxAdapter(child: _buildStatsRow()),
-        if (!_isMyProfile) SliverToBoxAdapter(child: _buildActionButtons()),
-        if ((_profile!['bio'] as String? ?? '').isNotEmpty)
-          SliverToBoxAdapter(child: _buildBio()),
-        SliverToBoxAdapter(child: _buildWishlistsSection()),
-        const SliverToBoxAdapter(child: SizedBox(height: 100)),
-      ],
-    );
-  }
+  // ─── App Bar (identique au profil perso) ───────────────────────────────────
 
-  // ─── Sliver App Bar (hero photo + nom) ─────────────────────────────────────
-
-  Widget _buildSliverAppBar() {
+  Widget _buildAppBar() {
     final photoUrl = _profile!['photoUrl'] as String? ?? '';
     final displayName = _profile!['displayName'] as String? ?? '';
     final handle = _profile!['handle'] as String? ?? '';
+    final bio = _profile!['bio'] as String? ?? '';
 
     return SliverAppBar(
       expandedHeight: 240,
+      floating: false,
       pinned: true,
-      stretch: true,
       backgroundColor: LiquidGlassTokens.pageDark,
-      elevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
         onPressed: () => Navigator.of(context).pop(),
       ),
       flexibleSpace: FlexibleSpaceBar(
-        stretchModes: const [StretchMode.zoomBackground],
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Dégradé de fond
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    _violet.withOpacity(0.6),
-                    _pink.withOpacity(0.4),
-                    LiquidGlassTokens.pageDark,
-                  ],
-                  stops: const [0.0, 0.5, 1.0],
-                ),
-              ),
-            ),
-            // Contenu : avatar + nom
-            SafeArea(
+        background: Container(
+          decoration: const BoxDecoration(
+            gradient: LiquidGlassTokens.darkPageGradient,
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 16),
-                  // Avatar avec bordure dégradée
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(colors: [_violet, _pink]),
-                      boxShadow: [
-                        BoxShadow(
-                          color: _violet.withOpacity(0.5),
-                          blurRadius: 24,
-                          spreadRadius: 2,
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      // Photo de profil
+                      Stack(
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                  color: Colors.white.withOpacity(0.8), width: 2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: _violet.withOpacity(0.6),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ClipOval(
+                              child: photoUrl.isNotEmpty
+                                  ? CachedNetworkImage(
+                                      imageUrl: photoUrl,
+                                      fit: BoxFit.cover,
+                                      placeholder: (_, __) => Container(
+                                        color: Colors.grey[800],
+                                        child: const Center(
+                                          child: LiquidGlassLoader(size: 16, isDark: false),
+                                        ),
+                                      ),
+                                      errorWidget: (_, __, ___) => _buildAvatarFallback(displayName),
+                                    )
+                                  : _buildAvatarFallback(displayName),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 24),
+                      // Stats — Amis / Wishlists / Cadeaux
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildProfileStat('Amis', '$_friendsCount'),
+                            _buildProfileStat('Wishlists', '${_wishlists.length}'),
+                            _buildProfileStat('Cadeaux', '${_likedProducts.length}'),
+                          ],
                         ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(3),
-                    child: CircleAvatar(
-                      radius: 50,
-                      backgroundColor: LiquidGlassTokens.pageDark,
-                      backgroundImage: photoUrl.isNotEmpty
-                          ? CachedNetworkImageProvider(photoUrl)
-                          : null,
-                      child: photoUrl.isEmpty
-                          ? Text(
-                              displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
-                              style: GoogleFonts.poppins(
-                                  color: Colors.white,
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.bold),
-                            )
-                          : null,
-                    ),
+                      ),
+                    ],
                   ),
+                  // Nom & Handle
                   const SizedBox(height: 12),
                   Text(
                     displayName,
-                    style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        shadows: [Shadow(color: Colors.black45, blurRadius: 8)]),
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                  if (handle.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white.withOpacity(0.3)),
-                      ),
+                  if (handle.isNotEmpty)
+                    Text(
+                      '@$handle',
+                      style: GoogleFonts.outfit(fontSize: 14, color: Colors.white70),
+                    ),
+                  if (bio.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
                       child: Text(
-                        '@$handle',
-                        style: GoogleFonts.poppins(
-                            color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+                        bio,
+                        style: GoogleFonts.outfit(fontSize: 13, color: Colors.white70),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  ],
+                  const SizedBox(height: 12),
+                  // Boutons d'action — remplacent "Modifier/Amis/Partager" du profil perso
+                  if (!_isMyProfile)
+                    Row(
+                      children: [
+                        Expanded(child: _buildFriendButton()),
+                        if (_friendshipStatus == FriendshipStatus.friends ||
+                            _friendshipStatus == FriendshipStatus.pendingReceived) ...[
+                          const SizedBox(width: 8),
+                          _buildChatButton(),
+                        ],
+                      ],
+                    ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvatarFallback(String displayName) {
+    return Container(
+      color: _violet.withOpacity(0.3),
+      child: displayName.isNotEmpty
+          ? Center(
+              child: Text(
+                displayName[0].toUpperCase(),
+                style: GoogleFonts.poppins(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+            )
+          : const Icon(Icons.person, size: 40, color: Colors.white),
+    );
+  }
+
+  Widget _buildProfileStat(String label, String count) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(count,
+            style: GoogleFonts.poppins(
+                fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+        Text(label,
+            style: GoogleFonts.poppins(
+                fontSize: 12, color: Colors.white.withOpacity(0.9))),
+      ],
+    );
+  }
+
+  Widget _buildFriendButton() {
+    final configs = {
+      FriendshipStatus.none: (label: 'Ajouter en ami', icon: Icons.person_add_rounded, color: _violet),
+      FriendshipStatus.pendingSent: (label: 'En attente…', icon: Icons.hourglass_top_rounded, color: Colors.grey.shade600),
+      FriendshipStatus.pendingReceived: (label: 'Accepter', icon: Icons.check_circle_rounded, color: _green),
+      FriendshipStatus.friends: (label: 'Amis ✓', icon: Icons.people_rounded, color: const Color(0xFF6366F1)),
+    };
+    final cfg = configs[_friendshipStatus]!;
+
+    return LiquidGlassCard(
+      blur: LiquidGlassTokens.blurLight,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      onTap: _isFriendActionLoading ? null : _onFriendButtonPressed,
+      child: Center(
+        child: _isFriendActionLoading
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(cfg.icon, color: Colors.white, size: 16),
+                  const SizedBox(width: 6),
+                  Text(cfg.label,
+                      style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14)),
+                ],
+              ),
+      ),
+    );
+  }
+
+  Widget _buildChatButton() {
+    return LiquidGlassCard(
+      blur: LiquidGlassTokens.blurLight,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      onTap: _openDirectChat,
+      child: const Icon(Icons.chat_bubble_outline_rounded, color: Colors.white, size: 20),
+    );
+  }
+
+  // ─── Tab Bar (identique au profil perso) ───────────────────────────────────
+
+  Widget _buildTabBar() {
+    return SliverPersistentHeader(
+      pinned: true,
+      delegate: _SliverTabBarDelegate(
+        TabBar(
+          controller: _tabController,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white.withOpacity(0.45),
+          indicatorColor: Colors.white,
+          indicatorWeight: 3,
+          labelStyle: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
+          unselectedLabelStyle: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500),
+          tabs: [
+            Tab(
+              icon: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.list),
+                  const SizedBox(width: 8),
+                  const Text('Wishlists'),
+                ],
+              ),
+            ),
+            Tab(
+              icon: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.favorite),
+                  const SizedBox(width: 8),
+                  const Text('Produits likés'),
                 ],
               ),
             ),
           ],
         ),
+        backgroundColor: LiquidGlassTokens.pageDark.withOpacity(0.9),
       ),
     );
   }
 
-  // ─── Stats row (amis / wishlists / cadeaux) ─────────────────────────────────
+  // ─── Tab Content ────────────────────────────────────────────────────────────
 
-  Widget _buildStatsRow() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [_violet.withOpacity(0.1), _pink.withOpacity(0.07)],
-          ),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
-        ),
-        child: Row(
+  Widget _buildTabContent() {
+    return SliverFillRemaining(
+      child: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildWishlists(),
+          _buildLikedProducts(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWishlists() {
+    if (_wishlists.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildStatItem(_friendsCount.toString(), 'Amis', Icons.people_rounded),
-            _buildStatDivider(),
-            _buildStatItem(_wishlistsCount.toString(), 'Wishlists', Icons.bookmark_rounded),
-            _buildStatDivider(),
-            _buildStatItem(_giftsCount.toString(), 'Cadeaux', Icons.card_giftcard_rounded),
+            Icon(Icons.bookmark_border, size: 80, color: Colors.white.withOpacity(0.35)),
+            const SizedBox(height: 16),
+            Text('Aucune wishlist publique',
+                style: GoogleFonts.poppins(
+                    fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
+            const SizedBox(height: 8),
+            Text('Cet utilisateur n\'a pas encore de wishlist publique',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildStatItem(String value, String label, IconData icon) {
-    return Expanded(
-      child: Column(
-        children: [
-          Icon(icon, color: _violet, size: 20),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: GoogleFonts.poppins(
-                color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            label,
-            style: GoogleFonts.poppins(color: Colors.white54, fontSize: 11),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatDivider() {
-    return Container(
-      width: 1,
-      height: 40,
-      color: Colors.white.withOpacity(0.1),
-    );
-  }
-
-  // ─── Boutons d'action (Ajouter ami + Message) ───────────────────────────────
-
-  Widget _buildActionButtons() {
-    final friendConfig = _getFriendButtonConfig();
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: Row(
-        children: [
-          // Bouton ami (principal)
-          Expanded(
-            flex: 3,
-            child: GestureDetector(
-              onTap: _isFriendActionLoading ? null : _onFriendButtonPressed,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: friendConfig.gradient),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: friendConfig.gradient.first.withOpacity(0.4),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (_isFriendActionLoading)
-                      const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 2))
-                    else ...[
-                      Text(friendConfig.icon,
-                          style: const TextStyle(fontSize: 16)),
-                      const SizedBox(width: 8),
-                      Text(friendConfig.label,
-                          style: GoogleFonts.poppins(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700)),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ),
-          // Bouton message (visible uniquement si amis ou demande reçue)
-          if (_friendshipStatus == FriendshipStatus.friends ||
-              _friendshipStatus == FriendshipStatus.pendingReceived) ...[
-            const SizedBox(width: 10),
-            GestureDetector(
-              onTap: _openDirectChat,
-              child: Container(
-                height: 48,
-                width: 48,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                      colors: [Color(0xFF6366F1), Color(0xFF4F46E5)]),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF6366F1).withOpacity(0.4),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Icon(Icons.chat_bubble_rounded,
-                    color: Colors.white, size: 22),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  _FriendButtonConfig _getFriendButtonConfig() {
-    switch (_friendshipStatus) {
-      case FriendshipStatus.none:
-        return _FriendButtonConfig(
-          label: 'Ajouter en ami',
-          icon: '➕',
-          gradient: [_violet, _pink],
-        );
-      case FriendshipStatus.pendingSent:
-        return _FriendButtonConfig(
-          label: 'En attente…',
-          icon: '⏳',
-          gradient: [Colors.grey.shade600, Colors.grey.shade700],
-        );
-      case FriendshipStatus.pendingReceived:
-        return _FriendButtonConfig(
-          label: 'Accepter',
-          icon: '✅',
-          gradient: [_green, const Color(0xFF059669)],
-        );
-      case FriendshipStatus.friends:
-        return _FriendButtonConfig(
-          label: 'Amis ✓',
-          icon: '👥',
-          gradient: [const Color(0xFF6366F1), const Color(0xFF4F46E5)],
-        );
+      );
     }
-  }
 
-  // ─── Bio ─────────────────────────────────────────────────────────────────────
-
-  Widget _buildBio() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: Text(
-        _profile!['bio'] as String? ?? '',
-        textAlign: TextAlign.center,
-        style: GoogleFonts.poppins(color: Colors.white70, fontSize: 14, height: 1.5),
+    return GridView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.85,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
       ),
-    );
-  }
-
-  // ─── Wishlists ────────────────────────────────────────────────────────────────
-
-  Widget _buildWishlistsSection() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Titre section
-          Row(
-            children: [
-              Container(
-                width: 4,
-                height: 20,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                      colors: [_violet, _pink],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                'Albums',
-                style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(width: 8),
-              if (_wishlists.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: _violet.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    '${_wishlists.length}',
-                    style: GoogleFonts.poppins(
-                        color: _violet, fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (_wishlists.isEmpty)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 40),
-                child: Column(
-                  children: [
-                    Icon(Icons.list_alt_rounded,
-                        size: 56, color: Colors.white.withOpacity(0.15)),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Aucune wishlist publique',
-                      style: GoogleFonts.poppins(
-                          color: Colors.white.withOpacity(0.4), fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 14,
-                mainAxisSpacing: 14,
-                childAspectRatio: 0.9,
-              ),
-              itemCount: _wishlists.length,
-              itemBuilder: (context, index) =>
-                  _buildWishlistCard(_wishlists[index]),
-            ),
-        ],
-      ),
+      itemCount: _wishlists.length,
+      itemBuilder: (context, index) => _buildWishlistCard(_wishlists[index]),
     );
   }
 
@@ -587,85 +527,61 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     final productCount = (wishlist['productCount'] as int?) ?? 0;
     final coverUrl = wishlist['coverPhoto'] as String?;
 
-    return GestureDetector(
-      onTap: () {
-        // TODO: naviguer vers les produits de cette wishlist
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.12)),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0x1AFFFFFF), Color(0x0AFFFFFF)],
         ),
-        clipBehavior: Clip.antiAlias,
+        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Image de fond (coverPhoto ou dégradé)
             if (coverUrl != null && coverUrl.isNotEmpty)
-              CachedNetworkImage(
-                imageUrl: coverUrl,
-                fit: BoxFit.cover,
-                placeholder: (_, __) => Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [_violet.withOpacity(0.4), _pink.withOpacity(0.4)],
-                    ),
+              CachedNetworkImage(imageUrl: coverUrl, fit: BoxFit.cover)
+            else
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [_violet.withOpacity(0.4), _pink.withOpacity(0.4)],
                   ),
                 ),
-                errorWidget: (_, __, ___) => _buildDefaultAlbumGradient(emoji),
-              )
-            else
-              _buildDefaultAlbumGradient(emoji),
-            // Overlay gradient sombre en bas
+                child: Center(child: Text(emoji, style: const TextStyle(fontSize: 40))),
+              ),
+            // Overlay sombre en bas
             Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
+              bottom: 0, left: 0, right: 0,
               child: Container(
-                height: 90,
+                padding: const EdgeInsets.fromLTRB(12, 32, 12, 12),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.85),
-                      Colors.transparent,
-                    ],
+                    colors: [Colors.black.withOpacity(0.85), Colors.transparent],
                   ),
                 ),
-              ),
-            ),
-            // Texte en bas
-            Positioned(
-              bottom: 12,
-              left: 12,
-              right: 12,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      const Icon(Icons.card_giftcard_rounded,
-                          color: Colors.white60, size: 12),
-                      const SizedBox(width: 4),
-                      Text(
-                        '$productCount produit${productCount != 1 ? 's' : ''}',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(name,
                         style: GoogleFonts.poppins(
-                            color: Colors.white60, fontSize: 11),
-                      ),
-                    ],
-                  ),
-                ],
+                            color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
+                    Text('$productCount produit${productCount != 1 ? 's' : ''}',
+                        style: GoogleFonts.poppins(color: Colors.white60, fontSize: 11)),
+                  ],
+                ),
               ),
             ),
           ],
@@ -674,40 +590,53 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     );
   }
 
-  Widget _buildDefaultAlbumGradient(String emoji) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [_violet.withOpacity(0.5), _pink.withOpacity(0.5)],
+  Widget _buildLikedProducts() {
+    if (_likedProducts.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.favorite_border, size: 80, color: Colors.white.withOpacity(0.35)),
+            const SizedBox(height: 16),
+            Text('Aucun produit liké',
+                style: GoogleFonts.poppins(
+                    fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
+            const SizedBox(height: 8),
+            Text('Les produits likés de cet utilisateur apparaîtront ici',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
+          ],
         ),
-      ),
-      child: Center(
-        child: Text(emoji, style: const TextStyle(fontSize: 40)),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _likedProducts.length,
+      itemBuilder: (context, index) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: SharedProductCard(
+          product: _likedProducts[index],
+          index: index,
+          showWishlistButton: false,
+        ),
       ),
     );
   }
-
-  // ─── Not found ───────────────────────────────────────────────────────────────
 
   Widget _buildNotFound() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.person_off_rounded,
-              size: 72, color: Colors.white.withOpacity(0.2)),
+          Icon(Icons.person_off_rounded, size: 72, color: Colors.white.withOpacity(0.2)),
           const SizedBox(height: 16),
-          Text(
-            'Utilisateur introuvable',
-            style: GoogleFonts.poppins(color: Colors.white54, fontSize: 16),
-          ),
+          Text('Utilisateur introuvable',
+              style: GoogleFonts.poppins(color: Colors.white54, fontSize: 16)),
           const SizedBox(height: 24),
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('Retour',
-                style: GoogleFonts.poppins(color: _violet)),
+            child: Text('Retour', style: GoogleFonts.poppins(color: _violet)),
           ),
         ],
       ),
@@ -715,14 +644,22 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 }
 
-/// Config visuelle du bouton ami.
-class _FriendButtonConfig {
-  final String label;
-  final String icon;
-  final List<Color> gradient;
-  const _FriendButtonConfig({
-    required this.label,
-    required this.icon,
-    required this.gradient,
-  });
+// ─── Délégué Tab Bar sticky ─────────────────────────────────────────────────
+
+class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
+  final TabBar tabBar;
+  final Color backgroundColor;
+
+  _SliverTabBarDelegate(this.tabBar, {this.backgroundColor = Colors.white});
+
+  @override double get minExtent => tabBar.preferredSize.height;
+  @override double get maxExtent => tabBar.preferredSize.height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(color: backgroundColor, child: tabBar);
+  }
+
+  @override
+  bool shouldRebuild(_SliverTabBarDelegate oldDelegate) => false;
 }
