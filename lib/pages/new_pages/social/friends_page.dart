@@ -41,6 +41,7 @@ class _FriendsPageState extends State<FriendsPage>
 
   // Onglet Demandes — stream temps réel
   Stream<List<Map<String, dynamic>>>? _requestsStream;
+  List<Map<String, dynamic>> _pendingRequests = [];
   final Set<String> _processingRequestIds = {};
 
   @override
