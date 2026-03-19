@@ -1076,32 +1076,48 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Nom de la marque
-                      Expanded(
-                        child: Text(
-                          product['brand'] as String? ?? product['source'] as String? ?? 'Amazon',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                            height: 1.3,
-                            letterSpacing: -0.2,
-                          ),
+                      // Nom du produit
+                      Text(
+                        product['name'] as String? ?? product['title'] as String? ?? '',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          height: 1.3,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      // Prix (position uniforme, toujours en bas)
+                      const SizedBox(height: 6),
+                      // Nom de la marque (badge pill)
+                      if ((product['brand'] as String? ?? product['source'] as String? ?? '').isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF8A2BE2).withOpacity(0.18),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: const Color(0xFF8A2BE2).withOpacity(0.4)),
+                          ),
+                          child: Text(
+                            product['brand'] as String? ?? product['source'] as String? ?? '',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFFB97EF8),
+                            ),
+                          ),
+                        ),
+                      const Spacer(),
+                      // Prix (toujours en bas)
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                        ),
+                        padding: const EdgeInsets.only(top: 8),
                         decoration: BoxDecoration(
                           border: Border(
                             top: BorderSide(

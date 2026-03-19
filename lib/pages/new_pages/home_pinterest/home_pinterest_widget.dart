@@ -689,7 +689,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           }
         },
         // FIX: Removed AnimationLimiter wrapper which is unnecessary and problematic without stagger children
-        child: CustomScrollView(
+        child: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+          child: CustomScrollView(
             controller: _scrollController,
             physics: const BouncingScrollPhysics(
               parent: AlwaysScrollableScrollPhysics(),
@@ -785,6 +787,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
               const SliverToBoxAdapter(child: SizedBox(height: 100)),
             ],
           ), // CustomScrollView
+        ), // ScrollConfiguration
       ), // RefreshIndicator
     ), // DarkPageBackground
     );
@@ -793,17 +796,13 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
   Widget _buildHeader() {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF8A2BE2),
-            const Color(0xFFEC4899),
+            Color(0xFF8A2BE2),
+            Color(0xFFEC4899),
           ],
-        ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
         ),
         boxShadow: [
           BoxShadow(
@@ -812,18 +811,12 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             spreadRadius: 2,
             offset: const Offset(0, 10),
           ),
-          BoxShadow(
-            color: const Color(0xFFEC4899).withOpacity(0.3),
-            blurRadius: 20,
-            spreadRadius: 0,
-            offset: const Offset(0, 6),
-          ),
         ],
       ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -833,9 +826,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 duration: const Duration(milliseconds: 3000),
                 child: Text(
                   _model.isAnonymousMode
-                      ? 'Découvre ??'
+                      ? 'Découvre ✨'
                       : (_model.firstName.isNotEmpty
-                          ? 'Salut ${_model.firstName} ! ??'
+                          ? 'Salut ${_model.firstName} ! ✨'
                           : 'Accueil'),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(

@@ -81,7 +81,8 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
       ),
       child: Padding(
         padding: const EdgeInsetsDirectional.fromSTEB(20.0, 8.0, 20.0, 20.0),
-        child: Column(
+        child: SingleChildScrollView(
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,6 +287,7 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
             ),
           ].divide(const SizedBox(height: 20.0)),
         ),
+        ), // SingleChildScrollView
       ),
     );
   }
