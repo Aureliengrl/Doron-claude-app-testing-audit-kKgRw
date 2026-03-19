@@ -56,6 +56,8 @@ class _WishlistPickerWidgetState extends State<_WishlistPickerWidget> {
   bool _isLoading = true;
   String? _addingToId;
   final Set<String> _addedIds = {};
+  // Compteurs locaux (mis à jour en temps réel après ajout)
+  final Map<String, int> _counters = {};
 
   final Color violetColor = const Color(0xFF8A2BE2);
   final Color pinkColor = const Color(0xFFEC4899);
@@ -68,7 +70,19 @@ class _WishlistPickerWidgetState extends State<_WishlistPickerWidget> {
 
   Future<void> _load() async {
     final lists = await FirebaseDataService.loadWishlists();
-    if (mounted) setState(() { _wishlists = lists; _isLoading = false; });
+    if (mounted) {
+      // Initialiser les compteurs depuis les données Firebase
+      final counters = <String, int>{};
+      for (final w in lists) {
+        final id = w['id'] as String? ?? '';
+        counters[id] = (w['productCount'] as int?) ?? 0;
+      }
+      setState(() {
+        _wishlists = lists;
+        _counters.addAll(counters);
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _addToWishlist(String wishlistId, String wishlistName) async {
@@ -78,7 +92,11 @@ class _WishlistPickerWidgetState extends State<_WishlistPickerWidget> {
     if (mounted) {
       setState(() {
         _addingToId = null;
-        if (ok) _addedIds.add(wishlistId);
+        if (ok) {
+          _addedIds.add(wishlistId);
+          // Incrément temps réel du compteur
+          _counters[wishlistId] = (_counters[wishlistId] ?? 0) + 1;
+        }
       });
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(
@@ -239,6 +257,7 @@ class _WishlistPickerWidgetState extends State<_WishlistPickerWidget> {
                               final emoji = wishlist['emoji'] as String? ?? '🎁';
                               final isAdded = _addedIds.contains(id);
                               final isAdding = _addingToId == id;
+                              final count = _counters[id] ?? 0;
 
                               return GestureDetector(
                                 onTap: isAdded ? null : () => _addToWishlist(id, name),
@@ -265,13 +284,32 @@ class _WishlistPickerWidgetState extends State<_WishlistPickerWidget> {
                                       Text(emoji, style: const TextStyle(fontSize: 24)),
                                       const SizedBox(width: 14),
                                       Expanded(
-                                        child: Text(
-                                          name,
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.white,
-                                          ),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              name,
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            // Compteur temps réel
+                                            AnimatedSwitcher(
+                                              duration: const Duration(milliseconds: 300),
+                                              child: Text(
+                                                key: ValueKey(count),
+                                                '$count produit${count > 1 ? 's' : ''}',
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 11,
+                                                  color: isAdded
+                                                      ? const Color(0xFF10B981)
+                                                      : Colors.white.withOpacity(0.45),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                       if (isAdding)

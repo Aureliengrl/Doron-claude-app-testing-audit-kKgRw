@@ -757,7 +757,6 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
               itemCount: wishlists.length,
               itemBuilder: (context, index) {
                 final wishlist = wishlists[index];
-                final productCount = (wishlist['productCount'] as int?) ?? (wishlist['productIds'] as List?)?.length ?? 0;
                 final coverUrl = wishlist['coverPhoto'] as String?;
 
                 return GestureDetector(
@@ -835,11 +834,6 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                   style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '$productCount produit${productCount > 1 ? 's' : ''}',
-                                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.white.withOpacity(0.7)),
                                 ),
                               ],
                             ),
