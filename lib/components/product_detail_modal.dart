@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '/services/firebase_data_service.dart';
 import '/services/product_url_service.dart';
-import '/auth/firebase_auth/auth_util.dart';
-import '/backend/backend.dart';
-import '/backend/schema/structs/index.dart';
 import '/components/cached_image.dart';
 import '/components/connection_required_dialog.dart';
 import '/utils/app_logger.dart';
+
 
 class GlobalProductDetailModal {
   static final Color violetColor = const Color(0xFF8A2BE2);
@@ -290,9 +288,10 @@ class GlobalProductDetailModal {
     );
   }
 
-  /// Fonction globale de favoris
+  /// Fonction globale de favoris — écrit dans users/{uid}/favorites
   static Future<bool> _toggleFavoriteGlobally(BuildContext context, Map<String, dynamic> product, bool isCurrentlyLiked) async {
-    if (FirebaseAuth.instance.currentUser == null) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Connexion requise pour les favoris.', style: GoogleFonts.poppins()),
@@ -303,46 +302,41 @@ class GlobalProductDetailModal {
     }
 
     try {
+      final uid = user.uid;
+      final favCollection = FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('favorites');
+
       final productTitle = product['name'] as String? ?? product['product_title'] as String? ?? 'Produit';
+      final productImage = product['image'] as String? ?? product['product_photo'] as String? ?? product['image_url'] as String? ?? '';
+      final productUrl = product['product_url'] ?? product['url'] ?? ProductUrlService.generateProductUrl(product);
+      final brandOrSource = product['brand'] ?? product['source'] ?? product['platform'] ?? 'Amazon';
+      final price = '${product['price'] ?? product['product_price'] ?? 0}'.replaceAll('€', '').trim();
 
       if (isCurrentlyLiked) {
-        final favorites = await queryFavouritesRecordOnce(
-          queryBuilder: (favoritesRecord) => favoritesRecord
-              .where('uid', isEqualTo: currentUserReference)
-              .where('product.product_title', isEqualTo: productTitle),
-        );
-
-        for (var fav in favorites) {
-          if (!fav.hasPersonId() || fav.personId == null || fav.personId!.isEmpty) {
-            await fav.reference.delete();
-          }
+        // Supprimer : chercher par name
+        final snap = await favCollection
+            .where('name', isEqualTo: productTitle)
+            .limit(5)
+            .get();
+        for (final doc in snap.docs) {
+          await doc.reference.delete();
         }
-        return true;
       } else {
-        final productImage = product['image'] as String? ?? product['product_photo'] as String? ?? product['image_url'] as String? ?? '';
-        final productUrl = product['product_url'] ?? product['url'] ?? ProductUrlService.generateProductUrl(product);
-        final brandOrSource = product['brand'] ?? product['source'] ?? product['platform'] ?? 'Amazon';
-
-        await FavouritesRecord.collection.add(
-          createFavouritesRecordData(
-            uid: currentUserReference,
-            platform: brandOrSource.toString().toLowerCase(),
-            timeStamp: DateTime.now(),
-            personId: null,
-            product: ProductsStruct(
-              productTitle: productTitle,
-              productPrice: '${product['price'] ?? product['product_price'] ?? 0}€'.replaceAll('€€', '€'),
-              productUrl: productUrl,
-              productPhoto: productImage,
-              productStarRating: '',
-              productOriginalPrice: '',
-              productNumRatings: 0,
-              platform: brandOrSource.toString().toLowerCase(),
-            ),
-          ),
-        );
-        return true;
+        // Ajouter
+        final docId = 'fav_${DateTime.now().millisecondsSinceEpoch}';
+        await favCollection.doc(docId).set({
+          'id': docId,
+          'name': productTitle,
+          'brand': brandOrSource.toString(),
+          'price': price,
+          'image': productImage,
+          'url': productUrl,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
       }
+      return true;
     } catch (e) {
       AppLogger.error('Erreur favoris global', 'Debug', e);
       return false;

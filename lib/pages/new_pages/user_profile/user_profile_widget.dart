@@ -654,7 +654,6 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       );
     }
 
-    // ── Grille avec drag & drop natif (appui long) ─────────────────────
     return ReorderableListView(
       padding: const EdgeInsets.all(16),
       buildDefaultDragHandles: false,
@@ -673,17 +672,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     );
   }
 
-  Widget _buildLikedProductCard(FavouritesRecord favourite, int index) {
-    final productMap = {
-      'id': favourite.reference.id,
-      'name': favourite.product.productTitle,
-      'brand': favourite.product.platform,
-      'price': favourite.product.productPrice.replaceAll('€', '').trim(),
-      'image': favourite.product.productPhoto,
-      'url': favourite.product.productUrl,
-    };
+  Widget _buildLikedProductCard(Map<String, dynamic> favourite, int index) {
     return ReorderableDragStartListener(
-      key: ValueKey(favourite.reference.id),
+      key: ValueKey(favourite['id'] ?? index.toString()),
       index: index,
       child: Padding(
         padding: EdgeInsets.only(
@@ -692,7 +683,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           left: index.isEven ? 0 : 8,
         ),
         child: SharedProductCard(
-          product: productMap,
+          product: favourite,
           index: index,
           showWishlistButton: true,
           onRemove: null,
