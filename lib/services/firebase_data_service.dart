@@ -1044,7 +1044,7 @@ class FirebaseDataService {
     // Sauvegarder localement
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('local_user_profile_tags', json.encode(tags));
+      await prefs.setString(_key('user_profile_tags'), json.encode(tags));
       AppLogger.success('User profile tags saved locally', 'Firebase');
     } catch (e) {
       AppLogger.error('Error saving user profile tags locally', 'Firebase', e);
@@ -1091,7 +1091,7 @@ class FirebaseDataService {
     // Fallback local
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localData = prefs.getString('local_user_profile_tags');
+      final localData = prefs.getString(_key('user_profile_tags'));
       if (localData != null) {
         AppLogger.success('Loaded user profile tags from local storage', 'Firebase');
         return json.decode(localData) as Map<String, dynamic>;
@@ -1124,7 +1124,7 @@ class FirebaseDataService {
     // Sauvegarder localement
     try {
       final prefs = await SharedPreferences.getInstance();
-      final peopleJson = prefs.getString('local_people') ?? '[]';
+      final peopleJson = prefs.getString(_key('people')) ?? '[]';
       final people = (json.decode(peopleJson) as List).cast<Map<String, dynamic>>();
 
       people.add({
@@ -1136,7 +1136,7 @@ class FirebaseDataService {
         },
       });
 
-      await prefs.setString('local_people', json.encode(people));
+      await prefs.setString(_key('people'), json.encode(people));
       AppLogger.success('Person created locally: $personId (pending=$isPendingFirstGen)', 'Firebase');
     } catch (e) {
       AppLogger.error('Error creating person locally', 'Firebase', e);
@@ -1178,7 +1178,7 @@ class FirebaseDataService {
     try {
       // Charger la personne depuis le storage local
       final prefs = await SharedPreferences.getInstance();
-      final peopleJson = prefs.getString('local_people') ?? '[]';
+      final peopleJson = prefs.getString(_key('people')) ?? '[]';
       final localPeople = (json.decode(peopleJson) as List)
           .map((e) => e as Map<String, dynamic>)
           .toList();
@@ -1227,7 +1227,7 @@ class FirebaseDataService {
     List<Map<String, dynamic>> localPeople = [];
     try {
       final prefs = await SharedPreferences.getInstance();
-      final peopleJson = prefs.getString('local_people') ?? '[]';
+      final peopleJson = prefs.getString(_key('people')) ?? '[]';
       localPeople = (json.decode(peopleJson) as List)
           .map((e) => e as Map<String, dynamic>)
           .toList();
@@ -1392,7 +1392,7 @@ class FirebaseDataService {
     // Charger depuis local storage d'abord
     try {
       final prefs = await SharedPreferences.getInstance();
-      final peopleJson = prefs.getString('local_people') ?? '[]';
+      final peopleJson = prefs.getString(_key('people')) ?? '[]';
       final localPeople = (json.decode(peopleJson) as List)
           .map((e) => e as Map<String, dynamic>)
           .toList();
@@ -1455,7 +1455,7 @@ class FirebaseDataService {
     // Mise à jour locale
     try {
       final prefs = await SharedPreferences.getInstance();
-      final peopleJson = prefs.getString('local_people') ?? '[]';
+      final peopleJson = prefs.getString(_key('people')) ?? '[]';
       final people = (json.decode(peopleJson) as List).cast<Map<String, dynamic>>();
 
       final index = people.indexWhere((p) => p['id'] == personId);
@@ -1464,7 +1464,7 @@ class FirebaseDataService {
           ...people[index]['meta'] ?? {},
           'isPendingFirstGen': isPending,
         };
-        await prefs.setString('local_people', json.encode(people));
+        await prefs.setString(_key('people'), json.encode(people));
         AppLogger.success('Person pending flag updated locally', 'Firebase');
       }
     } catch (e) {
@@ -1495,11 +1495,11 @@ class FirebaseDataService {
     // Suppression locale
     try {
       final prefs = await SharedPreferences.getInstance();
-      final peopleJson = prefs.getString('local_people') ?? '[]';
+      final peopleJson = prefs.getString(_key('people')) ?? '[]';
       final people = (json.decode(peopleJson) as List).cast<Map<String, dynamic>>();
 
       people.removeWhere((p) => p['id'] == personId);
-      await prefs.setString('local_people', json.encode(people));
+      await prefs.setString(_key('people'), json.encode(people));
       AppLogger.success('Person deleted locally: $personId', 'Firebase');
     } catch (e) {
       AppLogger.error('Error deleting person locally', 'Firebase', e);
