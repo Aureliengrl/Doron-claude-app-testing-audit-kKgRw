@@ -1,0 +1,117 @@
+workflows:
+
+  # ──────────────────────────────────────────────
+  # WORKFLOW iOS – App Store
+  # ──────────────────────────────────────────────
+  ios-release:
+    name: iOS – App Store Release
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+
+    environment:
+      groups:
+        - firebase_credentials   # Groupe contenant GOOGLE_SERVICES_IOS
+        - app_store_credentials  # Groupe contenant ASC_KEY_ID, ASC_ISSUER_ID, ASC_PRIVATE_KEY
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+
+    scripts:
+      # 1. Injecter GoogleService-Info.plist depuis la variable Base64
+      - name: Inject GoogleService-Info.plist
+        script: |
+          if [ -n "$GOOGLE_SERVICES_IOS" ]; then
+            echo "$GOOGLE_SERVICES_IOS" | base64 --decode > "$CM_BUILD_DIR/ios/Runner/GoogleService-Info.plist"
+            echo "✅ GoogleService-Info.plist injecté"
+          else
+            echo "⚠️  Variable GOOGLE_SERVICES_IOS non définie — fichier existant conservé"
+          fi
+
+      # 2. Flutter pub get
+      - name: Install Flutter dependencies
+        script: flutter pub get
+
+      # 3. Install CocoaPods
+      - name: Install CocoaPods
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+
+      # 4. Build IPA
+      - name: Build IPA
+        script: |
+          flutter build ipa \
+            --release \
+            --export-options-plist /Users/builder/export_options.plist
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
+
+    publishing:
+      app_store_connect:
+        api_key: $ASC_PRIVATE_KEY
+        key_id: $ASC_KEY_ID
+        issuer_id: $ASC_ISSUER_ID
+        submit_to_testflight: true
+
+
+  # ──────────────────────────────────────────────
+  # WORKFLOW Android – Release
+  # ──────────────────────────────────────────────
+  android-release:
+    name: Android – Play Store Release
+    max_build_duration: 120
+    instance_type: linux_x2
+
+    environment:
+      groups:
+        - firebase_credentials   # Groupe contenant GOOGLE_SERVICES_ANDROID
+        - android_credentials    # Groupe contenant KEYSTORE_* variables
+      flutter: stable
+
+    scripts:
+      # 1. Injecter google-services.json depuis la variable Base64
+      - name: Inject google-services.json
+        script: |
+          if [ -n "$GOOGLE_SERVICES_ANDROID" ]; then
+            echo "$GOOGLE_SERVICES_ANDROID" | base64 --decode > "$CM_BUILD_DIR/android/app/google-services.json"
+            echo "✅ google-services.json injecté"
+          else
+            echo "⚠️  Variable GOOGLE_SERVICES_ANDROID non définie"
+            exit 1
+          fi
+
+      # 2. Injecter le keystore de signature (si variable définie)
+      - name: Inject Android Keystore
+        script: |
+          if [ -n "$CM_KEYSTORE" ]; then
+            echo "$CM_KEYSTORE" | base64 --decode > "$CM_BUILD_DIR/android/app/keystore.jks"
+            echo "✅ Keystore injecté"
+          else
+            echo "ℹ️  Pas de keystore — build debug"
+          fi
+
+      # 3. Flutter pub get
+      - name: Install Flutter dependencies
+        script: flutter pub get
+
+      # 4. Build AAB (App Bundle pour le Play Store)
+      - name: Build Android App Bundle
+        script: |
+          if [ -n "$CM_KEYSTORE" ]; then
+            flutter build appbundle --release \
+              --dart-define=FLUTTER_BUILD_NUMBER=$BUILD_NUMBER
+          else
+            flutter build appbundle --debug
+          fi
+
+    artifacts:
+      - build/app/outputs/bundle/**/*.aab
+      - build/app/outputs/mapping/**/mapping.txt
+
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        submit_as_draft: true
