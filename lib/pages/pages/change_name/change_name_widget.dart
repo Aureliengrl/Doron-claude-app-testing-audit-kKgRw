@@ -217,70 +217,131 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
                   ),
                 ),
                 Expanded(
-                  child: FFButtonWidget(
-                    onPressed: () async {
-                      if (_model.formKey.currentState == null || !_model.formKey.currentState!.validate()) {
-                        return;
-                      }
+                  child: StatefulBuilder(
+                    builder: (ctx, setBtn) {
+                      bool isSaving = false;
+                      return FFButtonWidget(
+                        onPressed: isSaving ? null : () async {
+                          // Validation du formulaire
+                          if (_model.formKey.currentState == null ||
+                              !_model.formKey.currentState!.validate()) {
+                            return;
+                          }
 
-                      final handleRaw = _model.handleController?.text.replaceAll('@', '').trim();
-
-                      // Vérifier la disponibilité SEULEMENT si le handle a changé
-                      final handleChanged = handleRaw != null && handleRaw.isNotEmpty && handleRaw != _originalHandle;
-                      if (handleChanged) {
-                        try {
-                          final isAvailable = await UserSearchService.isHandleAvailable(handleRaw!);
-                          if (!isAvailable) {
+                          final uid = FirebaseAuth.instance.currentUser?.uid;
+                          if (uid == null) {
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text("Ce nom d'utilisateur est déjà pris."),
+                                  content: Text('Session expirée. Reconnecte-toi.'),
                                   backgroundColor: Colors.red,
                                 ),
                               );
                             }
                             return;
                           }
-                        } catch (e) {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Erreur lors de la vérification du nom d'utilisateur."),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
+
+                          setBtn(() => isSaving = true);
+
+                          try {
+                            final handleRaw = (_model.handleController?.text ?? '')
+                                .replaceAll('@', '')
+                                .trim()
+                                .toLowerCase();
+
+                            // Vérifier disponibilité seulement si handle a changé
+                            if (handleRaw.isNotEmpty && handleRaw != _originalHandle) {
+                              final isAvailable = await UserSearchService.isHandleAvailable(handleRaw);
+                              if (!isAvailable) {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Ce nom d'utilisateur est déjà pris."),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                                setBtn(() => isSaving = false);
+                                return;
+                              }
+                            }
+
+                            final displayName = _model.textController?.text.trim() ?? '';
+                            final bio = _model.bioController?.text.trim() ?? '';
+
+                            // Mise à jour Firestore directe
+                            final Map<String, dynamic> updateData = {
+                              'display_name': displayName,
+                              'bio': bio,
+                              'updatedAt': FieldValue.serverTimestamp(),
+                            };
+                            if (handleRaw.isNotEmpty) {
+                              updateData['handle'] = handleRaw;
+                              updateData['handle_lower'] = handleRaw;
+                              updateData['searchName'] = handleRaw;
+                            }
+
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(uid)
+                                .set(updateData, SetOptions(merge: true));
+
+                            // Mettre à jour aussi le displayName Firebase Auth
+                            if (displayName.isNotEmpty) {
+                              await FirebaseAuth.instance.currentUser
+                                  ?.updateDisplayName(displayName);
+                            }
+
+                            // Mettre à jour l'index handles si le handle a changé
+                            if (handleRaw.isNotEmpty && handleRaw != _originalHandle) {
+                              try {
+                                await FirebaseFirestore.instance
+                                    .collection('handles')
+                                    .doc(handleRaw)
+                                    .set({'uid': uid, 'createdAt': FieldValue.serverTimestamp()});
+                              } catch (_) {}
+                            }
+
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('✅ Profil mis à jour !'),
+                                  backgroundColor: Color(0xFF8A2BE2),
+                                ),
+                              );
+                              Navigator.pop(context);
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Erreur : $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                            setBtn(() => isSaving = false);
                           }
-                          return;
-                        }
-                      }
-
-                      final updateData = createUsersRecordData(displayName: _model.textController.text);
-                      if (handleRaw != null && handleRaw.isNotEmpty) {
-                        updateData['handle'] = handleRaw;
-                        updateData['searchName'] = handleRaw.toLowerCase();
-                      }
-                      updateData['bio'] = _model.bioController?.text;
-
-                      await currentUserReference!.update(updateData);
-                      if (mounted) Navigator.pop(context);
+                        },
+                        text: FFLocalizations.of(context).getText('ulhryxaj' /* Enregistrer les modifications */),
+                        options: FFButtonOptions(
+                          padding: const EdgeInsetsDirectional.fromSTEB(12.0, 20.0, 12.0, 20.0),
+                          iconPadding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                          color: FlutterFlowTheme.of(context).primary,
+                          textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                                font: GoogleFonts.lexendDeca(fontWeight: FontWeight.normal, fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle),
+                                color: Colors.white,
+                                fontSize: 16.0,
+                                letterSpacing: 0.0,
+                                fontWeight: FontWeight.normal,
+                                fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                              ),
+                          elevation: 2.0,
+                          borderSide: const BorderSide(color: Colors.transparent, width: 1.0),
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      );
                     },
-                    text: FFLocalizations.of(context).getText('ulhryxaj' /* Enregistrer les modifications */),
-                    options: FFButtonOptions(
-                      padding: const EdgeInsetsDirectional.fromSTEB(12.0, 20.0, 12.0, 20.0),
-                      iconPadding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                      color: FlutterFlowTheme.of(context).primary,
-                      textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                            font: GoogleFonts.lexendDeca(fontWeight: FontWeight.normal, fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle),
-                            color: Colors.white,
-                            fontSize: 16.0,
-                            letterSpacing: 0.0,
-                            fontWeight: FontWeight.normal,
-                            fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
-                          ),
-                      elevation: 2.0,
-                      borderSide: const BorderSide(color: Colors.transparent, width: 1.0),
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
                   ),
                 ),
               ].divide(const SizedBox(width: 5.0)),
