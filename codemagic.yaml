@@ -10,33 +10,39 @@ workflows:
 
     environment:
       groups:
-        - firebase_credentials   # Groupe contenant GOOGLE_SERVICES_IOS
-        - app_store_credentials  # Groupe contenant ASC_KEY_ID, ASC_ISSUER_ID, ASC_PRIVATE_KEY
+        - firebase_credentials   # Groupe contenant GOOGLE_SERVICES_IOS (optionnel)
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.mycompany.doron
       flutter: stable
       xcode: latest
       cocoapods: default
 
     scripts:
-      # 1. Injecter GoogleService-Info.plist depuis la variable Base64
+      # 1. Injecter GoogleService-Info.plist (si variable définie)
       - name: Inject GoogleService-Info.plist
         script: |
           if [ -n "$GOOGLE_SERVICES_IOS" ]; then
             echo "$GOOGLE_SERVICES_IOS" | base64 --decode > "$CM_BUILD_DIR/ios/Runner/GoogleService-Info.plist"
             echo "✅ GoogleService-Info.plist injecté"
           else
-            echo "⚠️  Variable GOOGLE_SERVICES_IOS non définie — fichier existant conservé"
+            echo "ℹ️  Pas de variable GOOGLE_SERVICES_IOS — fichier repo utilisé"
           fi
 
       # 2. Flutter pub get
       - name: Install Flutter dependencies
         script: flutter pub get
 
-      # 3. Install CocoaPods
+      # 3. Configurer la signature de code iOS (Codemagic gère les certificats/profils)
+      - name: Set up code signing
+        script: xcode-project use-profiles
+
+      # 4. Install CocoaPods
       - name: Install CocoaPods
         script: |
           find . -name "Podfile" -execdir pod install \;
 
-      # 4. Build IPA
+      # 5. Build IPA
       - name: Build IPA
         script: |
           flutter build ipa \
@@ -46,15 +52,13 @@ workflows:
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
-      - flutter_drive.log
 
     publishing:
       app_store_connect:
-        api_key: $ASC_PRIVATE_KEY
-        key_id: $ASC_KEY_ID
-        issuer_id: $ASC_ISSUER_ID
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
-
 
   # ──────────────────────────────────────────────
   # WORKFLOW Android – Release
