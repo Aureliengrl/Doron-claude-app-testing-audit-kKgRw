@@ -1,4 +1,4 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +15,7 @@ import '/services/firebase_data_service.dart';
 import '/services/product_url_service.dart';
 import '/components/bounce_button.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'onboarding_gifts_result_model.dart';
 export 'onboarding_gifts_result_model.dart';
 
@@ -103,15 +104,11 @@ class _OnboardingGiftsResultWidgetState
       else if (_model.personId != null) {
         AppLogger.debug('🔍 Chargement direct par ID: ${_model.personId}', 'Debug');
 
-        // FIX ONBOARDING: Charger directement par ID sans déduplication
-        // Évite que la personne soit supprimée si plusieurs tentatives avec même nom
         final person = await FirebaseDataService.loadPersonById(_model.personId!);
 
         if (person == null) {
           AppLogger.debug('❌ Person not found! Looking for ID: ${_model.personId}', 'Debug');
-          // Afficher erreur à l'utilisateur au lieu de crasher
           if (mounted) {
-            // IMPORTANT: Montrer SnackBar AVANT de pop pour éviter context invalide
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Personne non trouvée. Veuillez réessayer.'),
@@ -119,7 +116,6 @@ class _OnboardingGiftsResultWidgetState
                 duration: Duration(seconds: 2),
               ),
             );
-            // Attendre un petit délai puis naviguer
             Future.delayed(const Duration(milliseconds: 300), () {
               if (mounted) context.pop();
             });
@@ -129,7 +125,6 @@ class _OnboardingGiftsResultWidgetState
 
         final personTags = person['tags'] as Map<String, dynamic>?;
         if (personTags == null) {
-          // Afficher erreur à l'utilisateur au lieu de crasher
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -138,7 +133,6 @@ class _OnboardingGiftsResultWidgetState
                 duration: Duration(seconds: 2),
               ),
             );
-            // Attendre puis naviguer
             Future.delayed(const Duration(milliseconds: 300), () {
               if (mounted) context.pop();
             });
@@ -150,7 +144,7 @@ class _OnboardingGiftsResultWidgetState
         profileForGeneration = personTags;
         AppLogger.debug('✅ Tags de personne chargés: ${personTags.keys.join(", ")}', 'Debug');
       }
-      // 📝 PRIORITÉ 3: Ancienne méthode (compatibilité): charger depuis Firebase
+      // 📝 PRIORITÉ 3: Ancienne méthode (compatibilité)
       else {
         AppLogger.debug('🔍 Chargement du profil onboarding (mode compatibilité)', 'Debug');
         final userProfile = await FirebaseDataService.loadOnboardingAnswers();
@@ -158,31 +152,92 @@ class _OnboardingGiftsResultWidgetState
         profileForGeneration = userProfile;
       }
 
-      // ✅ VÉRIFICATION: S'assurer qu'on a un profil valide
       if (profileForGeneration == null || profileForGeneration.isEmpty) {
         AppLogger.debug('⚠️ Aucun profil trouvé pour la génération - utilisation du mode découverte', 'Debug');
-        // Utiliser un profil vide mais continuer la génération en mode découverte
         profileForGeneration = {};
       }
+
+      // ════════════════════════════════════════════════════════════════
+      // 🎁 NOUVELLE LOGIQUE : Charger les wishlists Doron si handle connu
+      // ════════════════════════════════════════════════════════════════
+      List<Map<String, dynamic>> wishlistGifts = [];
+      final personHandle = (profileForGeneration['username'] ?? profileForGeneration['personIdentifier'] ?? '').toString().replaceAll('@', '').trim().toLowerCase();
+
+      if (personHandle.isNotEmpty) {
+        AppLogger.debug('🔗 Recherche compte Doron pour handle: @$personHandle', 'Debug');
+        try {
+          // Trouver l'UID par le handle
+          final userQuery = await FirebaseFirestore.instance
+              .collection('users')
+              .where('handle_lower', isEqualTo: personHandle)
+              .limit(1)
+              .get();
+
+          if (userQuery.docs.isNotEmpty) {
+            final targetUid = userQuery.docs.first.id;
+            AppLogger.debug('✅ Compte Doron trouvé: $targetUid', 'Debug');
+
+            // Charger ses wishlists
+            final wishlistsSnap = await FirebaseFirestore.instance
+                .collection('users')
+                .doc(targetUid)
+                .collection('wishlists')
+                .get();
+
+            for (final wDoc in wishlistsSnap.docs) {
+              // Charger les produits de chaque wishlist
+              final productsSnap = await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(targetUid)
+                  .collection('wishlists')
+                  .doc(wDoc.id)
+                  .collection('products')
+                  .limit(30)
+                  .get();
+
+              for (final p in productsSnap.docs) {
+                final data = p.data();
+                final imageUrl = data['imageUrl'] ?? data['image'] ?? data['product_photo'] ?? data['photo'] ?? '';
+                if (imageUrl.toString().startsWith('http')) {
+                  wishlistGifts.add({
+                    'id': p.id,
+                    'name': data['title'] ?? data['name'] ?? data['product_title'] ?? 'Cadeau wishlist',
+                    'brand': data['brand'] ?? data['platform'] ?? data['source'] ?? '@$personHandle',
+                    'price': data['price'] ?? data['product_price'] ?? 0,
+                    'image': imageUrl,
+                    'url': data['url'] ?? data['productUrl'] ?? data['product_url'] ?? '',
+                    'categories': data['categories'] ?? [],
+                    'match': 95, // Score élevé car vient de sa vraie wishlist
+                    'fromWishlist': true, // Badge spécial
+                    'wishlistOwner': '@$personHandle',
+                  });
+                }
+              }
+            }
+            AppLogger.debug('✅ ${wishlistGifts.length} produits récupérés depuis les wishlists Doron de @$personHandle', 'Debug');
+          } else {
+            AppLogger.debug('ℹ️ Aucun compte Doron trouvé pour @$personHandle — fallback classique', 'Debug');
+          }
+        } catch (e) {
+          AppLogger.debug('⚠️ Erreur récupération wishlists Doron (non bloquant): $e', 'Debug');
+        }
+      }
+      // ════════════════════════════════════════════════════════════════
 
       // Charger les IDs des produits déjà vus pour refresh intelligent
       final prefs = await SharedPreferences.getInstance();
       final seenProductIds = prefs.getStringList('seen_gift_product_ids')
           ?.map((s) => int.tryParse(s) ?? 0).toList() ?? [];
 
-      // 🎯 Générer les cadeaux via ProductMatchingService (NOUVELLE MÉTHODE)
-      // Firebase-first, déduplication, diversité des marques, scoring sexe+âge
+      // 🎯 Générer les cadeaux via ProductMatchingService
       final rawGifts = await ProductMatchingService.getPersonalizedProducts(
         userTags: profileForGeneration ?? {},
         count: 50,
         excludeProductIds: forceRefresh ? seenProductIds : null,
-        filteringMode: "person", // Mode PERSON: Modéré pour cadeaux innovants
+        filteringMode: "person",
       );
 
-      // Convertir les produits au format attendu et ajouter les URLs intelligentes
-      // FIX Bug 5: Améliorer le mapping d'image et filtrer les produits sans image
-      final gifts = rawGifts.map((product) {
-        // FIX: Récupérer l'image depuis plusieurs clés possibles
+      final aiGifts = rawGifts.map((product) {
         String imageUrl = '';
         for (final key in ['image', 'imageUrl', 'photo', 'productPhoto', 'product_photo', 'img', 'thumbnail']) {
           if (product[key] != null && product[key].toString().isNotEmpty) {
@@ -190,56 +245,49 @@ class _OnboardingGiftsResultWidgetState
             break;
           }
         }
-
-        // FIX CRASH: Conversion sécurisée du score (peut être int ou double)
         final matchScore = product['_matchScore'];
         final matchScoreInt = matchScore is int
             ? matchScore
             : (matchScore is double ? matchScore.toInt() : 0);
-
         return {
           'id': product['id'],
           'name': product['name'] ?? 'Produit',
           'brand': product['brand'] ?? 'Amazon',
           'price': product['price'] ?? 0,
-          'image': imageUrl, // FIX: Utiliser imageUrl trouvé (pas de placeholder qui ne marche pas)
+          'image': imageUrl,
           'url': ProductUrlService.generateProductUrl(product),
           'categories': product['categories'] ?? [],
           'match': matchScoreInt.clamp(0, 100),
+          'fromWishlist': false,
         };
       })
-      // FIX Bug 5: Filtrer les produits sans image valide
       .where((product) {
         final hasImage = product['image'] != null &&
                          product['image'].toString().isNotEmpty &&
                          product['image'].toString().startsWith('http');
-        if (!hasImage) {
-          AppLogger.debug('⚠️ Produit "${product['name']}" filtré: pas d\'image valide', 'Debug');
-        }
+        if (!hasImage) AppLogger.debug('⚠️ Produit "${product['name']}" filtré: pas d\'image valide', 'Debug');
         return hasImage;
       })
       .toList();
 
+      // 🎁 Fusionner : wishlists Doron en PREMIER, puis IA
+      final gifts = [...wishlistGifts, ...aiGifts];
+
       // Mettre à jour le cache des produits vus
       if (forceRefresh) {
         final newSeenIds = seenProductIds.map((id) => id.toString()).toList();
-        for (var gift in gifts) {
+        for (var gift in aiGifts) {
           final id = gift['id'];
           if (id != null) {
             final idStr = id.toString();
-            if (!newSeenIds.contains(idStr)) {
-              newSeenIds.add(idStr);
-            }
+            if (!newSeenIds.contains(idStr)) newSeenIds.add(idStr);
           }
         }
-        // Limiter à 500 derniers produits vus
-        if (newSeenIds.length > 500) {
-          newSeenIds.removeRange(0, newSeenIds.length - 500);
-        }
+        if (newSeenIds.length > 500) newSeenIds.removeRange(0, newSeenIds.length - 500);
         await prefs.setStringList('seen_gift_product_ids', newSeenIds);
       }
 
-      AppLogger.debug('✅ ${gifts.length} cadeaux générés localement (Firebase + scoring intelligent)', 'Debug');
+      AppLogger.debug('✅ ${wishlistGifts.length} wishlists + ${aiGifts.length} IA = ${gifts.length} cadeaux total', 'Debug');
 
       if (mounted) {
         setState(() {
@@ -249,23 +297,17 @@ class _OnboardingGiftsResultWidgetState
         });
       }
 
-      // 🎯 AUTO-SAUVEGARDE: Si c'est la première génération après onboarding (isPendingFirstGen=true),
-      // sauvegarder automatiquement la liste SANS attendre que l'utilisateur clique "Enregistrer"
+      // 🎯 AUTO-SAUVEGARDE si première génération
       if (_model.personId != null && gifts.isNotEmpty) {
         try {
-          // Vérifier si la personne a le flag isPendingFirstGen
           final people = await FirebaseDataService.loadPeople();
           final person = people.firstWhere(
             (p) => p['id'] == _model.personId,
             orElse: () => {},
           );
-
           final isPendingFirstGen = person['meta']?['isPendingFirstGen'] == true;
-
           if (isPendingFirstGen && !forceRefresh) {
-            AppLogger.debug('💾 Auto-sauvegarde: première génération détectée (isPendingFirstGen=true)', 'Debug');
-
-            // Sauvegarder la liste automatiquement
+            AppLogger.debug('💾 Auto-sauvegarde: première génération détectée', 'Debug');
             final listName = 'Liste ${DateTime.now().day}/${DateTime.now().month}';
             final listId = await FirebaseDataService.saveGiftListForPerson(
               personId: _model.personId!,
@@ -273,47 +315,27 @@ class _OnboardingGiftsResultWidgetState
               listName: listName,
             );
             AppLogger.debug('✅ ${gifts.length} cadeaux auto-sauvegardés (liste: $listId)', 'Debug');
-
-            // Retirer le flag isPendingFirstGen
             await FirebaseDataService.updatePersonPendingFlag(_model.personId!, false);
-            AppLogger.debug('✅ Flag isPendingFirstGen retiré (auto-save)', 'Debug');
-
-            // Définir le contexte pour que les futurs favoris soient liés à cette personne
             await FirebaseDataService.setCurrentPersonContext(_model.personId!);
-            AppLogger.debug('✅ Contexte de personne défini: ${_model.personId} (auto-save)', 'Debug');
-          } else if (!isPendingFirstGen) {
-            AppLogger.debug('ℹ️ isPendingFirstGen=false, pas d\'auto-sauvegarde', 'Debug');
-          } else if (forceRefresh) {
-            AppLogger.debug('ℹ️ forceRefresh=true, pas d\'auto-sauvegarde', 'Debug');
           }
         } catch (e) {
-          AppLogger.debug('⚠️ Erreur lors de l\'auto-sauvegarde (non-bloquant): $e', 'Debug');
-          AppLogger.debug('Stack trace: ${StackTrace.current}', 'Debug');
-          // Ne pas bloquer l'affichage si l'auto-save échoue
+          AppLogger.debug('⚠️ Erreur auto-sauvegarde (non-bloquant): $e', 'Debug');
         }
-      } else {
-        if (_model.personId == null) AppLogger.debug('⚠️ personId null, pas d\'auto-sauvegarde', 'Debug');
-        if (gifts.isEmpty) AppLogger.debug('⚠️ gifts vide, pas d\'auto-sauvegarde', 'Debug');
       }
     } catch (e) {
       AppLogger.debug('❌ Erreur chargement cadeaux: $e', 'Debug');
-
-      // Parser l'erreur pour extraire des détails utiles
       String errorMessage = 'Erreur de génération des cadeaux';
       String errorDetails = e.toString();
-
-      // Analyser le type d'erreur
       if (errorDetails.contains('SocketException') || errorDetails.contains('Network')) {
         errorMessage = '📡 Pas de connexion internet';
         errorDetails = 'Vérifie ta connexion internet et réessaye.';
       } else if (errorDetails.contains('firebase')) {
         errorMessage = '🔥 Erreur Firebase';
-        errorDetails = 'Impossible de charger les produits depuis la base de données. Réessaye plus tard.';
+        errorDetails = 'Impossible de charger les produits. Réessaye plus tard.';
       } else {
         errorMessage = '⚠️ Erreur de chargement';
-        errorDetails = 'Une erreur est survenue lors du chargement des produits. Réessaye.';
+        errorDetails = 'Une erreur est survenue. Réessaye.';
       }
-
       if (mounted) {
         setState(() {
           _model.setLoading(false);
@@ -411,6 +433,12 @@ class _OnboardingGiftsResultWidgetState
   }
 
   Widget _buildHeader() {
+    final personHandle = _model.personTags != null
+        ? ((_model.personTags!['username'] ?? _model.personTags!['personIdentifier'] ?? '') as String)
+            .replaceAll('@', '').trim()
+        : '';
+    final hasWishlistGifts = _model.gifts.any((g) => g['fromWishlist'] == true);
+
     return Container(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -421,12 +449,10 @@ class _OnboardingGiftsResultWidgetState
               IconButton(
                 onPressed: () {
                   if (!mounted) return;
-                  // Si returnTo existe, retourner vers cette page
                   if (_returnTo != null && _returnTo!.isNotEmpty) {
                     AppLogger.debug('🔙 Retour vers: $_returnTo', 'Debug');
                     context.go(_returnTo!);
                   } else {
-                    // Sinon, aller à l'accueil
                     context.go('/search-page');
                   }
                 },
@@ -453,10 +479,13 @@ class _OnboardingGiftsResultWidgetState
                       ),
                     ),
                     Text(
-                      'Basés sur tes réponses',
+                      hasWishlistGifts && personHandle.isNotEmpty
+                          ? '🎯 Incl. wishlist @$personHandle'
+                          : 'Basés sur tes réponses',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        color: Colors.grey[600],
+                        color: hasWishlistGifts ? const Color(0xFF10B981) : Colors.grey[600],
+                        fontWeight: hasWishlistGifts ? FontWeight.w600 : FontWeight.normal,
                       ),
                     ),
                   ],

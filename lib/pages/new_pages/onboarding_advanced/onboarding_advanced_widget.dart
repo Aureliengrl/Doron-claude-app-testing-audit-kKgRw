@@ -1,9 +1,10 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '/components/liquid_glass.dart';
 import 'onboarding_advanced_model.dart';
 export 'onboarding_advanced_model.dart';
@@ -567,14 +568,14 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 40),
+          const SizedBox(height: 32),
           Text(
             stepData['question'] as String,
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              fontSize: 24,
+              fontSize: 26,
               fontWeight: FontWeight.bold,
-              color: violetColor,
+              color: Colors.white,
             ),
           ),
           if (stepData['subtitle'] != null) ...[
@@ -584,99 +585,378 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 14,
-                color: const Color(0xFFF5F5F7),
+                color: Colors.white60,
               ),
             ),
           ],
           const SizedBox(height: 32),
-          // Afficher les 2 champs
+          // Afficher les champs
           ...fields.map((fieldData) {
             final field = fieldData['field'] as String;
             final label = fieldData['label'] as String;
             final placeholder = fieldData['placeholder'] as String;
-            final required = fieldData['required'] as bool;
+            final required = fieldData['required'] as bool? ?? false;
             final hint = fieldData['hint'] as String;
-            final currentValue = _model.answers[field] as String? ?? '';
+            final isHandle = field == 'personIdentifier';
 
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        label,
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF111827),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: required ? violetColor : Colors.grey[300],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          hint,
-                          style: GoogleFonts.poppins(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: required ? Colors.white : Colors.grey[700],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    key: ValueKey('${field}_${currentValue.hashCode}'),
-                    initialValue: currentValue,
-                    onChanged: (value) {
-                      _model.answers[field] = value;
-                    },
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+              child: isHandle
+                  ? _buildHandleAutocompleteField(
+                      field: field,
+                      label: label,
+                      placeholder: placeholder,
+                      hint: hint,
+                    )
+                  : _buildDarkTextField(
+                      field: field,
+                      label: label,
+                      placeholder: placeholder,
+                      required: required,
+                      hint: hint,
                     ),
-                    decoration: InputDecoration(
-                      hintText: placeholder,
-                      hintStyle: GoogleFonts.poppins(
-                        fontSize: 16,
-                        color: Colors.grey[400],
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: violetColor.withOpacity(0.3)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: violetColor.withOpacity(0.3)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: violetColor, width: 2),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 16,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              ),
             );
           }).toList(),
-          const SizedBox(height: 24),
+          const SizedBox(height: 40),
         ],
       ),
+    );
+  }
+
+  /// Champ texte dark theme standard
+  Widget _buildDarkTextField({
+    required String field,
+    required String label,
+    required String placeholder,
+    required bool required,
+    required String hint,
+  }) {
+    final currentValue = _model.answers[field] as String? ?? '';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: required ? violetColor : Colors.white.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                required ? 'REQUIS' : 'OPTIONNEL',
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          key: ValueKey('${field}_${currentValue.hashCode}'),
+          initialValue: currentValue,
+          onChanged: (value) => _model.answers[field] = value,
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+          ),
+          decoration: InputDecoration(
+            hintText: placeholder,
+            hintStyle: GoogleFonts.poppins(
+              fontSize: 16,
+              color: Colors.white38,
+            ),
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.10),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Colors.white.withOpacity(0.18)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Colors.white.withOpacity(0.18)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: violetColor, width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          ),
+        ),
+        if (hint.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            hint,
+            style: GoogleFonts.poppins(fontSize: 11, color: Colors.white38),
+          ),
+        ],
+      ],
+    );
+  }
+
+  // Cache pour l'utilisateur Doron trouvé
+  Map<String, dynamic>? _foundDoronUser;
+  String _lastSearchedHandle = '';
+  List<Map<String, dynamic>> _handleSuggestions = [];
+  bool _isSearchingHandle = false;
+
+  /// Champ autocomplete pour rechercher un utilisateur Doron par handle
+  Widget _buildHandleAutocompleteField({
+    required String field,
+    required String label,
+    required String placeholder,
+    required String hint,
+  }) {
+    return StatefulBuilder(
+      builder: (context, setLocal) {
+        final controller = TextEditingController(
+          text: _model.answers[field] as String? ?? '',
+        );
+        controller.selection = TextSelection.fromPosition(
+          TextPosition(offset: controller.text.length),
+        );
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'OPTIONNEL',
+                    style: GoogleFonts.poppins(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: controller,
+              onChanged: (raw) async {
+                final value = raw.replaceAll('@', '').trim().toLowerCase();
+                _model.answers[field] = value;
+                // Réinitialiser l'utilisateur trouvé si handle change
+                if (value != _lastSearchedHandle) {
+                  setLocal(() {
+                    _foundDoronUser = null;
+                    _isSearchingHandle = value.length >= 2;
+                    _handleSuggestions = [];
+                  });
+                  if (value.length >= 2) {
+                    _lastSearchedHandle = value;
+                    // Recherche dans Firestore
+                    try {
+                      final query = await FirebaseFirestore.instance
+                          .collection('users')
+                          .where('handle_lower', isGreaterThanOrEqualTo: value)
+                          .where('handle_lower', isLessThanOrEqualTo: '${value}\uf8ff')
+                          .limit(5)
+                          .get();
+                      if (mounted) {
+                        setLocal(() {
+                          _handleSuggestions = query.docs
+                              .map((d) => {
+                                    'uid': d.id,
+                                    'handle': d['handle'] ?? d['handle_lower'] ?? '',
+                                    'displayName': d['display_name'] ?? d['displayName'] ?? '',
+                                    'photoUrl': d['photo_url'] ?? d['photoUrl'] ?? '',
+                                  })
+                              .toList();
+                          _isSearchingHandle = false;
+                          // Si correspondance exacte : marquer cet utilisateur
+                          final exact = _handleSuggestions.where(
+                              (u) => (u['handle'] as String).toLowerCase() == value).toList();
+                          if (exact.isNotEmpty) {
+                            _foundDoronUser = exact.first;
+                          }
+                        });
+                      }
+                    } catch (e) {
+                      if (mounted) setLocal(() => _isSearchingHandle = false);
+                    }
+                  }
+                }
+              },
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+              decoration: InputDecoration(
+                hintText: placeholder,
+                hintStyle: GoogleFonts.poppins(fontSize: 16, color: Colors.white38),
+                prefixText: '@',
+                prefixStyle: const TextStyle(
+                  color: Color(0xFF8A2BE2),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                ),
+                suffixIcon: _isSearchingHandle
+                    ? const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Color(0xFF8A2BE2),
+                          ),
+                        ),
+                      )
+                    : _foundDoronUser != null
+                        ? const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 22)
+                        : null,
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.10),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: Colors.white.withOpacity(0.18)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(
+                    color: _foundDoronUser != null
+                        ? const Color(0xFF10B981)
+                        : Colors.white.withOpacity(0.18),
+                    width: _foundDoronUser != null ? 2 : 1,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(
+                    color: _foundDoronUser != null
+                        ? const Color(0xFF10B981)
+                        : violetColor,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              ),
+            ),
+            // Suggestions
+            if (_handleSuggestions.isNotEmpty && _foundDoronUser == null) ...[
+              const SizedBox(height: 4),
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A0035),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white.withOpacity(0.12)),
+                ),
+                child: Column(
+                  children: _handleSuggestions.map((user) {
+                    return ListTile(
+                      dense: true,
+                      leading: CircleAvatar(
+                        radius: 16,
+                        backgroundImage: (user['photoUrl'] as String).isNotEmpty
+                            ? NetworkImage(user['photoUrl'] as String)
+                            : null,
+                        backgroundColor: violetColor.withOpacity(0.3),
+                        child: (user['photoUrl'] as String).isEmpty
+                            ? const Icon(Icons.person, color: Colors.white, size: 16)
+                            : null,
+                      ),
+                      title: Text(
+                        '@${user['handle']}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      subtitle: (user['displayName'] as String).isNotEmpty
+                          ? Text(
+                              user['displayName'] as String,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: Colors.white54,
+                              ),
+                            )
+                          : null,
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.white38),
+                      onTap: () {
+                        setLocal(() {
+                          _model.answers[field] = user['handle'] as String;
+                          _foundDoronUser = user;
+                          _handleSuggestions = [];
+                          controller.text = user['handle'] as String;
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+            // Badge de confirmation du compte trouvé
+            if (_foundDoronUser != null) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF10B981).withOpacity(0.4)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.verified_user, color: Color(0xFF10B981), size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '✅ Compte Doron trouvé — ses wishlists seront incluses !',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: const Color(0xFF10B981),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            // Info optionnel
+            if (_foundDoronUser == null && _handleSuggestions.isEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Si cette personne a un compte Doron, ses wishlists seront incluses dans les suggestions',
+                style: GoogleFonts.poppins(fontSize: 11, color: Colors.white38),
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
 
