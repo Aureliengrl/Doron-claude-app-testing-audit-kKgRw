@@ -72,8 +72,13 @@ class FriendService {
           requests.add({
             'requestId': doc.id,
             'fromUid': data['fromUid'],
-            'displayName': sender['display_name'] ?? sender['name'] ?? 'Utilisateur',
-            'handle': sender['handle'] ?? '',
+            'displayName': sender['first_name'] as String? ??
+                           sender['display_name'] as String? ??
+                           sender['name'] as String? ??
+                           (sender['email'] as String? ?? '').split('@').first.isNotEmpty
+                               ? (sender['email'] as String? ?? '').split('@').first
+                               : 'Utilisateur',
+            'handle': sender['handle'] ?? sender['username'] ?? '',
             'photoUrl': sender['photo_url'] ?? '',
             'createdAt': data['createdAt'],
           });
@@ -265,8 +270,10 @@ class FriendService {
         requests.add({
           'requestId': doc.id,
           'fromUid': data['fromUid'],
-          'displayName': sender['display_name'] ?? sender['name'] ?? 'Utilisateur',
-          'handle': sender['handle'] ?? '',
+          'displayName': sender['first_name'] as String? ??
+                         sender['display_name'] as String? ??
+                         sender['name'] as String? ?? 'Utilisateur',
+          'handle': sender['handle'] ?? sender['username'] ?? '',
           'photoUrl': sender['photo_url'] ?? '',
           'createdAt': data['createdAt'],
         });
@@ -298,8 +305,10 @@ class FriendService {
           final data = d.data();
           profiles.add({
             'uid': d.id,
-            'displayName': data['display_name'] ?? data['name'] ?? 'Utilisateur',
-            'handle': data['handle'] ?? '',
+            'displayName': data['first_name'] as String? ??
+                           data['display_name'] as String? ??
+                           data['name'] as String? ?? 'Utilisateur',
+            'handle': data['handle'] ?? data['username'] ?? '',
             'photoUrl': data['photo_url'] ?? '',
           });
         }
