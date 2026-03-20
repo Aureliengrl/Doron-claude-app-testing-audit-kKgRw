@@ -23,6 +23,7 @@ import 'dart:io';
 import '/components/product_detail_modal.dart';
 import '/components/shared_product_card.dart';
 import '/utils/image_compress_utils.dart';
+import '/services/photo_permission_service.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 export 'user_profile_model.dart';
 
@@ -94,15 +95,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
   // ─── Changement de photo de profil ──────────────────────────
   Future<void> _changeProfilePicture() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 800,
-      imageQuality: 85,
-      requestFullMetadata: false,
-    );
+    final pickedFile = await PhotoPermissionService.pickWithChoice(context);
 
-    if (pickedFile == null) return;
+    if (pickedFile == null || !mounted) return;
 
     final file = File(pickedFile.path);
 
@@ -1015,9 +1010,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   }
 
   Future<void> _updateWishlistCover(String wishlistId) async {
-    // 1. Pick an image
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70, requestFullMetadata: false);
+    // 1. Pick an image with permission
+    final pickedFile = await PhotoPermissionService.pickFromGallery(context, imageQuality: 70);
     
     if (pickedFile == null || !mounted) return;
 
@@ -1241,8 +1235,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       ),
     );
     if (source == null || !mounted) return null;
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: source!, imageQuality: 80, requestFullMetadata: false);
+    final picked = source == ImageSource.gallery
+        ? await PhotoPermissionService.pickFromGallery(context, imageQuality: 80)
+        : await PhotoPermissionService.pickFromCamera(context, imageQuality: 80);
     if (picked == null || !mounted) return null;
     // Légende optionnelle
     String caption = '';
