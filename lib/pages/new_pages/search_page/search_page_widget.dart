@@ -23,6 +23,7 @@ import '/components/liquid_glass_loader.dart';
 import '/components/product_detail_modal.dart';
 import '/services/friend_service.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 
 class SearchPageWidget extends StatefulWidget {
   const SearchPageWidget({super.key});
@@ -810,164 +811,53 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       );
     }
 
-    if (_searchReorderMode) {
-      // ── Mode réorganisation ──────────────────────────────────
-      final products = _model.getFilteredProducts();
-      return SliverToBoxAdapter(
-        child: Column(
-          children: [
-            Container(
-              color: violetColor.withOpacity(0.85),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Row(
-                children: [
-                  const Icon(Icons.drag_indicator, color: Colors.white, size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Maintenez et glissez pour réorganiser',
-                      style: GoogleFonts.poppins(color: Colors.white, fontSize: 13),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => setState(() => _searchReorderMode = false),
-                    child: Text('Terminé', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.65,
-              child: ReorderableListView.builder(
-                padding: const EdgeInsets.all(12),
-                itemCount: products.length,
-                onReorder: (oldIndex, newIndex) async {
-                  if (newIndex > oldIndex) newIndex -= 1;
-                  final profile = _model.currentProfile;
-                  if (profile == null) return;
-                  final personId = profile['id'].toString();
-                  setState(() {
-                    final item = _model.personGifts[personId]!.removeAt(oldIndex);
-                    _model.personGifts[personId]!.insert(newIndex, item);
-                  });
-                  // Sauvegarder dans Firebase
-                  try {
-                    await FirebaseDataService.saveGiftListForPerson(
-                      personId: personId,
-                      gifts: _model.personGifts[personId]!,
-                      listName: 'Liste réorganisée',
-                    );
-                  } catch (_) {}
-                },
-                itemBuilder: (context, index) {
-                  final product = products[index];
-                  final imageUrl = product['image'] as String? ?? '';
-                  final brand = product['brand'] as String? ?? product['source'] as String? ?? '';
-                  final price = product['price']?.toString() ?? '';
-                  return Container(
-                    key: ValueKey(product['id'] ?? index.toString()),
-                    margin: const EdgeInsets.only(bottom: 10),
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.white.withOpacity(0.15)),
-                    ),
-                    child: Row(
-                      children: [
-                        ClipRRect(
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(14),
-                            bottomLeft: Radius.circular(14),
-                          ),
-                          child: CachedImage(
-                              imageUrl: imageUrl,
-                              width: 80,
-                              height: 80,
-                              fit: BoxFit.cover,
-                              errorWidget: Container(
-                                width: 80,
-                                color: Colors.grey[800],
-                                child: const Icon(Icons.image_not_supported, color: Colors.white54),
-                              ),
-                            ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                brand,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              if (price.isNotEmpty)
-                                Text(
-                                  '${price}€',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    color: Colors.white60,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.only(right: 8),
-                          child: Icon(Icons.drag_handle, color: Colors.white38),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-      sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+        child: ReorderableGridView.count(
           crossAxisCount: 2,
           childAspectRatio: 0.7,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
-        ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final product = products[index];
-            return _buildProductCard(product);
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          onReorder: (oldIndex, newIndex) async {
+            HapticFeedback.mediumImpact();
+            final profile = _model.currentProfile;
+            if (profile == null) return;
+            final personId = profile['id'].toString();
+            setState(() {
+              final item = _model.personGifts[personId]!.removeAt(oldIndex);
+              _model.personGifts[personId]!.insert(newIndex, item);
+            });
+            try {
+              await FirebaseDataService.saveGiftListForPerson(
+                personId: personId,
+                gifts: _model.personGifts[personId]!,
+                listName: 'Liste réorganisée',
+              );
+            } catch (_) {}
           },
-          childCount: products.length,
+          children: [
+            for (int i = 0; i < products.length; i++)
+              _buildProductCard(products[i], key: ValueKey(products[i]['id'] ?? i.toString())),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildProductCard(Map<String, dynamic> product) {
+  Widget _buildProductCard(Map<String, dynamic> product, {Key? key}) {
     // Vérifier si ce produit est dans les favoris de cette personne (dans Firebase)
     final productName = product['name'] as String? ?? product['title'] as String? ?? '';
     final isLikedInFirebase = _model.isProductLiked(productName);
     final matchScore = product['match'] as int? ?? 0;
 
     return Material(
+      key: key,
       color: Colors.transparent,
       child: InkWell(
         onTap: () => _showProductDetail(product),
-        onLongPress: () {
-          HapticFeedback.mediumImpact();
-          setState(() => _searchReorderMode = true);
-        },
         borderRadius: BorderRadius.circular(20),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),

@@ -23,6 +23,7 @@ import 'dart:io';
 import '/components/product_detail_modal.dart';
 import '/components/shared_product_card.dart';
 import '/utils/image_compress_utils.dart';
+import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 export 'user_profile_model.dart';
 
 class UserProfileWidget extends StatefulWidget {
@@ -654,28 +655,33 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       );
     }
 
-    return GridView.builder(
+    return ReorderableGridView.count(
       padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.75,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-      ),
-      itemCount: _model.favourites.length,
-      itemBuilder: (context, index) {
-        return SharedProductCard(
-          key: ValueKey(_model.favourites[index]['id'] ?? index.toString()),
-          product: _model.favourites[index],
-          index: index,
-          showWishlistButton: true,
-          onRemove: null,
-        );
+      crossAxisCount: 2,
+      childAspectRatio: 0.75,
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      onReorder: (oldIndex, newIndex) {
+        HapticFeedback.mediumImpact();
+        setState(() {
+          final item = _model.favourites.removeAt(oldIndex);
+          _model.favourites.insert(newIndex, item);
+        });
       },
+      children: [
+        for (int i = 0; i < _model.favourites.length; i++)
+          SharedProductCard(
+            key: ValueKey(_model.favourites[i]['id'] ?? i.toString()),
+            product: _model.favourites[i],
+            index: i,
+            showWishlistButton: true,
+            onRemove: null,
+          ),
+      ],
     );
   }
 
-  // Unused after refactor — kept for key uniqueness
+  // Unused after refactor
   Widget _buildLikedProductCard(Map<String, dynamic> favourite, int index) {
     return SharedProductCard(
       key: ValueKey(favourite['id'] ?? index.toString()),
@@ -1171,20 +1177,28 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
               )
             else
               Expanded(
-                child: GridView.builder(
+                child: ReorderableGridView.count(
                   padding: const EdgeInsets.all(12),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    childAspectRatio: 0.75,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemCount: sheetProducts.length,
-                  itemBuilder: (context, index) => SharedProductCard(
-                    product: sheetProducts[index],
-                    index: index,
-                    showWishlistButton: false,
-                  ),
+                  crossAxisCount: 3,
+                  childAspectRatio: 0.75,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  onReorder: (oldIndex, newIndex) {
+                    HapticFeedback.mediumImpact();
+                    setSheetState(() {
+                      final item = sheetProducts.removeAt(oldIndex);
+                      sheetProducts.insert(newIndex, item);
+                    });
+                  },
+                  children: [
+                    for (int i = 0; i < sheetProducts.length; i++)
+                      SharedProductCard(
+                        key: ValueKey(sheetProducts[i]['id'] ?? i.toString()),
+                        product: sheetProducts[i],
+                        index: i,
+                        showWishlistButton: false,
+                      ),
+                  ],
                 ),
               ),
             ],
