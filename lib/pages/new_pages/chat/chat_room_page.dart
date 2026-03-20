@@ -198,11 +198,12 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   Widget _buildHeader(String title, bool isGroup) {
     // Pour un chat 1-to-1, utiliser les infos de l'interlocuteur chargé
     final displayName = !isGroup && _otherUserData != null
-        ? (_otherUserData!['first_name'] as String? ?? 
-           _otherUserData!['display_name'] as String? ?? 
-           (_otherUserData!['email'] as String? ?? '').split('@').first.isNotEmpty
-               ? (_otherUserData!['email'] as String? ?? '').split('@').first
-               : title)
+        ? ((_otherUserData!['first_name'] as String?) ??
+           (_otherUserData!['display_name'] as String?) ??
+           ((_otherUserData!['email'] as String? ?? '').split('@').first.isNotEmpty
+               ? (_otherUserData!['email'] as String).split('@').first
+               : null) ??
+           title)
         : title;
     final photoUrl = !isGroup && _otherUserData != null
         ? (_otherUserData!['photo_url'] as String? ?? '')

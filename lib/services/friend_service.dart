@@ -72,12 +72,12 @@ class FriendService {
           requests.add({
             'requestId': doc.id,
             'fromUid': data['fromUid'],
-            'displayName': sender['first_name'] as String? ??
-                           sender['display_name'] as String? ??
-                           sender['name'] as String? ??
-                           (sender['email'] as String? ?? '').split('@').first.isNotEmpty
-                               ? (sender['email'] as String? ?? '').split('@').first
-                               : 'Utilisateur',
+            'displayName': (sender['first_name'] as String?) ??
+                           (sender['display_name'] as String?) ??
+                           (sender['name'] as String?) ??
+                           ((sender['email'] as String? ?? '').split('@').first.isNotEmpty
+                               ? (sender['email'] as String).split('@').first
+                               : 'Utilisateur'),
             'handle': sender['handle'] ?? sender['username'] ?? '',
             'photoUrl': sender['photo_url'] ?? '',
             'createdAt': data['createdAt'],
