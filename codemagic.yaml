@@ -11,18 +11,26 @@ workflows:
     environment:
       groups:
         - firebase_credentials   # Groupe contenant GOOGLE_SERVICES_IOS (optionnel)
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.mycompany.doron
-        certificate: apple_distribution
-        provisioning_profiles:
-          - doron_app_store
       flutter: stable
       xcode: latest
       cocoapods: default
 
     scripts:
-      # 1. Injecter GoogleService-Info.plist (si variable définie)
+      # 1. Initialiser le keychain et télécharger le certificat + profil depuis Apple
+      - name: Set up code signing
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files \
+            "com.mycompany.doron" \
+            --type IOS_APP_STORE \
+            --certificate-key @env:APP_STORE_CONNECT_PRIVATE_KEY \
+            --issuer-id @env:APP_STORE_CONNECT_ISSUER_ID \
+            --key-id @env:APP_STORE_CONNECT_KEY_IDENTIFIER \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
+
+      # 2. Injecter GoogleService-Info.plist (si variable définie)
       - name: Inject GoogleService-Info.plist
         script: |
           if [ -n "$GOOGLE_SERVICES_IOS" ]; then
@@ -32,13 +40,9 @@ workflows:
             echo "ℹ️  Pas de variable GOOGLE_SERVICES_IOS — fichier repo utilisé"
           fi
 
-      # 2. Flutter pub get
+      # 3. Flutter pub get
       - name: Install Flutter dependencies
         script: flutter pub get
-
-      # 3. Configurer la signature de code iOS
-      - name: Set up code signing
-        script: xcode-project use-profiles
 
       # 4. Install CocoaPods
       - name: Install CocoaPods
