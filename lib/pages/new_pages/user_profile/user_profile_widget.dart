@@ -654,41 +654,35 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       );
     }
 
-    return ReorderableListView(
+    return GridView.builder(
       padding: const EdgeInsets.all(16),
-      buildDefaultDragHandles: false,
-      onReorder: (oldIndex, newIndex) {
-        HapticFeedback.mediumImpact();
-        if (newIndex > oldIndex) newIndex -= 1;
-        setState(() {
-          final item = _model.favourites.removeAt(oldIndex);
-          _model.favourites.insert(newIndex, item);
-        });
-      },
-      children: [
-        for (int i = 0; i < _model.favourites.length; i++)
-          _buildLikedProductCard(_model.favourites[i], i),
-      ],
-    );
-  }
-
-  Widget _buildLikedProductCard(Map<String, dynamic> favourite, int index) {
-    return ReorderableDragStartListener(
-      key: ValueKey(favourite['id'] ?? index.toString()),
-      index: index,
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: 16,
-          right: index.isEven ? 8 : 0,
-          left: index.isEven ? 0 : 8,
-        ),
-        child: SharedProductCard(
-          product: favourite,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.75,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+      ),
+      itemCount: _model.favourites.length,
+      itemBuilder: (context, index) {
+        return SharedProductCard(
+          key: ValueKey(_model.favourites[index]['id'] ?? index.toString()),
+          product: _model.favourites[index],
           index: index,
           showWishlistButton: true,
           onRemove: null,
-        ),
-      ),
+        );
+      },
+    );
+  }
+
+  // Unused after refactor — kept for key uniqueness
+  Widget _buildLikedProductCard(Map<String, dynamic> favourite, int index) {
+    return SharedProductCard(
+      key: ValueKey(favourite['id'] ?? index.toString()),
+      product: favourite,
+      index: index,
+      showWishlistButton: true,
+      onRemove: null,
     );
   }
 
