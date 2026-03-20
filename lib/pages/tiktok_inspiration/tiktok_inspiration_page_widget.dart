@@ -122,11 +122,22 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
             Color(0xFFEC4899),
           ],
         ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
+        ),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF8A2BE2).withOpacity(0.4),
+            blurRadius: 30,
+            spreadRadius: 2,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: const Color(0xFFEC4899).withOpacity(0.3),
             blurRadius: 20,
-            offset: const Offset(0, 8),
+            spreadRadius: 0,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -395,14 +406,6 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
             }
             return _buildProductCard(product, index);
           },
-        ),
-
-        // Indicateur de progression (pas de ratio pour infinite scroll)
-        Positioned(
-          right: 12,
-          top: 80,
-          bottom: 80,
-          child: _buildProgressIndicator(),
         ),
 
         // ✨ INFINITE SCROLL: Indicateur de chargement en bas
