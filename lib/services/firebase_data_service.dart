@@ -21,6 +21,34 @@ class FirebaseDataService {
   /// Vérifie si un utilisateur est connecté
   static bool get isLoggedIn => _auth.currentUser != null;
 
+  /// ─────────────────────────────────────────────────────────────────────────
+  /// Helper : préfixe toutes les clés SharedPreferences avec l'uid courant.
+  /// Garantit l'isolation des données entre les comptes sur le même appareil.
+  /// ─────────────────────────────────────────────────────────────────────────
+  static String _key(String base) {
+    final uid = _auth.currentUser?.uid;
+    return uid != null ? '${uid}_$base' : 'guest_$base';
+  }
+
+  /// Efface le cache local de l'utilisateur courant.
+  /// À appeler juste avant le signOut() pour éviter que les données
+  /// d'un compte ne s'affichent sur le suivant.
+  static Future<void> clearLocalCache() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final allKeys = prefs.getKeys();
+      final userKeys = allKeys.where((k) => k.startsWith('${uid}_')).toList();
+      for (final k in userKeys) {
+        await prefs.remove(k);
+      }
+      AppLogger.info('Local cache cleared for user $uid', 'Firebase');
+    } catch (e) {
+      AppLogger.error('Error clearing local cache', 'Firebase', e);
+    }
+  }
+
   // ============= ONBOARDING ANSWERS =============
 
   /// Sauvegarde les réponses d'onboarding
@@ -30,7 +58,7 @@ class FirebaseDataService {
     // Sauvegarder localement TOUJOURS (que l'utilisateur soit connecté ou non)
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('local_onboarding_answers', json.encode(answers));
+      await prefs.setString(_key('onboarding'), json.encode(answers));
       AppLogger.success('Onboarding answers saved locally', 'Firebase');
     } catch (e) {
       AppLogger.error('Error saving onboarding locally', 'Firebase', e);
@@ -83,7 +111,7 @@ class FirebaseDataService {
     // Fallback : charger depuis SharedPreferences
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localData = prefs.getString('local_onboarding_answers');
+      final localData = prefs.getString(_key('onboarding'));
       if (localData != null) {
         AppLogger.success('Loaded onboarding from local storage', 'Firebase');
         return json.decode(localData) as Map<String, dynamic>;
@@ -103,7 +131,7 @@ class FirebaseDataService {
     // Sauvegarder localement TOUJOURS
     try {
       final prefs = await SharedPreferences.getInstance();
-      final profilesJson = prefs.getString('local_gift_profiles') ?? '[]';
+      final profilesJson = prefs.getString(_key('gift_profiles')) ?? '[]';
       final profiles = (json.decode(profilesJson) as List).cast<Map<String, dynamic>>();
 
       // Générer un ID unique pour le profil
@@ -115,7 +143,7 @@ class FirebaseDataService {
       };
 
       profiles.add(profileWithId);
-      await prefs.setString('local_gift_profiles', json.encode(profiles));
+      await prefs.setString(_key('gift_profiles'), json.encode(profiles));
       AppLogger.success('Gift search saved locally: $profileId', 'Firebase');
     } catch (e) {
       AppLogger.error('Error saving gift search locally', 'Firebase', e);
@@ -169,7 +197,7 @@ class FirebaseDataService {
     // Fallback : charger depuis SharedPreferences
     try {
       final prefs = await SharedPreferences.getInstance();
-      final profilesJson = prefs.getString('local_gift_profiles') ?? '[]';
+      final profilesJson = prefs.getString(_key('gift_profiles')) ?? '[]';
       final profiles = (json.decode(profilesJson) as List)
           .map((e) => e as Map<String, dynamic>)
           .toList();
@@ -208,10 +236,10 @@ class FirebaseDataService {
     try {
       final prefs = await SharedPreferences.getInstance();
       if (personId != null) {
-        await prefs.setString('current_person_id', personId);
+        await prefs.setString(_key('current_person'), personId);
         AppLogger.info('Current person context set: $personId', 'Firebase');
       } else {
-        await prefs.remove('current_person_id');
+        await prefs.remove(_key('current_person'));
         AppLogger.info('Current person context cleared', 'Firebase');
       }
     } catch (e) {
@@ -223,7 +251,7 @@ class FirebaseDataService {
   static Future<String?> getCurrentPersonContext() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      return prefs.getString('current_person_id');
+      return prefs.getString(_key('current_person'));
     } catch (e) {
       AppLogger.error('Error getting current person context', 'Firebase', e);
       return null;
@@ -305,12 +333,12 @@ class FirebaseDataService {
     // ── Persistance locale (offline first) ──────────────────────────────────
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString('local_favorites') ?? '[]';
+      final localJson = prefs.getString(_key('favorites')) ?? '[]';
       final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
       // Éviter les doublons
       localList.removeWhere((f) => f['id']?.toString() == giftId);
       localList.insert(0, {...giftWithId, 'addedAt': DateTime.now().toIso8601String()});
-      await prefs.setString('local_favorites', json.encode(localList));
+      await prefs.setString(_key('favorites'), json.encode(localList));
       AppLogger.success('Favorite saved locally: ${gift['name']}', 'Firebase');
     } catch (e) {
       AppLogger.error('Error saving favorite locally', 'Firebase', e);
@@ -339,10 +367,10 @@ class FirebaseDataService {
     // ── Local ──────────────────────────────────────────────────────────────
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString('local_favorites') ?? '[]';
+      final localJson = prefs.getString(_key('favorites')) ?? '[]';
       final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
       localList.removeWhere((f) => f['id']?.toString() == giftId);
-      await prefs.setString('local_favorites', json.encode(localList));
+      await prefs.setString(_key('favorites'), json.encode(localList));
       AppLogger.success('Favorite removed locally: $giftId', 'Firebase');
     } catch (e) {
       AppLogger.error('Error removing favorite locally', 'Firebase', e);
@@ -369,7 +397,7 @@ class FirebaseDataService {
     List<Map<String, dynamic>> localFavorites = [];
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString('local_favorites') ?? '[]';
+      final localJson = prefs.getString(_key('favorites')) ?? '[]';
       localFavorites = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
       AppLogger.success('Local favorites: ${localFavorites.length}', 'Firebase');
     } catch (e) {
@@ -468,10 +496,10 @@ class FirebaseDataService {
     // ── Local ──────────────────────────────────────────────────────────────
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString('local_wishlists') ?? '[]';
+      final localJson = prefs.getString(_key('wishlists')) ?? '[]';
       final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
       localList.insert(0, {'id': wishlistId, ...wishlistData});
-      await prefs.setString('local_wishlists', json.encode(localList));
+      await prefs.setString(_key('wishlists'), json.encode(localList));
       AppLogger.success('Wishlist created locally: $name', 'Firebase');
     } catch (e) {
       AppLogger.error('Error creating wishlist locally', 'Firebase', e);
@@ -500,7 +528,7 @@ class FirebaseDataService {
     List<Map<String, dynamic>> localWishlists = [];
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString('local_wishlists') ?? '[]';
+      final localJson = prefs.getString(_key('wishlists')) ?? '[]';
       localWishlists = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
       if (personId != null) {
         localWishlists = localWishlists.where((w) => w['personId'] == personId).toList();
@@ -575,19 +603,19 @@ class FirebaseDataService {
     try {
       final prefs = await SharedPreferences.getInstance();
       // 1) Mettre à jour la liste de produits du cache
-      final localJson = prefs.getString('wishlist_products_$wishlistId') ?? '[]';
+      final localJson = prefs.getString(_key('wishlist_products_$wishlistId')) ?? '[]';
       final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
       localList.removeWhere((p) => p['id']?.toString() == productId);
       localList.insert(0, normalizedProduct);
-      await prefs.setString('wishlist_products_$wishlistId', json.encode(localList));
+      await prefs.setString(_key('wishlist_products_$wishlistId'), json.encode(localList));
       // 2) Mettre à jour productCount dans le cache des wishlists
-      final wishlistsJson = prefs.getString('local_wishlists') ?? '[]';
+      final wishlistsJson = prefs.getString(_key('wishlists')) ?? '[]';
       final wishlistsList = (json.decode(wishlistsJson) as List).cast<Map<String, dynamic>>();
       final idx = wishlistsList.indexWhere((w) => w['id']?.toString() == wishlistId);
       if (idx != -1) {
         final current = (wishlistsList[idx]['productCount'] as int?) ?? 0;
         wishlistsList[idx]['productCount'] = current + 1;
-        await prefs.setString('local_wishlists', json.encode(wishlistsList));
+        await prefs.setString(_key('wishlists'), json.encode(wishlistsList));
       }
       AppLogger.success('Product saved locally in wishlist $wishlistId: $productId', 'Firebase');
     } catch (e) {
@@ -677,18 +705,18 @@ class FirebaseDataService {
       try {
         final prefs = await SharedPreferences.getInstance();
         // liste produits
-        final localJson = prefs.getString('wishlist_products_$wishlistId') ?? '[]';
+        final localJson = prefs.getString(_key('wishlist_products_$wishlistId')) ?? '[]';
         final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
         localList.insert(0, photoItem);
-        await prefs.setString('wishlist_products_$wishlistId', json.encode(localList));
+        await prefs.setString(_key('wishlist_products_$wishlistId'), json.encode(localList));
         // compteur
-        final wishlistsJson = prefs.getString('local_wishlists') ?? '[]';
+        final wishlistsJson = prefs.getString(_key('wishlists')) ?? '[]';
         final wishlistsList = (json.decode(wishlistsJson) as List).cast<Map<String, dynamic>>();
         final idx = wishlistsList.indexWhere((w) => w['id']?.toString() == wishlistId);
         if (idx != -1) {
           final current = (wishlistsList[idx]['productCount'] as int?) ?? 0;
           wishlistsList[idx]['productCount'] = current + 1;
-          await prefs.setString('local_wishlists', json.encode(wishlistsList));
+          await prefs.setString(_key('wishlists'), json.encode(wishlistsList));
         }
       } catch (_) {}
 
@@ -729,10 +757,10 @@ class FirebaseDataService {
     // ── Local ──────────────────────────────────────────────────────────────
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString('wishlist_products_$wishlistId') ?? '[]';
+      final localJson = prefs.getString(_key('wishlist_products_$wishlistId')) ?? '[]';
       final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
       localList.removeWhere((p) => p['id']?.toString() == productId);
-      await prefs.setString('wishlist_products_$wishlistId', json.encode(localList));
+      await prefs.setString(_key('wishlist_products_$wishlistId'), json.encode(localList));
     } catch (e) {
       AppLogger.error('Error removing from wishlist locally', 'Firebase', e);
     }
@@ -777,7 +805,7 @@ class FirebaseDataService {
     // ── Local d'abord ─────────────────────────────────────────────────────
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString('wishlist_products_$wishlistId') ?? '[]';
+      final localJson = prefs.getString(_key('wishlist_products_$wishlistId')) ?? '[]';
       final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
       if (localList.isNotEmpty) {
         AppLogger.success('Loaded ${localList.length} products from wishlist (local)', 'Firebase');
@@ -825,7 +853,7 @@ class FirebaseDataService {
             ...p,
             'addedAt': (p['addedAt'] is String) ? p['addedAt'] : DateTime.now().toIso8601String(),
           }).toList();
-          await prefs.setString('wishlist_products_$wishlistId', json.encode(serializable));
+          await prefs.setString(_key('wishlist_products_$wishlistId'), json.encode(serializable));
         } catch (_) {}
       }
 
@@ -842,10 +870,10 @@ class FirebaseDataService {
     // ── Local ──────────────────────────────────────────────────────────────
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString('local_wishlists') ?? '[]';
+      final localJson = prefs.getString(_key('wishlists')) ?? '[]';
       final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
       localList.removeWhere((w) => w['id']?.toString() == wishlistId);
-      await prefs.setString('local_wishlists', json.encode(localList));
+      await prefs.setString(_key('wishlists'), json.encode(localList));
     } catch (e) {
       AppLogger.error('Error deleting wishlist locally', 'Firebase', e);
     }

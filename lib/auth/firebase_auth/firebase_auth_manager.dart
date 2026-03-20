@@ -1,4 +1,4 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -18,6 +18,7 @@ import 'firebase_user_provider.dart';
 import 'google_auth.dart';
 import 'jwt_token_auth.dart';
 import 'github_auth.dart';
+import '/services/firebase_data_service.dart';
 
 export '../base_auth_user_provider.dart';
 
@@ -60,7 +61,10 @@ class FirebaseAuthManager extends AuthManager
   FirebasePhoneAuthManager phoneAuthManager = FirebasePhoneAuthManager();
 
   @override
-  Future signOut() {
+  Future signOut() async {
+    // ⚠️ Effacer le cache local AVANT le signOut pour éviter
+    // que les données d'un compte s'affichent sur le suivant.
+    await FirebaseDataService.clearLocalCache();
     return FirebaseAuth.instance.signOut();
   }
 
