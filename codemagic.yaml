@@ -14,6 +14,9 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.mycompany.doron
+        certificate: apple_distribution
+        provisioning_profiles:
+          - doron_app_store
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -33,7 +36,7 @@ workflows:
       - name: Install Flutter dependencies
         script: flutter pub get
 
-      # 3. Configurer la signature de code iOS (Codemagic gère les certificats/profils)
+      # 3. Configurer la signature de code iOS
       - name: Set up code signing
         script: xcode-project use-profiles
 
