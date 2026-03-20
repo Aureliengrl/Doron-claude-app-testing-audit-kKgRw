@@ -1080,20 +1080,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Nom du produit
-                      Text(
-                        product['name'] as String? ?? product['title'] as String? ?? '',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          height: 1.3,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      // Nom de la marque (badge pill)
+                      // Marque en violet (sans le nom du produit)
                       if ((product['brand'] as String? ?? product['source'] as String? ?? '').isNotEmpty)
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
