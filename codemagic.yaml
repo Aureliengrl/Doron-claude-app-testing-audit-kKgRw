@@ -30,7 +30,38 @@ workflows:
           keychain add-certificates
           xcode-project use-profiles
 
-      # 2. Injecter GoogleService-Info.plist (si variable définie)
+      # 2. Générer export_options.plist explicite (app-store + bon profil)
+      - name: Generate export options plist
+        script: |
+          cat > /Users/builder/export_options.plist << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>8G596X24DA</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.mycompany.doron</key>
+              <string>DORON.APP ios_app_store 1771937640</string>
+            </dict>
+            <key>signingCertificate</key>
+            <string>Apple Distribution</string>
+            <key>stripSwiftSymbols</key>
+            <true/>
+            <key>uploadBitcode</key>
+            <false/>
+            <key>uploadSymbols</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+      # 3. Injecter GoogleService-Info.plist (si variable définie)
       - name: Inject GoogleService-Info.plist
         script: |
           if [ -n "$GOOGLE_SERVICES_IOS" ]; then
@@ -40,16 +71,16 @@ workflows:
             echo "ℹ️  Pas de variable GOOGLE_SERVICES_IOS — fichier repo utilisé"
           fi
 
-      # 3. Flutter pub get
+      # 4. Flutter pub get
       - name: Install Flutter dependencies
         script: flutter pub get
 
-      # 4. Install CocoaPods
+      # 5. Install CocoaPods
       - name: Install CocoaPods
         script: |
           find . -name "Podfile" -execdir pod install \;
 
-      # 5. Build IPA
+      # 6. Build IPA
       - name: Build IPA
         script: |
           flutter build ipa \
