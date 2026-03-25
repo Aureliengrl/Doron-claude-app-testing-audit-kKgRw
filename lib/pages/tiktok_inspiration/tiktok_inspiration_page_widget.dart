@@ -12,11 +12,13 @@ import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
 import '/services/firebase_data_service.dart';
 import '/services/product_url_service.dart';
+import '/services/favourite_service.dart';
 import '/components/connection_required_dialog.dart';
 import '/components/aesthetic_buttons.dart';
 import '/components/micro_interactions.dart' as micro;
 import 'tiktok_inspiration_page_model.dart';
 export 'tiktok_inspiration_page_model.dart';
+
 
 /// Mode Inspiration - TikTok Style SIMPLIFIÉ
 /// Swipe vertical entre produits, clic pour voir la fiche
@@ -767,19 +769,8 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
     final productName = product['name']?.toString() ?? '';
     if (productName.isEmpty) return;
 
-    final isCurrentlyLiked = _model.likedProductTitles.contains(productName);
-
-    // Mise à jour locale immédiate
-    setState(() {
-      if (isCurrentlyLiked) {
-        _model.likedProductTitles.remove(productName);
-      } else {
-        _model.likedProductTitles.add(productName);
-      }
-    });
-
     // Vérifier l'authentification
-    if (currentUserReference == null) {
+    if (!loggedIn) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Connectez-vous pour sauvegarder vos favoris', style: GoogleFonts.poppins()),
@@ -789,59 +780,48 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
       return;
     }
 
-    try {
+    final isCurrentlyLiked = _model.likedProductTitles.contains(productName);
+
+    // Mise à jour locale immédiate (optimistic UI)
+    setState(() {
       if (isCurrentlyLiked) {
-        // Retirer des favoris
-        final favorites = await queryFavouritesRecordOnce(
-          queryBuilder: (q) => q
-              .where('uid', isEqualTo: currentUserReference)
-              .where('product.product_title', isEqualTo: productName),
-        );
-        for (var fav in favorites) {
-          await fav.reference.delete();
-        }
+        _model.likedProductTitles.remove(productName);
       } else {
-        // Ajouter aux favoris
-        await FavouritesRecord.collection.add(
-          createFavouritesRecordData(
-            uid: currentUserReference,
-            platform: product['source']?.toString().toLowerCase() ?? 'amazon',
-            timeStamp: DateTime.now(),
-            product: ProductsStruct(
-              productTitle: productName,
-              productPrice: '${product['price'] ?? 0}€',
-              productUrl: product['url']?.toString() ?? '',
-              productPhoto: product['image']?.toString() ?? '',
-              productStarRating: '',
-              productOriginalPrice: '',
-              productNumRatings: 0,
-              platform: product['source']?.toString().toLowerCase() ?? 'amazon',
-            ),
+        _model.likedProductTitles.add(productName);
+      }
+    });
+
+    // Écriture Firestore via FavouriteService (users/{uid}/favorites)
+    final success = await FavouriteService.toggle(product);
+
+    if (!success) {
+      // Revert en cas d'erreur
+      if (mounted) {
+        setState(() {
+          if (isCurrentlyLiked) {
+            _model.likedProductTitles.add(productName);
+          } else {
+            _model.likedProductTitles.remove(productName);
+          }
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors de la mise à jour des favoris', style: GoogleFonts.poppins()),
+            backgroundColor: Colors.red[700],
           ),
         );
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Ajouté aux favoris', style: GoogleFonts.poppins()),
-              backgroundColor: Colors.green[700],
-              duration: const Duration(seconds: 1),
-            ),
-          );
-        }
       }
-    } catch (e) {
-      AppLogger.debug('❌ Erreur toggle favori: $e', 'Debug');
-      // Revert local state on error
-      setState(() {
-        if (isCurrentlyLiked) {
-          _model.likedProductTitles.add(productName);
-        } else {
-          _model.likedProductTitles.remove(productName);
-        }
-      });
+    } else if (!isCurrentlyLiked && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❤️ Ajouté aux favoris !', style: GoogleFonts.poppins()),
+          backgroundColor: Colors.green[700],
+          duration: const Duration(seconds: 1),
+        ),
+      );
     }
   }
+
 
   Widget _buildWishlistButton(Map<String, dynamic> product) {
     return GlassmorphicButton(

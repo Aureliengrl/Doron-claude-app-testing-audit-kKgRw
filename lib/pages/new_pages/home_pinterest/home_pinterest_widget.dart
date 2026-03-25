@@ -105,11 +105,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     );
   }
 
-  /// Charge les favoris depuis Firebase (FlutterFlow system)
+  /// Charge les favoris depuis Firebase users/{uid}/favorites
   Future<void> _loadFavorites() async {
-    // Vrifier si l'utilisateur est connect
     if (FirebaseAuth.instance.currentUser == null) {
-      AppLogger.debug('?? Utilisateur non connecté, favoris non chargés', 'Debug');
       // Charger les favoris locaux depuis SharedPreferences
       try {
         final prefs = await SharedPreferences.getInstance();
@@ -119,39 +117,34 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             _model.likedProductTitles.clear();
             _model.likedProductTitles.addAll(localFavorites);
           });
-          AppLogger.debug('? ${localFavorites.length} favoris chargés depuis local storage', 'Debug');
         }
-      } catch (e) {
-        AppLogger.debug('? Erreur chargement favoris locaux: $e', 'Debug');
-      }
+      } catch (_) {}
       return;
     }
 
     try {
-      // Charger les favoris FlutterFlow (sans personId = favoris "en vrac")
-      final favorites = await queryFavouritesRecordOnce(
-        queryBuilder: (favoritesRecord) => favoritesRecord
-            .where('uid', isEqualTo: currentUserReference)
-            .where('personId', isNull: true),
-      );
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+      final snap = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('favorites')
+          .get();
 
       if (mounted) {
         setState(() {
-          // On ne peut pas utiliser les IDs car FlutterFlow utilise des titres
-          // On va créer un Set de titres pour la comparaison
           _model.likedProductTitles.clear();
-          for (var fav in favorites) {
-            if (fav.product.productTitle.isNotEmpty) {
-              _model.likedProductTitles.add(fav.product.productTitle);
-            }
+          for (final doc in snap.docs) {
+            final name = doc.data()['name'] as String? ?? '';
+            if (name.isNotEmpty) _model.likedProductTitles.add(name);
           }
         });
-        AppLogger.debug('? ${_model.likedProductTitles.length} favoris chargés depuis Firebase', 'Debug');
+        AppLogger.debug('✅ ${_model.likedProductTitles.length} favoris chargés depuis users/$uid/favorites', 'Debug');
       }
     } catch (e) {
-      AppLogger.debug('? Erreur chargement favoris Firebase: $e', 'Debug');
+      AppLogger.debug('❌ Erreur chargement favoris: $e', 'Debug');
     }
   }
+
 
   void _onScroll() {
     if (_scrollController.position.pixels >=
