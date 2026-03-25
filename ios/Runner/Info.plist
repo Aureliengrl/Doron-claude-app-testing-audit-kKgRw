@@ -96,6 +96,8 @@
 	<string>Doron a besoin d'accéder à l'appareil photo pour prendre des photos de profil, des pochettes d'albums et des photos de cadeaux à ajouter à vos wishlists.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Doron utilise votre position pour trouver les magasins physiques proches qui vendent ce cadeau.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Doron accède à vos contacts pour vous suggérer des amis présents sur l'application et faciliter le partage de listes de cadeaux avec vos proches.</string>
 
 </dict>
 </plist>
