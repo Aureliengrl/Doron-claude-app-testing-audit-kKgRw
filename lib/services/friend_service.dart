@@ -105,14 +105,20 @@ class FriendService {
     if (myUid == null || myUid == toUid) return null;
 
     try {
+      // FIX #4: Éviter le filtre à 3 champs (fromUid+toUid+status) qui nécessite
+      // un index composite Firestore potentiellement manquant.
+      // On filtre sur 2 champs (fromUid+toUid) et on vérifie status côté client.
       final existing = await _db
           .collection('friend_requests')
           .where('fromUid', isEqualTo: myUid)
           .where('toUid', isEqualTo: toUid)
-          .where('status', isEqualTo: 'pending')
-          .limit(1)
+          .limit(5)
           .get();
-      if (existing.docs.isNotEmpty) return existing.docs.first.id;
+
+      final pendingDoc = existing.docs
+          .where((d) => d.data()['status'] == 'pending')
+          .firstOrNull;
+      if (pendingDoc != null) return pendingDoc.id;
 
       final ref = await _db.collection('friend_requests').add({
         'fromUid': myUid,
@@ -219,26 +225,32 @@ class FriendService {
         return (status: FriendshipStatus.friends, requestId: null);
       }
 
+      // FIX #4: Utiliser 2 champs max pour éviter l'index composite manquant.
+      // On filtre status côté client.
       final sentSnap = await _db
           .collection('friend_requests')
           .where('fromUid', isEqualTo: myUid)
           .where('toUid', isEqualTo: otherUid)
-          .where('status', isEqualTo: 'pending')
-          .limit(1)
+          .limit(5)
           .get();
-      if (sentSnap.docs.isNotEmpty) {
-        return (status: FriendshipStatus.pendingSent, requestId: sentSnap.docs.first.id);
+      final sentPending = sentSnap.docs
+          .where((d) => d.data()['status'] == 'pending')
+          .firstOrNull;
+      if (sentPending != null) {
+        return (status: FriendshipStatus.pendingSent, requestId: sentPending.id);
       }
 
       final receivedSnap = await _db
           .collection('friend_requests')
           .where('fromUid', isEqualTo: otherUid)
           .where('toUid', isEqualTo: myUid)
-          .where('status', isEqualTo: 'pending')
-          .limit(1)
+          .limit(5)
           .get();
-      if (receivedSnap.docs.isNotEmpty) {
-        return (status: FriendshipStatus.pendingReceived, requestId: receivedSnap.docs.first.id);
+      final receivedPending = receivedSnap.docs
+          .where((d) => d.data()['status'] == 'pending')
+          .firstOrNull;
+      if (receivedPending != null) {
+        return (status: FriendshipStatus.pendingReceived, requestId: receivedPending.id);
       }
 
       return (status: FriendshipStatus.none, requestId: null);

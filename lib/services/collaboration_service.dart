@@ -316,6 +316,8 @@ class CollaborationService {
   // ─── Streams ──────────────────────────────────────────────────────────────
 
   /// Stream des invitations collab reçues et en attente.
+  /// FIX #6: Filtre sur toUid uniquement pour éviter l'index composite (toUid+status).
+  /// Le filtre status='pending' est appliqué côté client.
   static Stream<List<Map<String, dynamic>>> getMyPendingCollabInvitesStream() {
     final myUid = _myUid;
     if (myUid == null) return const Stream.empty();
@@ -323,11 +325,17 @@ class CollaborationService {
     return _db
         .collection('collab_invites')
         .where('toUid', isEqualTo: myUid)
-        .where('status', isEqualTo: 'pending')
         .snapshots()
+        .handleError((e) {
+          AppLogger.debug('❌ getMyPendingCollabInvitesStream error: $e', 'Collab');
+        })
         .asyncMap((snap) async {
       final result = <Map<String, dynamic>>[];
-      for (final doc in snap.docs) {
+      // Filtre status côté client pour éviter l'index composite
+      final pendingDocs = snap.docs
+          .where((d) => d.data()['status'] == 'pending')
+          .toList();
+      for (final doc in pendingDocs) {
         final data = doc.data();
         try {
           final senderDoc = await _db.collection('users').doc(data['fromUid']).get();
@@ -346,6 +354,7 @@ class CollaborationService {
       return result;
     });
   }
+
 
   /// Stream temps réel d'une collaboration.
   static Stream<Map<String, dynamic>?> getCollabStream(String collabId) {
