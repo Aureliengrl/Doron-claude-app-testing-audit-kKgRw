@@ -834,7 +834,7 @@ class _FriendsPageState extends State<FriendsPage>
 
   Widget _buildSuggestionActionBtn(String uid, FriendshipStatus status, String? requestId) {
     switch (status) {
-      case FriendshipStatus.friend:
+      case FriendshipStatus.friends:
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
@@ -851,7 +851,8 @@ class _FriendsPageState extends State<FriendsPage>
             ],
           ),
         );
-      case FriendshipStatus.pending:
+      case FriendshipStatus.pendingSent:
+      case FriendshipStatus.pendingReceived:
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
