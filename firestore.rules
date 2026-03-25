@@ -181,6 +181,47 @@ service cloud.firestore {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // COLLECTION: collaborations
+    // ─────────────────────────────────────────────────────────────────────────
+
+    match /collaborations/{collabId} {
+      // Membres et propriétaire peuvent lire
+      allow read: if isAuth() && (
+        resource.data.ownerId == request.auth.uid ||
+        request.auth.uid in resource.data.members ||
+        request.auth.uid in resource.data.pendingInvites
+      );
+      // Seul le propriétaire peut créer
+      allow create: if isAuth() && request.resource.data.ownerId == request.auth.uid;
+      // Mise à jour : propriétaire ou membre qui s'ajoute lui-même (acceptation)
+      allow update: if isAuth() && (
+        resource.data.ownerId == request.auth.uid ||
+        request.auth.uid in resource.data.members
+      );
+      allow delete: if isAuth() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // COLLECTION: collab_invites
+    // ─────────────────────────────────────────────────────────────────────────
+
+    match /collab_invites/{inviteId} {
+      // Expéditeur et destinataire peuvent lire
+      allow read: if isAuth() && (
+        resource.data.fromUid == request.auth.uid ||
+        resource.data.toUid == request.auth.uid
+      );
+      // Seul l'expéditeur peut créer (il doit être fromUid)
+      allow create: if isAuth() && request.resource.data.fromUid == request.auth.uid;
+      // Seul le destinataire peut mettre à jour (accept/decline)
+      allow update: if isAuth() && resource.data.toUid == request.auth.uid;
+      allow delete: if isAuth() && (
+        resource.data.fromUid == request.auth.uid ||
+        resource.data.toUid == request.auth.uid
+      );
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // FALLBACK — Tout le reste est refusé
     // ─────────────────────────────────────────────────────────────────────────
 
