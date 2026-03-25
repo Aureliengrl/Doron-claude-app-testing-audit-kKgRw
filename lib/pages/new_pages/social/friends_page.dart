@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '/components/liquid_glass.dart';
 import '/services/user_search_service.dart';
 import '/services/friend_service.dart';
@@ -39,6 +40,10 @@ class _FriendsPageState extends State<FriendsPage>
   final Map<String, ({FriendshipStatus status, String? requestId})> _statusCache = {};
   final Set<String> _loadingStatuses = {};
 
+  // Historique de recherche
+  List<String> _searchHistory = [];
+  static const String _historyKey = 'friends_search_history';
+
   // Onglet Demandes — stream temps réel
   Stream<List<Map<String, dynamic>>>? _requestsStream;
   List<Map<String, dynamic>> _pendingRequests = [];
@@ -50,6 +55,8 @@ class _FriendsPageState extends State<FriendsPage>
     _tabController = TabController(length: 3, vsync: this);
     // Stream temps réel des demandes reçues
     _requestsStream = FriendService.getPendingRequestsStream();
+    // Charger l'historique de recherche
+    _loadSearchHistory();
   }
 
   @override
@@ -57,6 +64,46 @@ class _FriendsPageState extends State<FriendsPage>
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  // ─── Historique de recherche ────────────────────────────────────────────
+
+  Future<void> _loadSearchHistory() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final history = prefs.getStringList(_historyKey) ?? [];
+      if (mounted) setState(() => _searchHistory = history);
+    } catch (_) {}
+  }
+
+  Future<void> _saveToHistory(String query) async {
+    if (query.trim().isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final history = List<String>.from(_searchHistory);
+      history.remove(query.trim()); // éviter doublon
+      history.insert(0, query.trim()); // plus récent en premier
+      if (history.length > 10) history.removeLast();
+      await prefs.setStringList(_historyKey, history);
+      if (mounted) setState(() => _searchHistory = history);
+    } catch (_) {}
+  }
+
+  Future<void> _removeFromHistory(String query) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final history = List<String>.from(_searchHistory)..remove(query);
+      await prefs.setStringList(_historyKey, history);
+      if (mounted) setState(() => _searchHistory = history);
+    } catch (_) {}
+  }
+
+  Future<void> _clearAllHistory() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_historyKey);
+      if (mounted) setState(() => _searchHistory = []);
+    } catch (_) {}
   }
 
   // ─── Recherche ──────────────────────────────────────────────────────────
@@ -76,6 +123,8 @@ class _FriendsPageState extends State<FriendsPage>
       final results = await UserSearchService.searchUsers(query.trim());
       if (mounted) {
         setState(() { _searchResults = results; _isSearching = false; });
+        // Sauvegarder dans l'historique si des résultats
+        if (results.isNotEmpty) _saveToHistory(query.trim());
         // Charger les statuts en arrière-plan
         for (final r in results) {
           final uid = r['uid'] as String? ?? '';
@@ -506,11 +555,15 @@ class _FriendsPageState extends State<FriendsPage>
 
   Widget _buildSearchResults() {
     if (_searchController.text.isEmpty) {
+      // Afficher l'historique si dispo
+      if (_searchHistory.isNotEmpty) {
+        return _buildSearchHistoryList();
+      }
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.search, size: 64, color: Colors.white24),
+            const Icon(Icons.manage_search_rounded, size: 64, color: Colors.white24),
             const SizedBox(height: 16),
             Text('Cherche par @pseudo ou prénom', style: GoogleFonts.poppins(fontSize: 16, color: Colors.white38)),
           ],
@@ -534,6 +587,86 @@ class _FriendsPageState extends State<FriendsPage>
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       itemCount: _searchResults.length,
       itemBuilder: (context, index) => _buildSearchResultTile(_searchResults[index]),
+    );
+  }
+
+  Widget _buildSearchHistoryList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+          child: Row(
+            children: [
+              const Icon(Icons.history_rounded, size: 18, color: Colors.white54),
+              const SizedBox(width: 8),
+              Text('Recherches récentes',
+                  style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white54)),
+              const Spacer(),
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  _clearAllHistory();
+                },
+                child: Text('Effacer tout',
+                    style: GoogleFonts.poppins(fontSize: 12, color: _violet, fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: _searchHistory.length,
+            itemBuilder: (ctx, i) {
+              final query = _searchHistory[i];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      _searchController.text = query;
+                      _lastQuery = ''; // forcer la recherche
+                      _search(query);
+                      if (_tabController.index != 1) _tabController.animateTo(1);
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.06),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white.withOpacity(0.1)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.history_rounded, size: 16, color: Colors.white38),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(query,
+                                style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70)),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              _removeFromHistory(query);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: const Icon(Icons.close_rounded, size: 16, color: Colors.white30),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 

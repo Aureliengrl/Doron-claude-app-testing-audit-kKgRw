@@ -255,11 +255,12 @@ class FriendService {
     if (myUid == null) return [];
 
     try {
+      // Ne pas utiliser orderBy ici — requiert un index composite qui peut ne pas être actif.
+      // Tri effectué côté client après récupération.
       final snap = await _db
           .collection('friend_requests')
           .where('toUid', isEqualTo: myUid)
           .where('status', isEqualTo: 'pending')
-          .orderBy('createdAt', descending: true)
           .get();
 
       final requests = <Map<String, dynamic>>[];
@@ -278,12 +279,22 @@ class FriendService {
           'createdAt': data['createdAt'],
         });
       }
+      // Tri côté client : plus récent en premier
+      requests.sort((a, b) {
+        final aTs = a['createdAt'];
+        final bTs = b['createdAt'];
+        if (aTs == null && bTs == null) return 0;
+        if (aTs == null) return 1;
+        if (bTs == null) return -1;
+        return bTs.compareTo(aTs);
+      });
       return requests;
     } catch (e) {
       AppLogger.debug('❌ FriendService.getPendingRequests: $e', 'Social');
       return [];
     }
   }
+
 
   // ─── Liste d'amis ──────────────────────────────────────────────────────────
 
