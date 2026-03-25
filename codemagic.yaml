@@ -10,7 +10,8 @@ workflows:
 
     environment:
       groups:
-        - firebase_credentials   # Groupe contenant GOOGLE_SERVICES_IOS (optionnel)
+        - firebase_credentials       # GOOGLE_SERVICES_IOS
+        - appstore_credentials       # APP_STORE_CONNECT_* variables
       flutter: stable
       xcode: latest
       cocoapods: default
