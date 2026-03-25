@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '/components/liquid_glass.dart';
 import '/services/user_search_service.dart';
 import '/services/friend_service.dart';
+import '/services/collaboration_service.dart';
 import '/utils/app_logger.dart';
 
 /// Page Amis — 3 onglets : Mes amis / Rechercher / Demandes reçues
@@ -49,12 +50,19 @@ class _FriendsPageState extends State<FriendsPage>
   List<Map<String, dynamic>> _pendingRequests = [];
   final Set<String> _processingRequestIds = {};
 
+  // Invitations de collaboration reçues
+  Stream<List<Map<String, dynamic>>>? _collabInvitesStream;
+  List<Map<String, dynamic>> _pendingCollabInvites = [];
+  final Set<String> _processingCollabIds = {};
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    // Stream temps réel des demandes reçues
+    // Stream temps réel des demandes d'amis reçues
     _requestsStream = FriendService.getPendingRequestsStream();
+    // Stream des invitations de collaboration reçues
+    _collabInvitesStream = CollaborationService.getMyPendingCollabInvitesStream();
     // Charger l'historique de recherche
     _loadSearchHistory();
   }
@@ -181,6 +189,46 @@ class _FriendsPageState extends State<FriendsPage>
       });
     }
   }
+
+  // ─── Invitations de collaboration ────────────────────────────────────────
+
+  Future<void> _acceptCollabInvite(String inviteId) async {
+    setState(() => _processingCollabIds.add(inviteId));
+    HapticFeedback.mediumImpact();
+    try {
+      final result = await CollaborationService.acceptInvite(inviteId);
+      if (mounted) {
+        setState(() {
+          _processingCollabIds.remove(inviteId);
+          _pendingCollabInvites.removeWhere((i) => i['inviteId'] == inviteId);
+        });
+        _showSnack('🎁 Tu as rejoint la liste !', _green);
+        final chatId = result['chatId'] as String?;
+        final profileName = result['profileName'] as String? ?? 'la liste';
+        if (chatId != null) {
+          context.push('/chat-room/$chatId', extra: {
+            'name': 'Cadeaux pour $profileName',
+            'isGroup': true,
+          });
+        }
+      }
+    } catch (_) {
+      if (mounted) setState(() => _processingCollabIds.remove(inviteId));
+      _showSnack('❌ Erreur', Colors.red);
+    }
+  }
+
+  Future<void> _declineCollabInvite(String inviteId) async {
+    setState(() => _processingCollabIds.add(inviteId));
+    await CollaborationService.declineInvite(inviteId);
+    if (mounted) {
+      setState(() {
+        _processingCollabIds.remove(inviteId);
+        _pendingCollabInvites.removeWhere((i) => i['inviteId'] == inviteId);
+      });
+    }
+  }
+
 
   // ─── Actions (recherche) ────────────────────────────────────────────────
 
@@ -863,53 +911,98 @@ class _FriendsPageState extends State<FriendsPage>
   Widget _buildPendingRequests() {
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: _requestsStream,
-      builder: (context, snapshot) {
-        // Erreur Firestore → afficher état vide plutôt que spinner infini
-        if (snapshot.hasError) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.wifi_off_rounded, size: 48, color: Colors.white24),
-                const SizedBox(height: 16),
-                Text('Impossible de charger les demandes',
-                    style: GoogleFonts.poppins(fontSize: 15, color: Colors.white54)),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () => setState(() {
-                    _requestsStream = FriendService.getPendingRequestsStream();
-                  }),
-                  child: Text('Réessayer', style: GoogleFonts.poppins(color: _violet)),
+      builder: (context, friendSnap) {
+        return StreamBuilder<List<Map<String, dynamic>>>(
+          stream: _collabInvitesStream,
+          builder: (context, collabSnap) {
+            if (friendSnap.hasError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.wifi_off_rounded, size: 48, color: Colors.white24),
+                    const SizedBox(height: 16),
+                    Text('Impossible de charger les demandes',
+                        style: GoogleFonts.poppins(fontSize: 15, color: Colors.white54)),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () => setState(() {
+                        _requestsStream = FriendService.getPendingRequestsStream();
+                        _collabInvitesStream = CollaborationService.getMyPendingCollabInvitesStream();
+                      }),
+                      child: Text('Réessayer', style: GoogleFonts.poppins(color: _violet)),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          );
-        }
-        // Spinner seulement si on attend ET qu'on n'a jamais eu de données
-        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator(color: _violet, strokeWidth: 2));
-        }
-        final requests = snapshot.data ?? [];
-        if (requests.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              );
+            }
+            if (friendSnap.connectionState == ConnectionState.waiting && !friendSnap.hasData) {
+              return const Center(child: CircularProgressIndicator(color: _violet, strokeWidth: 2));
+            }
+
+            final friendRequests = friendSnap.data ?? [];
+            final collabInvites = collabSnap.data ?? [];
+
+            // Mettre à jour les listes locales
+            _pendingRequests = friendRequests;
+            _pendingCollabInvites = collabInvites;
+
+            if (friendRequests.isEmpty && collabInvites.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.mark_email_read_outlined, size: 72, color: Colors.white24),
+                    const SizedBox(height: 20),
+                    Text('Aucune demande en attente', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white54)),
+                    const SizedBox(height: 8),
+                    Text('Les demandes d\'amis et collaborations apparaîtront ici', style: GoogleFonts.poppins(fontSize: 14, color: Colors.white30)),
+                  ],
+                ),
+              );
+            }
+
+            return ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               children: [
-                const Icon(Icons.mark_email_read_outlined, size: 72, color: Colors.white24),
-                const SizedBox(height: 20),
-                Text('Aucune demande en attente', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white54)),
-                const SizedBox(height: 8),
-                Text('Les demandes d\'amis reçues apparaîtront ici', style: GoogleFonts.poppins(fontSize: 14, color: Colors.white30)),
+                // Invitations de collaboration
+                if (collabInvites.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.card_giftcard_rounded, size: 14, color: Color(0xFFF59E0B)),
+                        const SizedBox(width: 6),
+                        Text('Invitations de collaboration',
+                            style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFFF59E0B))),
+                      ],
+                    ),
+                  ),
+                  ...collabInvites.map((invite) => _buildCollabInviteTile(invite)),
+                  if (friendRequests.isNotEmpty) const SizedBox(height: 12),
+                ],
+                // Demandes d'amis
+                if (friendRequests.isNotEmpty) ...[
+                  if (collabInvites.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.person_add_rounded, size: 14, color: Colors.white54),
+                          const SizedBox(width: 6),
+                          Text('Demandes d\'amis',
+                              style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white54)),
+                        ],
+                      ),
+                    ),
+                  ...friendRequests.map((req) => _buildPendingRequestTile(req)),
+                ],
               ],
-            ),
-          );
-        }
-        return ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          itemCount: requests.length,
-          itemBuilder: (context, index) => _buildPendingRequestTile(requests[index]),
+            );
+          },
         );
       },
+
     );
   }
 
@@ -1001,6 +1094,99 @@ class _FriendsPageState extends State<FriendsPage>
                         boxShadow: [BoxShadow(color: _green.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 2))],
                       ),
                       child: const Icon(Icons.check_rounded, color: Colors.white, size: 20),
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCollabInviteTile(Map<String, dynamic> invite) {
+    final inviteId = invite['inviteId'] as String? ?? '';
+    final fromName = invite['fromName'] as String? ?? 'Quelqu\'un';
+    final fromPhotoUrl = invite['fromPhotoUrl'] as String? ?? '';
+    final profileName = invite['profileName'] as String? ?? 'une liste';
+    final isProcessing = _processingCollabIds.contains(inviteId);
+    const amber = Color(0xFFF59E0B);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [amber.withOpacity(0.1), amber.withOpacity(0.04)],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: amber.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 26,
+              backgroundColor: amber.withOpacity(0.3),
+              backgroundImage: fromPhotoUrl.isNotEmpty ? CachedNetworkImageProvider(fromPhotoUrl) : null,
+              child: fromPhotoUrl.isEmpty
+                  ? Text(fromName[0].toUpperCase(),
+                      style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white))
+                  : null,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(fromName, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
+                  const SizedBox(height: 2),
+                  Text('t\'invite à collaborer sur', style: GoogleFonts.poppins(fontSize: 11, color: Colors.white54)),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      const Icon(Icons.card_giftcard_rounded, size: 12, color: amber),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(profileName,
+                            style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: amber),
+                            overflow: TextOverflow.ellipsis),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            if (isProcessing)
+              const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: amber, strokeWidth: 2))
+            else
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => _declineCollabInvite(inviteId),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.red.withOpacity(0.3)),
+                      ),
+                      child: const Icon(Icons.close_rounded, color: Colors.red, size: 18),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => _acceptCollabInvite(inviteId),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: amber.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: amber.withOpacity(0.5)),
+                      ),
+                      child: const Icon(Icons.check_rounded, color: amber, size: 18),
                     ),
                   ),
                 ],

@@ -34,6 +34,7 @@ import '/pages/new_pages/chat/chat_room_page.dart';
 import '/pages/authentification/choose_handle_widget.dart';
 import '/pages/new_pages/social/friends_page.dart';
 import '/pages/new_pages/setup_profile/setup_profile_page.dart';
+import '/pages/new_pages/join_collab_page.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -371,6 +372,15 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: SetupProfilePage.routePath,
           requireAuth: true,
           builder: (context, params) => const SetupProfilePage(),
+        ),
+        // Rejoindre une collaboration via lien d'invitation
+        FFRoute(
+          name: JoinCollabPage.routeName,
+          path: JoinCollabPage.routePath,
+          requireAuth: true,
+          builder: (context, params) => JoinCollabPage(
+            token: params.getParam<String>('token', ParamType.String) ?? '',
+          ),
         ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
