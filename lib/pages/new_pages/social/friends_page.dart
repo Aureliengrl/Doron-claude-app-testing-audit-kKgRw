@@ -9,6 +9,7 @@ import '/components/liquid_glass.dart';
 import '/services/user_search_service.dart';
 import '/services/friend_service.dart';
 import '/services/collaboration_service.dart';
+import '/services/suggestion_service.dart';
 import '/utils/app_logger.dart';
 
 /// Page Amis — 3 onglets : Mes amis / Rechercher / Demandes reçues
@@ -55,6 +56,11 @@ class _FriendsPageState extends State<FriendsPage>
   List<Map<String, dynamic>> _pendingCollabInvites = [];
   final Set<String> _processingCollabIds = {};
 
+  // Suggestions d'amis
+  List<Map<String, dynamic>> _suggestions = [];
+  bool _suggestionsLoading = false;
+  bool _suggestionsLoaded = false;
+
   @override
   void initState() {
     super.initState();
@@ -65,6 +71,8 @@ class _FriendsPageState extends State<FriendsPage>
     _collabInvitesStream = CollaborationService.getMyPendingCollabInvitesStream();
     // Charger l'historique de recherche
     _loadSearchHistory();
+    // Précharger les suggestions en arrière-plan
+    _loadSuggestions();
   }
 
   @override
@@ -112,6 +120,33 @@ class _FriendsPageState extends State<FriendsPage>
       await prefs.remove(_historyKey);
       if (mounted) setState(() => _searchHistory = []);
     } catch (_) {}
+  }
+
+  // ─── Suggestions ─────────────────────────────────────────────────────────
+
+  Future<void> _loadSuggestions() async {
+    if (_suggestionsLoaded || _suggestionsLoading) return;
+    setState(() => _suggestionsLoading = true);
+    try {
+      final suggestions = await SuggestionService.getSuggestions(limit: 15);
+      if (mounted) {
+        setState(() {
+          _suggestions = suggestions;
+          _suggestionsLoading = false;
+          _suggestionsLoaded = true;
+        });
+        // Charger les statuts d'amitié pour les suggestions
+        for (final s in suggestions) {
+          final uid = s['uid'] as String? ?? '';
+          if (uid.isNotEmpty && !_statusCache.containsKey(uid)) {
+            _loadFriendshipStatus(uid);
+          }
+        }
+      }
+    } catch (e) {
+      AppLogger.debug('❌ FriendsPage suggestions: $e', 'Social');
+      if (mounted) setState(() => _suggestionsLoading = false);
+    }
   }
 
   // ─── Recherche ──────────────────────────────────────────────────────────
@@ -603,19 +638,20 @@ class _FriendsPageState extends State<FriendsPage>
 
   Widget _buildSearchResults() {
     if (_searchController.text.isEmpty) {
-      // Afficher l'historique si dispo
-      if (_searchHistory.isNotEmpty) {
-        return _buildSearchHistoryList();
-      }
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.manage_search_rounded, size: 64, color: Colors.white24),
+      // Pas de recherche active : afficher historique + suggestions
+      final hasHistory = _searchHistory.isNotEmpty;
+
+      return ListView(
+        children: [
+          // Historique si dispo
+          if (hasHistory) ...[
+            _buildSearchHistoryHeader(),
+            ..._searchHistory.map((q) => _buildHistoryTile(q)),
             const SizedBox(height: 16),
-            Text('Cherche par @pseudo ou prénom', style: GoogleFonts.poppins(fontSize: 16, color: Colors.white38)),
           ],
-        ),
+          // Section suggestions
+          _buildSuggestionsSection(),
+        ],
       );
     }
     if (_isSearching) return const Center(child: CircularProgressIndicator(color: _violet, strokeWidth: 2));
@@ -638,85 +674,295 @@ class _FriendsPageState extends State<FriendsPage>
     );
   }
 
-  Widget _buildSearchHistoryList() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+  Widget _buildSuggestionsSection() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Titre
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [_violet, _pink]),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.people_rounded, size: 14, color: Colors.white),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Suggestions pour toi',
+                style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white),
+              ),
+              const Spacer(),
+              if (_suggestionsLoading)
+                const SizedBox(width: 16, height: 16,
+                    child: CircularProgressIndicator(color: _violet, strokeWidth: 2))
+              else if (_suggestions.isNotEmpty)
+                GestureDetector(
+                  onTap: () {
+                    setState(() { _suggestionsLoaded = false; });
+                    _loadSuggestions();
+                  },
+                  child: const Icon(Icons.refresh_rounded, size: 18, color: Colors.white38),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          if (_suggestionsLoading)
+            ...[1, 2, 3].map((_) => _buildSuggestionSkeletonTile()),
+
+          if (!_suggestionsLoading && _suggestions.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Column(
+                  children: [
+                    const Icon(Icons.manage_search_rounded, size: 48, color: Colors.white24),
+                    const SizedBox(height: 12),
+                    Text('Cherche par @pseudo ou prénom',
+                        style: GoogleFonts.poppins(fontSize: 14, color: Colors.white38)),
+                  ],
+                ),
+              ),
+            ),
+
+          if (!_suggestionsLoading && _suggestions.isNotEmpty)
+            ..._suggestions.map((s) => _buildSuggestionTile(s)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSuggestionSkeletonTile() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Container(
+        height: 72,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(14),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSuggestionTile(Map<String, dynamic> suggestion) {
+    final uid = suggestion['uid'] as String? ?? '';
+    final name = suggestion['displayName'] as String? ?? 'Utilisateur';
+    final handle = suggestion['handle'] as String? ?? '';
+    final photoUrl = suggestion['photoUrl'] as String? ?? '';
+    final source = suggestion['source'] as String? ?? '';
+    final mutualCount = suggestion['mutualCount'] as int? ?? 0;
+
+    final statusInfo = _statusCache[uid];
+    final status = statusInfo?.status ?? FriendshipStatus.none;
+    final requestId = statusInfo?.requestId;
+
+    String sourceLabel;
+    IconData sourceIcon;
+    if (source.contains('contact')) {
+      sourceLabel = 'Dans vos contacts';
+      sourceIcon = Icons.contacts_rounded;
+    } else if (mutualCount > 0) {
+      sourceLabel = '$mutualCount ami${mutualCount > 1 ? 's' : ''} en commun';
+      sourceIcon = Icons.people_outline_rounded;
+    } else {
+      sourceLabel = 'Suggestion';
+      sourceIcon = Icons.star_outline_rounded;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: GestureDetector(
+        onTap: () => _openProfile(uid),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.white.withOpacity(0.08)),
+          ),
           child: Row(
             children: [
-              const Icon(Icons.history_rounded, size: 18, color: Colors.white54),
-              const SizedBox(width: 8),
-              Text('Recherches récentes',
-                  style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white54)),
-              const Spacer(),
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  _clearAllHistory();
-                },
-                child: Text('Effacer tout',
-                    style: GoogleFonts.poppins(fontSize: 12, color: _violet, fontWeight: FontWeight.w600)),
+              // Avatar
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: _violet.withOpacity(0.3),
+                backgroundImage: photoUrl.isNotEmpty ? CachedNetworkImageProvider(photoUrl) : null,
+                child: photoUrl.isEmpty
+                    ? Text(name[0].toUpperCase(),
+                        style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white))
+                    : null,
               ),
+              const SizedBox(width: 12),
+              // Infos
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(name, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
+                    if (handle.isNotEmpty)
+                      Text('@$handle', style: GoogleFonts.poppins(fontSize: 12, color: Colors.white54)),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Icon(sourceIcon, size: 11, color: _violet.withOpacity(0.8)),
+                        const SizedBox(width: 4),
+                        Text(sourceLabel,
+                            style: GoogleFonts.poppins(fontSize: 11, color: _violet.withOpacity(0.8))),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              // Action bouton
+              if (_loadingStatuses.contains(uid))
+                const SizedBox(width: 20, height: 20,
+                    child: CircularProgressIndicator(color: _violet, strokeWidth: 2))
+              else
+                _buildSuggestionActionBtn(uid, status, requestId),
             ],
           ),
         ),
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: _searchHistory.length,
-            itemBuilder: (ctx, i) {
-              final query = _searchHistory[i];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      _searchController.text = query;
-                      _lastQuery = ''; // forcer la recherche
-                      _search(query);
-                      if (_tabController.index != 1) _tabController.animateTo(1);
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.06),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white.withOpacity(0.1)),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.history_rounded, size: 16, color: Colors.white38),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(query,
-                                style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70)),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              HapticFeedback.selectionClick();
-                              _removeFromHistory(query);
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(4),
-                              child: const Icon(Icons.close_rounded, size: 16, color: Colors.white30),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+      ),
+    );
+  }
+
+  Widget _buildSuggestionActionBtn(String uid, FriendshipStatus status, String? requestId) {
+    switch (status) {
+      case FriendshipStatus.friend:
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: _green.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: _green.withOpacity(0.3)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.check_rounded, size: 14, color: _green),
+              const SizedBox(width: 4),
+              Text('Amis', style: GoogleFonts.poppins(fontSize: 12, color: _green, fontWeight: FontWeight.w600)),
+            ],
+          ),
+        );
+      case FriendshipStatus.pending:
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.orange.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.orange.withOpacity(0.3)),
+          ),
+          child: Text('En attente', style: GoogleFonts.poppins(fontSize: 12, color: Colors.orange, fontWeight: FontWeight.w600)),
+        );
+      default:
+        return GestureDetector(
+          onTap: () => _sendRequest(uid),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [_violet, _pink]),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [BoxShadow(color: _violet.withOpacity(0.3), blurRadius: 6, offset: const Offset(0, 2))],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.person_add_rounded, size: 14, color: Colors.white),
+                const SizedBox(width: 4),
+                Text('Ajouter', style: GoogleFonts.poppins(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
+        );
+    }
+  }
+
+  Widget _buildSearchHistoryHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+      child: Row(
+        children: [
+          const Icon(Icons.history_rounded, size: 18, color: Colors.white54),
+          const SizedBox(width: 8),
+          Text('Recherches récentes',
+              style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white54)),
+          const Spacer(),
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              _clearAllHistory();
+            },
+            child: Text('Effacer tout',
+                style: GoogleFonts.poppins(fontSize: 12, color: _violet, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryTile(String query) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            _searchController.text = query;
+            _lastQuery = '';
+            _search(query);
+            if (_tabController.index != 1) _tabController.animateTo(1);
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.06),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.history_rounded, size: 16, color: Colors.white38),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(query,
+                      style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70)),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    _removeFromHistory(query);
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(Icons.close_rounded, size: 16, color: Colors.white30),
                   ),
                 ),
-              );
-            },
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  // Ancienne méthode conservée pour compatibilité — n'est plus appelée
+  Widget _buildSearchHistoryList() {
+    return ListView(
+      children: [
+        _buildSearchHistoryHeader(),
+        ..._searchHistory.map((q) => _buildHistoryTile(q)),
       ],
     );
   }
+
 
   Widget _buildSearchResultTile(Map<String, dynamic> profile) {
     final photoUrl = profile['photoUrl'] as String? ?? '';
