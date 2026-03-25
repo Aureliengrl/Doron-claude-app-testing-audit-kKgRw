@@ -43,9 +43,9 @@ workflows:
           app-store-connect fetch-signing-files \
             "com.mycompany.doron" \
             --type IOS_APP_STORE \
-            --certificate-key @env:APP_STORE_CONNECT_PRIVATE_KEY \
             --issuer-id @env:APP_STORE_CONNECT_ISSUER_ID \
             --key-id @env:APP_STORE_CONNECT_KEY_IDENTIFIER \
+            --private-key @env:APP_STORE_CONNECT_PRIVATE_KEY \
             --create
 
           echo "🔑 Ajout des certificats au keychain..."
