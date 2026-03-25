@@ -19,7 +19,26 @@ workflows:
       # 1. Initialiser le keychain et télécharger le certificat + profil depuis Apple
       - name: Set up code signing
         script: |
+          set -e
+
+          echo "🔍 Vérification des variables App Store Connect..."
+          if [ -z "$APP_STORE_CONNECT_PRIVATE_KEY" ]; then
+            echo "❌ APP_STORE_CONNECT_PRIVATE_KEY manquante dans Codemagic env vars"
+            exit 1
+          fi
+          if [ -z "$APP_STORE_CONNECT_ISSUER_ID" ]; then
+            echo "❌ APP_STORE_CONNECT_ISSUER_ID manquante dans Codemagic env vars"
+            exit 1
+          fi
+          if [ -z "$APP_STORE_CONNECT_KEY_IDENTIFIER" ]; then
+            echo "❌ APP_STORE_CONNECT_KEY_IDENTIFIER manquante dans Codemagic env vars"
+            exit 1
+          fi
+          echo "✅ Variables App Store Connect présentes"
+
           keychain initialize
+
+          echo "📥 Téléchargement des certificats et profils depuis Apple Developer..."
           app-store-connect fetch-signing-files \
             "com.mycompany.doron" \
             --type IOS_APP_STORE \
@@ -27,13 +46,32 @@ workflows:
             --issuer-id @env:APP_STORE_CONNECT_ISSUER_ID \
             --key-id @env:APP_STORE_CONNECT_KEY_IDENTIFIER \
             --create
+
+          echo "🔑 Ajout des certificats au keychain..."
           keychain add-certificates
+
+          echo "📋 Vérification des profils téléchargés..."
+          PROFILES_COUNT=$(find ~/Library/MobileDevice/Provisioning\ Profiles -name "*.mobileprovision" 2>/dev/null | wc -l | tr -d ' ')
+          echo "   → $PROFILES_COUNT profil(s) trouvé(s)"
+          if [ "$PROFILES_COUNT" -eq "0" ]; then
+            echo "❌ Aucun profil de provisionnement téléchargé !"
+            echo "   Vérifiez que le bundle ID 'com.mycompany.doron' existe dans votre compte Apple Developer"
+            exit 1
+          fi
+
+          echo "⚙️  Configuration du projet Xcode avec les profils..."
           xcode-project use-profiles
 
-      # 2. Générer export_options.plist explicite (app-store + bon profil)
+          echo "✅ Configuration du code signing terminée"
+
+      # 2. Générer export_options.plist explicite (écrase celui généré par use-profiles)
       - name: Generate export options plist
         script: |
-          cat > /Users/builder/export_options.plist << 'EOF'
+          # Récupérer le nom exact du profil installé
+          PROFILE_NAME=$(security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision 2>/dev/null | plutil -extract Name raw - 2>/dev/null || echo "DORON.APP ios_app_store 1771937640")
+          echo "📝 Profil utilisé : $PROFILE_NAME"
+
+          cat > /Users/builder/export_options.plist << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
@@ -47,7 +85,7 @@ workflows:
             <key>provisioningProfiles</key>
             <dict>
               <key>com.mycompany.doron</key>
-              <string>DORON.APP ios_app_store 1771937640</string>
+              <string>${PROFILE_NAME}</string>
             </dict>
             <key>signingCertificate</key>
             <string>Apple Distribution</string>
@@ -60,6 +98,7 @@ workflows:
           </dict>
           </plist>
           EOF
+          echo "✅ export_options.plist généré avec method: app-store"
 
       # 3. Injecter GoogleService-Info.plist (si variable définie)
       - name: Inject GoogleService-Info.plist
