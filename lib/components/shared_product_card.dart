@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -71,21 +72,22 @@ class SharedProductCard extends StatelessWidget {
       onTap: isReordering
           ? null
           : () => GlobalProductDetailModal.show(context, _normalized),
-      child: Container(
+      child: ClipRRect(
         key: ValueKey('card_${_name}_$index'),
+        borderRadius: BorderRadius.circular(18),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isReordering
-                ? [_violet.withOpacity(0.2), Colors.white.withOpacity(0.08)]
-                : [Colors.white.withOpacity(0.14), Colors.white.withOpacity(0.06)],
-          ),
-          borderRadius: BorderRadius.circular(20),
+          color: isReordering
+              ? _violet.withOpacity(0.12)
+              : Colors.white.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isReordering
-                ? _violet.withOpacity(0.5)
-                : Colors.white.withOpacity(0.18),
+                ? _violet.withOpacity(0.4)
+                : Colors.white.withOpacity(0.10),
+            width: 0.5,
           ),
         ),
         child: Column(
@@ -251,7 +253,9 @@ class SharedProductCard extends StatelessWidget {
             ),
           ],
         ),
-      )
+      ),
+          ),
+      ),
           .animate()
           .fadeIn(delay: Duration(milliseconds: index * 40))
           .scale(

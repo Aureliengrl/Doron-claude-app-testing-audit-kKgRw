@@ -292,56 +292,110 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   }
 
   Widget _buildAppBar() {
-    return SliverAppBar(
-      expandedHeight: 220,
-      floating: false,
-      pinned: true,
-      backgroundColor: LiquidGlassTokens.pageDark,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: const BoxDecoration(
-            gradient: LiquidGlassTokens.darkPageGradient,
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      // Photo de profil
-                      Stack(
-                        children: [
-                          Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white.withOpacity(0.8), width: 2),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF8A2BE2).withOpacity(0.6),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: ClipOval(
-                              child: AuthUserStreamWidget(
-                                builder: (context) => currentUserPhoto != null && currentUserPhoto!.isNotEmpty
-                                    ? CachedNetworkImage(
-                                        imageUrl: currentUserPhoto!,
-                                        fit: BoxFit.cover,
-                                        placeholder: (context, url) => Container(
-                                          color: Colors.grey[300],
-                                          child: const Center(
-                                            child: LiquidGlassLoader(size: 16, isDark: false),
+    return SliverToBoxAdapter(
+      child: ClipRRect(
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  violetColor.withOpacity(0.12),
+                  pinkColor.withOpacity(0.06),
+                ],
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(28),
+                bottomRight: Radius.circular(28),
+              ),
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.white.withOpacity(0.10),
+                  width: 0.5,
+                ),
+              ),
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Top action buttons row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.local_activity,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                          onPressed: () {
+                            context.push('/gala-ticket');
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.menu_rounded,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                          onPressed: () {
+                            _showSettingsBottomSheet(context);
+                          },
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        // Photo de profil
+                        Stack(
+                          children: [
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white.withOpacity(0.8), width: 2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF8A2BE2).withOpacity(0.6),
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ClipOval(
+                                child: AuthUserStreamWidget(
+                                  builder: (context) => currentUserPhoto != null && currentUserPhoto!.isNotEmpty
+                                      ? CachedNetworkImage(
+                                          imageUrl: currentUserPhoto!,
+                                          fit: BoxFit.cover,
+                                          placeholder: (context, url) => Container(
+                                            color: Colors.grey[300],
+                                            child: const Center(
+                                              child: LiquidGlassLoader(size: 16, isDark: false),
+                                            ),
                                           ),
-                                        ),
-                                        errorWidget: (context, url, error) => Container(
+                                          errorWidget: (context, url, error) => Container(
+                                            color: violetColor.withOpacity(0.3),
+                                            child: Icon(
+                                              Icons.person,
+                                              size: 40,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        )
+                                      : Container(
                                           color: violetColor.withOpacity(0.3),
                                           child: Icon(
                                             Icons.person,
@@ -349,183 +403,152 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                             color: Colors.white,
                                           ),
                                         ),
-                                      )
-                                    : Container(
-                                        color: violetColor.withOpacity(0.3),
-                                        child: Icon(
-                                          Icons.person,
-                                          size: 40,
-                                          color: Colors.white,
-                                        ),
+                                ),
+                              ),
+                            ),
+                            // Badge modifier
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap: _changeProfilePicture,
+                                child: Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.2),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
                                       ),
-                              ),
-                            ),
-                          ),
-                          // Badge modifier
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: GestureDetector(
-                              onTap: _changeProfilePicture,
-                              child: Container(
-                                width: 28,
-                                height: 28,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Icon(
-                                  Icons.camera_alt,
-                                  size: 14,
-                                  color: violetColor,
+                                    ],
+                                  ),
+                                  child: Icon(
+                                    Icons.camera_alt,
+                                    size: 14,
+                                    color: violetColor,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 24),
-                      // Stats — Amis / Wishlists / Cadeaux
-                      Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _buildProfileStat('Amis', '$_friendsCount'),
-                            _buildProfileStat('Wishlists', '${_wishlists.length}'),
-                            _buildProfileStat('Cadeaux', '${_model.favourites.length}'),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                  // Nom et Bio
-                  const SizedBox(height: 12),
-                  AuthUserStreamWidget(
-                    builder: (context) => Text(
-                      currentUserDisplayName,
-                      style: GoogleFonts.outfit(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                        const SizedBox(width: 24),
+                        // Stats — Amis / Wishlists / Cadeaux
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildProfileStat('Amis', '$_friendsCount'),
+                              _buildProfileStat('Wishlists', '${_wishlists.length}'),
+                              _buildProfileStat('Cadeaux', '${_model.favourites.length}'),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  if (_model.userProfile?['handle'] != null)
-                    Text(
-                      '@${_model.userProfile!['handle']}',
-                      style: GoogleFonts.outfit(
-                        fontSize: 14,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  // Bio Moved directly under username/handle (it's already here but ensure it's below the stats)
-                  if (_model.userProfile?['bio'] != null && _model.userProfile!['bio'].toString().isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        _model.userProfile!['bio'],
-                        style: GoogleFonts.outfit(
-                          fontSize: 14,
+                    // Nom et Bio
+                    const SizedBox(height: 12),
+                    AuthUserStreamWidget(
+                      builder: (context) => Text(
+                        currentUserDisplayName,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
                     ),
-                  const SizedBox(height: 16),
-                  
-                  // Nouveaux boutons d'action (Modifier & Partager)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: LiquidGlassCard(
-                          blur: LiquidGlassTokens.blurLight,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          onTap: () {
-                             _showEditProfileSheet(context);
-                          },
-                          child: Center(
-                            child: Text(
-                              'Modifier le profil',
-                              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
-                            ),
+                    if (_model.userProfile?['handle'] != null)
+                      Text(
+                        '@${_model.userProfile!['handle']}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    // Bio
+                    if (_model.userProfile?['bio'] != null && _model.userProfile!['bio'].toString().isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          _model.userProfile!['bio'],
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: Colors.white,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: LiquidGlassCard(
-                          blur: LiquidGlassTokens.blurLight,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          onTap: () => context.push('/friends'),
-                          child: Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.people_outline, color: Colors.white, size: 16),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'Amis',
-                                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
-                                ),
-                              ],
+                    const SizedBox(height: 16),
+
+                    // Nouveaux boutons d'action (Modifier & Partager)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: LiquidGlassCard(
+                            blur: LiquidGlassTokens.blurLight,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            onTap: () {
+                               _showEditProfileSheet(context);
+                            },
+                            child: Center(
+                              child: Text(
+                                'Modifier le profil',
+                                style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: LiquidGlassCard(
-                          blur: LiquidGlassTokens.blurLight,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          onTap: () {
-                             _shareProfile();
-                          },
-                          child: Center(
-                            child: Text(
-                              'Partager',
-                              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: LiquidGlassCard(
+                            blur: LiquidGlassTokens.blurLight,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            onTap: () => context.push('/friends'),
+                            child: Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.people_outline, color: Colors.white, size: 16),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Amis',
+                                    style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                ],
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: LiquidGlassCard(
+                            blur: LiquidGlassTokens.blurLight,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            onTap: () {
+                               _shareProfile();
+                            },
+                            child: Center(
+                              child: Text(
+                                'Partager',
+                                style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(
-            Icons.local_activity,
-            color: Colors.white,
-            size: 28,
-          ),
-          onPressed: () {
-            context.push('/gala-ticket');
-          },
-        ),
-        IconButton(
-          icon: const Icon(
-            Icons.menu_rounded,
-            color: Colors.white,
-            size: 32,
-          ),
-          onPressed: () {
-            _showSettingsBottomSheet(context);
-          },
-        ),
-        const SizedBox(width: 8),
-      ],
     );
   }
 

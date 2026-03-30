@@ -29,11 +29,15 @@ class GlobalProductDetailModal {
             child: Container(
               constraints: const BoxConstraints(maxWidth: 500),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFF1A1A2E),
                 borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.10),
+                  width: 0.5,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withOpacity(0.5),
                     blurRadius: 60,
                     offset: const Offset(0, 20),
                   ),
@@ -68,7 +72,7 @@ class GlobalProductDetailModal {
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.95),
+                                color: Colors.white.withOpacity(0.12),
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
@@ -104,7 +108,7 @@ class GlobalProductDetailModal {
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.95),
+                                color: Colors.white.withOpacity(0.12),
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
@@ -197,7 +201,7 @@ class GlobalProductDetailModal {
                           style: GoogleFonts.poppins(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFF111827),
+                            color: Colors.white,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -215,7 +219,7 @@ class GlobalProductDetailModal {
                             product['description'] as String,
                             style: GoogleFonts.poppins(
                               fontSize: 14,
-                              color: const Color(0xFF6B7280),
+                              color: Colors.white60,
                               height: 1.6,
                             ),
                             maxLines: 3,
@@ -226,7 +230,7 @@ class GlobalProductDetailModal {
                             'Cadeau parfait par ${product['brand'] as String? ?? product['source'] as String? ?? product['platform'] as String? ?? 'une marque de qualité'}',
                             style: GoogleFonts.poppins(
                               fontSize: 14,
-                              color: const Color(0xFF6B7280),
+                              color: Colors.white60,
                               height: 1.6,
                             ),
                           ),
@@ -398,14 +402,14 @@ class GlobalProductDetailModal {
                             style: GoogleFonts.poppins(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFF111827),
+                              color: Colors.white,
                             ),
                           ),
                           Text(
                             product['name'] as String? ?? product['product_title'] as String? ?? '',
                             style: GoogleFonts.poppins(
                               fontSize: 12,
-                              color: const Color(0xFF6B7280),
+                              color: Colors.white60,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -472,14 +476,14 @@ class GlobalProductDetailModal {
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF111827),
+                            color: Colors.white,
                           ),
                         ),
                         subtitle: Text(
                           '$giftCount cadeau${giftCount > 1 ? 's' : ''}',
                           style: GoogleFonts.poppins(
                             fontSize: 13,
-                            color: const Color(0xFF6B7280),
+                            color: Colors.white60,
                           ),
                         ),
                         trailing: Icon(

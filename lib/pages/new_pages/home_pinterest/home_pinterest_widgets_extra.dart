@@ -22,32 +22,29 @@ class SearchBarWidget extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: violetColor.withOpacity(0.1),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: Colors.white.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.12),
+            width: 0.5,
+          ),
         ),
         child: TextField(
           controller: controller,
           onChanged: onChanged,
           style: GoogleFonts.poppins(
             fontSize: 14,
-            color: const Color(0xFF1F2937),
+            color: Colors.white,
           ),
           decoration: InputDecoration(
             hintText: 'Rechercher un cadeau, une marque...',
             hintStyle: GoogleFonts.poppins(
               fontSize: 14,
-              color: const Color(0xFF9CA3AF),
+              color: Colors.white.withOpacity(0.45),
             ),
             prefixIcon: Icon(
               Icons.search,
-              color: violetColor,
+              color: Colors.white.withOpacity(0.50),
               size: 22,
             ),
             suffixIcon: controller.text.isNotEmpty
@@ -55,7 +52,7 @@ class SearchBarWidget extends StatelessWidget {
                     icon: Icon(
                       Icons.clear,
                       size: 20,
-                      color: Colors.grey[600],
+                      color: Colors.white.withOpacity(0.50),
                     ),
                     onPressed: onClear,
                   )
