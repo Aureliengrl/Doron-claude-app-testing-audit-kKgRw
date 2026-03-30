@@ -356,12 +356,12 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.75,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        crossAxisCount: 3,
+        childAspectRatio: 0.65,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
       ),
       itemCount: _products.length,
       itemBuilder: (context, index) {
