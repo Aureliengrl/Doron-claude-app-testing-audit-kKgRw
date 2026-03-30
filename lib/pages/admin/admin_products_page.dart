@@ -1,13 +1,17 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
-import '/services/firebase_data_service.dart';
-import '/services/product_matching_service.dart';
-import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '/environment_values.dart';
+import '/components/liquid_glass.dart';
 
-/// Page d'administration pour gérer les produits Firebase
-/// Permet de supprimer et re-uploader les produits directement depuis l'app
+/// Page d'administration pour scanner et corriger les produits Firebase.
+/// Scanne tous les produits, identifie ceux avec des problèmes
+/// (photo manquante, prix incorrect, nom générique, URL cassée)
+/// et tente de les corriger automatiquement via l'API Amazon.
 class AdminProductsPage extends StatefulWidget {
   const AdminProductsPage({super.key});
 
@@ -19,328 +23,360 @@ class AdminProductsPage extends StatefulWidget {
 }
 
 class _AdminProductsPageState extends State<AdminProductsPage> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
   bool _isLoading = false;
   String _statusMessage = '';
   List<String> _logs = [];
   int _progress = 0;
   int _total = 0;
 
-  void _addLog(String message) {
+  // Résultats du scan
+  int _noImage = 0;
+  int _brokenImage = 0;
+  int _noPrice = 0;
+  int _noUrl = 0;
+  int _noName = 0;
+  int _fixed = 0;
+  int _unfixable = 0;
+
+  static const _violet = Color(0xFF8A2BE2);
+
+  void _log(String msg) {
     setState(() {
-      _logs.add(message);
-      _statusMessage = message;
+      _logs.add(msg);
+      _statusMessage = msg;
     });
-    AppLogger.debug(message, 'Debug');
   }
 
-  /// Supprime tous les produits de Firebase
-  Future<void> _deleteAllProducts() async {
+  // ─── SCAN : identifie tous les problèmes ────────────────────────────────
+
+  Future<void> _scanProducts() async {
     setState(() {
       _isLoading = true;
       _logs.clear();
       _progress = 0;
-      _total = 0;
+      _noImage = 0;
+      _brokenImage = 0;
+      _noPrice = 0;
+      _noUrl = 0;
+      _noName = 0;
     });
 
-    _addLog('🗑️  Suppression de tous les produits...');
+    _log('Chargement de tous les produits Firebase...');
 
     try {
-      // Compter les produits (collection gifts)
-      final countQuery = await _firestore.collection('gifts').count().get();
-      final totalCount = countQuery.count ?? 0;
+      final snapshot = await _db.collection('gifts').get();
+      final docs = snapshot.docs;
+      setState(() => _total = docs.length);
+      _log('${docs.length} produits trouvés. Analyse en cours...');
 
-      if (totalCount == 0) {
-        _addLog('✅ Aucun produit à supprimer');
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      _addLog('Produits à supprimer: $totalCount');
-      setState(() => _total = totalCount);
-
-      int deletedCount = 0;
-      const batchSize = 500;
-
-      while (true) {
-        // Récupérer un batch (collection gifts)
-        final snapshot = await _firestore
-            .collection('gifts')
-            .limit(batchSize)
-            .get();
-
-        if (snapshot.docs.isEmpty) break;
-
-        // Créer un batch de suppression
-        final batch = _firestore.batch();
-        for (var doc in snapshot.docs) {
-          batch.delete(doc.reference);
-        }
-
-        // Commit
-        await batch.commit();
-        deletedCount += snapshot.docs.length;
-
-        setState(() => _progress = deletedCount);
-        _addLog('✅ $deletedCount/$totalCount produits supprimés...');
-
-        // Petit délai
-        await Future.delayed(const Duration(milliseconds: 200));
-      }
-
-      _addLog('✅ SUPPRESSION TERMINÉE! $deletedCount produits supprimés');
-    } catch (e) {
-      _addLog('❌ Erreur: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  /// Upload tous les produits depuis fallback_products.json
-  Future<void> _uploadAllProducts() async {
-    setState(() {
-      _isLoading = true;
-      _logs.clear();
-      _progress = 0;
-      _total = 0;
-    });
-
-    _addLog('🚀 Démarrage de l\'upload des produits...');
-
-    try {
-      // Lire le fichier JSON
-      _addLog('📖 Lecture du fichier...');
-      final jsonString = await rootBundle.loadString('assets/jsons/fallback_products.json');
-      final List<dynamic> products = json.decode(jsonString);
-
-      _addLog('✅ ${products.length} produits chargés');
-      setState(() => _total = products.length);
-
-      // Upload par batch
-      const batchSize = 500;
-      int uploadedCount = 0;
-      int errorCount = 0;
-
-      _addLog('📤 Upload des produits (batch size: $batchSize)...');
-
-      for (int i = 0; i < products.length; i += batchSize) {
-        final batch = _firestore.batch();
-        final endIndex = (i + batchSize < products.length) ? i + batchSize : products.length;
-        final currentBatch = products.sublist(i, endIndex);
-
-        _addLog('📦 Batch ${(i ~/ batchSize) + 1}: Produits ${i + 1} à $endIndex...');
-
-        for (var product in currentBatch) {
-          try {
-            final productMap = product as Map<String, dynamic>;
-            final docRef = _firestore.collection('gifts').doc(productMap['id'].toString());
-
-            // Retirer l'ID du map (il sera dans le document ID)
-            final data = Map<String, dynamic>.from(productMap);
-            data.remove('id');
-
-            // Assurer que les arrays sont corrects
-            if (!data.containsKey('tags')) data['tags'] = [];
-            if (!data.containsKey('categories')) data['categories'] = [];
-
-            batch.set(docRef, data);
-            uploadedCount++;
-          } catch (e) {
-            _addLog('⚠️  Erreur produit ${product['id']}: $e');
-            errorCount++;
-          }
-        }
-
-        // Commit le batch
-        try {
-          await batch.commit();
-          setState(() => _progress = uploadedCount);
-          _addLog('✅ Batch ${(i ~/ batchSize) + 1} uploadé (${currentBatch.length} produits)');
-
-          // Délai pour éviter de surcharger Firebase
-          if (endIndex < products.length) {
-            await Future.delayed(const Duration(milliseconds: 500));
-          }
-        } catch (e) {
-          _addLog('❌ Erreur upload batch ${(i ~/ batchSize) + 1}: $e');
-          errorCount += currentBatch.length;
-        }
-      }
-
-      _addLog('✅ UPLOAD TERMINÉ!');
-      _addLog('📊 Produits uploadés: $uploadedCount');
-      _addLog('📊 Erreurs: $errorCount');
-
-      // Vérification finale
-      _addLog('🔍 Vérification finale...');
-      final finalCount = await _firestore.collection('products').count().get();
-      _addLog('✅ Collection "products" contient: ${finalCount.count} documents');
-
-      _addLog('✨ Firebase est maintenant peuplé!');
-    } catch (e) {
-      _addLog('❌ Erreur fatale: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  /// NETTOIE la base en supprimant SEULEMENT les produits incomplets
-  Future<void> _cleanIncompleteProducts() async {
-    setState(() {
-      _isLoading = true;
-      _logs.clear();
-      _progress = 0;
-      _total = 0;
-    });
-
-    _addLog('🧹 NETTOYAGE DE LA BASE');
-    _addLog('Suppression des produits incomplets...');
-
-    try {
-      // Récupérer TOUS les produits
-      final snapshot = await _firestore.collection('gifts').get();
-      final totalCount = snapshot.docs.length;
-
-      if (totalCount == 0) {
-        _addLog('✅ Aucun produit dans la base');
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      _addLog('📊 Total de produits: $totalCount');
-      _addLog('🔍 Analyse en cours...');
-
-      setState(() => _total = totalCount);
-
-      List<DocumentReference> toDelete = [];
-      int completeCount = 0;
-
-      // Analyser chaque produit
-      for (var doc in snapshot.docs) {
+      for (int i = 0; i < docs.length; i++) {
+        final doc = docs[i];
         final data = doc.data();
+        final name = (data['name'] ?? data['product_title'] ?? '').toString().trim();
+        final image = (data['image'] ?? data['product_photo'] ?? '').toString().trim();
+        final price = data['price'];
+        final url = (data['url'] ?? data['product_url'] ?? '').toString().trim();
+        final brand = (data['brand'] ?? '').toString().trim();
 
-        // Vérifier si le produit est complet
-        final name = data['name'] ?? data['product_title'] ?? '';
-        final brand = data['brand'] ?? '';
-        final price = data['price'] ?? 0;
-        final image = data['image'] ?? data['product_photo'] ?? '';
-        final url = data['url'] ?? data['product_url'] ?? '';
+        final issues = <String>[];
 
-        bool isIncomplete = false;
-        List<String> issues = [];
-
-        // Nom invalide
-        if (name.toString().trim().isEmpty ||
-            name == 'Juste une petite vérification' ||
-            name == 'Invalid URL' ||
-            name == 'www.backmarket.fr') {
-          issues.add('nom');
-          isIncomplete = true;
+        // Image manquante ou Unsplash placeholder
+        if (image.isEmpty || image == 'N/A') {
+          issues.add('PAS DE PHOTO');
+          _noImage++;
+        } else if (image.contains('unsplash.com')) {
+          issues.add('PHOTO UNSPLASH (fake)');
+          _brokenImage++;
         }
 
-        // Marque invalide
-        if (brand.toString().trim().isEmpty || brand == 'Unknown') {
-          issues.add('marque');
-          isIncomplete = true;
-        }
-
-        // Prix invalide
-        if (price == 0 || price == null) {
-          issues.add('prix');
-          isIncomplete = true;
-        }
-
-        // Image manquante
-        if (image.toString().trim().isEmpty || image == 'N/A') {
-          issues.add('image');
-          isIncomplete = true;
+        // Prix manquant ou zéro
+        if (price == null || price == 0 || price.toString().trim().isEmpty) {
+          issues.add('PAS DE PRIX');
+          _noPrice++;
         }
 
         // URL manquante
-        if (url.toString().trim().isEmpty) {
-          issues.add('url');
-          isIncomplete = true;
+        if (url.isEmpty || url == '#') {
+          issues.add('PAS DE LIEN');
+          _noUrl++;
         }
 
-        if (isIncomplete) {
-          toDelete.add(doc.reference);
-          _addLog('❌ [${doc.id}] $name (manque: ${issues.join(', ')})');
-        } else {
-          completeCount++;
-          _addLog('✅ [${doc.id}] $name');
+        // Nom générique
+        if (name.isEmpty || name.length < 4 || name == 'Produit') {
+          issues.add('NOM GENERIQUE');
+          _noName++;
         }
+
+        if (issues.isNotEmpty) {
+          _log('[${doc.id}] $name ($brand) → ${issues.join(', ')}');
+        }
+
+        setState(() => _progress = i + 1);
       }
 
-      final incompleteCount = toDelete.length;
-
-      _addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      _addLog('📊 RÉSUMÉ');
-      _addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      _addLog('Total:        $totalCount');
-      _addLog('✅ Complets:  $completeCount (${(completeCount/totalCount*100).toStringAsFixed(1)}%)');
-      _addLog('❌ Incomplets: $incompleteCount (${(incompleteCount/totalCount*100).toStringAsFixed(1)}%)');
-      _addLog('');
-
-      if (incompleteCount == 0) {
-        _addLog('✨ Ta base est déjà propre!');
-        setState(() => _isLoading = false);
-        return;
+      final totalIssues = _noImage + _brokenImage + _noPrice + _noUrl + _noName;
+      _log('');
+      _log('══════════════════════════════════');
+      _log('RÉSULTAT DU SCAN');
+      _log('══════════════════════════════════');
+      _log('Total produits: ${docs.length}');
+      _log('Sans photo: $_noImage');
+      _log('Photo Unsplash (fake): $_brokenImage');
+      _log('Sans prix: $_noPrice');
+      _log('Sans lien: $_noUrl');
+      _log('Nom générique: $_noName');
+      _log('');
+      if (totalIssues == 0) {
+        _log('Ta base est propre !');
+      } else {
+        _log('$totalIssues problèmes détectés.');
+        _log('Lance "Corriger automatiquement" pour les réparer.');
       }
-
-      _addLog('🗑️  Suppression des $incompleteCount produits incomplets...');
-
-      // Supprimer par batch de 500
-      const batchSize = 500;
-      int deletedCount = 0;
-
-      for (int i = 0; i < toDelete.length; i += batchSize) {
-        final batch = _firestore.batch();
-        final endIndex = (i + batchSize < toDelete.length) ? i + batchSize : toDelete.length;
-
-        for (int j = i; j < endIndex; j++) {
-          batch.delete(toDelete[j]);
-        }
-
-        await batch.commit();
-        deletedCount = endIndex;
-
-        setState(() => _progress = deletedCount);
-        _addLog('✅ $deletedCount/$incompleteCount supprimés...');
-
-        if (deletedCount < incompleteCount) {
-          await Future.delayed(const Duration(milliseconds: 200));
-        }
-      }
-
-      _addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      _addLog('✅ NETTOYAGE TERMINÉ!');
-      _addLog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      _addLog('Supprimés:  $deletedCount');
-      _addLog('Restants:   $completeCount');
-      _addLog('');
-      _addLog('✨ Ta base est maintenant propre!');
     } catch (e) {
-      _addLog('❌ Erreur: $e');
+      _log('ERREUR: $e');
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
-  /// Supprime ET re-upload (option recommandée)
-  Future<void> _deleteAndReupload() async {
-    await _deleteAllProducts();
-    await Future.delayed(const Duration(seconds: 2));
-    await _uploadAllProducts();
+  // ─── FIX : corrige automatiquement via API Amazon ─────────────────────
+
+  Future<void> _fixProducts() async {
+    setState(() {
+      _isLoading = true;
+      _logs.clear();
+      _progress = 0;
+      _fixed = 0;
+      _unfixable = 0;
+    });
+
+    _log('Chargement des produits avec problèmes...');
+
+    try {
+      final snapshot = await _db.collection('gifts').get();
+      final docs = snapshot.docs;
+
+      // Filtrer les produits avec problèmes
+      final problematic = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
+      for (final doc in docs) {
+        final data = doc.data();
+        final image = (data['image'] ?? data['product_photo'] ?? '').toString().trim();
+        final price = data['price'];
+        final url = (data['url'] ?? data['product_url'] ?? '').toString().trim();
+
+        final hasImageIssue = image.isEmpty || image == 'N/A' || image.contains('unsplash.com');
+        final hasPriceIssue = price == null || price == 0;
+        final hasUrlIssue = url.isEmpty || url == '#';
+
+        if (hasImageIssue || hasPriceIssue || hasUrlIssue) {
+          problematic.add(doc);
+        }
+      }
+
+      setState(() => _total = problematic.length);
+      _log('${problematic.length} produits à corriger.');
+      _log('');
+
+      final rapidApiKey = FFDevEnvironmentValues().rapidApiKey;
+      if (rapidApiKey.isEmpty) {
+        _log('ERREUR: Clé RapidAPI manquante dans environment.json');
+        _log('Ajoute "rapidApiKey" dans assets/environment_values/environment.json');
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // Traiter chaque produit
+      for (int i = 0; i < problematic.length; i++) {
+        final doc = problematic[i];
+        final data = doc.data();
+        final name = (data['name'] ?? data['product_title'] ?? '').toString().trim();
+        final brand = (data['brand'] ?? '').toString().trim();
+        final image = (data['image'] ?? '').toString().trim();
+
+        _log('[${ i + 1}/${problematic.length}] $name ($brand)...');
+
+        final updates = <String, dynamic>{};
+
+        try {
+          // Chercher sur Amazon pour obtenir image + prix + URL
+          final searchQuery = '$brand $name'.trim();
+          final amazonResult = await _searchAmazon(searchQuery, rapidApiKey);
+
+          if (amazonResult != null) {
+            // Image
+            if (image.isEmpty || image.contains('unsplash.com') || image == 'N/A') {
+              final newImage = amazonResult['image'] ?? '';
+              if (newImage.isNotEmpty) {
+                updates['image'] = newImage;
+                updates['product_photo'] = newImage;
+                _log('  + Photo trouvée');
+              }
+            }
+
+            // Prix
+            final currentPrice = data['price'];
+            if (currentPrice == null || currentPrice == 0) {
+              final newPrice = amazonResult['price'];
+              if (newPrice != null) {
+                updates['price'] = newPrice;
+                updates['product_price'] = newPrice.toString();
+                _log('  + Prix trouvé: ${newPrice}€');
+              }
+            }
+
+            // URL
+            final currentUrl = (data['url'] ?? '').toString();
+            if (currentUrl.isEmpty || currentUrl == '#') {
+              final newUrl = amazonResult['url'] ?? '';
+              if (newUrl.isNotEmpty) {
+                updates['url'] = newUrl;
+                updates['product_url'] = newUrl;
+                _log('  + Lien trouvé');
+              }
+            }
+          }
+
+          if (updates.isNotEmpty) {
+            updates['lastFixed'] = FieldValue.serverTimestamp();
+            updates['hasIssues'] = false;
+            await doc.reference.update(updates);
+            _fixed++;
+            _log('  CORRIGÉ (${updates.length} champs)');
+          } else {
+            _unfixable++;
+            _log('  Aucune correction trouvée sur Amazon');
+          }
+        } catch (e) {
+          _unfixable++;
+          _log('  ERREUR: $e');
+        }
+
+        setState(() => _progress = i + 1);
+
+        // Délai entre chaque requête pour respecter les rate limits
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
+
+      _log('');
+      _log('══════════════════════════════════');
+      _log('CORRECTION TERMINÉE');
+      _log('══════════════════════════════════');
+      _log('Corrigés: $_fixed');
+      _log('Non corrigés: $_unfixable');
+    } catch (e) {
+      _log('ERREUR: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  /// Cherche un produit sur Amazon via RapidAPI et retourne image + prix + URL.
+  Future<Map<String, dynamic>?> _searchAmazon(String query, String apiKey) async {
+    try {
+      final encodedQuery = Uri.encodeComponent(query);
+      final uri = Uri.parse(
+        'https://real-time-amazon-data.p.rapidapi.com/search?query=$encodedQuery&country=fr&page=1',
+      );
+
+      final response = await http.get(uri, headers: {
+        'x-rapidapi-host': 'real-time-amazon-data.p.rapidapi.com',
+        'x-rapidapi-key': apiKey,
+      }).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode != 200) return null;
+
+      final body = json.decode(response.body);
+      final products = body['data']?['products'] as List?;
+      if (products == null || products.isEmpty) return null;
+
+      // Prendre le premier résultat
+      final first = products[0] as Map<String, dynamic>;
+
+      // Extraire le prix
+      double? price;
+      final priceStr = first['product_price'] as String?;
+      if (priceStr != null) {
+        final numMatch = RegExp(r'[\d]+[.,]?\d*').firstMatch(priceStr.replaceAll(',', '.'));
+        if (numMatch != null) {
+          price = double.tryParse(numMatch.group(0)!);
+        }
+      }
+
+      return {
+        'image': first['product_photo'] as String? ?? '',
+        'price': price,
+        'url': first['product_url'] as String? ?? '',
+        'title': first['product_title'] as String? ?? '',
+      };
+    } catch (e) {
+      AppLogger.debug('Amazon search error for "$query": $e', 'Admin');
+      return null;
+    }
+  }
+
+  // ─── SUPPRIMER les produits sans photo (non réparables) ─────────────────
+
+  Future<void> _deleteProductsWithoutImage() async {
+    setState(() {
+      _isLoading = true;
+      _logs.clear();
+      _progress = 0;
+    });
+
+    _log('Recherche des produits sans photo...');
+
+    try {
+      final snapshot = await _db.collection('gifts').get();
+      final toDelete = <DocumentReference>[];
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final image = (data['image'] ?? data['product_photo'] ?? '').toString().trim();
+        if (image.isEmpty || image == 'N/A' || image.contains('unsplash.com')) {
+          toDelete.add(doc.reference);
+          final name = data['name'] ?? 'Inconnu';
+          _log('Suppression: $name');
+        }
+      }
+
+      setState(() => _total = toDelete.length);
+      _log('${toDelete.length} produits sans photo à supprimer.');
+
+      if (toDelete.isEmpty) {
+        _log('Rien à supprimer !');
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // Batch delete
+      for (int i = 0; i < toDelete.length; i += 500) {
+        final batch = _db.batch();
+        final end = (i + 500 < toDelete.length) ? i + 500 : toDelete.length;
+        for (int j = i; j < end; j++) {
+          batch.delete(toDelete[j]);
+        }
+        await batch.commit();
+        setState(() => _progress = end);
+        _log('$end/${toDelete.length} supprimés...');
+      }
+
+      _log('Suppression terminée !');
+    } catch (e) {
+      _log('ERREUR: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final violetColor = const Color(0xFF8A2BE2);
-
     return Scaffold(
+      backgroundColor: LiquidGlassTokens.pageDark,
       appBar: AppBar(
-        title: const Text('Admin - Gestion Produits'),
-        backgroundColor: violetColor,
+        title: Text('Admin Produits', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        backgroundColor: _violet,
         foregroundColor: Colors.white,
       ),
       body: Padding(
@@ -348,140 +384,122 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Titre
-            const Text(
-              '🔧 Gestion des Produits Firebase',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+            Text(
+              'Gestion des produits Firebase',
+              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'Utilise cette page pour réparer les images',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
+            const SizedBox(height: 4),
+            Text(
+              'Scanne, corrige et nettoie tes produits',
+              style: GoogleFonts.poppins(fontSize: 13, color: Colors.white54),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
-            // Boutons d'action
-            ElevatedButton.icon(
-              onPressed: _isLoading ? null : _deleteAndReupload,
-              icon: const Icon(Icons.refresh),
-              label: const Text('🔄 Supprimer et Re-uploader (Recommandé)'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: violetColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
+            // Boutons
+            _buildButton(
+              label: 'Scanner tous les produits',
+              icon: Icons.search_rounded,
+              color: _violet,
+              onTap: _isLoading ? null : _scanProducts,
             ),
-            const SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed: _isLoading ? null : _deleteAllProducts,
-              icon: const Icon(Icons.delete),
-              label: const Text('🗑️  Supprimer tous les produits'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
+            const SizedBox(height: 10),
+            _buildButton(
+              label: 'Corriger automatiquement (API Amazon)',
+              icon: Icons.auto_fix_high_rounded,
+              color: const Color(0xFF10B981),
+              onTap: _isLoading ? null : _fixProducts,
             ),
-            const SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed: _isLoading ? null : _uploadAllProducts,
-              icon: const Icon(Icons.upload),
-              label: const Text('📤 Uploader les nouveaux produits'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
+            const SizedBox(height: 10),
+            _buildButton(
+              label: 'Supprimer les produits sans photo',
+              icon: Icons.delete_sweep_rounded,
+              color: Colors.red,
+              onTap: _isLoading ? null : _deleteProductsWithoutImage,
             ),
-            const SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed: _isLoading ? null : _cleanIncompleteProducts,
-              icon: const Icon(Icons.cleaning_services),
-              label: const Text('🧹 Nettoyer produits incomplets'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-            ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             // Progress
             if (_isLoading && _total > 0) ...[
               LinearProgressIndicator(
-                value: _progress / _total,
-                backgroundColor: Colors.grey[300],
-                valueColor: AlwaysStoppedAnimation<Color>(violetColor),
+                value: _total > 0 ? _progress / _total : 0,
+                backgroundColor: Colors.white12,
+                valueColor: const AlwaysStoppedAnimation<Color>(_violet),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
                 '$_progress / $_total',
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
+                style: GoogleFonts.poppins(fontSize: 12, color: Colors.white54),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
             ],
 
-            // Status
-            if (_statusMessage.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  _statusMessage,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            const SizedBox(height: 16),
+            if (_isLoading && _total == 0)
+              const Center(child: CircularProgressIndicator(color: _violet)),
 
             // Logs
-            const Text(
-              'Logs:',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
             Expanded(
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.black87,
-                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.black.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white.withOpacity(0.08)),
                 ),
                 child: ListView.builder(
                   itemCount: _logs.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Text(
-                        _logs[index],
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontFamily: 'monospace',
-                        ),
+                  itemBuilder: (_, i) => Padding(
+                    padding: const EdgeInsets.only(bottom: 3),
+                    child: Text(
+                      _logs[i],
+                      style: GoogleFonts.poppins(
+                        color: _logs[i].contains('ERREUR')
+                            ? Colors.red
+                            : _logs[i].contains('CORRIGÉ') || _logs[i].contains('trouvé')
+                                ? const Color(0xFF10B981)
+                                : _logs[i].contains('══')
+                                    ? Colors.white
+                                    : Colors.white70,
+                        fontSize: 11,
+                        fontWeight: _logs[i].contains('══') ? FontWeight.bold : FontWeight.normal,
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildButton({
+    required String label,
+    required IconData icon,
+    required Color color,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        decoration: BoxDecoration(
+          color: onTap == null ? color.withOpacity(0.2) : color,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Text(label, style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            )),
           ],
         ),
       ),
