@@ -10,9 +10,8 @@ class LiquidGlassTokens {
 
   // Fonds de page
   static const Color pageDark = Color(0xFF0A0014);
-  static const Color pageDarkAlt = Color(0xFF0F0F1A);
-  static const Color pageGradientTop = Color(0xFF0A0A1A);
-  static const Color pageGradientBottom = Color(0xFF121225);
+  static const Color pageGradientTop = Color(0xFF0D0020);
+  static const Color pageGradientBottom = Color(0xFF1A0035);
 
   // Surface glass — fond clair
   static const Color glassSurfaceLight = Color(0xAAFFFFFF); // rgba(255,255,255, 0.67)
@@ -20,15 +19,13 @@ class LiquidGlassTokens {
   static const Color glassSpecularLight = Color(0xBBFFFFFF);
 
   // Surface glass — fond sombre
-  static const Color glassSurfaceDark = Color(0x0FFFFFFF);  // rgba(255,255,255, 0.06)
-  static const Color glassBorderDark = Color(0x1FFFFFFF);    // rgba(255,255,255, 0.12)
-  static const Color glassSpecularDark = Color(0x1FFFFFFF);  // rgba(255,255,255, 0.12)
+  static const Color glassSurfaceDark = Color(0x1AFFFFFF);  // rgba(255,255,255, 0.10)
+  static const Color glassBorderDark = Color(0x33FFFFFF);
+  static const Color glassSpecularDark = Color(0x55FFFFFF);
 
   // Blur
-  static const double blurLight = 25.0;
+  static const double blurLight = 20.0;
   static const double blurHeavy = 40.0;
-  static const double navBarBlur = 40.0;
-  static const double cardBlur = 25.0;
 
   // Ombres
   static List<BoxShadow> shadowPrimary = [
@@ -53,15 +50,11 @@ class LiquidGlassTokens {
     ),
   ];
 
-  // Gradient de page sombre — deep navy-black tones, no purple tint
+  // Gradient de page sombre
   static const LinearGradient darkPageGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xFF0A0A1A),
-      Color(0xFF121225),
-      Color(0xFF0D0D1A),
-    ],
+    colors: [pageGradientTop, pageGradientBottom, Color(0xFF0D001A)],
     stops: [0.0, 0.6, 1.0],
   );
 }
@@ -89,7 +82,7 @@ class LiquidGlassCard extends StatelessWidget {
     this.padding,
     this.tintColor,
     this.darkMode = true,
-    this.blur = LiquidGlassTokens.cardBlur,
+    this.blur = LiquidGlassTokens.blurLight,
     this.boxShadow,
     this.width,
     this.height,
@@ -99,10 +92,10 @@ class LiquidGlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surface = darkMode
-        ? const Color(0x0FFFFFFF) // rgba(255,255,255, 0.06)
+        ? LiquidGlassTokens.glassSurfaceDark
         : LiquidGlassTokens.glassSurfaceLight;
     final border = darkMode
-        ? const Color(0x1FFFFFFF) // rgba(255,255,255, 0.12)
+        ? LiquidGlassTokens.glassBorderDark
         : LiquidGlassTokens.glassBorderLight;
     final specular = darkMode
         ? LiquidGlassTokens.glassSpecularDark
@@ -139,7 +132,7 @@ class LiquidGlassCard extends StatelessWidget {
               ),
               border: Border.all(
                 color: border,
-                width: 0.5,
+                width: 1.0,
               ),
             ),
             child: padding != null
@@ -171,7 +164,7 @@ class LiquidGlassCard extends StatelessWidget {
 
 // ─── Custom Painter specular highlight ───────────────────────────────────────
 
-/// Ajoute un reflet lumineux subtil en haut de la carte (effet verre Apple).
+/// Ajoute un reflet lumineux blanc en haut de la carte (effet verre réel).
 class _SpecularPainter extends CustomPainter {
   final BorderRadius borderRadius;
   final Color specularColor;
@@ -183,26 +176,34 @@ class _SpecularPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Subtle gradient covering only top 20% of the card
     final paint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          specularColor.withOpacity(0.12),
-          Colors.transparent,
-        ],
-        stops: const [0.0, 1.0],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.20));
+        colors: [specularColor, Colors.transparent],
+        stops: const [0.0, 0.35],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.35));
 
     final path = Path()
       ..addRRect(RRect.fromRectAndCorners(
-        Rect.fromLTWH(0, 0, size.width, size.height * 0.20),
+        Rect.fromLTWH(0, 0, size.width, size.height * 0.35),
         topLeft: borderRadius.topLeft,
         topRight: borderRadius.topRight,
       ));
 
     canvas.drawPath(path, paint);
+
+    // Ligne specular fine sur le bord supérieur
+    final topLinePaint = Paint()
+      ..color = specularColor.withOpacity(0.7)
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
+    final topPath = Path()
+      ..moveTo(borderRadius.topLeft.x, 0)
+      ..lineTo(size.width - borderRadius.topRight.x, 0);
+
+    canvas.drawPath(topPath, topLinePaint);
   }
 
   @override
@@ -224,7 +225,7 @@ class LiquidGlassSurface extends StatelessWidget {
   const LiquidGlassSurface({
     super.key,
     required this.child,
-    this.blur = 30,
+    this.blur = LiquidGlassTokens.blurHeavy,
     this.color,
     this.borderRadius,
     this.padding,
@@ -234,7 +235,7 @@ class LiquidGlassSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surface = color ?? (darkMode
-        ? const Color(0x0DFFFFFF) // rgba(255,255,255, 0.05)
+        ? const Color(0x1AFFFFFF)
         : const Color(0xCCFFFFFF));
 
     final Widget inner = BackdropFilter(
@@ -245,7 +246,7 @@ class LiquidGlassSurface extends StatelessWidget {
           borderRadius: borderRadius,
           border: Border.all(
             color: darkMode
-                ? const Color(0x1FFFFFFF) // rgba(255,255,255, 0.12)
+                ? const Color(0x33FFFFFF)
                 : const Color(0x44FFFFFF),
             width: 0.5,
           ),
@@ -303,14 +304,17 @@ class LiquidGlassPill extends StatelessWidget {
             height: height,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(height / 2),
-              color: isActive ? primary : null,
               gradient: isActive
-                  ? null
+                  ? LinearGradient(
+                      colors: [primary, primary.withBlue(220)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
                   : LinearGradient(
                       colors: darkMode
                           ? [
-                              Colors.white.withOpacity(0.08),
-                              Colors.white.withOpacity(0.04),
+                              Colors.white.withOpacity(0.12),
+                              Colors.white.withOpacity(0.06),
                             ]
                           : [
                               Colors.white.withOpacity(0.70),
@@ -319,16 +323,16 @@ class LiquidGlassPill extends StatelessWidget {
                     ),
               border: Border.all(
                 color: isActive
-                    ? Colors.white.withOpacity(0.20)
-                    : Colors.white.withOpacity(darkMode ? 0.10 : 0.5),
-                width: 0.5,
+                    ? Colors.white.withOpacity(0.3)
+                    : Colors.white.withOpacity(darkMode ? 0.18 : 0.5),
+                width: 1.0,
               ),
               boxShadow: isActive
                   ? [
                       BoxShadow(
-                        color: primary.withOpacity(0.30),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                        color: primary.withOpacity(0.4),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
                     ]
                   : null,
@@ -364,44 +368,34 @@ class DarkPageBackground extends StatelessWidget {
       child: addOrbs
           ? Stack(
               children: [
-                // Orbe violet haut-gauche — large and diffuse
+                // Orbe violet haut-gauche
                 Positioned(
-                  top: -120,
-                  left: -100,
-                  child: _ColorOrb(
-                    color: LiquidGlassTokens.primary,
-                    size: 400,
-                    opacity: 0.12,
-                  ),
-                ),
-                // Orbe rose haut-droite — large and diffuse
-                Positioned(
-                  top: 60,
-                  right: -100,
-                  child: _ColorOrb(
-                    color: LiquidGlassTokens.secondary,
-                    size: 320,
-                    opacity: 0.10,
-                  ),
-                ),
-                // Orbe violet bas-centre — large and diffuse
-                Positioned(
-                  bottom: 80,
-                  left: MediaQuery.of(context).size.width * 0.15,
+                  top: -80,
+                  left: -60,
                   child: _ColorOrb(
                     color: LiquidGlassTokens.primary,
                     size: 280,
-                    opacity: 0.10,
+                    opacity: 0.25,
                   ),
                 ),
-                // Orbe bleu bas-droite — subtle blue for color variety
+                // Orbe rose haut-droite
                 Positioned(
-                  bottom: -60,
-                  right: -80,
+                  top: 100,
+                  right: -70,
                   child: _ColorOrb(
-                    color: const Color(0xFF2563EB),
-                    size: 340,
-                    opacity: 0.15,
+                    color: LiquidGlassTokens.secondary,
+                    size: 200,
+                    opacity: 0.18,
+                  ),
+                ),
+                // Orbe violet bas-centre
+                Positioned(
+                  bottom: 120,
+                  left: MediaQuery.of(context).size.width * 0.2,
+                  child: _ColorOrb(
+                    color: LiquidGlassTokens.primary,
+                    size: 160,
+                    opacity: 0.12,
                   ),
                 ),
                 child,
@@ -439,7 +433,7 @@ class _ColorOrb extends StatelessWidget {
 
 // ─── LiquidGlassInput ─────────────────────────────────────────────────────────
 
-/// Champ de texte style Liquid Glass — iOS-native rounded rect look.
+/// Champ de texte style Liquid Glass.
 class LiquidGlassInput extends StatelessWidget {
   final TextEditingController? controller;
   final String? hintText;
@@ -467,18 +461,18 @@ class LiquidGlassInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           decoration: BoxDecoration(
             color: darkMode
-                ? Colors.white.withOpacity(0.08)
+                ? Colors.white.withOpacity(0.10)
                 : Colors.white.withOpacity(0.60),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Colors.white.withOpacity(darkMode ? 0.12 : 0.50),
-              width: 0.5,
+              color: Colors.white.withOpacity(darkMode ? 0.20 : 0.50),
+              width: 1.0,
             ),
           ),
           child: TextField(
@@ -494,14 +488,14 @@ class LiquidGlassInput extends StatelessWidget {
               hintText: hintText,
               hintStyle: TextStyle(
                 color: darkMode
-                    ? Colors.white.withOpacity(0.40)
+                    ? Colors.white.withOpacity(0.45)
                     : Colors.black.withOpacity(0.35),
                 fontSize: 15,
               ),
               prefixIcon: prefixIcon != null
                   ? Icon(prefixIcon,
                       color: darkMode
-                          ? Colors.white.withOpacity(0.50)
+                          ? Colors.white.withOpacity(0.55)
                           : Colors.black.withOpacity(0.40),
                       size: 20)
                   : null,
@@ -510,72 +504,15 @@ class LiquidGlassInput extends StatelessWidget {
                       onTap: onSuffixTap,
                       child: Icon(suffixIcon,
                           color: darkMode
-                              ? Colors.white.withOpacity(0.50)
+                              ? Colors.white.withOpacity(0.55)
                               : Colors.black.withOpacity(0.40),
                           size: 20))
                   : null,
               border: InputBorder.none,
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: LiquidGlassTokens.primary.withOpacity(0.60),
-                  width: 1.0,
-                ),
-              ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─── LiquidGlassHeader ───────────────────────────────────────────────────────
-
-/// Standardized page header with consistent height and glass treatment.
-/// Used on Home, Search, Inspiration, Profile pages for identical "notch" look.
-class LiquidGlassHeader extends StatelessWidget {
-  final Widget child;
-  final double height;
-  final double bottomRadius;
-
-  const LiquidGlassHeader({
-    super.key,
-    required this.child,
-    this.height = 120,
-    this.bottomRadius = 28,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.only(
-        bottomLeft: Radius.circular(bottomRadius),
-        bottomRight: Radius.circular(bottomRadius),
-      ),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-        child: Container(
-          height: height,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                LiquidGlassTokens.primary.withOpacity(0.15),
-                LiquidGlassTokens.secondary.withOpacity(0.08),
-              ],
-            ),
-            border: Border(
-              bottom: BorderSide(
-                color: Colors.white.withOpacity(0.12),
-                width: 0.5,
-              ),
-            ),
-          ),
-          child: child,
         ),
       ),
     );
