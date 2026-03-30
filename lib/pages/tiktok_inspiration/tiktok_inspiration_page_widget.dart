@@ -148,120 +148,37 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
         bottom: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-          child: Stack(
-            alignment: Alignment.center,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  micro.ShimmerEffect(
-                    shimmerColor: Colors.white,
-                    duration: const Duration(milliseconds: 3000),
-                    child: Text(
-                      'Inspirations ✨',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
+              micro.ShimmerEffect(
+                shimmerColor: Colors.white,
+                duration: const Duration(milliseconds: 3000),
+                child: Text(
+                  'Inspirations ✨',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Des idées cadeaux qui vous correspondent',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
-                      color: Colors.white.withOpacity(0.9),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
+                ),
               ),
-              Positioned(
-                right: 0,
-                top: 0,
-                child: _buildChatButton(),
+              const SizedBox(height: 4),
+              Text(
+                'Des idées cadeaux qui vous correspondent',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  color: Colors.white.withOpacity(0.9),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildChatButton() {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return const SizedBox.shrink();
-
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('chats')
-          .where('participants', arrayContains: uid)
-          .snapshots(),
-      builder: (context, snapshot) {
-        int unread = 0;
-        if (snapshot.hasData) {
-          for (final doc in snapshot.data!.docs) {
-            final data = doc.data() as Map<String, dynamic>;
-            final counts = data['unreadCount'] as Map<String, dynamic>?;
-            if (counts != null && counts.containsKey(uid)) {
-              final c = counts[uid];
-              unread += (c is int ? c : (c is num ? c.toInt() : 0));
-            }
-          }
-        }
-
-        return GestureDetector(
-          onTap: () => context.push('/chat-list'),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.20),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.chat_bubble_outline_rounded,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
-              if (unread > 0)
-                Positioned(
-                  right: -4,
-                  top: -4,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.white, width: 1.5),
-                    ),
-                    child: Center(
-                      child: Text(
-                        unread > 99 ? '99+' : '$unread',
-                        style: GoogleFonts.poppins(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          height: 1.0,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        );
-      },
     );
   }
 
