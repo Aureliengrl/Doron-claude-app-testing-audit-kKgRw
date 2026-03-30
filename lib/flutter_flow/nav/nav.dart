@@ -278,13 +278,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: 'ChatList',
           path: '/chat-list',
-          requireAuth: false,
+          requireAuth: true,
           builder: (context, params) => const ChatListPage(),
         ),
         FFRoute(
           name: 'ChatRoom',
           path: '/chat-room/:chatId',
-          requireAuth: false,
+          requireAuth: true,
           builder: (context, params) => ChatRoomPage(
             chatId: params.getParam<String>('chatId', ParamType.String) ?? '',
             chatData: null,
@@ -333,19 +333,19 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: WishlistsPageWidget.routeName,
           path: WishlistsPageWidget.routePath,
-          requireAuth: false,
+          requireAuth: true,
           builder: (context, params) => WishlistsPageWidget(),
         ),
         FFRoute(
           name: LikedProductsPageWidget.routeName,
           path: LikedProductsPageWidget.routePath,
-          requireAuth: false,
+          requireAuth: true,
           builder: (context, params) => LikedProductsPageWidget(),
         ),
         FFRoute(
           name: WishlistDetailsWidget.routeName,
           path: WishlistDetailsWidget.routePath,
-          requireAuth: false,
+          requireAuth: true,
           builder: (context, params) => WishlistDetailsWidget(
             wishlistId: params.getParam<String>('wishlistId', ParamType.String) ?? '',
           ),
@@ -363,7 +363,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: FriendsPage.routeName,
           path: FriendsPage.routePath,
-          requireAuth: false,
+          requireAuth: true,
           builder: (context, params) => const FriendsPage(),
         ),
         // Setup profil (première connexion)

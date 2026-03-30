@@ -22,7 +22,9 @@ class FFDevEnvironmentValues {
       final String response =
           await rootBundle.loadString(environmentValuesPath);
       final data = await json.decode(response);
-      _openAiApiKey = data['openAiApiKey'];
+      _openAiApiKey = data['openAiApiKey'] ?? '';
+      _rapidApiKey = data['rapidApiKey'] ?? '';
+      _rapidApiSephoraKey = data['rapidApiSephoraKey'] ?? '';
     } catch (e) {
       AppLogger.debug('Error loading environment values: $e', 'Debug');
     }
@@ -30,4 +32,10 @@ class FFDevEnvironmentValues {
 
   String _openAiApiKey = '';
   String get openAiApiKey => _openAiApiKey;
+
+  String _rapidApiKey = '';
+  String get rapidApiKey => _rapidApiKey;
+
+  String _rapidApiSephoraKey = '';
+  String get rapidApiSephoraKey => _rapidApiSephoraKey;
 }

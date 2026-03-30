@@ -27,11 +27,22 @@ class DoronTheme {
   /// Rose foncé — états actif/hover
   static const Color roseDark = Color(0xFFC74375);
 
-  /// Violet — assistant vocal
+  /// Violet — assistant vocal et actions principales
   static const Color violet = Color(0xFF8A2BE2);
+
+  /// Pink — accents secondaires, badges, gradient partner avec violet
+  static const Color pink = Color(0xFFEC4899);
+
+  /// Vert — statut en ligne, succès
+  static const Color green = Color(0xFF10B981);
 
   /// Fond clair — pages de contenu
   static const Color surfaceLight = Color(0xFFF5F5F5);
+
+  /// Gradient principal violet → pink (pour boutons, headers, badges)
+  static const LinearGradient primaryGradient = LinearGradient(
+    colors: [violet, pink],
+  );
 
   /// Fond carte — cartes produits
   static const Color cardWhite = Colors.white;

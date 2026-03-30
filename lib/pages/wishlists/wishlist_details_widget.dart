@@ -4,6 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '/services/firebase_data_service.dart';
+import '/services/wishlist_sharing_service.dart';
+import '/services/gift_reservation_service.dart';
+import '/services/event_reminder_service.dart';
 import '/components/liquid_glass.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -11,6 +14,9 @@ import '/components/product_detail_modal.dart';
 import '/components/wishlist_picker_sheet.dart';
 import 'package:flutter/services.dart';
 import '/components/shared_product_card.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class WishlistDetailsWidget extends StatefulWidget {
   final String wishlistId;
@@ -27,6 +33,8 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
   Map<String, dynamic>? _wishlistData;
   List<Map<String, dynamic>> _products = [];
   bool _isLoading = true;
+  Map<String, String> _reservations = {}; // productId → reservedByUid
+  bool _isOwner = true;
 
   final Color violetColor = const Color(0xFF8A2BE2);
   final Color pinkColor = const Color(0xFFEC4899);
@@ -70,6 +78,157 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
             content: Text('Produit retiré', style: GoogleFonts.poppins()),
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  // ─── Partage par lien ──────────────────────────────────────────────────────
+  Future<void> _shareWishlist() async {
+    try {
+      HapticFeedback.mediumImpact();
+      final url = await WishlistSharingService.getShareUrl(widget.wishlistId);
+      await Share.share(
+        'Voici ma wishlist "${_wishlistData?['name'] ?? 'Wishlist'}" sur Doron :\n$url',
+        subject: 'Ma wishlist Doron',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur de partage', style: GoogleFonts.poppins()),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
+
+  // ─── Date d'événement ───────────────────────────────────────────────────────
+  Future<void> _setEventDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: now.add(const Duration(days: 7)),
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: violetColor,
+              surface: const Color(0xFF1A0030),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked == null) return;
+
+    final labelController = TextEditingController();
+    if (!mounted) return;
+    final label = await showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF1A0030),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Nom de l\'événement',
+            style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: TextField(
+          controller: labelController,
+          style: GoogleFonts.poppins(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: 'Ex: Anniversaire de Papa',
+            hintStyle: GoogleFonts.poppins(color: Colors.white38),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.white24),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: violetColor),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, null),
+            child: Text('Annuler', style: GoogleFonts.poppins(color: Colors.white54)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, labelController.text),
+            child: Text('OK', style: GoogleFonts.poppins(color: violetColor)),
+          ),
+        ],
+      ),
+    );
+    labelController.dispose();
+    if (label == null) return;
+
+    await EventReminderService.setEventDate(
+      wishlistId: widget.wishlistId,
+      eventDate: picked,
+      eventLabel: label.isNotEmpty ? label : null,
+    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Rappel programmé pour le ${picked.day}/${picked.month}/${picked.year}',
+            style: GoogleFonts.poppins(),
+          ),
+          backgroundColor: violetColor,
+        ),
+      );
+    }
+  }
+
+  // ─── Réservation de cadeau ─────────────────────────────────────────────────
+  Future<void> _toggleReservation(String productId) async {
+    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    if (myUid == null) return;
+
+    final ownerUid = _wishlistData?['ownerUid'] as String? ?? myUid;
+
+    if (_reservations.containsKey(productId)) {
+      if (_reservations[productId] == myUid) {
+        final success = await GiftReservationService.cancelReservation(
+          wishlistId: widget.wishlistId,
+          productId: productId,
+        );
+        if (success && mounted) {
+          setState(() => _reservations.remove(productId));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Réservation annulée', style: GoogleFonts.poppins()),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Déjà réservé par quelqu\'un d\'autre',
+                  style: GoogleFonts.poppins()),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      }
+    } else {
+      final success = await GiftReservationService.reserveGift(
+        ownerUid: ownerUid,
+        wishlistId: widget.wishlistId,
+        productId: productId,
+      );
+      if (success && mounted) {
+        setState(() => _reservations[productId] = myUid);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Cadeau réservé ! Le propriétaire ne verra pas.',
+                style: GoogleFonts.poppins()),
+            backgroundColor: const Color(0xFF10B981),
           ),
         );
       }
@@ -143,6 +302,18 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
+                    ),
+                    // Partager
+                    IconButton(
+                      onPressed: _shareWishlist,
+                      icon: const Icon(Icons.share_rounded, color: Colors.white, size: 22),
+                      tooltip: 'Partager',
+                    ),
+                    // Date d'événement
+                    IconButton(
+                      onPressed: _setEventDate,
+                      icon: const Icon(Icons.event_rounded, color: Colors.white, size: 22),
+                      tooltip: 'Ajouter une date',
                     ),
                   ],
                 ),

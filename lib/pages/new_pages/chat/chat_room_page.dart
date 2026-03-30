@@ -6,8 +6,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:async';
+import 'dart:convert';
 import '/components/liquid_glass.dart';
 import '/components/liquid_glass_loader.dart';
+import '/services/firebase_data_service.dart';
 
 class ChatRoomPage extends StatefulWidget {
   final String chatId;
@@ -32,15 +34,29 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   bool _isTyping = false;
   Map<String, dynamic> _chatDocData = {};
   StreamSubscription<DocumentSnapshot>? _chatDocSub;
-  
+
   // Pour les chats 1-to-1 : profil de l'interlocuteur
   Map<String, dynamic>? _otherUserData;
+
+  // Pagination des messages
+  int _messageLimit = 50;
 
   @override
   void initState() {
     super.initState();
     _updateReadStatus();
-    _loadOtherUserIfDirect();
+
+    if (widget.chatData == null) {
+      FirebaseFirestore.instance.collection('chats').doc(widget.chatId).get().then((snap) {
+        if (mounted && snap.exists) {
+          setState(() => _chatDocData = snap.data() as Map<String, dynamic>);
+          _loadOtherUserIfDirect();
+        }
+      });
+    } else {
+      _loadOtherUserIfDirect();
+    }
+
     // ── Brancher le stream du document chat pour lire readStatus + typingUsers ──
     _chatDocSub = FirebaseFirestore.instance
         .collection('chats')
@@ -53,13 +69,17 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     });
   }
 
+  /// Returns effective chat data, falling back to loaded _chatDocData when widget.chatData is null.
+  Map<String, dynamic>? get _effectiveChatData => widget.chatData ?? (_chatDocData.isNotEmpty ? _chatDocData : null);
+
   /// Charge le profil de l'interlocuteur pour les chats directs (1-to-1)
   Future<void> _loadOtherUserIfDirect() async {
-    final isGroup = widget.chatData?['isGroup'] == true;
+    final chatData = _effectiveChatData;
+    final isGroup = chatData?['isGroup'] == true;
     if (isGroup) return;
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
     if (currentUid == null) return;
-    final participants = List<String>.from(widget.chatData?['participants'] ?? []);
+    final participants = List<String>.from(chatData?['participants'] ?? []);
     final otherUid = participants.firstWhere((id) => id != currentUid, orElse: () => '');
     if (otherUid.isEmpty) return;
     try {
@@ -175,8 +195,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   @override
   Widget build(BuildContext context) {
-    final title = widget.chatData?['name'] ?? 'Chat';
-    final isGroup = widget.chatData?['isGroup'] ?? true;
+    final chatData = _effectiveChatData;
+    final title = chatData?['name'] ?? 'Chat';
+    final isGroup = chatData?['isGroup'] ?? true;
 
     return Scaffold(
       backgroundColor: LiquidGlassTokens.pageDark,
@@ -272,7 +293,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 ),
                 if (isGroup)
                   Text(
-                    '${(widget.chatData?['participants'] as List?)?.length ?? 0} participants',
+                    '${(_effectiveChatData?['participants'] as List?)?.length ?? 0} participants',
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: Colors.white.withOpacity(0.6),
@@ -291,7 +312,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   Widget _buildMessagesList() {
-    final isGroup = widget.chatData?['isGroup'] == true;
+    final isGroup = _effectiveChatData?['isGroup'] == true;
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) return const SizedBox();
 
@@ -301,6 +322,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           .doc(widget.chatId)
           .collection('messages')
           .orderBy('timestamp', descending: true)
+          .limit(_messageLimit)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -317,13 +339,40 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         }
 
         final messages = snapshot.data!.docs;
+        final hasMore = messages.length == _messageLimit;
 
         return ListView.builder(
           reverse: true,
           controller: _scrollController,
           padding: const EdgeInsets.all(20),
-          itemCount: messages.length,
+          itemCount: messages.length + (hasMore ? 1 : 0),
           itemBuilder: (context, index) {
+            // "Charger plus" button at the top (last index in reversed list)
+            if (index == messages.length) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Center(
+                  child: TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _messageLimit += 50;
+                      });
+                    },
+                    style: TextButton.styleFrom(
+                      foregroundColor: violetColor,
+                    ),
+                    child: Text(
+                      'Charger plus',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: violetColor,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }
             final messageData = messages[index].data() as Map<String, dynamic>;
             final senderId = messageData['senderId'] as String?;
             final isMe = senderId == currentUser.uid;
@@ -379,32 +428,37 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Container(
-                        constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * 0.75,
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: isMe ? violetColor : Colors.white.withOpacity(0.12),
-                          borderRadius: BorderRadius.only(
-                            topLeft: const Radius.circular(20),
-                            topRight: const Radius.circular(20),
-                            bottomLeft: Radius.circular(isMe ? 20 : 4),
-                            bottomRight: Radius.circular(isMe ? 4 : 20),
+                      if (messageData['type'] == 'product_card')
+                        _buildProductCardMessage(text, isMe)
+                      else if (messageData['type'] == 'wishlist_card')
+                        _buildWishlistCardMessage(text, isMe)
+                      else
+                        Container(
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width * 0.75,
                           ),
-                          border: isMe ? null : Border.all(
-                            color: Colors.white.withOpacity(0.1),
-                            width: 1,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: isMe ? violetColor : Colors.white.withOpacity(0.12),
+                            borderRadius: BorderRadius.only(
+                              topLeft: const Radius.circular(20),
+                              topRight: const Radius.circular(20),
+                              bottomLeft: Radius.circular(isMe ? 20 : 4),
+                              bottomRight: Radius.circular(isMe ? 4 : 20),
+                            ),
+                            border: isMe ? null : Border.all(
+                              color: Colors.white.withOpacity(0.1),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            text,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                        child: Text(
-                          text,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                   Padding(
@@ -571,6 +625,174 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       .fadeOut(duration: 300.ms);
   }
 
+  // ── Rich card message builders ──
+
+  Widget _buildProductCardMessage(String jsonText, bool isMe) {
+    Map<String, dynamic> product = {};
+    try {
+      product = json.decode(jsonText) as Map<String, dynamic>;
+    } catch (_) {
+      product = {'name': jsonText};
+    }
+    final imageUrl = product['image_url'] as String? ?? product['imageUrl'] as String? ?? '';
+    final title = product['name'] as String? ?? product['title'] as String? ?? 'Produit';
+    final brand = product['brand'] as String? ?? '';
+    final price = product['price']?.toString() ?? '';
+
+    return Container(
+      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+      decoration: BoxDecoration(
+        color: isMe ? violetColor.withOpacity(0.85) : Colors.white.withOpacity(0.12),
+        borderRadius: BorderRadius.only(
+          topLeft: const Radius.circular(20),
+          topRight: const Radius.circular(20),
+          bottomLeft: Radius.circular(isMe ? 20 : 4),
+          bottomRight: Radius.circular(isMe ? 4 : 20),
+        ),
+        border: isMe ? null : Border.all(color: Colors.white.withOpacity(0.1)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (imageUrl.isNotEmpty)
+            CachedNetworkImage(
+              imageUrl: imageUrl,
+              height: 150,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              placeholder: (_, __) => Container(
+                height: 150,
+                color: Colors.white.withOpacity(0.05),
+                child: const Center(child: LiquidGlassLoader(size: 24)),
+              ),
+              errorWidget: (_, __, ___) => Container(
+                height: 150,
+                color: Colors.white.withOpacity(0.05),
+                child: const Icon(Icons.image_not_supported, color: Colors.white38, size: 40),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (brand.isNotEmpty)
+                  Text(
+                    brand.toUpperCase(),
+                    style: GoogleFonts.poppins(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFFEC4899),
+                      letterSpacing: 1,
+                    ),
+                  ),
+                const SizedBox(height: 2),
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (price.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    '$price \u20AC',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWishlistCardMessage(String jsonText, bool isMe) {
+    Map<String, dynamic> wishlist = {};
+    try {
+      wishlist = json.decode(jsonText) as Map<String, dynamic>;
+    } catch (_) {
+      wishlist = {'name': jsonText};
+    }
+    final emoji = wishlist['emoji'] as String? ?? '\uD83C\uDF81';
+    final name = wishlist['name'] as String? ?? 'Wishlist';
+    final productCount = wishlist['productCount'] as int? ?? wishlist['product_count'] as int? ?? 0;
+
+    return Container(
+      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isMe
+              ? [const Color(0xFF8A2BE2), const Color(0xFF6A1FB0)]
+              : [Colors.white.withOpacity(0.12), Colors.white.withOpacity(0.08)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.only(
+          topLeft: const Radius.circular(20),
+          topRight: const Radius.circular(20),
+          bottomLeft: Radius.circular(isMe ? 20 : 4),
+          bottomRight: Radius.circular(isMe ? 4 : 20),
+        ),
+        border: isMe ? null : Border.all(color: Colors.white.withOpacity(0.1)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: const Color(0xFFEC4899).withOpacity(0.2),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Center(
+              child: Text(emoji, style: const TextStyle(fontSize: 24)),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  '$productCount produit${productCount != 1 ? 's' : ''}',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.white.withOpacity(0.6),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Icon(Icons.bookmark_rounded, color: Color(0xFFEC4899), size: 20),
+        ],
+      ),
+    );
+  }
+
   // ── Bottom sheet : partager un produit ou une wishlist ──
 
   void _showShareSheet() {
@@ -611,7 +833,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               sublabel: 'Envoie une fiche produit dans le chat',
               onTap: () {
                 Navigator.pop(context);
-                _sendTextMessage('📦 [Produit partagé] — fonctionnalité bientôt disponible');
+                _showProductPicker();
               },
             ),
             const SizedBox(height: 12),
@@ -622,7 +844,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               sublabel: 'Envoie un album complet',
               onTap: () {
                 Navigator.pop(context);
-                _sendTextMessage('📚 [Wishlist partagée] — fonctionnalité bientôt disponible');
+                _showWishlistPicker();
               },
             ),
           ],
@@ -631,7 +853,340 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     );
   }
 
-  Future<void> _sendTextMessage(String text) async {
+  /// Opens a bottom sheet showing the user's favorite products for selection.
+  void _showProductPicker() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => Container(
+        height: MediaQuery.of(context).size.height * 0.65,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A0030),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
+              child: Column(
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Icon(Icons.card_giftcard_rounded, color: Color(0xFF8A2BE2), size: 22),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Choisir un produit',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: FutureBuilder<QuerySnapshot>(
+                future: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(uid)
+                    .collection('favorites')
+                    .orderBy('addedAt', descending: true)
+                    .limit(50)
+                    .get(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: LiquidGlassLoader(size: 36));
+                  }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'Aucun favori pour le moment',
+                        style: GoogleFonts.poppins(color: Colors.white54, fontSize: 14),
+                      ),
+                    );
+                  }
+                  final favs = snapshot.data!.docs;
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: favs.length,
+                    itemBuilder: (context, index) {
+                      final data = favs[index].data() as Map<String, dynamic>;
+                      final imageUrl = data['image_url'] as String? ?? data['imageUrl'] as String? ?? '';
+                      final name = data['name'] as String? ?? data['title'] as String? ?? 'Produit';
+                      final brand = data['brand'] as String? ?? '';
+                      final price = data['price']?.toString() ?? '';
+
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context);
+                          _sendTypedMessage(
+                            type: 'product_card',
+                            jsonPayload: {
+                              'name': name,
+                              'brand': brand,
+                              'price': price,
+                              'image_url': imageUrl,
+                            },
+                            previewText: '\uD83D\uDCE6 $name',
+                          );
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.06),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white.withOpacity(0.1)),
+                          ),
+                          child: Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: imageUrl.isNotEmpty
+                                    ? CachedNetworkImage(
+                                        imageUrl: imageUrl,
+                                        width: 56,
+                                        height: 56,
+                                        fit: BoxFit.cover,
+                                        errorWidget: (_, __, ___) => Container(
+                                          width: 56,
+                                          height: 56,
+                                          color: Colors.white10,
+                                          child: const Icon(Icons.image, color: Colors.white30),
+                                        ),
+                                      )
+                                    : Container(
+                                        width: 56,
+                                        height: 56,
+                                        color: Colors.white10,
+                                        child: const Icon(Icons.shopping_bag, color: Colors.white30),
+                                      ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (brand.isNotEmpty)
+                                      Text(
+                                        brand.toUpperCase(),
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFFEC4899),
+                                          letterSpacing: 0.8,
+                                        ),
+                                      ),
+                                    Text(
+                                      name,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    if (price.isNotEmpty)
+                                      Text(
+                                        '$price \u20AC',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 12,
+                                          color: Colors.white70,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.send_rounded, color: Color(0xFF8A2BE2), size: 20),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Opens a bottom sheet showing the user's wishlists for selection.
+  void _showWishlistPicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => Container(
+        height: MediaQuery.of(context).size.height * 0.65,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A0030),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
+              child: Column(
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Icon(Icons.bookmark_rounded, color: Color(0xFFEC4899), size: 22),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Choisir une wishlist',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: FutureBuilder<List<Map<String, dynamic>>>(
+                future: FirebaseDataService.loadWishlists(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: LiquidGlassLoader(size: 36));
+                  }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(
+                      child: Text(
+                        'Aucune wishlist pour le moment',
+                        style: GoogleFonts.poppins(color: Colors.white54, fontSize: 14),
+                      ),
+                    );
+                  }
+                  final wishlists = snapshot.data!;
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: wishlists.length,
+                    itemBuilder: (context, index) {
+                      final wl = wishlists[index];
+                      final emoji = wl['emoji'] as String? ?? '\uD83C\uDF81';
+                      final name = wl['name'] as String? ?? 'Wishlist';
+                      final productCount = wl['productCount'] as int? ?? wl['product_count'] as int? ?? 0;
+
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context);
+                          _sendTypedMessage(
+                            type: 'wishlist_card',
+                            jsonPayload: {
+                              'id': wl['id'],
+                              'name': name,
+                              'emoji': emoji,
+                              'productCount': productCount,
+                            },
+                            previewText: '$emoji $name',
+                          );
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.06),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white.withOpacity(0.1)),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEC4899).withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Center(
+                                  child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      name,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(
+                                      '$productCount produit${productCount != 1 ? 's' : ''}',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        color: Colors.white54,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.send_rounded, color: Color(0xFFEC4899), size: 20),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Sends a typed message (product_card or wishlist_card) with JSON payload.
+  Future<void> _sendTypedMessage({
+    required String type,
+    required Map<String, dynamic> jsonPayload,
+    required String previewText,
+  }) async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) return;
     try {
@@ -643,16 +1198,16 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       await messageRef.set({
         'id': messageRef.id,
         'senderId': currentUser.uid,
-        'text': text,
+        'text': json.encode(jsonPayload),
         'timestamp': FieldValue.serverTimestamp(),
-        'type': 'system',
+        'type': type,
       });
       await FirebaseFirestore.instance.collection('chats').doc(widget.chatId).update({
-        'lastMessage': text,
+        'lastMessage': previewText,
         'lastMessageTime': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      debugPrint('_sendTextMessage: $e');
+      debugPrint('_sendTypedMessage: $e');
     }
   }
 

@@ -10,6 +10,7 @@ import '/services/user_search_service.dart';
 import '/components/liquid_glass.dart';
 import '/components/liquid_glass_loader.dart';
 import '/components/shared_product_card.dart';
+import '/components/block_report_sheet.dart';
 
 /// Page de profil public — même layout que user_profile_widget.dart
 /// Route : /public-profile/:uid
@@ -244,6 +245,16 @@ class _PublicProfilePageState extends State<PublicProfilePage>
         icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
         onPressed: () => Navigator.of(context).pop(),
       ),
+      actions: [
+        if (!_isMyProfile)
+          IconButton(
+            icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
+            onPressed: () {
+              final h = _profile?['handle'] as String? ?? _profile?['displayName'] as String? ?? '';
+              BlockReportSheet.show(context, uid: widget.uid, handle: h);
+            },
+          ),
+      ],
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
           decoration: const BoxDecoration(

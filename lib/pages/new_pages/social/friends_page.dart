@@ -11,6 +11,7 @@ import '/services/friend_service.dart';
 import '/services/collaboration_service.dart';
 import '/services/suggestion_service.dart';
 import '/utils/app_logger.dart';
+import '/components/block_report_sheet.dart';
 
 /// Page Amis — 3 onglets : Mes amis / Rechercher / Demandes reçues
 /// ─ Chaque résultat de recherche affiche le statut exact (none/pending/friend)
@@ -60,6 +61,7 @@ class _FriendsPageState extends State<FriendsPage>
   List<Map<String, dynamic>> _suggestions = [];
   bool _suggestionsLoading = false;
   bool _suggestionsLoaded = false;
+  final Set<String> _dismissedSuggestions = {};
 
   @override
   void initState() {
@@ -608,11 +610,21 @@ class _FriendsPageState extends State<FriendsPage>
                       context: context,
                       builder: (ctx) => AlertDialog(
                         backgroundColor: const Color(0xFF1E1E1E),
-                        title: Text('Retirer l\'ami ?', style: GoogleFonts.poppins(color: Colors.white)),
-                        content: Text('Supprimer $name de vos amis ?', style: GoogleFonts.poppins(color: Colors.white70)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        title: Text('Retirer cet ami ?', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                        content: Text(
+                          'Vous ne pourrez plus voir ses wishlists priv\u00e9es ni collaborer avec lui.',
+                          style: GoogleFonts.poppins(color: Colors.white70),
+                        ),
                         actions: [
-                          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Annuler', style: GoogleFonts.poppins(color: Colors.white54))),
-                          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('Supprimer', style: GoogleFonts.poppins(color: Colors.red))),
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: Text('Annuler', style: GoogleFonts.poppins(color: Colors.grey)),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: Text('Retirer', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.w600)),
+                          ),
                         ],
                       ),
                     );
@@ -624,6 +636,15 @@ class _FriendsPageState extends State<FriendsPage>
                   child: const Padding(
                     padding: EdgeInsets.all(4),
                     child: Icon(Icons.person_remove_outlined, color: Colors.white38, size: 20),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                // Menu bloquer/signaler
+                GestureDetector(
+                  onTap: () => BlockReportSheet.show(context, uid: uid, handle: handle.isNotEmpty ? handle : name),
+                  child: const Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(Icons.more_vert_rounded, color: Colors.white38, size: 20),
                   ),
                 ),
               ],
@@ -731,7 +752,9 @@ class _FriendsPageState extends State<FriendsPage>
             ),
 
           if (!_suggestionsLoading && _suggestions.isNotEmpty)
-            ..._suggestions.map((s) => _buildSuggestionTile(s)),
+            ..._suggestions
+                .where((s) => !_dismissedSuggestions.contains(s['uid'] as String? ?? ''))
+                .map((s) => _buildSuggestionTile(s)),
         ],
       ),
     );
@@ -825,6 +848,18 @@ class _FriendsPageState extends State<FriendsPage>
                     child: CircularProgressIndicator(color: _violet, strokeWidth: 2))
               else
                 _buildSuggestionActionBtn(uid, status, requestId),
+              const SizedBox(width: 6),
+              // Ignorer la suggestion
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  setState(() => _dismissedSuggestions.add(uid));
+                },
+                child: const Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(Icons.close_rounded, size: 16, color: Colors.white30),
+                ),
+              ),
             ],
           ),
         ),

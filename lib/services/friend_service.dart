@@ -371,7 +371,7 @@ class FriendService {
         'isGroup': false,
         'createdAt': FieldValue.serverTimestamp(),
         'lastMessage': '',
-        'lastMessageAt': FieldValue.serverTimestamp(),
+        'lastMessageTime': FieldValue.serverTimestamp(),
       });
       return ref.id;
     } catch (e) {

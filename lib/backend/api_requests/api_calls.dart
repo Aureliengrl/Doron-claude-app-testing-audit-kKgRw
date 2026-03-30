@@ -6,6 +6,7 @@ import '../schema/structs/index.dart';
 import 'package:flutter/foundation.dart';
 
 import '/flutter_flow/flutter_flow_util.dart';
+import '/environment_values.dart';
 import 'api_manager.dart';
 import 'interceptors.dart';
 
@@ -202,12 +203,12 @@ class TitleGeneratorCall {
 
 class OpenAIChatGPTCall {
   static Future<ApiCallResponse> call({
-    String? apikey =
-        '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',
+    String? apikey,
     String? question = '',
     String? reponse = '',
     String? query = '',
   }) async {
+    apikey ??= FFDevEnvironmentValues().openAiApiKey;
     final ffApiRequestBody = '''
 {
   "model": "gpt-4o-mini",
@@ -229,7 +230,7 @@ class OpenAIChatGPTCall {
       callType: ApiCallType.POST,
       headers: {
         'Authorization':
-            'Bearer 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',
+            'Bearer ${FFDevEnvironmentValues().openAiApiKey}',
       },
       params: {},
       body: ffApiRequestBody,
@@ -270,9 +271,9 @@ class OpenAIChatGPTCall {
 class OpenAiChatGPTAlgoaceCall {
   static Future<ApiCallResponse> call({
     String? query = '',
-    String? apikey =
-        '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',
+    String? apikey,
   }) async {
+    apikey ??= FFDevEnvironmentValues().openAiApiKey;
     final ffApiRequestBody = '''
 {
   "model": "gpt-4o-mini",
@@ -294,7 +295,7 @@ class OpenAiChatGPTAlgoaceCall {
       callType: ApiCallType.POST,
       headers: {
         'Authorization':
-            'Bearer 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',
+            'Bearer ${FFDevEnvironmentValues().openAiApiKey}',
       },
       params: {},
       body: ffApiRequestBody,
@@ -327,7 +328,7 @@ class AmazonApiSearchAndDiscountsCall {
       callType: ApiCallType.GET,
       headers: {
         'x-rapidapi-host': 'real-time-amazon-data.p.rapidapi.com',
-        'x-rapidapi-key': '9886292d3fmshb00ea7554a0e033p11347cjsn1a6fd82e587a',
+        'x-rapidapi-key': '${FFDevEnvironmentValues().rapidApiKey}',
       },
       params: {
         'query': query,
@@ -368,7 +369,7 @@ class AmazonApiForOpenAICall {
       callType: ApiCallType.GET,
       headers: {
         'x-rapidapi-host': 'real-time-amazon-data.p.rapidapi.com',
-        'x-rapidapi-key': '9886292d3fmshb00ea7554a0e033p11347cjsn1a6fd82e587a',
+        'x-rapidapi-key': '${FFDevEnvironmentValues().rapidApiKey}',
         'Content-Type': 'application/json',
       },
       params: {
@@ -408,7 +409,7 @@ class SephoraCall {
       callType: ApiCallType.GET,
       headers: {
         'x-rapidapi-host': 'sephora14.p.rapidapi.com',
-        'x-rapidapi-key': '74a78ed831msh06bea70267edb38p1384b5jsnb59b586696f1',
+        'x-rapidapi-key': '${FFDevEnvironmentValues().rapidApiSephoraKey}',
       },
       params: {
         'search': search,
@@ -498,7 +499,7 @@ class IkeaCall {
       callType: ApiCallType.GET,
       headers: {
         'x-rapidapi-host': 'ikea-api.p.rapidapi.com',
-        'x-rapidapi-key': '9886292d3fmshb00ea7554a0e033p11347cjsn1a6fd82e587a',
+        'x-rapidapi-key': '${FFDevEnvironmentValues().rapidApiKey}',
       },
       params: {
         'keyword': "accessoires",
@@ -569,7 +570,7 @@ class ZaraCall {
       callType: ApiCallType.GET,
       headers: {
         'x-rapidapi-host': 'zara-data-api.p.rapidapi.com',
-        'x-rapidapi-key': '9886292d3fmshb00ea7554a0e033p11347cjsn1a6fd82e587a',
+        'x-rapidapi-key': '${FFDevEnvironmentValues().rapidApiKey}',
       },
       params: {},
       returnBody: true,

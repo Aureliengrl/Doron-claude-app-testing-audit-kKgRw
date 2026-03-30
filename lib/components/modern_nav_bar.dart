@@ -342,24 +342,36 @@ class _ModernNavItemState extends State<_ModernNavItem> {
                 scale: scale,
                 duration: const Duration(milliseconds: 200),
                 curve: Curves.easeOutBack,
-                child: Icon(
-                  widget.isSelected ? widget.item.activeIcon : widget.item.icon,
-                  color: widget.isSelected
-                      ? Colors.white
-                      : Colors.white.withOpacity(0.65),
-                  size: widget.item.iconSize,
-                  shadows: [
-                    if (!widget.isSelected)
-                      Shadow(
-                        offset: const Offset(0, 1),
-                        blurRadius: 3.0,
-                        color: Colors.black.withOpacity(0.5),
-                      )
-                    else
-                      Shadow(
-                        offset: const Offset(0, 2),
-                        blurRadius: 10.0,
-                        color: const Color(0xFF8A2BE2),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Icon(
+                      widget.isSelected ? widget.item.activeIcon : widget.item.icon,
+                      color: widget.isSelected
+                          ? Colors.white
+                          : Colors.white.withOpacity(0.65),
+                      size: widget.item.iconSize,
+                      shadows: [
+                        if (!widget.isSelected)
+                          Shadow(
+                            offset: const Offset(0, 1),
+                            blurRadius: 3.0,
+                            color: Colors.black.withOpacity(0.5),
+                          )
+                        else
+                          Shadow(
+                            offset: const Offset(0, 2),
+                            blurRadius: 10.0,
+                            color: const Color(0xFF8A2BE2),
+                          ),
+                      ],
+                    ),
+                    // Badge notification
+                    if (widget.item.badgeCount > 0)
+                      Positioned(
+                        right: -8,
+                        top: -6,
+                        child: _AnimatedBadge(count: widget.item.badgeCount),
                       ),
                   ],
                 ),
@@ -379,6 +391,56 @@ class _ModernNavItemState extends State<_ModernNavItem> {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Badge animé pour les notifications sur les items de la navbar.
+class _AnimatedBadge extends StatelessWidget {
+  final int count;
+  const _AnimatedBadge({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    final label = count > 99 ? '99+' : count.toString();
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.elasticOut,
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: value,
+          child: child,
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+        constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+        decoration: BoxDecoration(
+          color: Colors.redAccent,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white, width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.redAccent.withOpacity(0.5),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              height: 1.2,
+            ),
+            textAlign: TextAlign.center,
           ),
         ),
       ),
@@ -425,13 +487,26 @@ class NavBarItem {
   final IconData activeIcon;
   final String label;
   final double iconSize;
+  final int badgeCount;
 
   const NavBarItem({
     required this.icon,
     required this.activeIcon,
     required this.label,
     this.iconSize = 22.0,
+    this.badgeCount = 0,
   });
+
+  /// Returns a copy with updated badge count.
+  NavBarItem copyWith({int? badgeCount}) {
+    return NavBarItem(
+      icon: icon,
+      activeIcon: activeIcon,
+      label: label,
+      iconSize: iconSize,
+      badgeCount: badgeCount ?? this.badgeCount,
+    );
+  }
 }
 
 /// Alias pour compatibilité — conservé pour ne pas casser le code existant.

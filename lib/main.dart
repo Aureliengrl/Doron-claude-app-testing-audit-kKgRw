@@ -7,10 +7,13 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:ui';
+import 'dart:async';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'auth/firebase_auth/firebase_user_provider.dart';
 import 'auth/firebase_auth/auth_util.dart';
 
@@ -27,6 +30,9 @@ import '/components/connection_required_dialog.dart';
 import '/components/modern_nav_bar.dart';
 import '/components/offline_banner.dart';
 import '/services/push_notifications_service.dart';
+import '/services/presence_service.dart';
+import '/services/friend_service.dart';
+import '/utils/user_display_helper.dart';
 import 'index.dart';
 
 /// Service de logging d'erreurs global pour capturer les crashs en release
@@ -159,6 +165,20 @@ void main() async {
     
     // Do not await push notification setup, as the native permission prompt can block runApp and cause a white screen.
     PushNotificationsService.initialize();
+
+    // Initialize presence service (online/offline status)
+    if (FirebaseAuth.instance.currentUser != null) {
+      PresenceService.instance.initialize();
+    }
+    // Listen for auth changes to start/stop presence tracking
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) {
+        PresenceService.instance.initialize();
+      } else {
+        PresenceService.instance.dispose();
+        UserProfileCache.instance.clear();
+      }
+    });
 
     try {
       // Start initial custom actions code
@@ -380,6 +400,17 @@ class _NavBarPageState extends State<NavBarPage> {
   // Track historically loaded pages for lazy-loading IndexedStack behavior
   final Set<int> _loadedPages = {0}; // Always load the initial page
 
+  // Badge counts
+  int _friendRequestBadge = 0;
+  int _unreadChatBadge = 0;
+
+  // Streams for badge counts
+  StreamSubscription? _friendRequestSub;
+  StreamSubscription? _chatUnreadSub;
+
+  // Track previous friend request count for in-app notification
+  int _previousFriendRequestCount = -1; // -1 = not yet initialized
+
   @override
   void initState() {
     super.initState();
@@ -396,6 +427,122 @@ class _NavBarPageState extends State<NavBarPage> {
     _currentPage = widget.page;
     _currentIndex = _pageNames.indexOf(_currentPageName).clamp(0, 3);
     _loadedPages.add(_currentIndex);
+
+    _initBadgeStreams();
+  }
+
+  void _initBadgeStreams() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    // Listen for pending friend requests
+    _friendRequestSub = FriendService.getPendingRequestsStream().listen(
+      (requests) {
+        if (!mounted) return;
+        final newCount = requests.length;
+
+        // Show in-app notification for new friend requests
+        if (_previousFriendRequestCount >= 0 && newCount > _previousFriendRequestCount) {
+          // Find the newest request to show its name
+          final newestRequest = requests.isNotEmpty ? requests.first : null;
+          if (newestRequest != null) {
+            _showFriendRequestBanner(newestRequest['displayName'] ?? 'Quelqu\'un');
+          }
+        }
+        _previousFriendRequestCount = newCount;
+
+        safeSetState(() {
+          _friendRequestBadge = newCount;
+        });
+      },
+      onError: (e) {
+        AppLogger.debug('Badge friendRequest stream error: $e', 'NavBar');
+      },
+    );
+
+    // Listen for unread chat messages
+    _chatUnreadSub = FirebaseFirestore.instance
+        .collection('chats')
+        .where('participants', arrayContains: uid)
+        .snapshots()
+        .listen(
+      (snapshot) {
+        if (!mounted) return;
+        int totalUnread = 0;
+        for (final doc in snapshot.docs) {
+          final data = doc.data();
+          final unreadCount = data['unreadCount'] as Map<String, dynamic>?;
+          if (unreadCount != null && unreadCount.containsKey(uid)) {
+            final count = unreadCount[uid];
+            if (count is int) {
+              totalUnread += count;
+            } else if (count is num) {
+              totalUnread += count.toInt();
+            }
+          }
+        }
+        safeSetState(() {
+          _unreadChatBadge = totalUnread;
+        });
+      },
+      onError: (e) {
+        AppLogger.debug('Badge chat unread stream error: $e', 'NavBar');
+      },
+    );
+  }
+
+  void _showFriendRequestBanner(String senderName) {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.person_add_rounded, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Nouvelle demande d\'ami de $senderName',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF8A2BE2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+        duration: const Duration(seconds: 4),
+        action: SnackBarAction(
+          label: 'Voir',
+          textColor: Colors.white,
+          onPressed: () {
+            // Navigate to profile tab where friend requests are visible
+            safeSetState(() {
+              _currentPage = null;
+              _currentIndex = 3;
+              _currentPageName = _pageNames[3];
+              _loadedPages.add(3);
+            });
+          },
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _friendRequestSub?.cancel();
+    _chatUnreadSub?.cancel();
+    super.dispose();
   }
 
   @override
@@ -437,20 +584,21 @@ class _NavBarPageState extends State<NavBarPage> {
                   _loadedPages.add(i); // Mark page as loaded when visited
                 });
               },
-              items: const [
+              items: [
                 NavBarItem(
                   icon: Icons.home_outlined,
                   activeIcon: Icons.home_rounded,
                   label: 'Accueil',
                   iconSize: 24.0,
+                  badgeCount: _unreadChatBadge,
                 ),
-                NavBarItem(
+                const NavBarItem(
                   icon: Icons.search_outlined,
                   activeIcon: Icons.search_rounded,
                   label: 'Recherche',
                   iconSize: 24.0,
                 ),
-                NavBarItem(
+                const NavBarItem(
                   icon: Icons.play_arrow_rounded,
                   activeIcon: Icons.play_circle_rounded,
                   label: 'Inspo',
@@ -461,6 +609,7 @@ class _NavBarPageState extends State<NavBarPage> {
                   activeIcon: Icons.person_rounded,
                   label: 'Profil',
                   iconSize: 24.0,
+                  badgeCount: _friendRequestBadge,
                 ),
               ],
               primaryColor: const Color(0xFF8A2BE2),
