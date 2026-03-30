@@ -115,6 +115,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
   }
 
   Widget _buildHeader() {
+    final topPadding = MediaQuery.of(context).padding.top;
     return ClipRRect(
       borderRadius: const BorderRadius.only(
         bottomLeft: Radius.circular(28),
@@ -123,7 +124,8 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
         child: Container(
-          height: 120,
+          height: 120 + topPadding,
+          padding: EdgeInsets.only(top: topPadding),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -133,10 +135,6 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                 _pinkColor.withOpacity(0.06),
               ],
             ),
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(28),
-              bottomRight: Radius.circular(28),
-            ),
             border: Border(
               bottom: BorderSide(
                 color: Colors.white.withOpacity(0.10),
@@ -144,34 +142,44 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
               ),
             ),
           ),
-          child: SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    'Inspiration ✨',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Inspiration ✨',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Swipe pour découvrir',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white.withOpacity(0.60),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Swipe pour découvrir',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
-                      color: Colors.white.withOpacity(0.6),
-                      fontSize: 13,
-                    ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.notifications_none_rounded,
+                    color: Colors.white.withOpacity(0.85),
+                    size: 26,
                   ),
-                ],
-              ),
+                  onPressed: () {},
+                ),
+              ],
             ),
           ),
         ),
