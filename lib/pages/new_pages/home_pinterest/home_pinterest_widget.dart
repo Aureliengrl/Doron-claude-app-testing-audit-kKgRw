@@ -1,4 +1,5 @@
 import '/utils/app_logger.dart';
+import '/services/product_validator_service.dart';
 import 'dart:ui';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:flutter/material.dart';
@@ -334,15 +335,16 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
       AppLogger.debug('? ProductMatchingService a retourné ${rawProducts.length} produits', 'Debug');
 
-      // Convertir au format attendu et ajouter URLs intelligentes
+      // Convertir au format attendu, normaliser et ajouter URLs intelligentes
       final products = rawProducts.map((product) {
+        final validated = ProductValidatorService.normalize(product);
         return {
           'id': product['id'],
-          'name': product['name'] ?? 'Produit',
-          'brand': product['brand'] ?? '',
+          'name': validated['name'],
+          'brand': validated['brand'],
           'price': product['price'] ?? 0,
-          'image': product['image'] ?? product['imageUrl'] ?? '',
-          'url': ProductUrlService.generateProductUrl(product),
+          'image': validated['image'],
+          'url': (validated['url'] as String).isNotEmpty ? validated['url'] : ProductUrlService.generateProductUrl(product),
           'source': product['source'] ?? 'Amazon',
           'categories': product['categories'] ?? [],
           // FIX CRASH: matchScore peut être int ou double
@@ -432,15 +434,16 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         filteringMode: "home", // Mode HOME: Strict sur sexe (basé sur soi-même)
       );
 
-      // Convertir au format attendu et ajouter URLs intelligentes
+      // Convertir au format attendu, normaliser et ajouter URLs intelligentes
       final products = rawProducts.map((product) {
+        final validated = ProductValidatorService.normalize(product);
         return {
           'id': product['id'],
-          'name': product['name'] ?? 'Produit',
-          'brand': product['brand'] ?? '',
+          'name': validated['name'],
+          'brand': validated['brand'],
           'price': product['price'] ?? 0,
-          'image': product['image'] ?? product['imageUrl'] ?? '',
-          'url': ProductUrlService.generateProductUrl(product),
+          'image': validated['image'],
+          'url': (validated['url'] as String).isNotEmpty ? validated['url'] : ProductUrlService.generateProductUrl(product),
           'source': product['source'] ?? 'Amazon',
           'categories': product['categories'] ?? [],
           // FIX CRASH: matchScore peut être int ou double
