@@ -368,7 +368,7 @@ class GlobalProductDetailModal {
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: Color(0xFF1A1A2E),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(24),
             topRight: Radius.circular(24),
@@ -383,7 +383,7 @@ class GlobalProductDetailModal {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: Colors.white24,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -426,14 +426,14 @@ class GlobalProductDetailModal {
                   padding: const EdgeInsets.all(40),
                   child: Column(
                     children: [
-                      Icon(Icons.list_alt, size: 60, color: Colors.grey[400]),
+                      Icon(Icons.list_alt, size: 60, color: Colors.white24),
                       const SizedBox(height: 16),
                       Text(
                         'Aucune wishlist',
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey[700],
+                          color: Colors.white70,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -441,7 +441,7 @@ class GlobalProductDetailModal {
                         'Crée ta première wishlist ci-dessous',
                         style: GoogleFonts.poppins(
                           fontSize: 14,
-                          color: Colors.grey[500],
+                          color: Colors.white54,
                         ),
                       ),
                     ],
