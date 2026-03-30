@@ -100,7 +100,7 @@ class GlobalProductDetailModal {
                           child: InkWell(
                             onTap: () {
                               HapticFeedback.lightImpact();
-                              Navigator.pop(context);
+                              // Ne pas fermer le modal — ouvrir le wishlist picker par-dessus
                               _showWishlistModal(context, product);
                             },
                             borderRadius: BorderRadius.circular(50),
