@@ -490,15 +490,14 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         Expanded(
                           child: LiquidGlassCard(
                             blur: LiquidGlassTokens.blurLight,
-                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                             onTap: () {
                                _showEditProfileSheet(context);
                             },
-                            child: Center(
-                              child: Text(
-                                'Modifier le profil',
-                                style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
-                              ),
+                            child: Text(
+                              'Modifier le profil',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
                             ),
                           ),
                         ),
@@ -506,20 +505,18 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         Expanded(
                           child: LiquidGlassCard(
                             blur: LiquidGlassTokens.blurLight,
-                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                             onTap: () => context.push('/friends'),
-                            child: Center(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.people_outline, color: Colors.white, size: 16),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'Amis',
-                                    style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
-                                  ),
-                                ],
-                              ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.people_outline, color: Colors.white, size: 16),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Amis',
+                                  style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -527,15 +524,14 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         Expanded(
                           child: LiquidGlassCard(
                             blur: LiquidGlassTokens.blurLight,
-                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                             onTap: () {
                                _shareProfile();
                             },
-                            child: Center(
-                              child: Text(
-                                'Partager',
-                                style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
-                              ),
+                            child: Text(
+                              'Partager',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
                             ),
                           ),
                         ),
