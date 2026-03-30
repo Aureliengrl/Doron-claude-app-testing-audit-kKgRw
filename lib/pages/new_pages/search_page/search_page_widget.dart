@@ -296,6 +296,97 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   }
 
 
+  Widget _buildChatButtonWithBadge() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: uid != null
+          ? FirebaseFirestore.instance
+              .collection('chats')
+              .where('participants', arrayContains: uid)
+              .snapshots()
+          : null,
+      builder: (context, snapshot) {
+        int unread = 0;
+        if (snapshot.hasData && uid != null) {
+          for (final doc in snapshot.data!.docs) {
+            final data = doc.data() as Map<String, dynamic>;
+            final counts = data['unreadCount'] as Map<String, dynamic>?;
+            if (counts != null && counts.containsKey(uid)) {
+              final c = counts[uid];
+              unread += (c is int ? c : (c is num ? c.toInt() : 0));
+            }
+          }
+        }
+
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              HapticFeedback.mediumImpact();
+              context.push('/chat-list');
+            },
+            borderRadius: BorderRadius.circular(30),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  height: 56,
+                  width: 56,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.2),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.chat_bubble_outline_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                if (unread > 0)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                      child: Center(
+                        child: Text(
+                          unread > 99 ? '99+' : '$unread',
+                          style: GoogleFonts.poppins(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            height: 1.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildWelcomeMessage() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -1357,41 +1448,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     return Row(
       children: [
         // Bouton Messages/Chat (Rond)
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              HapticFeedback.mediumImpact();
-              // TODO: Naviguer vers la vue Chat
-              context.push('/chat-list');
-            },
-            borderRadius: BorderRadius.circular(30),
-            child: Container(
-              height: 56,
-              width: 56,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.12),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.chat_bubble_outline_rounded,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
-          ),
-        ),
+        _buildChatButtonWithBadge(),
         const SizedBox(width: 16),
         
         // Bouton Trouver des amis (navigue vers FriendsPage)
