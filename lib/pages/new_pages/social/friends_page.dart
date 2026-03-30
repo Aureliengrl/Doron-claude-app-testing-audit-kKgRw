@@ -1197,7 +1197,8 @@ class _FriendsPageState extends State<FriendsPage>
         return StreamBuilder<List<Map<String, dynamic>>>(
           stream: _collabInvitesStream,
           builder: (context, collabSnap) {
-            if (friendSnap.hasError) {
+            // Erreur sur le stream principal
+            if (friendSnap.hasError || collabSnap.hasError) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1206,6 +1207,15 @@ class _FriendsPageState extends State<FriendsPage>
                     const SizedBox(height: 16),
                     Text('Impossible de charger les demandes',
                         style: GoogleFonts.poppins(fontSize: 15, color: Colors.white54)),
+                    if (friendSnap.hasError)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          '${friendSnap.error}',
+                          style: GoogleFonts.poppins(fontSize: 11, color: Colors.white30),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
                     const SizedBox(height: 8),
                     TextButton(
                       onPressed: () => setState(() {
@@ -1218,6 +1228,8 @@ class _FriendsPageState extends State<FriendsPage>
                 ),
               );
             }
+            // Attente uniquement si le stream ami n'a PAS encore de données
+            // (le collab stream peut être vide, on ne bloque pas dessus)
             if (friendSnap.connectionState == ConnectionState.waiting && !friendSnap.hasData) {
               return const Center(child: CircularProgressIndicator(color: _violet, strokeWidth: 2));
             }

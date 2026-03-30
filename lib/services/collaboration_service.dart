@@ -320,7 +320,7 @@ class CollaborationService {
   /// Le filtre status='pending' est appliqué côté client.
   static Stream<List<Map<String, dynamic>>> getMyPendingCollabInvitesStream() {
     final myUid = _myUid;
-    if (myUid == null) return const Stream.empty();
+    if (myUid == null) return Stream.value([]);
 
     return _db
         .collection('collab_invites')
@@ -328,8 +328,10 @@ class CollaborationService {
         .snapshots()
         .handleError((e) {
           AppLogger.debug('❌ getMyPendingCollabInvitesStream error: $e', 'Collab');
+          return;
         })
         .asyncMap((snap) async {
+      if (snap == null) return <Map<String, dynamic>>[];
       final result = <Map<String, dynamic>>[];
       // Filtre status côté client pour éviter l'index composite
       final pendingDocs = snap.docs

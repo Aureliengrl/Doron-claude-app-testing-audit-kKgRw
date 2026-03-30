@@ -59,8 +59,10 @@ class FriendService {
         .snapshots()
         .handleError((e) {
           AppLogger.debug('❌ getPendingRequestsStream error: $e', 'FriendService');
+          return; // Important: allows stream to continue after error
         })
         .asyncMap((snap) async {
+      if (snap == null) return <Map<String, dynamic>>[];
       final requests = <Map<String, dynamic>>[];
       // Filtre status côté client pour éviter l'index composite
       final pendingDocs = snap.docs.where((d) => d.data()['status'] == 'pending').toList();
