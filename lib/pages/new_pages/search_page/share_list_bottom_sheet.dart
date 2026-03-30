@@ -4,18 +4,16 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '/components/liquid_glass.dart';
 import '/services/friend_service.dart';
 import '/services/collaboration_service.dart';
-import '/services/user_search_service.dart';
 
-/// Bottom sheet de collaboration — 4 méthodes d'invitation :
-/// 1. Recherche sur Doron (ami → direct, non-ami → invitation)
-/// 2. Mes amis (accès rapide)
-/// 3. Partager le lien (copy / share)
-/// 4. Contacts téléphone → SMS natif
+/// Bottom sheet de collaboration — 2 méthodes d'invitation :
+/// 1. Amis (accès rapide, ajout direct)
+/// 2. Lien (copier / partager → redirige vers App Store si pas installé)
 class ShareListBottomSheet extends StatefulWidget {
   final Map<String, dynamic> profile;
 
@@ -32,7 +30,6 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
   static const _green = Color(0xFF10B981);
 
   late TabController _tabController;
-  final TextEditingController _searchController = TextEditingController();
 
   // État global
   bool _isCreatingCollab = false;
@@ -40,27 +37,23 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
   String? _chatId;
   String? _inviteLink;
 
-  // Onglet Recherche Doron
-  List<Map<String, dynamic>> _searchResults = [];
-  bool _isSearching = false;
-  // uid → 'added' | 'pending' | null
-  final Map<String, String?> _inviteStatus = {};
-
   // Onglet Amis
   List<Map<String, dynamic>> _friends = [];
   bool _loadingFriends = true;
 
+  // uid → 'added' | 'loading' | null
+  final Map<String, String?> _inviteStatus = {};
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     _initCollab();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    _searchController.dispose();
     super.dispose();
   }
 
@@ -84,10 +77,10 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
         _inviteLink = CollaborationService.generateInviteLink(token);
       }
 
-      // Charger les amis en parallèle
+      // Charger les amis
       _loadFriends();
     } catch (e) {
-      debugPrint('❌ ShareListBottomSheet._initCollab: $e');
+      debugPrint('ShareListBottomSheet._initCollab: $e');
     } finally {
       if (mounted) setState(() => _isCreatingCollab = false);
     }
@@ -95,65 +88,28 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
 
   Future<void> _loadFriends() async {
     try {
-      final friends = await FriendService.getFriendsStream().first;
+      // Utilise getFriends directement au lieu du stream (évite le bug de chargement infini)
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) {
+        if (mounted) setState(() => _loadingFriends = false);
+        return;
+      }
+      final friends = await FriendService.getFriends(uid);
       if (mounted) {
         setState(() {
           _friends = friends;
           _loadingFriends = false;
         });
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('ShareListBottomSheet._loadFriends: $e');
       if (mounted) setState(() => _loadingFriends = false);
     }
   }
 
-  // ─── Recherche Doron ──────────────────────────────────────────────────────
+  // ─── Actions ─────────────────────────────────────────────────────────────
 
-  Future<void> _searchUsers(String query) async {
-    if (query.trim().isEmpty) {
-      setState(() => _searchResults = []);
-      return;
-    }
-    setState(() => _isSearching = true);
-    try {
-      final results = await UserSearchService.searchUsers(query.trim());
-      if (mounted) setState(() { _searchResults = results; _isSearching = false; });
-    } catch (_) {
-      if (mounted) setState(() => _isSearching = false);
-    }
-  }
-
-  Future<void> _inviteUser(Map<String, dynamic> user) async {
-    final uid = user['uid'] as String? ?? '';
-    if (uid.isEmpty || _collabId == null) return;
-
-    setState(() => _inviteStatus[uid] = 'loading');
-    HapticFeedback.lightImpact();
-
-    try {
-      final isFriend = await FriendService.isFriend(uid);
-      final profileName = widget.profile['name'] as String? ?? 'la liste';
-
-      await CollaborationService.inviteUser(
-        collabId: _collabId!,
-        toUid: uid,
-        profileName: profileName,
-        isAlreadyFriend: isFriend,
-      );
-
-      if (mounted) {
-        setState(() => _inviteStatus[uid] = isFriend ? 'added' : 'pending');
-        _showSnack(
-          isFriend ? '✅ Ajouté à la collaboration !' : '📬 Invitation envoyée !',
-          isFriend ? _green : _violet,
-        );
-      }
-    } catch (e) {
-      if (mounted) setState(() => _inviteStatus[uid] = null);
-    }
-  }
-
-  Future<void> _addFriendDirectly(String uid) async {
+  Future<void> _addFriendToCollab(String uid) async {
     if (_collabId == null) return;
     setState(() => _inviteStatus[uid] = 'loading');
     HapticFeedback.lightImpact();
@@ -161,20 +117,19 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
       await CollaborationService.addMember(collabId: _collabId!, uid: uid);
       if (mounted) {
         setState(() => _inviteStatus[uid] = 'added');
-        _showSnack('✅ Ami ajouté à la collaboration !', _green);
+        _showSnack('Ami ajouté à la collaboration !', _green);
       }
     } catch (_) {
       if (mounted) setState(() => _inviteStatus[uid] = null);
+      _showSnack('Erreur lors de l\'ajout', Colors.red);
     }
   }
-
-  // ─── Lien d'invitation ────────────────────────────────────────────────────
 
   void _copyLink() {
     if (_inviteLink == null) return;
     Clipboard.setData(ClipboardData(text: _inviteLink!));
     HapticFeedback.selectionClick();
-    _showSnack('🔗 Lien copié !', _violet);
+    _showSnack('Lien copié !', _violet);
   }
 
   Future<void> _shareLink() async {
@@ -182,25 +137,8 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
     HapticFeedback.lightImpact();
     final profileName = widget.profile['name'] as String? ?? 'quelqu\'un';
     await Share.share(
-      '🎁 Rejoins ma liste de cadeaux pour $profileName sur Doron !\n\n$_inviteLink',
+      'Rejoins ma liste de cadeaux pour $profileName sur Doron !\n\n$_inviteLink',
       subject: 'Collaboration Doron',
-    );
-  }
-
-  // ─── Contacts téléphone ───────────────────────────────────────────────────
-
-  Future<void> _shareViaContacts() async {
-    final status = await Permission.contacts.request();
-    if (!status.isGranted) {
-      _showSnack('Permission contacts refusée', Colors.red);
-      return;
-    }
-    // Partager le lien via SMS/mail natif
-    if (_inviteLink == null) return;
-    final profileName = widget.profile['name'] as String? ?? 'quelqu\'un';
-    await Share.share(
-      '🎁 Rejoins ma liste de cadeaux pour $profileName sur Doron !\n\n$_inviteLink',
-      subject: 'Invitation Doron',
     );
   }
 
@@ -220,7 +158,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
+      height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
         color: LiquidGlassTokens.pageDark,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
@@ -261,16 +199,15 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
                     children: [
                       Text('Collaborer',
                           style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                      Text('Inviter des amis sur la liste de ${widget.profile['name'] ?? ''}',
+                      Text('Inviter sur la liste de ${widget.profile['name'] ?? ''}',
                           style: GoogleFonts.poppins(fontSize: 12, color: Colors.white54)),
                     ],
                   ),
                 ),
-                // Bouton ouvrir le chat si déjà partagé
                 if (_chatId != null)
                   GestureDetector(
                     onTap: () {
-                      Navigator.pop(context, _chatId);
+                      Navigator.pop(context);
                       context.push('/chat-room/$_chatId', extra: {
                         'name': 'Cadeaux pour ${widget.profile['name']}',
                         'isGroup': true,
@@ -297,7 +234,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
 
           const SizedBox(height: 16),
 
-          // Tabs
+          // 2 Tabs : Amis + Lien
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Container(
@@ -318,9 +255,8 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
                 dividerColor: Colors.transparent,
                 padding: const EdgeInsets.all(4),
                 labelPadding: const EdgeInsets.symmetric(vertical: 8),
-                labelStyle: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600),
+                labelStyle: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
                 tabs: const [
-                  Tab(text: '🔍 Doron'),
                   Tab(text: '👥 Amis'),
                   Tab(text: '🔗 Lien'),
                 ],
@@ -337,7 +273,6 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildDoronSearchTab(),
                   _buildFriendsTab(),
                   _buildLinkTab(),
                 ],
@@ -348,171 +283,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
     );
   }
 
-  // ─── Onglet 1 : Recherche Doron ───────────────────────────────────────────
-
-  Widget _buildDoronSearchTab() {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Container(
-            height: 44,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withOpacity(0.12)),
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: 12),
-                const Icon(Icons.search, color: Colors.white38, size: 18),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: _searchUsers,
-                    style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
-                    decoration: InputDecoration(
-                      hintText: 'Chercher par @pseudo ou prénom…',
-                      hintStyle: GoogleFonts.poppins(color: Colors.white30, fontSize: 13),
-                      border: InputBorder.none,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        if (_isSearching)
-          const Expanded(child: Center(child: CircularProgressIndicator(color: _violet, strokeWidth: 2)))
-        else if (_searchController.text.isEmpty)
-          Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.person_search_rounded, size: 56, color: Colors.white24),
-                  const SizedBox(height: 12),
-                  Text('Cherche un utilisateur Doron', style: GoogleFonts.poppins(color: Colors.white38, fontSize: 14)),
-                  const SizedBox(height: 4),
-                  Text('Amis ajoutés directement, autres → invitation', style: GoogleFonts.poppins(color: Colors.white24, fontSize: 12)),
-                ],
-              ),
-            ),
-          )
-        else if (_searchResults.isEmpty)
-          Expanded(
-            child: Center(child: Text('Aucun résultat', style: GoogleFonts.poppins(color: Colors.white38))),
-          )
-        else
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              itemCount: _searchResults.length,
-              itemBuilder: (ctx, i) => _buildSearchResultTile(_searchResults[i]),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildSearchResultTile(Map<String, dynamic> user) {
-    final uid = user['uid'] as String? ?? '';
-    final name = user['displayName'] as String? ?? 'Utilisateur';
-    final handle = user['handle'] as String? ?? '';
-    final photoUrl = user['photoUrl'] as String? ?? '';
-    final status = _inviteStatus[uid];
-    final isFriend = _friends.any((f) => f['uid'] == uid);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.06),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
-        ),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 22,
-              backgroundColor: _violet.withOpacity(0.3),
-              backgroundImage: photoUrl.isNotEmpty ? CachedNetworkImageProvider(photoUrl) : null,
-              child: photoUrl.isEmpty ? Text(name[0].toUpperCase(), style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)) : null,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(name, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
-                      if (isFriend) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(color: _green.withOpacity(0.2), borderRadius: BorderRadius.circular(6)),
-                          child: Text('Ami', style: GoogleFonts.poppins(fontSize: 9, color: _green, fontWeight: FontWeight.w600)),
-                        ),
-                      ],
-                    ],
-                  ),
-                  if (handle.isNotEmpty)
-                    Text('@$handle', style: GoogleFonts.poppins(fontSize: 12, color: Colors.white38)),
-                ],
-              ),
-            ),
-            _buildInviteButton(uid, status, isFriend),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInviteButton(String uid, String? status, bool isFriend) {
-    if (status == 'loading') {
-      return const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: _violet, strokeWidth: 2));
-    }
-    if (status == 'added') {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(color: _green.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
-        child: Row(children: [
-          const Icon(Icons.check_rounded, color: _green, size: 14),
-          const SizedBox(width: 4),
-          Text('Ajouté', style: GoogleFonts.poppins(fontSize: 11, color: _green, fontWeight: FontWeight.w600)),
-        ]),
-      );
-    }
-    if (status == 'pending') {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(color: Colors.orange.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
-        child: Text('Invité', style: GoogleFonts.poppins(fontSize: 11, color: Colors.orange, fontWeight: FontWeight.w600)),
-      );
-    }
-
-    return GestureDetector(
-      onTap: () => isFriend ? _addFriendDirectly(uid) : _inviteUser(_searchResults.firstWhere((u) => u['uid'] == uid, orElse: () => {'uid': uid})),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(colors: isFriend ? [_violet, _pink] : [Colors.white12, Colors.white12]),
-          borderRadius: BorderRadius.circular(20),
-          border: isFriend ? null : Border.all(color: Colors.white30),
-        ),
-        child: Text(
-          isFriend ? 'Ajouter' : 'Inviter',
-          style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
-        ),
-      ),
-    );
-  }
-
-  // ─── Onglet 2 : Amis ──────────────────────────────────────────────────────
+  // ─── Onglet 1 : Amis ─────────────────────────────────────────────────────
 
   Widget _buildFriendsTab() {
     if (_loadingFriends) {
@@ -525,9 +296,22 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
           children: [
             const Icon(Icons.people_outline, size: 56, color: Colors.white24),
             const SizedBox(height: 12),
-            Text('Aucun ami pour l\'instant', style: GoogleFonts.poppins(color: Colors.white38)),
-            const SizedBox(height: 4),
-            Text('Cherche des utilisateurs dans l\'onglet Doron', style: GoogleFonts.poppins(color: Colors.white24, fontSize: 12)),
+            Text('Aucun ami pour l\'instant', style: GoogleFonts.poppins(color: Colors.white54, fontSize: 15)),
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/friends');
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [_violet, _pink]),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text('Trouver des amis', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13)),
+              ),
+            ),
           ],
         ),
       );
@@ -557,23 +341,40 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
                   radius: 22,
                   backgroundColor: _violet.withOpacity(0.3),
                   backgroundImage: photoUrl.isNotEmpty ? CachedNetworkImageProvider(photoUrl) : null,
-                  child: photoUrl.isEmpty ? Text(name[0].toUpperCase(), style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)) : null,
+                  child: photoUrl.isEmpty
+                      ? Text(name.isNotEmpty ? name[0].toUpperCase() : '?',
+                          style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold))
+                      : null,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Row(
-                    children: [
-                      Text(name, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(color: _green.withOpacity(0.2), borderRadius: BorderRadius.circular(6)),
-                        child: Text('Ami', style: GoogleFonts.poppins(fontSize: 9, color: _green, fontWeight: FontWeight.w600)),
-                      ),
-                    ],
-                  ),
+                  child: Text(name, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
                 ),
-                _buildInviteButton(uid, status, true),
+                // Bouton action
+                if (status == 'loading')
+                  const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: _violet, strokeWidth: 2))
+                else if (status == 'added')
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(color: _green.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      const Icon(Icons.check_rounded, color: _green, size: 14),
+                      const SizedBox(width: 4),
+                      Text('Ajouté', style: GoogleFonts.poppins(fontSize: 11, color: _green, fontWeight: FontWeight.w600)),
+                    ]),
+                  )
+                else
+                  GestureDetector(
+                    onTap: () => _addFriendToCollab(uid),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [_violet, _pink]),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text('Ajouter', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -582,7 +383,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
     );
   }
 
-  // ─── Onglet 3 : Lien + Contacts ───────────────────────────────────────────
+  // ─── Onglet 2 : Lien ─────────────────────────────────────────────────────
 
   Widget _buildLinkTab() {
     return Padding(
@@ -590,7 +391,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Lien
+          // Lien d'invitation
           Text('Lien d\'invitation', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white54)),
           const SizedBox(height: 10),
           Container(
@@ -612,7 +413,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
                 Row(
                   children: [
                     Expanded(
-                      child: _linkButton(
+                      child: _actionButton(
                         icon: Icons.copy_rounded,
                         label: 'Copier',
                         color: _violet,
@@ -621,7 +422,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: _linkButton(
+                      child: _actionButton(
                         icon: Icons.ios_share_rounded,
                         label: 'Partager',
                         color: _pink,
@@ -634,9 +435,9 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
-          // Note : le lien redirige vers l'App Store si non installé
+          // Explication
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -650,43 +451,23 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Ce lien télécharge Doron si nécessaire, puis ajoute la personne directement à la liste.',
+                    'Ce lien redirige vers le téléchargement de Doron si l\'app n\'est pas installée, puis ajoute la personne directement à la collaboration.',
                     style: GoogleFonts.poppins(fontSize: 11, color: Colors.blue.shade200),
                   ),
                 ),
               ],
             ),
           ),
-
-          const SizedBox(height: 24),
-
-          // Contacts téléphone
-          Text('Via mes contacts', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white54)),
-          const SizedBox(height: 10),
-          _linkButton(
-            icon: Icons.contacts_rounded,
-            label: 'Envoyer par SMS / mail',
-            color: _green,
-            onTap: _shareViaContacts,
-            fullWidth: true,
-          ),
-
-          const SizedBox(height: 8),
-          Text(
-            'Sélectionnez vos contacts depuis votre téléphone pour envoyer une invitation.',
-            style: GoogleFonts.poppins(fontSize: 11, color: Colors.white30),
-          ),
         ],
       ),
     );
   }
 
-  Widget _linkButton({
+  Widget _actionButton({
     required IconData icon,
     required String label,
     required Color color,
     required VoidCallback onTap,
-    bool fullWidth = false,
   }) {
     return GestureDetector(
       onTap: () {
@@ -694,8 +475,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
         onTap();
       },
       child: Container(
-        width: fullWidth ? double.infinity : null,
-        padding: EdgeInsets.symmetric(horizontal: fullWidth ? 20 : 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: color.withOpacity(0.15),
           borderRadius: BorderRadius.circular(12),

@@ -309,7 +309,14 @@ class CollaborationService {
 
   // ─── Générer le lien d'invitation ─────────────────────────────────────────
 
+  /// Génère un lien d'invitation qui :
+  /// 1. Ouvre l'app directement si installée (deep link)
+  /// 2. Redirige vers l'App Store / Play Store sinon
   static String generateInviteLink(String inviteToken) {
+    // Utilise un lien universel Apple (app_links) qui redirige vers l'app
+    // ou vers l'App Store si non installée.
+    // Le domaine doron.app doit être configuré avec apple-app-site-association.
+    // Fallback: lien App Store direct avec le token en paramètre.
     return 'https://doron.app/join/$inviteToken';
   }
 
