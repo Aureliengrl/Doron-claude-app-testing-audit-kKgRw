@@ -61,6 +61,10 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
 
   Future<void> _initCollab() async {
     setState(() => _isCreatingCollab = true);
+
+    // Charger les amis EN PARALLÈLE de la collab (pas dépendant)
+    _loadFriends();
+
     try {
       final profileId = widget.profile['id']?.toString() ?? '';
       final profileName = widget.profile['name'] as String? ?? 'quelqu\'un';
@@ -76,9 +80,6 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
       if (token.isNotEmpty) {
         _inviteLink = CollaborationService.generateInviteLink(token);
       }
-
-      // Charger les amis
-      _loadFriends();
     } catch (e) {
       debugPrint('ShareListBottomSheet._initCollab: $e');
     } finally {
