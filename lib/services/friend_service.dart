@@ -68,23 +68,39 @@ class FriendService {
       final pendingDocs = snap.docs.where((d) => d.data()['status'] == 'pending').toList();
       for (final doc in pendingDocs) {
         final data = doc.data();
+        final fromUid = data['fromUid'] as String?;
+        if (fromUid == null || fromUid.isEmpty) continue;
+
+        String displayName = 'Utilisateur';
+        String handle = '';
+        String photoUrl = '';
+
         try {
-          final senderDoc = await _db.collection('users').doc(data['fromUid']).get();
-          final sender = senderDoc.data() ?? {};
-          requests.add({
-            'requestId': doc.id,
-            'fromUid': data['fromUid'],
-            'displayName': (sender['first_name'] as String?) ??
-                           (sender['display_name'] as String?) ??
-                           (sender['name'] as String?) ??
-                           ((sender['email'] as String? ?? '').split('@').first.isNotEmpty
-                               ? (sender['email'] as String).split('@').first
-                               : 'Utilisateur'),
-            'handle': sender['handle'] ?? sender['username'] ?? '',
-            'photoUrl': sender['photo_url'] ?? '',
-            'createdAt': data['createdAt'],
-          });
-        } catch (_) {}
+          final senderDoc = await _db.collection('users').doc(fromUid).get();
+          if (senderDoc.exists) {
+            final sender = senderDoc.data() ?? {};
+            displayName = (sender['first_name'] as String?) ??
+                         (sender['display_name'] as String?) ??
+                         (sender['name'] as String?) ??
+                         ((sender['email'] as String? ?? '').split('@').first.isNotEmpty
+                             ? (sender['email'] as String).split('@').first
+                             : 'Utilisateur');
+            handle = (sender['handle'] as String?) ?? (sender['username'] as String?) ?? '';
+            photoUrl = (sender['photo_url'] as String?) ?? '';
+          }
+        } catch (e) {
+          AppLogger.debug('getPendingRequestsStream: cannot load sender $fromUid: $e', 'FriendService');
+          // Continue anyway — show the request even without full sender info
+        }
+
+        requests.add({
+          'requestId': doc.id,
+          'fromUid': fromUid,
+          'displayName': displayName,
+          'handle': handle,
+          'photoUrl': photoUrl,
+          'createdAt': data['createdAt'],
+        });
       }
       return requests;
     });
@@ -169,21 +185,38 @@ class FriendService {
   static Future<bool> acceptRequest(String requestId, String fromUid) async {
     final myUid = _myUid;
     if (myUid == null) return false;
+    if (requestId.isEmpty || fromUid.isEmpty) {
+      AppLogger.debug('❌ acceptRequest: requestId or fromUid is empty', 'Social');
+      return false;
+    }
 
     try {
+      // Vérifier que la demande existe avant de l'accepter
+      final requestDoc = await _db.collection('friend_requests').doc(requestId).get();
+      if (!requestDoc.exists) {
+        AppLogger.debug('❌ acceptRequest: request $requestId does not exist', 'Social');
+        return false;
+      }
+
       final batch = _db.batch();
+
+      // 1. Mettre à jour le statut de la demande
       batch.update(_db.collection('friend_requests').doc(requestId), {
         'status': 'accepted',
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      batch.update(_db.collection('users').doc(myUid), {
+
+      // 2. Ajouter aux listes d'amis (set merge pour créer le champ si absent)
+      batch.set(_db.collection('users').doc(myUid), {
         'friends': FieldValue.arrayUnion([fromUid]),
-      });
-      batch.update(_db.collection('users').doc(fromUid), {
+      }, SetOptions(merge: true));
+
+      batch.set(_db.collection('users').doc(fromUid), {
         'friends': FieldValue.arrayUnion([myUid]),
-      });
+      }, SetOptions(merge: true));
+
       await batch.commit();
-      AppLogger.debug('✅ FriendService.acceptRequest: $requestId', 'Social');
+      AppLogger.debug('✅ FriendService.acceptRequest: $requestId from $fromUid', 'Social');
       return true;
     } catch (e) {
       AppLogger.debug('❌ FriendService.acceptRequest: $e', 'Social');
