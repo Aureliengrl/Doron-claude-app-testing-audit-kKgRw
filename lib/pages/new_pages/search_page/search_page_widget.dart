@@ -230,12 +230,12 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   Widget _buildHeader() {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF8A2BE2),
-            const Color(0xFFEC4899),
+            Color(0xFF8A2BE2),
+            Color(0xFFEC4899),
           ],
         ),
         borderRadius: const BorderRadius.only(
@@ -260,8 +260,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               micro.ShimmerEffect(

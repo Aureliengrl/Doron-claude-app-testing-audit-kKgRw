@@ -149,6 +149,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               micro.ShimmerEffect(
