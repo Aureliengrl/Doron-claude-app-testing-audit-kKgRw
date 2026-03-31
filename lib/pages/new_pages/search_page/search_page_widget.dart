@@ -297,10 +297,10 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
 
   Widget _buildChatButtonWithBadge() {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = currentUserUid;
 
     return StreamBuilder<QuerySnapshot>(
-      stream: uid != null
+      stream: uid.isNotEmpty
           ? FirebaseFirestore.instance
               .collection('chats')
               .where('participants', arrayContains: uid)
@@ -308,7 +308,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
           : null,
       builder: (context, snapshot) {
         int unread = 0;
-        if (snapshot.hasData && uid != null) {
+        if (snapshot.hasData && uid.isNotEmpty) {
           for (final doc in snapshot.data!.docs) {
             final data = doc.data() as Map<String, dynamic>;
             final counts = data['unreadCount'] as Map<String, dynamic>?;
