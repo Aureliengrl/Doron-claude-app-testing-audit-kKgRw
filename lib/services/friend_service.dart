@@ -102,8 +102,6 @@ class FriendService {
       }
       return requests;
     });
-      return requests;
-    });
   }
 
   // ─── Ajouter ami (legacy / direct sans demande) ────────────────────────────
