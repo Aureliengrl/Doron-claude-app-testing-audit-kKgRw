@@ -660,9 +660,6 @@ class RootSplashWidget extends StatefulWidget {
 class _RootSplashWidgetState extends State<RootSplashWidget> {
   String _status = "Initialisation...";
 
-  String? _determinedRoute;
-  bool _readyToNavigate = false;
-
   @override
   void initState() {
     super.initState();
