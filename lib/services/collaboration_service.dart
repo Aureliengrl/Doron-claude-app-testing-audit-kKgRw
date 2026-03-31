@@ -333,12 +333,7 @@ class CollaborationService {
         .collection('collab_invites')
         .where('toUid', isEqualTo: myUid)
         .snapshots()
-        .handleError((e) {
-          AppLogger.debug('❌ getMyPendingCollabInvitesStream error: $e', 'Collab');
-          return;
-        })
         .asyncMap((snap) async {
-      if (snap == null) return <Map<String, dynamic>>[];
       final result = <Map<String, dynamic>>[];
       // Filtre status côté client pour éviter l'index composite
       final pendingDocs = snap.docs

@@ -1194,45 +1194,46 @@ class _FriendsPageState extends State<FriendsPage>
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: _requestsStream,
       builder: (context, friendSnap) {
+        // Erreur sur le stream
+        if (friendSnap.hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.wifi_off_rounded, size: 48, color: Colors.white24),
+                const SizedBox(height: 16),
+                Text('Impossible de charger les demandes',
+                    style: GoogleFonts.poppins(fontSize: 15, color: Colors.white54)),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    '${friendSnap.error}',
+                    style: GoogleFonts.poppins(fontSize: 11, color: Colors.white30),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => setState(() {
+                    _requestsStream = FriendService.getPendingRequestsStream();
+                    _collabInvitesStream = CollaborationService.getMyPendingCollabInvitesStream();
+                  }),
+                  child: Text('Réessayer', style: GoogleFonts.poppins(color: _violet)),
+                ),
+              ],
+            ),
+          );
+        }
+        // Attente du stream ami
+        if (friendSnap.connectionState == ConnectionState.waiting && !friendSnap.hasData) {
+          return const Center(child: CircularProgressIndicator(color: _violet, strokeWidth: 2));
+        }
+
+        // Stream collab séparé — ne bloque PAS l'affichage des demandes d'amis
         return StreamBuilder<List<Map<String, dynamic>>>(
           stream: _collabInvitesStream,
+          initialData: const [], // Valeur initiale vide pour ne pas bloquer
           builder: (context, collabSnap) {
-            // Erreur sur le stream principal
-            if (friendSnap.hasError || collabSnap.hasError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.wifi_off_rounded, size: 48, color: Colors.white24),
-                    const SizedBox(height: 16),
-                    Text('Impossible de charger les demandes',
-                        style: GoogleFonts.poppins(fontSize: 15, color: Colors.white54)),
-                    if (friendSnap.hasError)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          '${friendSnap.error}',
-                          style: GoogleFonts.poppins(fontSize: 11, color: Colors.white30),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    const SizedBox(height: 8),
-                    TextButton(
-                      onPressed: () => setState(() {
-                        _requestsStream = FriendService.getPendingRequestsStream();
-                        _collabInvitesStream = CollaborationService.getMyPendingCollabInvitesStream();
-                      }),
-                      child: Text('Réessayer', style: GoogleFonts.poppins(color: _violet)),
-                    ),
-                  ],
-                ),
-              );
-            }
-            // Attente uniquement si le stream ami n'a PAS encore de données
-            // (le collab stream peut être vide, on ne bloque pas dessus)
-            if (friendSnap.connectionState == ConnectionState.waiting && !friendSnap.hasData) {
-              return const Center(child: CircularProgressIndicator(color: _violet, strokeWidth: 2));
-            }
 
             final friendRequests = friendSnap.data ?? [];
             final collabInvites = collabSnap.data ?? [];

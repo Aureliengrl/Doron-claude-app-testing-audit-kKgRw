@@ -34,7 +34,7 @@ class FriendService {
 
   static Stream<List<Map<String, dynamic>>> getFriendsStream() {
     final myUid = _myUid;
-    if (myUid == null) return const Stream.empty();
+    if (myUid == null) return Stream.value([]);
 
     // Écoute le document user. À chaque modification, récupère les profils amis.
     return _db.collection('users').doc(myUid).snapshots().asyncMap((snap) async {
@@ -58,51 +58,50 @@ class FriendService {
         .collection('friend_requests')
         .where('toUid', isEqualTo: myUid)
         .snapshots()
-        .handleError((e) {
-          AppLogger.debug('❌ getPendingRequestsStream error: $e', 'FriendService');
-          return; // Important: allows stream to continue after error
-        })
         .asyncMap((snap) async {
-      if (snap == null) return <Map<String, dynamic>>[];
       final requests = <Map<String, dynamic>>[];
-      // Filtre status côté client pour éviter l'index composite
-      final pendingDocs = snap.docs.where((d) => d.data()['status'] == 'pending').toList();
-      for (final doc in pendingDocs) {
-        final data = doc.data();
-        final fromUid = data['fromUid'] as String?;
-        if (fromUid == null || fromUid.isEmpty) continue;
+      try {
+        final pendingDocs = snap.docs.where((d) => d.data()['status'] == 'pending').toList();
+        for (final doc in pendingDocs) {
+          final data = doc.data();
+          final fromUid = data['fromUid'] as String?;
+          if (fromUid == null || fromUid.isEmpty) continue;
 
-        String displayName = 'Utilisateur';
-        String handle = '';
-        String photoUrl = '';
+          String displayName = 'Utilisateur';
+          String handle = '';
+          String photoUrl = '';
 
-        try {
-          final senderDoc = await _db.collection('users').doc(fromUid).get();
-          if (senderDoc.exists) {
-            final sender = senderDoc.data() ?? {};
-            displayName = (sender['first_name'] as String?) ??
-                         (sender['display_name'] as String?) ??
-                         (sender['name'] as String?) ??
-                         ((sender['email'] as String? ?? '').split('@').first.isNotEmpty
-                             ? (sender['email'] as String).split('@').first
-                             : 'Utilisateur');
-            handle = (sender['handle'] as String?) ?? (sender['username'] as String?) ?? '';
-            photoUrl = (sender['photo_url'] as String?) ?? '';
+          try {
+            final senderDoc = await _db.collection('users').doc(fromUid).get();
+            if (senderDoc.exists) {
+              final sender = senderDoc.data() ?? {};
+              displayName = (sender['first_name'] as String?) ??
+                           (sender['display_name'] as String?) ??
+                           (sender['name'] as String?) ??
+                           ((sender['email'] as String? ?? '').split('@').first.isNotEmpty
+                               ? (sender['email'] as String).split('@').first
+                               : 'Utilisateur');
+              handle = (sender['handle'] as String?) ?? (sender['username'] as String?) ?? '';
+              photoUrl = (sender['photo_url'] as String?) ?? '';
+            }
+          } catch (e) {
+            AppLogger.debug('getPendingRequestsStream: cannot load sender $fromUid: $e', 'FriendService');
           }
-        } catch (e) {
-          AppLogger.debug('getPendingRequestsStream: cannot load sender $fromUid: $e', 'FriendService');
-          // Continue anyway — show the request even without full sender info
-        }
 
-        requests.add({
-          'requestId': doc.id,
-          'fromUid': fromUid,
-          'displayName': displayName,
-          'handle': handle,
-          'photoUrl': photoUrl,
-          'createdAt': data['createdAt'],
-        });
+          requests.add({
+            'requestId': doc.id,
+            'fromUid': fromUid,
+            'displayName': displayName,
+            'handle': handle,
+            'photoUrl': photoUrl,
+            'createdAt': data['createdAt'],
+          });
+        }
+      } catch (e) {
+        AppLogger.debug('❌ getPendingRequestsStream asyncMap error: $e', 'FriendService');
       }
+      return requests;
+    });
       return requests;
     });
   }
