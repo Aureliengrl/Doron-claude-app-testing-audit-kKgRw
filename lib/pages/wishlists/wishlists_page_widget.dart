@@ -453,10 +453,11 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
     final nameController = TextEditingController();
     final descriptionController = TextEditingController();
 
-    await showDialog(
+    // Dialog returns a map with name/description if user confirmed, or null if cancelled.
+    final result = await showDialog<Map<String, String>>(
       context: context,
       barrierColor: Colors.black.withOpacity(0.5),
-      builder: (context) => Dialog(
+      builder: (dialogContext) => Dialog(
         backgroundColor: Colors.transparent,
         insetPadding: const EdgeInsets.all(16),
         child: ClipRRect(
@@ -533,7 +534,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () => Navigator.pop(dialogContext),
                         child: Text(
                           'Annuler',
                           style: GoogleFonts.poppins(color: const Color(0xFF6B7280)),
@@ -541,30 +542,12 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
                       ),
                       const SizedBox(width: 12),
                       ElevatedButton(
-                        onPressed: () async {
+                        onPressed: () {
                           if (nameController.text.trim().isEmpty) return;
-                          
-                          Navigator.pop(context);
-                          
-                          final wishlistId = await FirebaseDataService.createWishlist(
-                            name: nameController.text.trim(),
-                            description: descriptionController.text.trim(),
-                          );
-                          
-                          if (wishlistId != null) {
-                            await _loadWishlists();
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Liste cre avec succès !',
-                                    style: GoogleFonts.poppins(),
-                                  ),
-                                  backgroundColor: violetColor,
-                                ),
-                              );
-                            }
-                          }
+                          Navigator.pop(dialogContext, {
+                            'name': nameController.text.trim(),
+                            'description': descriptionController.text.trim(),
+                          });
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: violetColor,
@@ -588,5 +571,28 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
         ),
       ),
     );
+
+    // Handle creation after dialog is closed, using the page's own context.
+    if (result != null && mounted) {
+      final wishlistId = await FirebaseDataService.createWishlist(
+        name: result['name']!,
+        description: result['description']!,
+      );
+
+      if (wishlistId != null) {
+        await _loadWishlists();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Liste créée avec succès !',
+                style: GoogleFonts.poppins(),
+              ),
+              backgroundColor: violetColor,
+            ),
+          );
+        }
+      }
+    }
   }
 }

@@ -711,37 +711,60 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
       );
     }
 
-    return CachedNetworkImage(
-      imageUrl: imageUrl,
-      fit: BoxFit.cover,
-      width: double.infinity,
-      height: double.infinity,
-      placeholder: (context, url) => Container(
-        color: Colors.grey[900],
-        child: const Center(
-          child: micro.ShimmerLoading(
-            width: double.infinity,
-            height: double.infinity,
-            borderRadius: BorderRadius.zero,
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Dark background
+        Container(color: const Color(0xFF0D0D0D)),
+        // Blurred background image for ambiance
+        Positioned.fill(
+          child: CachedNetworkImage(
+            imageUrl: imageUrl,
+            fit: BoxFit.cover,
+            color: Colors.black.withOpacity(0.6),
+            colorBlendMode: BlendMode.darken,
+            errorWidget: (context, url, error) => const SizedBox.shrink(),
           ),
         ),
-      ),
-      errorWidget: (context, url, error) => Container(
-        color: Colors.grey[900],
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline, size: 48, color: Colors.grey[700]),
-              const SizedBox(height: 8),
-              Text(
-                'Image non disponible',
-                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+        // Blur overlay
+        Positioned.fill(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: Container(color: Colors.black.withOpacity(0.4)),
+          ),
+        ),
+        // Main image, fully visible with BoxFit.contain
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 60),
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
+              fit: BoxFit.contain,
+              width: double.infinity,
+              placeholder: (context, url) => const Center(
+                child: micro.ShimmerLoading(
+                  width: 200,
+                  height: 200,
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
+                ),
               ),
-            ],
+              errorWidget: (context, url, error) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, size: 48, color: Colors.grey[700]),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Image non disponible',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 

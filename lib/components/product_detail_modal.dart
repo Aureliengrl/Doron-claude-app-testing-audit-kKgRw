@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '/services/firebase_data_service.dart';
 import '/services/product_url_service.dart';
 import '/components/cached_image.dart';
@@ -86,6 +88,41 @@ class GlobalProductDetailModal {
                                 Icons.close,
                                 color: Color(0xFF111827),
                                 size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Bouton 3-dot menu
+                      Positioned(
+                        top: 12,
+                        right: 116,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              _showProductActionsSheet(context, product);
+                            },
+                            borderRadius: BorderRadius.circular(50),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.12),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                Icons.more_vert,
+                                color: violetColor,
+                                size: 18,
                               ),
                             ),
                           ),

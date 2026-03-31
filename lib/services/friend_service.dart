@@ -199,24 +199,32 @@ class FriendService {
         return false;
       }
 
-      final batch = _db.batch();
+      // Use separate operations instead of a batch so that a failure
+      // updating the OTHER user's doc doesn't roll back everything.
 
-      // 1. Mettre à jour le statut de la demande
-      batch.update(_db.collection('friend_requests').doc(requestId), {
+      // 1. Update the friend request status
+      await _db.collection('friend_requests').doc(requestId).update({
         'status': 'accepted',
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      // 2. Ajouter aux listes d'amis (set merge pour créer le champ si absent)
-      batch.set(_db.collection('users').doc(myUid), {
+      // 2. Add friend to MY friends list (always succeeds - I own my doc)
+      await _db.collection('users').doc(myUid).set({
         'friends': FieldValue.arrayUnion([fromUid]),
       }, SetOptions(merge: true));
 
-      batch.set(_db.collection('users').doc(fromUid), {
-        'friends': FieldValue.arrayUnion([myUid]),
-      }, SetOptions(merge: true));
+      // 3. Try to add me to the OTHER user's friends list.
+      //    This may fail if Firestore rules don't allow it, but steps 1 & 2
+      //    already succeeded so the request is accepted and my list is updated.
+      try {
+        await _db.collection('users').doc(fromUid).set({
+          'friends': FieldValue.arrayUnion([myUid]),
+        }, SetOptions(merge: true));
+      } catch (e) {
+        AppLogger.debug('⚠️ acceptRequest: could not update other user\'s friends list: $e', 'Social');
+        // Non-fatal: the request is accepted and our own friend list is updated.
+      }
 
-      await batch.commit();
       AppLogger.debug('✅ FriendService.acceptRequest: $requestId from $fromUid', 'Social');
       return true;
     } catch (e) {

@@ -19,13 +19,25 @@ class SetupProfilePage extends StatefulWidget {
 
 class _SetupProfilePageState extends State<SetupProfilePage> {
   final _handleController = TextEditingController();
+  final _nameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   String? _errorMessage;
 
   @override
+  void initState() {
+    super.initState();
+    // Pre-fill name from auth provider (Google/Apple display name)
+    final providerName = FirebaseAuth.instance.currentUser?.displayName ?? '';
+    if (providerName.isNotEmpty) {
+      _nameController.text = providerName;
+    }
+  }
+
+  @override
   void dispose() {
     _handleController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
@@ -70,16 +82,21 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
         return;
       }
 
-      // Nom d'affichage pour les index de recherche
-      final displayNameRaw = currentUser?.displayName ?? '';
-      final displayNameLower = displayNameRaw.toLowerCase().trim();
-      // searchName = handle OU prénom (le plus utile pour être trouvé)
+      // Nom d'affichage : priorité au champ saisi, sinon auth provider
+      final nameInput = _nameController.text.trim();
+      final displayName = nameInput.isNotEmpty
+          ? nameInput
+          : (currentUser?.displayName ?? '');
+      final displayNameLower = displayName.toLowerCase().trim();
+      // searchName = prénom (le plus utile pour être trouvé) OU handle
       final searchName = displayNameLower.isNotEmpty ? displayNameLower : handle;
 
-      // 2. Sauvegarder le handle dans le profil utilisateur (critique)
+      // 2. Sauvegarder le handle + nom dans le profil utilisateur (critique)
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'handle': handle,
         'handle_lower': handle,
+        'display_name': displayName,
+        'first_name': displayName,
         // Champs index pour la recherche
         'searchName': searchName,
         'display_name_lower': displayNameLower,
@@ -253,6 +270,69 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                       ),
                     ),
 
+                    const SizedBox(height: 8),
+                    Text(
+                      'Uniquement lettres, chiffres, _ et . — min. 3 caractères',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.35),
+                      ),
+                    ),
+
+                    const SizedBox(height: 28),
+
+                    // Champ nom d'affichage
+                    Text(
+                      'Ton prénom',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white.withOpacity(0.85),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'C\'est le nom que tes amis verront.',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: Colors.white.withOpacity(0.45),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.06),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white.withOpacity(0.15)),
+                      ),
+                      child: TextFormField(
+                        controller: _nameController,
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Ex : Marie',
+                          hintStyle: GoogleFonts.poppins(
+                            fontSize: 18,
+                            color: Colors.white.withOpacity(0.25),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+                        ),
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(50),
+                        ],
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return 'Champ obligatoire';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+
                     if (_errorMessage != null) ...[
                       const SizedBox(height: 12),
                       Text(
@@ -263,15 +343,6 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                         ),
                       ),
                     ],
-
-                    const SizedBox(height: 16),
-                    Text(
-                      'Uniquement lettres, chiffres, _ et . — min. 3 caractères',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: Colors.white.withOpacity(0.35),
-                      ),
-                    ),
 
                     const Spacer(),
 

@@ -83,14 +83,27 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
     setState(() => _isCreating = true);
 
     try {
+      // For 1-on-1 chats, use getOrCreateDirectChat to reuse existing conversations
+      if (!_isGroup && _selectedContacts.length == 1) {
+        final friendUid = _selectedContacts.first;
+        final chatId = await FriendService.getOrCreateDirectChat(friendUid);
+
+        if (mounted) {
+          context.pop();
+          context.push('/chat-room/$chatId');
+        }
+        return;
+      }
+
+      // Group chat: create a new one
       final chatRef = FirebaseFirestore.instance.collection('chats').doc();
       final participants = [currentUser.uid, ..._selectedContacts];
-      
+
       String chatName = '';
       if (_isGroup) {
         chatName = _groupNameController.text.trim();
       }
-      
+
       final chatData = {
         'id': chatRef.id,
         'name': chatName,
@@ -109,7 +122,7 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
         context.push('/chat-room/${chatRef.id}', extra: chatData);
       }
     } catch (e) {
-      print('Erreur lors de la création du chat: $e');
+      debugPrint('Erreur lors de la création du chat: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erreur: $e', style: GoogleFonts.poppins())),

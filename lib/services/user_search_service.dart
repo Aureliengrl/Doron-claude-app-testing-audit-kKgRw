@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '/utils/app_logger.dart';
+import '/services/friend_service.dart';
 
 /// Service de recherche d'utilisateurs Doron par @pseudo ou prénom.
 /// Gère aussi la visibilité des wishlists (public/privé) et
@@ -109,23 +110,28 @@ class UserSearchService {
 
   /// Récupère les wishlists visibles d'un utilisateur.
   /// Si viewerUid == ownerUid → toutes les wishlists.
+  /// Si viewer is a friend of owner → toutes les wishlists.
   /// Sinon → uniquement les publiques.
   static Future<List<Map<String, dynamic>>> getVisibleWishlists(
       String ownerUid, {String? viewerUid}) async {
     try {
-      Query query = _db
-          .collection('wishlists')
-          .where('ownerUid', isEqualTo: ownerUid);
-
-      // Si ce n'est pas le propriétaire, afficher seulement les publiques
-      if (viewerUid != ownerUid) {
-        query = query.where('isPublic', isEqualTo: true);
+      // Determine if the viewer should see all wishlists
+      bool showAll = (viewerUid == ownerUid);
+      if (!showAll && viewerUid != null) {
+        showAll = await FriendService.isFriend(ownerUid);
       }
 
-      final snapshot = await query.orderBy('createdAt', descending: true).get();
+      // Wishlists are stored as subcollection: users/{uid}/wishlists
+      final baseQuery = _db
+          .collection('users')
+          .doc(ownerUid)
+          .collection('wishlists')
+          .orderBy('createdAt', descending: true);
 
-      return snapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
+      final snapshot = await baseQuery.get();
+
+      final allWishlists = snapshot.docs.map((doc) {
+        final data = doc.data();
         // Compter les produits : giftIds + photos
         final giftCount = (data['giftIds'] as List?)?.length ?? 0;
         final photoCount = (data['photos'] as List?)?.length ?? 0;
@@ -140,6 +146,13 @@ class UserSearchService {
           'ownerUid': ownerUid,
         };
       }).toList();
+
+      // If not owner and not friend, filter to public only
+      if (!showAll) {
+        return allWishlists.where((w) => w['isPublic'] == true).toList();
+      }
+
+      return allWishlists;
     } catch (e) {
       AppLogger.debug('❌ UserSearchService.getVisibleWishlists: $e', 'Social');
       return [];
@@ -150,7 +163,9 @@ class UserSearchService {
   static Future<void> setWishlistVisibility(
       String wishlistId, bool isPublic) async {
     try {
-      await _db.collection('wishlists').doc(wishlistId).update({
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) throw Exception('Not authenticated');
+      await _db.collection('users').doc(uid).collection('wishlists').doc(wishlistId).update({
         'isPublic': isPublic,
         'updatedAt': FieldValue.serverTimestamp(),
       });
@@ -169,18 +184,20 @@ class UserSearchService {
   /// Utilisé pour enrichir le matching quand on cherche un cadeau pour lui.
   static Future<Set<String>> getPublicWishlistTitles(String userUid) async {
     try {
-      // 1. Récupérer les wishlists publiques
-      final wishlists = await _db
+      // 1. Récupérer les wishlists publiques (subcollection)
+      final allWishlists = await _db
+          .collection('users')
+          .doc(userUid)
           .collection('wishlists')
-          .where('ownerUid', isEqualTo: userUid)
-          .where('isPublic', isEqualTo: true)
           .get();
+      // Filter to public only client-side
+      final publicDocs = allWishlists.docs.where((doc) => doc.data()['isPublic'] == true).toList();
 
-      if (wishlists.docs.isEmpty) return {};
+      if (publicDocs.isEmpty) return {};
 
       // 2. Collecter tous les giftIds
       final allGiftIds = <String>[];
-      for (final doc in wishlists.docs) {
+      for (final doc in publicDocs) {
         final data = doc.data();
         final ids = (data['giftIds'] as List?)?.cast<String>() ?? [];
         allGiftIds.addAll(ids);
