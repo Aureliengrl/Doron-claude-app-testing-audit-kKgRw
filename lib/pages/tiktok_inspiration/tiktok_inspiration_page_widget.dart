@@ -1,6 +1,7 @@
 import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '/components/product_detail_modal.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -83,6 +84,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
             left: 0,
             right: 0,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildHeader(),
                 _buildCategoryTabs(),
@@ -116,6 +118,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
 
   Widget _buildHeader() {
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
@@ -674,17 +677,29 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
             mainAxisSize: MainAxisSize.min,
             children: [
               // Bouton options ...
-              Container(
-                width: 46,
-                height: 36,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  shape: BoxShape.rectangle,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: _violetColor, width: 2),
-                  color: Colors.transparent,
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  GlobalProductDetailModal.show(context, {
+                    'name': product['name'] ?? '',
+                    'brand': product['brand'] ?? '',
+                    'price': product['price'] ?? '',
+                    'image': product['image'] ?? '',
+                    'url': product['url'] ?? '',
+                  });
+                },
+                child: Container(
+                  width: 46,
+                  height: 36,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: _violetColor, width: 2),
+                    color: Colors.transparent,
+                  ),
+                  child: const Icon(Icons.more_horiz, color: Colors.white, size: 24),
                 ),
-                child: const Icon(Icons.more_horiz, color: Colors.white, size: 24),
               ),
               // Wishlist
               _buildWishlistButton(product),
