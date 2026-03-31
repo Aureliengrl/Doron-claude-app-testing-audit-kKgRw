@@ -22,15 +22,16 @@ class CollaborationService {
 
     try {
       // Chercher une collaboration existante pour ce profil et cet owner
+      // Utilise un seul filtre pour éviter l'index composite, filtre ownerId côté client
       final existing = await _db
           .collection('collaborations')
           .where('profileId', isEqualTo: profileId)
-          .where('ownerId', isEqualTo: myUid)
-          .limit(1)
           .get();
 
-      if (existing.docs.isNotEmpty) {
-        final doc = existing.docs.first;
+      final myCollab = existing.docs.where((d) => d.data()['ownerId'] == myUid).toList();
+
+      if (myCollab.isNotEmpty) {
+        final doc = myCollab.first;
         return {'collabId': doc.id, ...doc.data()};
       }
 
@@ -78,13 +79,13 @@ class CollaborationService {
         await _db
             .collection('users')
             .doc(myUid)
-            .collection('profiles')
+            .collection('people')
             .doc(profileId)
-            .update({
+            .set({
           'isShared': true,
           'chatId': chatRef.id,
           'collabId': collabRef.id,
-        });
+        }, SetOptions(merge: true));
       } catch (e) { AppLogger.debug('CollaborationService error: $e', 'Collab'); }
 
       AppLogger.debug('✅ CollaborationService: collab créée ${collabRef.id}', 'Collab');
@@ -117,16 +118,20 @@ class CollaborationService {
       }
 
       // Vérifier si une invitation existe déjà
+      // Utilise 2 filtres max pour éviter l'index composite, filtre status côté client
       final existingInvite = await _db
           .collection('collab_invites')
           .where('collabId', isEqualTo: collabId)
           .where('toUid', isEqualTo: toUid)
-          .where('status', isEqualTo: 'pending')
-          .limit(1)
+          .limit(5)
           .get();
 
-      if (existingInvite.docs.isNotEmpty) {
-        return existingInvite.docs.first.id;
+      final pendingInvite = existingInvite.docs
+          .where((d) => d.data()['status'] == 'pending')
+          .toList();
+
+      if (pendingInvite.isNotEmpty) {
+        return pendingInvite.first.id;
       }
 
       // Créer l'invitation
@@ -162,36 +167,39 @@ class CollaborationService {
       // Récupérer le chatId
       final collabDoc = await _db.collection('collaborations').doc(collabId).get();
       final data = collabDoc.data();
-      if (data == null) return;
+      if (data == null) {
+        AppLogger.debug('❌ addMember: collab $collabId not found', 'Collab');
+        throw Exception('Collaboration introuvable');
+      }
 
       final chatId = data['chatId'] as String?;
       final profileName = data['profileName'] as String? ?? 'la liste';
 
-      final batch = _db.batch();
-
-      // Ajouter dans la collaboration
-      batch.update(_db.collection('collaborations').doc(collabId), {
+      // 1. Ajouter dans la collaboration (opération séparée)
+      await _db.collection('collaborations').doc(collabId).set({
         'members': FieldValue.arrayUnion([uid]),
         'pendingInvites': FieldValue.arrayRemove([uid]),
-      });
+      }, SetOptions(merge: true));
 
-      // Ajouter dans le chat de groupe
+      // 2. Ajouter dans le chat de groupe
       if (chatId != null) {
-        batch.update(_db.collection('chats').doc(chatId), {
-          'participants': FieldValue.arrayUnion([uid]),
-        });
+        try {
+          await _db.collection('chats').doc(chatId).set({
+            'participants': FieldValue.arrayUnion([uid]),
+          }, SetOptions(merge: true));
 
-        // Message système dans le chat
-        final msgRef = _db.collection('chats').doc(chatId).collection('messages').doc();
-        batch.set(msgRef, {
-          'senderId': 'system',
-          'text': '👤 Un nouveau membre a rejoint la collaboration pour $profileName !',
-          'timestamp': FieldValue.serverTimestamp(),
-          'type': 'system',
-        });
+          // Message système dans le chat
+          await _db.collection('chats').doc(chatId).collection('messages').add({
+            'senderId': 'system',
+            'text': '👤 Un nouveau membre a rejoint la collaboration pour $profileName !',
+            'timestamp': FieldValue.serverTimestamp(),
+            'type': 'system',
+          });
+        } catch (e) {
+          AppLogger.debug('⚠️ addMember: chat update failed (non-critical): $e', 'Collab');
+        }
       }
 
-      await batch.commit();
       AppLogger.debug('✅ Membre $uid ajouté à $collabId', 'Collab');
     } catch (e) {
       AppLogger.debug('❌ CollaborationService.addMember: $e', 'Collab');
