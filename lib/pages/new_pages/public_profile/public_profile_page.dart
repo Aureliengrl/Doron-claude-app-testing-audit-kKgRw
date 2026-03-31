@@ -86,7 +86,9 @@ class _PublicProfilePageState extends State<PublicProfilePage>
           'bio': data['bio'] ?? '',
         };
       }
-    } catch (_) {}
+    } catch (_) {
+      _profile = null;
+    }
   }
 
   Future<void> _loadWishlists() async {
@@ -187,9 +189,8 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     try {
       final name = _profile?['displayName'] as String? ?? 'Utilisateur';
       final chatId = await FriendService.getOrCreateDirectChat(widget.uid);
-      if (mounted) {
-        context.push('/chat-room/$chatId', extra: {'name': name, 'isGroup': false});
-      }
+      if (!mounted) return;
+      context.push('/chat-room/$chatId', extra: {'name': name, 'isGroup': false});
     } catch (_) {
       _showSnack('Impossible d\'ouvrir le chat.', Colors.red);
     }
@@ -538,64 +539,67 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     final productCount = (wishlist['productCount'] as int?) ?? 0;
     final coverUrl = wishlist['coverPhoto'] as String?;
 
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0x1AFFFFFF), Color(0x0AFFFFFF)],
-        ),
-        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (coverUrl != null && coverUrl.isNotEmpty)
-              CachedNetworkImage(imageUrl: coverUrl, fit: BoxFit.cover)
-            else
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [_violet.withOpacity(0.4), _pink.withOpacity(0.4)],
-                  ),
-                ),
-                child: Center(child: Text(emoji, style: const TextStyle(fontSize: 40))),
-              ),
-            // Overlay sombre en bas
-            Positioned(
-              bottom: 0, left: 0, right: 0,
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(12, 32, 12, 12),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [Colors.black.withOpacity(0.85), Colors.transparent],
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(name,
-                        style: GoogleFonts.poppins(
-                            color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis),
-                    Text('$productCount produit${productCount != 1 ? 's' : ''}',
-                        style: GoogleFonts.poppins(color: Colors.white60, fontSize: 11)),
-                  ],
-                ),
-              ),
-            ),
+    return GestureDetector(
+      onTap: () => context.push('/wishlist-details/${wishlist['id']}'),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0x1AFFFFFF), Color(0x0AFFFFFF)],
+          ),
+          border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 4)),
           ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (coverUrl != null && coverUrl.isNotEmpty)
+                CachedNetworkImage(imageUrl: coverUrl, fit: BoxFit.cover)
+              else
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [_violet.withOpacity(0.4), _pink.withOpacity(0.4)],
+                    ),
+                  ),
+                  child: Center(child: Text(emoji, style: const TextStyle(fontSize: 40))),
+                ),
+              // Overlay sombre en bas
+              Positioned(
+                bottom: 0, left: 0, right: 0,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(12, 32, 12, 12),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [Colors.black.withOpacity(0.85), Colors.transparent],
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(name,
+                          style: GoogleFonts.poppins(
+                              color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                      Text('$productCount produit${productCount != 1 ? 's' : ''}',
+                          style: GoogleFonts.poppins(color: Colors.white60, fontSize: 11)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

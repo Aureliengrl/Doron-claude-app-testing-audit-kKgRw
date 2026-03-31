@@ -185,14 +185,15 @@ class _FriendsPageState extends State<FriendsPage>
   }
 
   Future<void> _loadFriendshipStatus(String uid) async {
-    if (_loadingStatuses.contains(uid)) return;
     _loadingStatuses.add(uid);
     try {
       final result = await FriendService.getFriendshipStatus(uid);
       if (mounted) {
         setState(() => _statusCache[uid] = result);
       }
-    } catch (_) {}
+    } catch (_) {
+      if (mounted) setState(() => _statusCache[uid] = (status: FriendshipStatus.none, requestId: null));
+    }
     _loadingStatuses.remove(uid);
   }
 
@@ -308,7 +309,6 @@ class _FriendsPageState extends State<FriendsPage>
       });
       if (ok) {
         _showSnack('👥 Vous êtes maintenant amis !', _green);
-        _pendingRequests.removeWhere((r) => r['fromUid'] == uid);
       }
     }
   }
@@ -437,7 +437,7 @@ class _FriendsPageState extends State<FriendsPage>
       stream: _requestsStream,
       builder: (context, snap) {
         // Mettre à jour la liste locale avec les données du stream
-        if (snap.hasData) _pendingRequests = snap.data!;
+        if (snap.hasData && mounted) _pendingRequests = snap.data!;
         final pendingCount = _pendingRequests.length;
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),

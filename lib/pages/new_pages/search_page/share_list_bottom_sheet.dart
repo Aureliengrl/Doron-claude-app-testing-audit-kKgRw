@@ -82,6 +82,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
       }
     } catch (e) {
       debugPrint('ShareListBottomSheet._initCollab: $e');
+      if (mounted) _showSnack('Impossible de créer la collaboration', Colors.red);
     } finally {
       if (mounted) setState(() => _isCreatingCollab = false);
     }
@@ -111,7 +112,10 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
   // ─── Actions ─────────────────────────────────────────────────────────────
 
   Future<void> _addFriendToCollab(String uid) async {
-    if (_collabId == null) return;
+    if (_collabId == null) {
+      _showSnack('Collaboration indisponible', Colors.red);
+      return;
+    }
     setState(() => _inviteStatus[uid] = 'loading');
     HapticFeedback.lightImpact();
     try {
@@ -127,14 +131,20 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
   }
 
   void _copyLink() {
-    if (_inviteLink == null) return;
+    if (_inviteLink == null) {
+      _showSnack('Lien en cours de génération...', Colors.orange);
+      return;
+    }
     Clipboard.setData(ClipboardData(text: _inviteLink!));
     HapticFeedback.selectionClick();
     _showSnack('Lien copié !', _violet);
   }
 
   Future<void> _shareLink() async {
-    if (_inviteLink == null) return;
+    if (_inviteLink == null) {
+      _showSnack('Lien en cours de génération...', Colors.orange);
+      return;
+    }
     HapticFeedback.lightImpact();
     final profileName = widget.profile['name'] as String? ?? 'quelqu\'un';
     await Share.share(

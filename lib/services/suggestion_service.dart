@@ -92,7 +92,7 @@ class SuggestionService {
 
     // Charger les profils des candidats trouvés
     final toFetch = suggestions.keys
-        .where((uid) => suggestions[uid]!['displayName'] == null)
+        .where((uid) => suggestions[uid]!.containsKey('displayName') == false)
         .toList();
 
     if (toFetch.isEmpty) return;
@@ -142,7 +142,6 @@ class SuggestionService {
         final batch = batches.sublist(i, i + 10 > batches.length ? batches.length : i + 10);
         final snap = await _db.collection('users')
             .where('phoneNumber', whereIn: batch)
-            .limit(10)
             .get();
 
         for (final doc in snap.docs) {

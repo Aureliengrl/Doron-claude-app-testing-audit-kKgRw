@@ -85,7 +85,7 @@ class CollaborationService {
           'chatId': chatRef.id,
           'collabId': collabRef.id,
         });
-      } catch (_) {}
+      } catch (e) { AppLogger.debug('CollaborationService error: $e', 'Collab'); }
 
       AppLogger.debug('✅ CollaborationService: collab créée ${collabRef.id}', 'Collab');
       return {'collabId': collabRef.id, ...collabData, 'chatId': chatRef.id};
@@ -358,7 +358,18 @@ class CollaborationService {
             'fromPhotoUrl': sender['photo_url'] ?? '',
             'createdAt': data['createdAt'],
           });
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.debug('CollaborationService error: $e', 'Collab');
+          result.add({
+            'inviteId': doc.id,
+            'collabId': data['collabId'],
+            'fromUid': data['fromUid'],
+            'profileName': data['profileName'] ?? 'une liste',
+            'fromName': 'Quelqu\'un',
+            'fromPhotoUrl': '',
+            'createdAt': data['createdAt'],
+          });
+        }
       }
       return result;
     });
@@ -385,7 +396,8 @@ class CollaborationService {
       if (snap.docs.isEmpty) return 0;
       final members = (snap.docs.first.data()['members'] as List?) ?? [];
       return members.length;
-    } catch (_) {
+    } catch (e) {
+      AppLogger.debug('CollaborationService error: $e', 'Collab');
       return 0;
     }
   }

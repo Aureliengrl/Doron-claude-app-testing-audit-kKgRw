@@ -24,7 +24,8 @@ class FriendService {
       final doc = await _db.collection('users').doc(myUid).get();
       final friends = (doc.data()?['friends'] as List?)?.cast<String>() ?? [];
       return friends.contains(otherUid);
-    } catch (_) {
+    } catch (e) {
+      AppLogger.debug('isFriend error: $e', 'FriendService');
       return false;
     }
   }
@@ -232,12 +233,12 @@ class FriendService {
 
     try {
       final batch = _db.batch();
-      batch.update(_db.collection('users').doc(myUid), {
+      batch.set(_db.collection('users').doc(myUid), {
         'friends': FieldValue.arrayRemove([otherUid]),
-      });
-      batch.update(_db.collection('users').doc(otherUid), {
+      }, SetOptions(merge: true));
+      batch.set(_db.collection('users').doc(otherUid), {
         'friends': FieldValue.arrayRemove([myUid]),
-      });
+      }, SetOptions(merge: true));
       await batch.commit();
       return true;
     } catch (e) {
@@ -307,11 +308,11 @@ class FriendService {
       final snap = await _db
           .collection('friend_requests')
           .where('toUid', isEqualTo: myUid)
-          .where('status', isEqualTo: 'pending')
           .get();
 
+      final pendingDocs = snap.docs.where((d) => d.data()['status'] == 'pending').toList();
       final requests = <Map<String, dynamic>>[];
-      for (final doc in snap.docs) {
+      for (final doc in pendingDocs) {
         final data = doc.data();
         final senderDoc = await _db.collection('users').doc(data['fromUid']).get();
         final sender = senderDoc.data() ?? {};
