@@ -1,6 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '/utils/app_logger.dart';
-
 /// Service de validation et nettoyage local des données produits.
 /// Exécuté au chargement des produits pour corriger les problèmes courants.
 class ProductValidatorService {
