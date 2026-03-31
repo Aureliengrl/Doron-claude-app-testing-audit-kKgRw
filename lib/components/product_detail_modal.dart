@@ -712,4 +712,601 @@ class GlobalProductDetailModal {
       }
     }
   }
+
+  /// Affiche le bottom sheet avec les actions produit (envoyer par message, ajouter pour quelqu'un)
+  static void _showProductActionsSheet(BuildContext context, Map<String, dynamic> product) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      showConnectionRequiredDialog(
+        context,
+        title: 'Connexion requise',
+        message: 'Connecte-toi pour partager des produits',
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF1A1A2E),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Title
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Row(
+                  children: [
+                    Icon(Icons.more_vert, color: violetColor, size: 24),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Actions',
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1, color: Colors.white12),
+              // Option 1: Envoyer par message
+              ListTile(
+                leading: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: violetColor.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.send_rounded, color: violetColor, size: 24),
+                ),
+                title: Text(
+                  'Envoyer par message',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                subtitle: Text(
+                  'Partager ce produit dans une conversation',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.white54,
+                  ),
+                ),
+                trailing: Icon(Icons.chevron_right, color: Colors.white38),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _showChatPickerSheet(context, product);
+                },
+              ),
+              // Option 2: Ajouter pour quelqu'un
+              ListTile(
+                leading: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEC4899).withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.card_giftcard, color: Color(0xFFEC4899), size: 24),
+                ),
+                title: Text(
+                  'Ajouter pour quelqu\'un',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                subtitle: Text(
+                  'Ajouter ce cadeau dans la liste d\'un proche',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.white54,
+                  ),
+                ),
+                trailing: Icon(Icons.chevron_right, color: Colors.white38),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _showPersonPickerSheet(context, product);
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Affiche la liste des conversations pour envoyer le produit en tant que product_card
+  static void _showChatPickerSheet(BuildContext context, Map<String, dynamic> product) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
+        ),
+        decoration: const BoxDecoration(
+          color: Color(0xFF1A1A2E),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Row(
+                  children: [
+                    Icon(Icons.send_rounded, color: violetColor, size: 24),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Envoyer par message',
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1, color: Colors.white12),
+              // Chat list from Firestore
+              Expanded(
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('chats')
+                      .where('participants', arrayContains: user.uid)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(color: Color(0xFF8A2BE2)),
+                      );
+                    }
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(40),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.chat_bubble_outline, size: 48, color: Colors.white24),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Aucune conversation',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
+                    final chats = snapshot.data!.docs;
+                    chats.sort((a, b) {
+                      final timeA = (a.data() as Map<String, dynamic>)['lastMessageTime'] as Timestamp?;
+                      final timeB = (b.data() as Map<String, dynamic>)['lastMessageTime'] as Timestamp?;
+                      if (timeA == null && timeB == null) return 0;
+                      if (timeA == null) return 1;
+                      if (timeB == null) return -1;
+                      return timeB.compareTo(timeA);
+                    });
+
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: chats.length,
+                      itemBuilder: (context, index) {
+                        final chatDoc = chats[index];
+                        final chatData = chatDoc.data() as Map<String, dynamic>;
+                        final chatId = chatDoc.id;
+                        final isGroup = chatData['isGroup'] == true;
+                        final chatName = chatData['name'] as String? ?? 'Conversation';
+
+                        if (isGroup) {
+                          return _buildChatTile(sheetContext, chatId, chatName, chatData['photoUrl'] as String?, product);
+                        }
+
+                        // For 1-on-1 chats, resolve the other user's name
+                        final participants = (chatData['participants'] as List?)?.cast<String>() ?? [];
+                        final otherUid = participants.firstWhere(
+                          (p) => p != user.uid,
+                          orElse: () => '',
+                        );
+                        if (otherUid.isEmpty) {
+                          return _buildChatTile(sheetContext, chatId, chatName, null, product);
+                        }
+
+                        return FutureBuilder<DocumentSnapshot>(
+                          future: FirebaseFirestore.instance.collection('users').doc(otherUid).get(),
+                          builder: (context, userSnap) {
+                            final userData = userSnap.data?.data() as Map<String, dynamic>? ?? {};
+                            final name = userData['first_name'] as String? ??
+                                userData['display_name'] as String? ??
+                                userData['name'] as String? ??
+                                chatName;
+                            final photo = userData['photo_url'] as String? ?? userData['photoUrl'] as String?;
+                            return _buildChatTile(sheetContext, chatId, name, photo, product);
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  static Widget _buildChatTile(BuildContext context, String chatId, String name, String? photoUrl, Map<String, dynamic> product) {
+    return ListTile(
+      leading: CircleAvatar(
+        radius: 24,
+        backgroundColor: violetColor.withOpacity(0.2),
+        backgroundImage: (photoUrl != null && photoUrl.isNotEmpty) ? NetworkImage(photoUrl) : null,
+        child: (photoUrl == null || photoUrl.isEmpty)
+            ? Text(
+                name.isNotEmpty ? name[0].toUpperCase() : '?',
+                style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+              )
+            : null,
+      ),
+      title: Text(
+        name,
+        style: GoogleFonts.poppins(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+      ),
+      trailing: Icon(Icons.send, color: violetColor, size: 20),
+      onTap: () async {
+        Navigator.pop(context);
+        await _sendProductToChat(context, chatId, product);
+      },
+    );
+  }
+
+  /// Envoie le produit comme message product_card dans le chat
+  static Future<void> _sendProductToChat(BuildContext context, String chatId, Map<String, dynamic> product) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final productTitle = product['name'] as String? ?? product['product_title'] as String? ?? 'Produit';
+      final productImage = product['image'] as String? ?? product['product_photo'] as String? ?? product['image_url'] as String? ?? '';
+      final productUrl = product['product_url'] ?? product['url'] ?? ProductUrlService.generateProductUrl(product);
+      final brand = product['brand'] ?? product['source'] ?? product['platform'] ?? '';
+      final price = '${product['price'] ?? product['product_price'] ?? 0}'.replaceAll('€', '').trim();
+
+      final productCardJson = json.encode({
+        'name': productTitle,
+        'image_url': productImage,
+        'brand': brand.toString(),
+        'price': price,
+        'url': productUrl,
+      });
+
+      final messageRef = FirebaseFirestore.instance
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .doc();
+
+      await messageRef.set({
+        'id': messageRef.id,
+        'senderId': user.uid,
+        'text': productCardJson,
+        'timestamp': FieldValue.serverTimestamp(),
+        'type': 'product_card',
+      });
+
+      await FirebaseFirestore.instance.collection('chats').doc(chatId).update({
+        'lastMessage': 'a partagé un produit',
+        'lastMessageTime': FieldValue.serverTimestamp(),
+      });
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Produit envoyé !',
+                    style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Erreur envoi produit par message', 'Debug', e);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors de l\'envoi', style: GoogleFonts.poppins()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Affiche la liste des personnes (proches) pour ajouter le produit à leur liste de cadeaux
+  static void _showPersonPickerSheet(BuildContext context, Map<String, dynamic> product) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
+        ),
+        decoration: const BoxDecoration(
+          color: Color(0xFF1A1A2E),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Row(
+                  children: [
+                    const Icon(Icons.card_giftcard, color: Color(0xFFEC4899), size: 24),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Ajouter pour quelqu\'un',
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1, color: Colors.white12),
+              // Person list
+              Expanded(
+                child: FutureBuilder<List<Map<String, dynamic>>>(
+                  future: FirebaseDataService.loadPeople(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(color: Color(0xFF8A2BE2)),
+                      );
+                    }
+                    final people = snapshot.data ?? [];
+                    if (people.isEmpty) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(40),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.person_outline, size: 48, color: Colors.white24),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Aucun proche',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Ajoute des proches dans l\'onglet recherche',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  color: Colors.white54,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: people.length,
+                      itemBuilder: (context, index) {
+                        final person = people[index];
+                        final personId = person['id'] as String? ?? '';
+                        final personName = person['name'] as String? ?? person['firstName'] as String? ?? 'Proche';
+                        final personEmoji = person['emoji'] as String? ?? person['avatar'] as String?;
+                        final personPhoto = person['photoUrl'] as String? ?? person['photo_url'] as String?;
+
+                        return ListTile(
+                          leading: CircleAvatar(
+                            radius: 24,
+                            backgroundColor: const Color(0xFFEC4899).withOpacity(0.2),
+                            backgroundImage: (personPhoto != null && personPhoto.isNotEmpty) ? NetworkImage(personPhoto) : null,
+                            child: (personPhoto == null || personPhoto.isEmpty)
+                                ? Text(
+                                    personEmoji ?? (personName.isNotEmpty ? personName[0].toUpperCase() : '?'),
+                                    style: GoogleFonts.poppins(
+                                      fontSize: personEmoji != null ? 22 : 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : null,
+                          ),
+                          title: Text(
+                            personName,
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                          trailing: Icon(Icons.add_circle, color: violetColor, size: 28),
+                          onTap: () async {
+                            Navigator.pop(sheetContext);
+                            await _addProductToPerson(context, personId, personName, product);
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Ajoute le produit à la liste de cadeaux d'une personne
+  static Future<void> _addProductToPerson(BuildContext context, String personId, String personName, Map<String, dynamic> product) async {
+    if (personId.isEmpty) return;
+
+    try {
+      final productTitle = product['name'] as String? ?? product['product_title'] as String? ?? 'Produit';
+      final productImage = product['image'] as String? ?? product['product_photo'] as String? ?? product['image_url'] as String? ?? '';
+      final productUrl = product['product_url'] ?? product['url'] ?? ProductUrlService.generateProductUrl(product);
+      final brand = product['brand'] ?? product['source'] ?? product['platform'] ?? '';
+      final price = '${product['price'] ?? product['product_price'] ?? 0}'.replaceAll('€', '').trim();
+
+      final gift = {
+        'id': 'gift_${DateTime.now().millisecondsSinceEpoch}',
+        'name': productTitle,
+        'brand': brand.toString(),
+        'price': price,
+        'image': productImage,
+        'url': productUrl,
+        'addedAt': DateTime.now().toIso8601String(),
+      };
+
+      final success = await FirebaseDataService.addGiftToPerson(
+        personId: personId,
+        gift: gift,
+      );
+
+      if (context.mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.card_giftcard, color: Colors.white, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Ajouté pour $personName !',
+                      style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFF10B981),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erreur lors de l\'ajout', style: GoogleFonts.poppins()),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      AppLogger.error('Erreur ajout cadeau pour personne', 'Debug', e);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur lors de l\'ajout', style: GoogleFonts.poppins()),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 }

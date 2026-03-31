@@ -1291,17 +1291,15 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     // Afficher des skeletons pendant le chargement initial
     if (_model.isLoading) {
       return SliverPadding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        sliver: SliverGrid(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 0.65,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-          ),
-          delegate: SliverChildBuilderDelegate(
-            (context, index) => const ProductCardSkeleton(),
-            childCount: 6, // 6 skeletons pendant le chargement
+        padding: const EdgeInsets.fromLTRB(12, 16, 12, 0),
+        sliver: SliverMasonryGrid.count(
+          crossAxisCount: 2,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          childCount: 12, // 12 skeletons to fill the screen while loading
+          itemBuilder: (context, index) => AspectRatio(
+            aspectRatio: [0.8, 1.25, 0.9, 1.1, 1.4, 0.75][index % 6],
+            child: const ProductCardSkeleton(),
           ),
         ),
       );
@@ -1642,14 +1640,15 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       ),
     ).animate()
         .fadeIn(
-          delay: Duration(milliseconds: 50 * index),
-          duration: 400.ms,
+          // Cap delay at 400ms so all initially visible products appear quickly
+          delay: Duration(milliseconds: (30 * index).clamp(0, 400)),
+          duration: 300.ms,
         )
         .slideY(
-          begin: 0.2,
+          begin: 0.15,
           end: 0,
-          delay: Duration(milliseconds: 50 * index),
-          duration: 400.ms,
+          delay: Duration(milliseconds: (30 * index).clamp(0, 400)),
+          duration: 300.ms,
           curve: Curves.easeOut,
         );
   }
