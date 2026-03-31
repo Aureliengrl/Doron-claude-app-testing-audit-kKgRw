@@ -2,29 +2,71 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '/utils/app_logger.dart';
 
 /// Service centralisé pour la gestion des permissions photos/caméra.
-/// Gère automatiquement iOS (y compris Limited Photo Access) et Android 13+.
+/// Sur iOS 14+, image_picker utilise PHPickerViewController qui gère
+/// ses propres permissions — pas besoin de demander Permission.photos.
+/// On essaie d'abord directement le picker, et on ne gère la permission
+/// manuellement que si le picker échoue.
 class PhotoPermissionService {
   static final ImagePicker _picker = ImagePicker();
 
-  /// Demande la permission galerie et ouvre le picker si accordée.
-  /// Retourne l'XFile sélectionné, ou null si refusée/annulée.
+  /// Ouvre la galerie et retourne l'image sélectionnée.
+  /// Retourne null si annulé ou erreur.
   static Future<XFile?> pickFromGallery(BuildContext context, {int imageQuality = 80}) async {
-    final granted = await _requestPhotoPermission(context);
-    if (!granted) return null;
-    return await _picker.pickImage(source: ImageSource.gallery, imageQuality: imageQuality, requestFullMetadata: false);
+    try {
+      final file = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: imageQuality,
+        requestFullMetadata: false,
+      );
+      return file;
+    } catch (e) {
+      AppLogger.debug('pickFromGallery error: $e', 'Photo');
+      // Si le picker échoue (permission refusée), proposer d'ouvrir les réglages
+      if (context.mounted) {
+        await _showOpenSettingsDialog(context, 'photos');
+      }
+      return null;
+    }
   }
 
-  /// Demande la permission caméra et ouvre le picker si accordée.
+  /// Ouvre la caméra et retourne l'image prise.
+  /// Retourne null si annulé ou erreur.
   static Future<XFile?> pickFromCamera(BuildContext context, {int imageQuality = 80}) async {
-    final granted = await _requestCameraPermission(context);
-    if (!granted) return null;
-    return await _picker.pickImage(source: ImageSource.camera, imageQuality: imageQuality, requestFullMetadata: false);
+    try {
+      // La caméra nécessite une permission explicite
+      if (Platform.isIOS || Platform.isAndroid) {
+        var status = await Permission.camera.status;
+        if (status.isDenied) {
+          status = await Permission.camera.request();
+        }
+        if (!status.isGranted) {
+          if (context.mounted) {
+            await _showOpenSettingsDialog(context, 'caméra');
+          }
+          return null;
+        }
+      }
+
+      final file = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: imageQuality,
+        requestFullMetadata: false,
+      );
+      return file;
+    } catch (e) {
+      AppLogger.debug('pickFromCamera error: $e', 'Photo');
+      if (context.mounted) {
+        await _showOpenSettingsDialog(context, 'caméra');
+      }
+      return null;
+    }
   }
 
   /// Affiche une bottom sheet pour choisir galerie ou caméra,
-  /// demande les permissions correspondantes, et retourne l'XFile.
+  /// puis ouvre le picker correspondant.
   static Future<XFile?> pickWithChoice(BuildContext context) async {
     ImageSource? source;
 
@@ -46,9 +88,9 @@ class PhotoPermissionService {
               margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
             ),
-            Text(
+            const Text(
               'Sélectionner une photo',
-              style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             ListTile(
@@ -69,56 +111,12 @@ class PhotoPermissionService {
       ),
     );
 
-    if (source == null) return null;
+    if (source == null || !context.mounted) return null;
     if (source == ImageSource.gallery) return pickFromGallery(context);
     return pickFromCamera(context);
   }
 
-  // ── Internals ──────────────────────────────────────────────────────────────
-
-  static Future<bool> _requestPhotoPermission(BuildContext context) async {
-    Permission permission;
-    if (Platform.isIOS) {
-      permission = Permission.photos;
-    } else {
-      // Android 13+ utilise READ_MEDIA_IMAGES, avant c'est READ_EXTERNAL_STORAGE
-      permission = Permission.photos; // permission_handler abstraite
-    }
-
-    var status = await permission.status;
-
-    if (status.isGranted || status.isLimited) return true;
-
-    if (status.isDenied) {
-      status = await permission.request();
-      if (status.isGranted || status.isLimited) return true;
-    }
-
-    if (status.isPermanentlyDenied && context.mounted) {
-      await _showOpenSettingsDialog(context, 'photos');
-      return false;
-    }
-
-    return false;
-  }
-
-  static Future<bool> _requestCameraPermission(BuildContext context) async {
-    var status = await Permission.camera.status;
-
-    if (status.isGranted) return true;
-
-    if (status.isDenied) {
-      status = await Permission.camera.request();
-      if (status.isGranted) return true;
-    }
-
-    if (status.isPermanentlyDenied && context.mounted) {
-      await _showOpenSettingsDialog(context, 'caméra');
-      return false;
-    }
-
-    return false;
-  }
+  // ── Dialog réglages ──────────────────────────────────────────────────────
 
   static Future<void> _showOpenSettingsDialog(BuildContext context, String type) async {
     await showDialog(
