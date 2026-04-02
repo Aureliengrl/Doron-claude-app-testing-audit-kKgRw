@@ -352,21 +352,8 @@ class _ChatListPageState extends State<ChatListPage> {
                   String photo = '';
                   if (userSnapshot.hasData && userSnapshot.data!.exists) {
                     final userData = userSnapshot.data!.data() as Map<String, dynamic>;
-                    // Fallback exhaustif sur tous les champs nom possibles
-                    name = (userData['display_name'] as String?)?.trim().isNotEmpty == true
-                        ? userData['display_name'] as String
-                        : (userData['displayName'] as String?)?.trim().isNotEmpty == true
-                            ? userData['displayName'] as String
-                            : (userData['first_name'] as String?)?.trim().isNotEmpty == true
-                                ? userData['first_name'] as String
-                                : (userData['name'] as String?)?.trim().isNotEmpty == true
-                                    ? userData['name'] as String
-                                    : (userData['username'] as String?)?.trim().isNotEmpty == true
-                                        ? userData['username'] as String
-                                        : (userData['handle'] as String?)?.trim().isNotEmpty == true
-                                            ? userData['handle'] as String
-                                            : (userData['email'] as String?)?.split('@').first ?? 'Utilisateur';
-                    photo = userData['photo_url'] ?? userData['photoUrl'] ?? '';
+                    name = userData['display_name'] ?? userData['first_name'] ?? 'Utilisateur';
+                    photo = userData['photo_url'] ?? '';
                   }
                   return chatTile(name, photo);
                 },

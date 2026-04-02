@@ -75,23 +75,14 @@ class FriendService {
             final senderDoc = await _db.collection('users').doc(fromUid).get();
             if (senderDoc.exists) {
               final sender = senderDoc.data() ?? {};
-              // Fallback exhaustif sur tous les champs nom possibles
-              final rawName = (sender['display_name'] as String?)?.trim().isNotEmpty == true
-                  ? sender['display_name'] as String
-                  : (sender['displayName'] as String?)?.trim().isNotEmpty == true
-                      ? sender['displayName'] as String
-                      : (sender['first_name'] as String?)?.trim().isNotEmpty == true
-                          ? sender['first_name'] as String
-                          : (sender['name'] as String?)?.trim().isNotEmpty == true
-                              ? sender['name'] as String
-                              : (sender['username'] as String?)?.trim().isNotEmpty == true
-                                  ? sender['username'] as String
-                                  : (sender['handle'] as String?)?.trim().isNotEmpty == true
-                                      ? sender['handle'] as String
-                                      : (sender['email'] as String?)?.split('@').first ?? 'Utilisateur';
-              displayName = rawName.isNotEmpty ? rawName : 'Utilisateur';
+              displayName = (sender['first_name'] as String?) ??
+                           (sender['display_name'] as String?) ??
+                           (sender['name'] as String?) ??
+                           ((sender['email'] as String? ?? '').split('@').first.isNotEmpty
+                               ? (sender['email'] as String).split('@').first
+                               : 'Utilisateur');
               handle = (sender['handle'] as String?) ?? (sender['username'] as String?) ?? '';
-              photoUrl = (sender['photo_url'] as String?) ?? (sender['photoUrl'] as String?) ?? '';
+              photoUrl = (sender['photo_url'] as String?) ?? '';
             }
           } catch (e) {
             AppLogger.debug('getPendingRequestsStream: cannot load sender $fromUid: $e', 'FriendService');
@@ -330,25 +321,14 @@ class FriendService {
         final data = doc.data();
         final senderDoc = await _db.collection('users').doc(data['fromUid']).get();
         final sender = senderDoc.data() ?? {};
-        final rawName = (sender['display_name'] as String?)?.trim().isNotEmpty == true
-            ? sender['display_name'] as String
-            : (sender['displayName'] as String?)?.trim().isNotEmpty == true
-                ? sender['displayName'] as String
-                : (sender['first_name'] as String?)?.trim().isNotEmpty == true
-                    ? sender['first_name'] as String
-                    : (sender['name'] as String?)?.trim().isNotEmpty == true
-                        ? sender['name'] as String
-                        : (sender['username'] as String?)?.trim().isNotEmpty == true
-                            ? sender['username'] as String
-                            : (sender['handle'] as String?)?.trim().isNotEmpty == true
-                                ? sender['handle'] as String
-                                : (sender['email'] as String?)?.split('@').first ?? 'Utilisateur';
         requests.add({
           'requestId': doc.id,
           'fromUid': data['fromUid'],
-          'displayName': rawName.isNotEmpty ? rawName : 'Utilisateur',
+          'displayName': sender['first_name'] as String? ??
+                         sender['display_name'] as String? ??
+                         sender['name'] as String? ?? 'Utilisateur',
           'handle': sender['handle'] ?? sender['username'] ?? '',
-          'photoUrl': sender['photo_url'] ?? sender['photoUrl'] ?? '',
+          'photoUrl': sender['photo_url'] ?? '',
           'createdAt': data['createdAt'],
         });
       }
@@ -387,24 +367,13 @@ class FriendService {
             .get();
         for (final d in snap.docs) {
           final data = d.data();
-          final rawName = (data['display_name'] as String?)?.trim().isNotEmpty == true
-              ? data['display_name'] as String
-              : (data['displayName'] as String?)?.trim().isNotEmpty == true
-                  ? data['displayName'] as String
-                  : (data['first_name'] as String?)?.trim().isNotEmpty == true
-                      ? data['first_name'] as String
-                      : (data['name'] as String?)?.trim().isNotEmpty == true
-                          ? data['name'] as String
-                          : (data['username'] as String?)?.trim().isNotEmpty == true
-                              ? data['username'] as String
-                              : (data['handle'] as String?)?.trim().isNotEmpty == true
-                                  ? data['handle'] as String
-                                  : (data['email'] as String?)?.split('@').first ?? 'Utilisateur';
           profiles.add({
             'uid': d.id,
-            'displayName': rawName.isNotEmpty ? rawName : 'Utilisateur',
+            'displayName': data['first_name'] as String? ??
+                           data['display_name'] as String? ??
+                           data['name'] as String? ?? 'Utilisateur',
             'handle': data['handle'] ?? data['username'] ?? '',
-            'photoUrl': data['photo_url'] ?? data['photoUrl'] ?? '',
+            'photoUrl': data['photo_url'] ?? '',
           });
         }
       }

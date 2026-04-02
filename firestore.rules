@@ -3,21 +3,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── Fonctions helpers ────────────────────────────────────────────────────
-
     function isAuth() {
       return request.auth != null;
     }
 
     function isOwner(userId) {
       return isAuth() && request.auth.uid == userId;
-    }
-
-    // Vérifie si le viewer courant est dans la liste d'amis de userId
-    function isFriendOf(userId) {
-      return isAuth() &&
-        request.auth.uid in
-          get(/databases/$(database)/documents/users/$(userId)).data.get('friends', []);
     }
 
     function isChatParticipant(chatId) {
@@ -43,20 +34,12 @@ service cloud.firestore {
         allow create: if isOwner(userId) && request.resource.data.keys().hasAll(['name', 'createdAt']);
         allow update, delete: if isOwner(userId);
       }
-
-      // ── Wishlists (sous-collection) ──────────────────────────────────────
-      // FIX #4: les amis peuvent lire les wishlists du propriétaire
       match /wishlists/{wishlistId} {
-        allow read: if isOwner(userId) || isFriendOf(userId);
-        allow write: if isOwner(userId);
-
-        // Produits de la wishlist
+        allow read, write: if isOwner(userId);
         match /products/{productId} {
-          allow read: if isOwner(userId) || isFriendOf(userId);
-          allow write: if isOwner(userId);
+          allow read, write: if isOwner(userId);
         }
       }
-
       match /people/{personId} {
         allow read, write: if isOwner(userId);
         match /giftLists/{listId} {

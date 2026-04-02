@@ -454,6 +454,26 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
             ),
           ),
 
+        // ✨ INFINITE SCROLL: Compteur de produits (pour debug/info)
+        Positioned(
+          top: 16,
+          right: 60,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              '${_model.currentIndex + 1} / ${_model.products.length}',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

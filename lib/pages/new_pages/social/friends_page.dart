@@ -203,32 +203,28 @@ class _FriendsPageState extends State<FriendsPage>
   Future<void> _acceptRequest(String requestId, String fromUid) async {
     setState(() => _processingRequestIds.add(requestId));
     HapticFeedback.mediumImpact();
-    try {
-      final ok = await FriendService.acceptRequest(requestId, fromUid);
-      if (mounted) {
+    final ok = await FriendService.acceptRequest(requestId, fromUid);
+    if (mounted) {
+      setState(() {
+        _processingRequestIds.remove(requestId);
         if (ok) _pendingRequests.removeWhere((r) => r['requestId'] == requestId);
-        _showSnack(ok ? '👥 Vous êtes maintenant amis !' : '❌ Erreur', ok ? _green : Colors.red);
-        if (ok) _statusCache.remove(fromUid);
+      });
+      _showSnack(ok ? '👥 Vous êtes maintenant amis !' : '❌ Erreur', ok ? _green : Colors.red);
+      if (ok) {
+        // Invalider le cache pour cet uid
+        _statusCache.remove(fromUid);
       }
-    } catch (e) {
-      if (mounted) _showSnack('❌ Erreur réseau', Colors.red);
-    } finally {
-      if (mounted) setState(() => _processingRequestIds.remove(requestId));
     }
   }
 
   Future<void> _declineRequest(String requestId) async {
     setState(() => _processingRequestIds.add(requestId));
-    HapticFeedback.lightImpact();
-    try {
-      final ok = await FriendService.declineRequest(requestId);
-      if (mounted && ok) {
-        _pendingRequests.removeWhere((r) => r['requestId'] == requestId);
-      }
-    } catch (e) {
-      if (mounted) _showSnack('❌ Erreur réseau', Colors.red);
-    } finally {
-      if (mounted) setState(() => _processingRequestIds.remove(requestId));
+    final ok = await FriendService.declineRequest(requestId);
+    if (mounted) {
+      setState(() {
+        _processingRequestIds.remove(requestId);
+        if (ok) _pendingRequests.removeWhere((r) => r['requestId'] == requestId);
+      });
     }
   }
 

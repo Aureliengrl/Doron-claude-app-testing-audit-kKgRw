@@ -352,27 +352,13 @@ class CollaborationService {
         try {
           final senderDoc = await _db.collection('users').doc(data['fromUid']).get();
           final sender = senderDoc.data() ?? {};
-          // Fallback exhaustif sur tous les champs nom possibles
-          final rawName = (sender['display_name'] as String?)?.trim().isNotEmpty == true
-              ? sender['display_name'] as String
-              : (sender['displayName'] as String?)?.trim().isNotEmpty == true
-                  ? sender['displayName'] as String
-                  : (sender['first_name'] as String?)?.trim().isNotEmpty == true
-                      ? sender['first_name'] as String
-                      : (sender['name'] as String?)?.trim().isNotEmpty == true
-                          ? sender['name'] as String
-                          : (sender['username'] as String?)?.trim().isNotEmpty == true
-                              ? sender['username'] as String
-                              : (sender['handle'] as String?)?.trim().isNotEmpty == true
-                                  ? sender['handle'] as String
-                                  : (sender['email'] as String?)?.split('@').first ?? 'Quelqu\'un';
           result.add({
             'inviteId': doc.id,
             'collabId': data['collabId'],
             'fromUid': data['fromUid'],
             'profileName': data['profileName'] ?? 'une liste',
-            'fromName': rawName.isNotEmpty ? rawName : 'Quelqu\'un',
-            'fromPhotoUrl': sender['photo_url'] ?? sender['photoUrl'] ?? '',
+            'fromName': sender['first_name'] ?? sender['display_name'] ?? 'Quelqu\'un',
+            'fromPhotoUrl': sender['photo_url'] ?? '',
             'createdAt': data['createdAt'],
           });
         } catch (e) {

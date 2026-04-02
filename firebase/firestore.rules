@@ -3,197 +3,167 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── Fonctions helpers ────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // FONCTIONS UTILITAIRES
+    // ─────────────────────────────────────────────────────────────────────────
 
+    /// Vérifie que l'utilisateur est connecté (non anonyme)
     function isAuth() {
       return request.auth != null;
     }
 
+    /// Vérifie que l'utilisateur accède à ses propres données
     function isOwner(userId) {
       return isAuth() && request.auth.uid == userId;
     }
 
-    // Vérifie si le viewer courant est dans la liste d'amis de userId
-    function isFriendOf(userId) {
-      return isAuth() &&
-        request.auth.uid in
-          get(/databases/$(database)/documents/users/$(userId)).data.get('friends', []);
+    /// Vérifie qu'aucun champ critique n'est modifié
+    function notChanging(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
     }
 
-    function isChatParticipant(chatId) {
-      return isAuth() &&
-        request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
-    }
-
-    // ── users ──────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // COLLECTION: users
+    // ─────────────────────────────────────────────────────────────────────────
 
     match /users/{userId} {
+      // Un utilisateur connecté peut lire les profils (pour la recherche d'amis)
       allow read: if isAuth();
       allow write: if isOwner(userId);
-      // FIX #1: acceptRequest fait un arrayUnion dans le doc d'un AUTRE utilisateur.
-      // On autorise l'update du seul champ 'friends' par n'importe quel user connecté.
-      allow update: if isOwner(userId) ||
-        (isAuth() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friends']));
 
+      // Onboarding answers
       match /onboarding/{docId} {
         allow read, write: if isOwner(userId);
       }
+
+      // Favoris
       match /favorites/{favoriteId} {
         allow read: if isOwner(userId);
-        allow create: if isOwner(userId) && request.resource.data.keys().hasAll(['name', 'createdAt']);
-        allow update, delete: if isOwner(userId);
+        allow create: if isOwner(userId)
+          && request.resource.data.keys().hasAll(['name', 'createdAt']);
+        allow update: if isOwner(userId);
+        allow delete: if isOwner(userId);
       }
 
-      // ── Wishlists (sous-collection) ──────────────────────────────────────
-      // FIX #4: les amis peuvent lire les wishlists du propriétaire
+      // Listes de souhaits
       match /wishlists/{wishlistId} {
-        allow read: if isOwner(userId) || isFriendOf(userId);
-        allow write: if isOwner(userId);
+        allow read, write: if isOwner(userId);
 
-        // Produits de la wishlist
+        // Produits dans la wishlist (sous-collection directe)
         match /products/{productId} {
-          allow read: if isOwner(userId) || isFriendOf(userId);
-          allow write: if isOwner(userId);
+          allow read, write: if isOwner(userId);
         }
       }
 
+      // Destinataires (people)
       match /people/{personId} {
         allow read, write: if isOwner(userId);
+
+        // Listes de cadeaux par destinataire
         match /giftLists/{listId} {
           allow read, write: if isOwner(userId);
         }
       }
-      // FIX #3: profiles subcollection was missing from rules
-      match /profiles/{profileId} {
-        allow read, write: if isOwner(userId);
-      }
+
+      // Profils enrichis (gift profiles)
       match /giftProfiles/{profileId} {
         allow read, write: if isOwner(userId);
       }
+
+      // Historique feeds
       match /homeFeeds/{feedId} {
         allow read, write: if isOwner(userId);
       }
     }
 
-    // ── gifts / products ────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // COLLECTION: gifts (catalogue produits — lecture seule pour tous les auth)
+    // ─────────────────────────────────────────────────────────────────────────
 
     match /gifts/{giftId} {
+      // Lecture seule pour tout utilisateur authentifié
       allow read: if isAuth();
+      // Écriture admin uniquement (via Cloud Functions ou console Firebase)
       allow write: if false;
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // COLLECTION: products (alias gifts — même règles)
+    // ─────────────────────────────────────────────────────────────────────────
+
     match /products/{productId} {
       allow read: if isAuth();
       allow write: if false;
     }
 
-    // ── Favourites (legacy FlutterFlow) ─────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // COLLECTION: favourites (ancien schéma FlutterFlow — lecture/écriture user)
+    // ─────────────────────────────────────────────────────────────────────────
 
-    match /Favourites/{docId} {
-      allow read, create, update, delete: if isAuth();
-    }
     match /favourites/{docId} {
-      allow read, create, update, delete: if isAuth();
-    }
-
-    // ── chats & messages ────────────────────────────────────────────────────
-
-    match /chats/{chatId} {
-      allow read: if isAuth() && request.auth.uid in resource.data.participants;
-      allow create: if isAuth() && request.auth.uid in request.resource.data.participants;
-      // FIX: allow update for new members being added (joinByToken / addMember)
-      allow update: if isAuth() && (
-        request.auth.uid in resource.data.participants ||
-        request.auth.uid in request.resource.data.participants
-      );
-      allow delete: if false;
-
-      match /messages/{messageId} {
-        allow read: if isChatParticipant(chatId);
-        // FIX #7: system messages have senderId == 'system', relax the sender check
-        allow create: if isAuth()
-                   && isChatParticipant(chatId)
-                   && (request.resource.data.senderId == request.auth.uid
-                       || request.resource.data.get('type', '') == 'system');
-        allow update, delete: if isAuth() && resource.data.senderId == request.auth.uid;
-      }
-    }
-
-    // ── wishlists (root collection) ─────────────────────────────────────────
-
-    match /wishlists/{wishlistId} {
-      allow read, write: if isAuth() && resource != null && resource.data.ownerUid == request.auth.uid;
-      allow create: if isAuth() && request.resource.data.ownerUid == request.auth.uid;
-      allow read: if isAuth() && resource.data.isPublic == true;
-
-      match /products/{productId} {
-        allow read: if isAuth();
-        allow write: if isAuth() &&
-          get(/databases/$(database)/documents/wishlists/$(wishlistId)).data.ownerUid == request.auth.uid;
-      }
-    }
-
-    // ── friend_requests ─────────────────────────────────────────────────────
-
-    match /friend_requests/{requestId} {
-      allow read: if isAuth() && (
-        resource.data.fromUid == request.auth.uid ||
-        resource.data.toUid == request.auth.uid
-      );
-      allow create: if isAuth() && request.resource.data.fromUid == request.auth.uid;
-      // FIX: both sender and receiver can update (sender can cancel)
-      allow update: if isAuth() && (
-        resource.data.toUid == request.auth.uid ||
-        resource.data.fromUid == request.auth.uid
-      );
-      allow delete: if isAuth() && (
-        resource.data.fromUid == request.auth.uid ||
-        resource.data.toUid == request.auth.uid
-      );
-    }
-
-    // ── handles ─────────────────────────────────────────────────────────────
-
-    match /handles/{handle} {
-      allow read: if isAuth();
+      allow read: if isAuth() && resource.data.uid == request.auth.uid;
       allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
       allow update, delete: if isAuth() && resource.data.uid == request.auth.uid;
     }
 
-    // ── collaborations ──────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // COLLECTION: chats & messages (collaborative lists)
+    // ─────────────────────────────────────────────────────────────────────────
 
-    match /collaborations/{collabId} {
-      // FIX #2: pendingInvites must also be able to read the doc before joining
-      allow read: if isAuth() && (
-        resource.data.ownerId == request.auth.uid ||
-        request.auth.uid in resource.data.members ||
-        request.auth.uid in resource.data.get('pendingInvites', [])
-      );
-      allow create: if isAuth() && request.resource.data.ownerId == request.auth.uid;
-      // FIX #2: pendingInvites must be allowed to update (joinByToken / addMember)
-      allow update: if isAuth() && (
-        resource.data.ownerId == request.auth.uid ||
-        request.auth.uid in resource.data.members ||
-        request.auth.uid in resource.data.get('pendingInvites', [])
-      );
-      allow delete: if isAuth() && resource.data.ownerId == request.auth.uid;
+    match /chats/{chatId} {
+      // Un utilisateur peut lire/modifier un chat s'il fait partie des participants
+      allow read, update: if isAuth() && request.auth.uid in resource.data.participants;
+      // Tout utilisateur connecté peut créer un chat s'il s'inclut dans les participants
+      allow create: if isAuth() && request.auth.uid in request.resource.data.participants;
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        // Pour lire ou écrire un message, l'utilisateur doit faire partie des participants du chat parent
+        allow read: if isAuth() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow create: if isAuth() 
+                   && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants
+                   && request.resource.data.senderId == request.auth.uid;
+        allow update, delete: if isAuth() && resource.data.senderId == request.auth.uid;
+      }
     }
 
-    // ── collab_invites ──────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // COLLECTION: friend_requests
+    // ─────────────────────────────────────────────────────────────────────────
 
-    match /collab_invites/{inviteId} {
+    match /friend_requests/{requestId} {
+      // Seuls l'expéditeur et le destinataire peuvent lire
       allow read: if isAuth() && (
         resource.data.fromUid == request.auth.uid ||
         resource.data.toUid == request.auth.uid
       );
+      // Seul l'expéditeur peut créer (son uid doit être dans fromUid)
       allow create: if isAuth() && request.resource.data.fromUid == request.auth.uid;
+      // Seul le destinataire peut accepter/refuser (update)
       allow update: if isAuth() && resource.data.toUid == request.auth.uid;
+      // Expéditeur ou destinataire peuvent supprimer
       allow delete: if isAuth() && (
         resource.data.fromUid == request.auth.uid ||
         resource.data.toUid == request.auth.uid
       );
     }
 
-    // ── fallback ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
+    // COLLECTION: handles (index pseudo → uid, pour l'unicité)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    match /handles/{handle} {
+      // Tout utilisateur connecté peut vérifier si un handle est dispo
+      allow read: if isAuth();
+      // Seul l'utilisateur dont l'uid correspond peut créer/modifier son handle
+      allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
+      allow update: if isAuth() && resource.data.uid == request.auth.uid;
+      allow delete: if isAuth() && resource.data.uid == request.auth.uid;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // FALLBACK — Tout le reste est refusé
+    // ─────────────────────────────────────────────────────────────────────────
 
     match /{document=**} {
       allow read, write: if false;

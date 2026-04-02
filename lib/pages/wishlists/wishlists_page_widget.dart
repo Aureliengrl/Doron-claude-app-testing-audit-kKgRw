@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -24,8 +23,9 @@ class WishlistsPageWidget extends StatefulWidget {
 }
 
 class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
-  Stream<QuerySnapshot>? _wishlistsStream;
-  Map<String, int> _wishlistCounts = {};
+  List<Map<String, dynamic>> _wishlists = [];
+  bool _isLoading = true;
+  Map<String, int> _wishlistCounts = {}; // Compteur de produits par wishlist
 
   final Color violetColor = const Color(0xFF8A2BE2);
   final Color pinkColor = const Color(0xFFEC4899);
@@ -33,62 +33,40 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
   @override
   void initState() {
     super.initState();
-    _initStream();
+    _loadWishlists();
   }
 
-  void _initStream() {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
-    _wishlistsStream = FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .collection('wishlists')
-        .orderBy('createdAt', descending: true)
-        .snapshots();
-  }
+  Future<void> _loadWishlists() async {
+    setState(() => _isLoading = true);
 
-  /// Charge le compteur de produits pour une wishlist depuis Firestore
-  Future<int> _loadProductCount(String uid, String wishlistId) async {
-    try {
-      final snap = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .collection('wishlists')
-          .doc(wishlistId)
-          .collection('products')
-          .get();
-      return snap.docs.length;
-    } catch (_) {
-      return 0;
+    final wishlists = await FirebaseDataService.loadWishlists();
+
+    // Charger le nombre de produits pour chaque wishlist
+    final counts = <String, int>{};
+    for (var wishlist in wishlists) {
+      final products = await FirebaseDataService.loadWishlistProducts(wishlist['id']);
+      counts[wishlist['id']] = products.length;
     }
+
+    setState(() {
+      _wishlists = wishlists;
+      _wishlistCounts = counts;
+      _isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
     return Scaffold(
       backgroundColor: LiquidGlassTokens.pageDark,
       body: SafeArea(
-        child: StreamBuilder<QuerySnapshot>(
-          stream: _wishlistsStream,
-          builder: (context, snapshot) {
-            final wishlists = snapshot.data?.docs.map((doc) {
-              return <String, dynamic>{'id': doc.id, ...doc.data() as Map<String, dynamic>};
-            }).toList() ?? [];
-
-            final isLoading = snapshot.connectionState == ConnectionState.waiting && wishlists.isEmpty;
-
-            return Column(
-              children: [
-                _buildHeader(wishlists.length),
-                Expanded(
-                  child: isLoading
-                      ? _buildLoading()
-                      : _buildContent(wishlists, uid ?? ''),
-                ),
-              ],
-            );
-          },
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: _isLoading ? _buildLoading() : _buildContent(),
+            ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -106,7 +84,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
     );
   }
 
-  Widget _buildHeader(int count) {
+  Widget _buildHeader() {
     return ClipRRect(
       borderRadius: const BorderRadius.only(
         bottomLeft: Radius.circular(32),
@@ -166,7 +144,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
                 Padding(
                   padding: const EdgeInsets.only(left: 56),
                   child: Text(
-                    '$count liste${count > 1 ? 's' : ''} de souhaits',
+                    '${_wishlists.length} liste${_wishlists.length > 1 ? 's' : ''} de souhaits',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: Colors.white.withOpacity(0.85),
@@ -203,32 +181,62 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
     );
   }
 
-  Widget _buildContent(List<Map<String, dynamic>> wishlists, String uid) {
-    if (wishlists.isEmpty) {
+  Widget _buildContent() {
+    if (_wishlists.isEmpty) {
       return _buildEmptyState();
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(20),
-      itemCount: wishlists.length,
-      itemBuilder: (context, index) {
-        final wishlist = wishlists[index];
-        final wishlistId = wishlist['id'] as String? ?? '';
-        final productCount = (wishlist['productCount'] as num?)?.toInt() ?? _wishlistCounts[wishlistId] ?? 0;
+    return RefreshIndicator(
+      onRefresh: _loadWishlists,
+      color: violetColor,
+      child: ReorderableListView.builder(
+        padding: const EdgeInsets.all(20),
+        itemCount: _wishlists.length,
+        proxyDecorator: (child, index, animation) => Material(
+          color: Colors.transparent,
+          child: Opacity(opacity: 0.85, child: child),
+        ),
+        onReorder: (int oldIndex, int newIndex) async {
+          HapticFeedback.selectionClick();
+          setState(() {
+            if (oldIndex < newIndex) newIndex -= 1;
+            final item = _wishlists.removeAt(oldIndex);
+            _wishlists.insert(newIndex, item);
+          });
+          // Persist order in Firestore
+          final uid = currentUserReference?.id;
+          if (uid != null) {
+            final batch = FirebaseFirestore.instance.batch();
+            for (int i = 0; i < _wishlists.length; i++) {
+              final id = _wishlists[i]['id'] as String?;
+              if (id != null) {
+                batch.update(
+                  FirebaseFirestore.instance.collection('wishlists').doc(id),
+                  {'order': i},
+                );
+              }
+            }
+            await batch.commit();
+          }
+        },
+        itemBuilder: (context, index) {
+          final wishlist = _wishlists[index];
+          final productCount = _wishlistCounts[wishlist['id']] ?? 0;
 
-        return Container(
-          key: ValueKey(wishlistId),
-          child: _buildWishlistCard(wishlist, productCount, index)
-              .animate()
-              .fadeIn(delay: Duration(milliseconds: index * 30))
-              .slideY(
-                begin: 0.15,
-                end: 0,
-                duration: 350.ms,
-                curve: Curves.easeOutCubic,
-              ),
-        );
-      },
+          return Container(
+            key: ValueKey(wishlist['id']),
+            child: _buildWishlistCard(wishlist, productCount, index)
+                .animate()
+                .fadeIn(delay: Duration(milliseconds: index * 10))
+                .slideY(
+                  begin: 0.2,
+                  end: 0,
+                  duration: 400.ms,
+                  curve: Curves.easeOutCubic,
+                ),
+          );
+        },
+      ),
     );
   }
 
@@ -334,7 +342,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: const Color(0xFF1F2937),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -345,7 +353,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
                           wishlist['description'],
                           style: GoogleFonts.poppins(
                             fontSize: 13,
-                            color: Colors.white60,
+                            color: const Color(0xFF6B7280),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -571,16 +579,19 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
         description: result['description']!,
       );
 
-      if (wishlistId != null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Liste créée avec succès !',
-              style: GoogleFonts.poppins(),
+      if (wishlistId != null) {
+        await _loadWishlists();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Liste créée avec succès !',
+                style: GoogleFonts.poppins(),
+              ),
+              backgroundColor: violetColor,
             ),
-            backgroundColor: violetColor,
-          ),
-        );
+          );
+        }
       }
     }
   }
