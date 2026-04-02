@@ -1,0 +1,8 @@
+fix(storage): add chat_images rule and fix photo upload permissions
+
+- Add missing chat_images/{chatId}/** rule for ChatImageService uploads
+- Fix rule ordering: move catch-all deny rule to last position
+  (Firebase Storage evaluates rules and first match wins - having deny
+  before specific rules was blocking all uploads)
+- Photo upload for profile and wishlists now correctly allowed under
+  users/{userId}/** path
