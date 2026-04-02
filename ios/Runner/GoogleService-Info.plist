@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>1020882932619-mu6qvqmo84rppod6ndej853gaq2h863u.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.1020882932619-mu6qvqmo84rppod6ndej853gaq2h863u</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>1020882932619-4r8r2vcoct0scirci4l8qj7gjs6kgoli.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBN-mAH3aZpoTMn0qVfsVTySGHcL-LS3cA</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1020882932619</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.mycompany.doron</string>
+	<key>PROJECT_ID</key>
+	<string>doron-b3011</string>
+	<key>STORAGE_BUCKET</key>
+	<string>doron-b3011.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1020882932619:ios:c6ef5d48dfec1296eed58e</string>
+</dict>
+</plist>

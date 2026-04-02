@@ -1,0 +1,16 @@
+{
+  "name": "doron-firebase-upload",
+  "version": "1.0.0",
+  "description": "Upload products to Firebase Firestore",
+  "main": "upload_to_firebase.js",
+  "scripts": {
+    "upload": "node upload_to_firebase.js",
+    "generate": "node generate_products.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

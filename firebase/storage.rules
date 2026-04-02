@@ -1,0 +1,27 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Fallback — tout refusé par défaut
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    // Photos de profil et assets utilisateur
+    match /users/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Covers de wishlists (accessibles à tous en lecture, écriture propriétaire)
+    match /wishlists/{wishlistId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Assets de collaboration (groupe photos, covers)
+    match /collaborations/{collabId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}

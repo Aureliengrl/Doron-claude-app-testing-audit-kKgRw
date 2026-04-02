@@ -1,0 +1,5 @@
+{
+  "openAiApiKey": "YOUR_OPENAI_KEY_HERE",
+  "rapidApiKey": "YOUR_RAPIDAPI_KEY_HERE",
+  "rapidApiSephoraKey": "YOUR_RAPIDAPI_SEPHORA_KEY_HERE"
+}
