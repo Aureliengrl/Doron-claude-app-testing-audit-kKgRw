@@ -1607,30 +1607,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       ),
                     ),
 
-                  // Bouton 3 points en bas à droite
-                  Positioned(
-                    bottom: 8,
-                    right: 8,
-                    child: GestureDetector(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        _showProductDetail(product);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.45),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.more_vert,
-                          size: 16,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-
+          
                   // Badge like/favoris en haut  gauche
                   if (isLiked)
                     Positioned(
