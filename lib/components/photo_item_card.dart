@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -5,10 +6,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 /// Vignette pour les éléments "photo" dans une wishlist.
 /// Visuellement distincte de [SharedProductCard] :
-///   · Fond bleu nuit gradient
-///   · Bordure cyan (#00D4FF)
-///   · Badge 📷 en haut à gauche
+///   · Bordure cyan (#00D4FF) — seul différenciateur visuel (pas de badge texte)
 ///   · Photo plein cadre + légende en bas
+///   · Prix affiché si disponible
+///   · Supporte les chemins locaux (file://) pour l'affichage optimiste
 ///   · Tap → plein écran via Hero + Dialog
 class PhotoItemCard extends StatelessWidget {
   final Map<String, dynamic> photo;
@@ -16,6 +17,7 @@ class PhotoItemCard extends StatelessWidget {
 
   static const Color _cyan = Color(0xFF00D4FF);
   static const Color _darkBg = Color(0xFF0A1F3D);
+  static const Color _gold = Color(0xFFF59E0B);
 
   const PhotoItemCard({
     super.key,
@@ -25,6 +27,13 @@ class PhotoItemCard extends StatelessWidget {
 
   String get _imageUrl => photo['image'] ?? photo['imageUrl'] ?? '';
   String get _caption => photo['caption'] ?? photo['name'] ?? '';
+  String get _price => (photo['price'] ?? '').toString();
+  bool get _isUploading => photo['_isUploading'] == true;
+
+  /// true si c'est un chemin fichier local (upload optimiste en cours)
+  bool get _isLocalPath => _imageUrl.isNotEmpty &&
+      !_imageUrl.startsWith('http') &&
+      !_imageUrl.startsWith('https');
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +41,7 @@ class PhotoItemCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
+        if (_isLocalPath) return; // pas de plein écran si pas encore uploadé
         HapticFeedback.lightImpact();
         _showFullScreen(context, heroTag);
       },
@@ -45,6 +55,7 @@ class PhotoItemCard extends StatelessWidget {
               colors: [Color(0xFF0A1F3D), Color(0xFF1A0D4A)],
             ),
             borderRadius: BorderRadius.circular(18),
+            // Bordure cyan = seul différenciateur visuel (pas de badge texte)
             border: Border.all(color: _cyan.withOpacity(0.6), width: 1.5),
             boxShadow: [
               BoxShadow(
@@ -59,91 +70,129 @@ class PhotoItemCard extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                // Photo plein cadre
-                if (_imageUrl.isNotEmpty)
-                  CachedNetworkImage(
-                    imageUrl: _imageUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: _darkBg,
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          color: Color(0xFF00D4FF),
-                          strokeWidth: 2,
-                        ),
-                      ),
-                    ),
-                    errorWidget: (_, __, ___) => Container(
-                      color: _darkBg,
-                      child: const Icon(Icons.broken_image, color: Colors.white24, size: 40),
-                    ),
-                  )
-                else
-                  Container(
-                    color: _darkBg,
-                    child: const Icon(Icons.photo, color: Colors.white24, size: 40),
-                  ),
+                // ── Image (locale ou réseau) ──
+                _buildImage(),
 
-                // Overlay gradient sombre en bas pour la légende
+                // ── Overlay gradient en bas ──
                 Positioned(
                   bottom: 0,
                   left: 0,
                   right: 0,
                   child: Container(
-                    padding: const EdgeInsets.fromLTRB(10, 20, 10, 10),
+                    padding: const EdgeInsets.fromLTRB(8, 20, 8, 8),
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, Color(0xCC000000)],
+                        colors: [Colors.transparent, Color(0xDD000000)],
                       ),
                     ),
-                    child: _caption.isNotEmpty
-                        ? Text(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Nom / légende
+                        if (_caption.isNotEmpty)
+                          Text(
                             _caption,
                             style: GoogleFonts.poppins(
-                              fontSize: 11,
+                              fontSize: 10,
                               fontWeight: FontWeight.w500,
                               color: Colors.white,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                ),
-
-                // Badge 📷 en haut à gauche
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _cyan.withOpacity(0.85),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.photo_camera, color: Colors.white, size: 11),
-                        const SizedBox(width: 3),
-                        Text(
-                          'Photo',
-                          style: GoogleFonts.poppins(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
                           ),
-                        ),
+                        // Prix
+                        if (_price.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: _gold.withOpacity(0.20),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                  color: _gold.withOpacity(0.5), width: 0.5),
+                            ),
+                            child: Text(
+                              _price.contains('€') ? _price : '$_price €',
+                              style: GoogleFonts.poppins(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: _gold,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
                 ),
+
+                // ── Indicateur upload en cours (coin haut-droit discret) ──
+                if (_isUploading)
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: Container(
+                      width: 18,
+                      height: 18,
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFF00D4FF),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildImage() {
+    if (_imageUrl.isEmpty) {
+      return Container(
+        color: _darkBg,
+        child: const Icon(Icons.photo, color: Colors.white24, size: 40),
+      );
+    }
+
+    // Chemin local (optimiste)
+    if (_isLocalPath) {
+      return Image.file(
+        File(_imageUrl),
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Container(
+          color: _darkBg,
+          child: const Icon(Icons.broken_image, color: Colors.white24, size: 40),
+        ),
+      );
+    }
+
+    // URL réseau
+    return CachedNetworkImage(
+      imageUrl: _imageUrl,
+      fit: BoxFit.cover,
+      placeholder: (context, url) => Container(
+        color: _darkBg,
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFF00D4FF),
+            strokeWidth: 2,
+          ),
+        ),
+      ),
+      errorWidget: (_, __, ___) => Container(
+        color: _darkBg,
+        child: const Icon(Icons.broken_image, color: Colors.white24, size: 40),
       ),
     );
   }
@@ -173,27 +222,47 @@ class PhotoItemCard extends StatelessWidget {
                             width: 200,
                             height: 200,
                             color: _darkBg,
-                            child: const Icon(Icons.photo, color: Colors.white24, size: 60),
+                            child:
+                                const Icon(Icons.photo, color: Colors.white24, size: 60),
                           ),
                   ),
                 ),
               ),
-              // Légende
-              if (_caption.isNotEmpty)
+              // Légende + prix en bas
+              if (_caption.isNotEmpty || _price.isNotEmpty)
                 Positioned(
                   bottom: 40,
                   left: 24,
                   right: 24,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
                       color: Colors.black54,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(
-                      _caption,
-                      style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
-                      textAlign: TextAlign.center,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_caption.isNotEmpty)
+                          Text(
+                            _caption,
+                            style:
+                                GoogleFonts.poppins(color: Colors.white, fontSize: 14),
+                            textAlign: TextAlign.center,
+                          ),
+                        if (_price.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            _price.contains('€') ? _price : '$_price €',
+                            style: GoogleFonts.poppins(
+                              color: _gold,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ),
@@ -205,7 +274,7 @@ class PhotoItemCard extends StatelessWidget {
                   onTap: () => Navigator.pop(ctx),
                   child: Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.black45,
                       shape: BoxShape.circle,
                     ),

@@ -1228,7 +1228,14 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   }
 
   /// Ouvre un picker pour ajouter une photo dans un album wishlist.
-  Future<Map<String, dynamic>?> _addPhotoToAlbum(String wishlistId) async {
+  /// ─ Upload OPTIMISTE : la photo s'affiche immédiatement en local,
+  ///   l'upload Firebase se fait en arrière-plan.
+  Future<Map<String, dynamic>?> _addPhotoToAlbum(
+    String wishlistId, {
+    /// Callback appelé quand l'URL Firebase est disponible (mise à jour en arrière-plan)
+    void Function(String photoId, String firebaseUrl, String price)? onUploaded,
+  }) async {
+    // ── 1. Choix de la source ───────────────────────────────────────────────
     ImageSource? source;
     await showModalBottomSheet(
       context: context,
@@ -1243,7 +1250,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 20), decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+            Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
             ListTile(
               leading: const Icon(Icons.photo_library_rounded, color: Color(0xFF00D4FF)),
               title: Text('Depuis la galerie', style: GoogleFonts.poppins(color: Colors.white)),
@@ -1259,65 +1267,123 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       ),
     );
     if (source == null || !mounted) return null;
+
+    // ── 2. Sélection de la photo ────────────────────────────────────────────
     final picked = source == ImageSource.gallery
         ? await PhotoPermissionService.pickFromGallery(context, imageQuality: 80)
         : await PhotoPermissionService.pickFromCamera(context, imageQuality: 80);
     if (picked == null || !mounted) return null;
-    // Légende optionnelle
+
+    // ── 3. Dialog Nom + Prix ────────────────────────────────────────────────
     String caption = '';
+    String price = '';
     final captionCtrl = TextEditingController();
+    final priceCtrl = TextEditingController();
     await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1A0030),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Légende (optionnel)', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700)),
-        content: TextField(
-          controller: captionCtrl, autofocus: true,
-          style: GoogleFonts.poppins(color: Colors.white),
-          decoration: InputDecoration(
-            hintText: 'Ex : Pour Noël ✨',
-            hintStyle: GoogleFonts.poppins(color: Colors.white38),
-            filled: true, fillColor: Colors.white.withOpacity(0.07),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-          ),
+        title: Row(
+          children: [
+            const Icon(Icons.edit_note_rounded, color: Color(0xFF00D4FF), size: 22),
+            const SizedBox(width: 8),
+            Text('Détails (optionnel)', style: GoogleFonts.poppins(
+              color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Champ nom
+            TextField(
+              controller: captionCtrl,
+              autofocus: true,
+              style: GoogleFonts.poppins(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Nom du produit (ex : Robe Zara)',
+                hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 13),
+                prefixIcon: const Icon(Icons.label_outline_rounded, color: Color(0xFF00D4FF), size: 18),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.07),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Champ prix
+            TextField(
+              controller: priceCtrl,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              style: GoogleFonts.poppins(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Prix (ex : 29.99)',
+                hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 13),
+                prefixIcon: const Icon(Icons.euro_rounded, color: Color(0xFFF59E0B), size: 18),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.07),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              ),
+            ),
+          ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Passer', style: GoogleFonts.poppins(color: Colors.white54))),
           TextButton(
-            onPressed: () { caption = captionCtrl.text.trim(); Navigator.pop(ctx); },
-            child: Text('OK', style: GoogleFonts.poppins(color: const Color(0xFF00D4FF), fontWeight: FontWeight.w700)),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Passer', style: GoogleFonts.poppins(color: Colors.white54)),
+          ),
+          TextButton(
+            onPressed: () {
+              caption = captionCtrl.text.trim();
+              price = priceCtrl.text.trim();
+              Navigator.pop(ctx);
+            },
+            child: Text('OK', style: GoogleFonts.poppins(
+                color: const Color(0xFF00D4FF), fontWeight: FontWeight.w700)),
           ),
         ],
       ),
     );
+    captionCtrl.dispose();
+    priceCtrl.dispose();
     if (!mounted) return null;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Row(children: [
-        const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
-        const SizedBox(width: 12),
-        Text('Upload en cours...', style: GoogleFonts.poppins(color: Colors.white)),
-      ]),
-      backgroundColor: const Color(0xFF0A1F3D),
-      duration: const Duration(seconds: 10),
-    ));
-    final ok = await FirebaseDataService.addPhotoToWishlist(wishlistId, picked.path, caption: caption.isEmpty ? null : caption);
-    if (!mounted) return null;
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    if (!ok) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur upload', style: GoogleFonts.poppins()), backgroundColor: Colors.red));
-      return null;
-    }
-    final updated = await FirebaseDataService.loadWishlistProducts(wishlistId);
-    final newest = updated.isNotEmpty ? updated.first : null;
-    if (newest == null) return null;
-    return {
-      'id': newest['id'] ?? '',
+
+    // ── 4. Affichage OPTIMISTE immédiat (fichier local) ─────────────────────
+    final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
+    final localPath = picked.path;
+    final optimisticEntry = {
+      'id': tempId,
       'type': 'photo',
-      'image': newest['image'] ?? newest['imageUrl'] ?? '',
-      'caption': newest['caption'] ?? caption,
+      'image': localPath,      // chemin fichier local — PhotoItemCard le gère
+      'caption': caption,
+      'price': price,
       'url': '',
+      '_isUploading': true,    // flag pour indicateur discret
     };
+
+    // ── 5. Upload en arrière-plan ───────────────────────────────────────────
+    FirebaseDataService.addPhotoToWishlist(
+      wishlistId,
+      localPath,
+      caption: caption.isEmpty ? null : caption,
+      productName: caption.isEmpty ? null : caption,
+      productPrice: price.isEmpty ? null : price,
+    ).then((ok) {
+      if (!ok || !mounted) return;
+      // Snack discret de confirmation
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('📷 Photo ajoutée !', style: GoogleFonts.poppins(
+            color: Colors.white, fontWeight: FontWeight.w600)),
+        backgroundColor: const Color(0xFF10B981),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 2),
+      ));
+    });
+
+    // Retourner l'entrée optimiste — la grille l'affiche immédiatement
+    return optimisticEntry;
   }
   // ─── Gamification & Stats ────────────────────────────────────────────────
   // Removed "Ton activité" and "Badges" per user request.
