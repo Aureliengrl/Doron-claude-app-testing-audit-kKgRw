@@ -676,11 +676,12 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Bouton options ...
+              // Bouton options ... → bottom sheet direct
               GestureDetector(
                 onTap: () {
                   HapticFeedback.lightImpact();
-                  GlobalProductDetailModal.show(context, {
+                  // Ouvrir directement le bottom sheet d'actions (bug #7)
+                  _showInspirationActionsSheet(context, {
                     'name': product['name'] ?? '',
                     'brand': product['brand'] ?? '',
                     'price': product['price'] ?? '',
@@ -801,6 +802,90 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
     } catch (e) {
       AppLogger.debug('❌ Erreur ouverture URL: $e', 'Debug');
     }
+  }
+
+  /// Bug #7 — Bottom sheet direct depuis la page Inspiration
+  void _showInspirationActionsSheet(BuildContext context, Map<String, dynamic> product) {
+    const violet = Color(0xFF8A2BE2);
+    const pink = Color(0xFFEC4899);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF1A1A2E),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40, height: 4,
+                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Row(
+                  children: [
+                    const Icon(Icons.more_horiz, color: violet, size: 24),
+                    const SizedBox(width: 12),
+                    Text('Actions', style: GoogleFonts.poppins(
+                      fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ],
+                ),
+              ),
+              const Divider(height: 1, color: Colors.white12),
+              // Option 1 : Envoyer par message
+              ListTile(
+                leading: Container(
+                  width: 48, height: 48,
+                  decoration: BoxDecoration(
+                    color: violet.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.send_rounded, color: violet, size: 24),
+                ),
+                title: Text('Envoyer par message', style: GoogleFonts.poppins(
+                  fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+                subtitle: Text('Partager ce produit dans une conversation', style: GoogleFonts.poppins(
+                  fontSize: 12, color: Colors.white54)),
+                trailing: const Icon(Icons.chevron_right, color: Colors.white38),
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  GlobalProductDetailModal.showChatPicker(context, product);
+                },
+              ),
+              // Option 2 : Ajouter pour quelqu'un
+              ListTile(
+                leading: Container(
+                  width: 48, height: 48,
+                  decoration: BoxDecoration(
+                    color: pink.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.card_giftcard, color: pink, size: 24),
+                ),
+                title: Text("Ajouter pour quelqu'un", style: GoogleFonts.poppins(
+                  fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+                subtitle: Text("Ajouter ce cadeau dans la liste d'un proche", style: GoogleFonts.poppins(
+                  fontSize: 12, color: Colors.white54)),
+                trailing: const Icon(Icons.chevron_right, color: Colors.white38),
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  GlobalProductDetailModal.showPersonPicker(context, product);
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _toggleFavorite(Map<String, dynamic> product) async {

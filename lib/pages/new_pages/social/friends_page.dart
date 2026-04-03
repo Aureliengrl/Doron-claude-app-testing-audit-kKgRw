@@ -5,8 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '/components/liquid_glass.dart'
-  
+import '/components/liquid_glass.dart';
 import '/services/user_search_service.dart';
 import '/services/friend_service.dart';
 import '/services/collaboration_service.dart';
@@ -1194,7 +1193,7 @@ class _FriendsPageState extends State<FriendsPage>
   Widget _buildPendingRequests() {
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: _requestsStream,
-      initialData: const [], // FIX: evite le spinner infini
+      initialData: const [], // ← FIX: évite le spinner infini
       builder: (context, friendSnap) {
         // Erreur sur le stream
         if (friendSnap.hasError) {
@@ -1226,7 +1225,7 @@ class _FriendsPageState extends State<FriendsPage>
             ),
           );
         }
-        // Attente du stream ami ne bloque PAS l'affichage des demandes d'amis
+        // Stream collab séparé — ne bloque PAS l'affichage des demandes d'amis
         return StreamBuilder<List<Map<String, dynamic>>>(
           stream: _collabInvitesStream,
           initialData: const [], // Valeur initiale vide pour ne pas bloquer

@@ -132,16 +132,16 @@ class UserSearchService {
 
       final allWishlists = snapshot.docs.map((doc) {
         final data = doc.data();
-        // Compter les produits : giftIds + photos
-        final giftCount = (data['giftIds'] as List?)?.length ?? 0;
-        final photoCount = (data['photos'] as List?)?.length ?? 0;
+        // Compter depuis le champ persisté (mis à jour par addProductToWishlist/addPhotoToWishlist)
+        final productCount = (data['productCount'] as num?)?.toInt()
+            ?? ((data['giftIds'] as List?)?.length ?? 0) + ((data['photos'] as List?)?.length ?? 0);
         return {
           'id': doc.id,
           'name': data['name'] ?? 'Wishlist',
           'emoji': data['emoji'] ?? '🎁',
           'description': data['description'] ?? '',
           'isPublic': data['isPublic'] ?? false,
-          'productCount': giftCount + photoCount,
+          'productCount': productCount,
           'coverPhoto': data['coverPhoto'] ?? '',
           'ownerUid': ownerUid,
         };

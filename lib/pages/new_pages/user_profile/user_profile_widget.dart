@@ -1060,11 +1060,16 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Couverture mise à jour avec succès!')),
+        const SnackBar(content: Text('✅ Couverture mise à jour !')),
       );
 
-      // Refresh UI by triggering a rebuild
-      setState(() {});
+      // Mettre à jour immédiatement en mémoire + vider le cache image
+      setState(() {
+        final idx = _wishlists.indexWhere((w) => w['id'] == wishlistId);
+        if (idx != -1) {
+          _wishlists[idx] = {..._wishlists[idx], 'coverPhoto': downloadUrl};
+        }
+      });
 
     } catch (e) {
       if (!mounted) return;

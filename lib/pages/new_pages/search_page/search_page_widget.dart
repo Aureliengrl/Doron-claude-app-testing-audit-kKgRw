@@ -1747,6 +1747,77 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: source!, imageQuality: 80, requestFullMetadata: false);
     if (picked == null || !mounted) return;
+
+    // — Dialog : saisie nom + prix —
+    String productName = '';
+    String productPrice = '';
+    final nameCtrl = TextEditingController();
+    final priceCtrl = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A0030),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(children: [
+          const Icon(Icons.local_offer_rounded, color: Color(0xFF8A2BE2), size: 20),
+          const SizedBox(width: 8),
+          Text('Détails du produit', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+        ]),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          TextField(
+            controller: nameCtrl,
+            autofocus: true,
+            style: GoogleFonts.poppins(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: 'Nom du produit',
+              hintStyle: GoogleFonts.poppins(color: Colors.white38),
+              prefixIcon: const Icon(Icons.shopping_bag_outlined, color: Colors.white38, size: 18),
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.07),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: priceCtrl,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            style: GoogleFonts.poppins(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: 'Prix (ex: 29.99)',
+              hintStyle: GoogleFonts.poppins(color: Colors.white38),
+              prefixIcon: const Icon(Icons.euro, color: Colors.white38, size: 18),
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.07),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            ),
+          ),
+        ]),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Annuler', style: GoogleFonts.poppins(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              productName = nameCtrl.text.trim();
+              productPrice = priceCtrl.text.trim();
+              Navigator.pop(ctx, true);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF8A2BE2),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text('Ajouter', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    nameCtrl.dispose();
+    priceCtrl.dispose();
+    if (confirmed != true || !mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Row(children: [
         const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
@@ -1755,11 +1826,17 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       ]),
       backgroundColor: const Color(0xFF0A1F3D), duration: const Duration(seconds: 10),
     ));
-    final ok = await FirebaseDataService.addPhotoToWishlist(wishlistId, picked.path);
+    final ok = await FirebaseDataService.addPhotoToWishlist(
+      wishlistId,
+      picked.path,
+      caption: productName.isNotEmpty ? productName : null,
+      productName: productName.isNotEmpty ? productName : null,
+      productPrice: productPrice.isNotEmpty ? productPrice : null,
+    );
     if (!mounted) return;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(ok ? '\ud83d\udcf7 Photo ajout\u00e9e !' : 'Erreur upload', style: GoogleFonts.poppins(color: Colors.white)),
+      content: Text(ok ? '📷 Photo ajoutée !' : 'Erreur upload', style: GoogleFonts.poppins(color: Colors.white)),
       backgroundColor: ok ? const Color(0xFF00D4FF).withOpacity(0.85) : Colors.red,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

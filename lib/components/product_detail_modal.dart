@@ -713,6 +713,16 @@ class GlobalProductDetailModal {
     }
   }
 
+  /// Expose le chat picker comme méthode publique (utilisée depuis la page Inspiration)
+  static void showChatPicker(BuildContext context, Map<String, dynamic> product) {
+    _showChatPickerSheet(context, product);
+  }
+
+  /// Expose le person picker comme méthode publique (utilisée depuis la page Inspiration)
+  static void showPersonPicker(BuildContext context, Map<String, dynamic> product) {
+    _showPersonPickerSheet(context, product);
+  }
+
   /// Affiche le bottom sheet avec les actions produit (envoyer par message, ajouter pour quelqu'un)
   static void _showProductActionsSheet(BuildContext context, Map<String, dynamic> product) {
     final user = FirebaseAuth.instance.currentUser;
@@ -1194,8 +1204,20 @@ class GlobalProductDetailModal {
                       itemBuilder: (context, index) {
                         final person = people[index];
                         final personId = person['id'] as String? ?? '';
-                        final personName = person['name'] as String? ?? person['firstName'] as String? ?? 'Proche';
-                        final personEmoji = person['emoji'] as String? ?? person['avatar'] as String?;
+                        // Chercher le nom dans plusieurs structures possibles (local vs Firebase)
+                        final tags = person['tags'] as Map<String, dynamic>? ?? {};
+                        final personName = (person['name'] as String?)?.isNotEmpty == true
+                            ? person['name'] as String
+                            : (tags['name'] as String?)?.isNotEmpty == true
+                                ? tags['name'] as String
+                                : (tags['personName'] as String?)?.isNotEmpty == true
+                                    ? tags['personName'] as String
+                                    : (tags['recipient'] as String?)?.isNotEmpty == true
+                                        ? tags['recipient'] as String
+                                        : (person['firstName'] as String?)?.isNotEmpty == true
+                                            ? person['firstName'] as String
+                                            : 'Proche';
+                        final personEmoji = person['emoji'] as String? ?? person['avatar'] as String? ?? tags['emoji'] as String?;
                         final personPhoto = person['photoUrl'] as String? ?? person['photo_url'] as String?;
 
                         return ListTile(

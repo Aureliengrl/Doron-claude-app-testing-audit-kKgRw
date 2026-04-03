@@ -678,6 +678,8 @@ class FirebaseDataService {
     String wishlistId,
     String localImagePath, {
     String? caption,
+    String? productName,
+    String? productPrice,
   }) async {
     try {
       final uid = currentUserId;
@@ -693,11 +695,14 @@ class FirebaseDataService {
       final uploadTask = await ref.putFile(file);
       final downloadUrl = await uploadTask.ref.getDownloadURL();
 
+      final effectiveName = productName?.isNotEmpty == true ? productName! : (caption ?? '');
       final photoItem = {
         'id': photoId,
         'type': 'photo',
         'image': downloadUrl,
-        'caption': caption ?? '',
+        'name': effectiveName,
+        'caption': caption ?? effectiveName,
+        'price': productPrice ?? '',
         'addedAt': DateTime.now().toIso8601String(),
       };
 

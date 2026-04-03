@@ -1607,7 +1607,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       ),
                     ),
 
-          
+
                   // Badge like/favoris en haut  gauche
                   if (isLiked)
                     Positioned(

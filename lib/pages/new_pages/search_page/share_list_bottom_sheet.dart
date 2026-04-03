@@ -32,6 +32,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
 
   // État global
   bool _isCreatingCollab = false;
+  bool _collabInitFailed = false;
   String? _collabId;
   String? _chatId;
   String? _inviteLink;
@@ -59,14 +60,25 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
   // ─── Init collaboration ───────────────────────────────────────────────────
 
   Future<void> _initCollab() async {
-    setState(() => _isCreatingCollab = true);
+    setState(() {
+      _isCreatingCollab = true;
+      _collabInitFailed = false;
+    });
 
     // Charger les amis EN PARALLÈLE de la collab (pas dépendant)
     _loadFriends();
 
     try {
-      final profileId = widget.profile['id']?.toString() ?? '';
-      final profileName = widget.profile['name'] as String? ?? 'quelqu\'un';
+      // Chercher l'id dans plusieurs champs possibles
+      final profileId = widget.profile['id']?.toString() ??
+          widget.profile['uid']?.toString() ??
+          widget.profile['userId']?.toString() ?? '';
+      final profileName = widget.profile['name'] as String? ??
+          widget.profile['displayName'] as String? ?? 'quelqu\'un';
+
+      if (profileId.isEmpty) {
+        throw Exception('profileId vide — profil invalide');
+      }
 
       final collab = await CollaborationService.createOrGetCollab(
         profileId: profileId,
@@ -81,7 +93,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
       }
     } catch (e) {
       debugPrint('ShareListBottomSheet._initCollab: $e');
-      if (mounted) _showSnack('Impossible de créer la collaboration', Colors.red);
+      if (mounted) setState(() => _collabInitFailed = true);
     } finally {
       if (mounted) setState(() => _isCreatingCollab = false);
     }
@@ -112,18 +124,40 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
 
   Future<void> _addFriendToCollab(String uid) async {
     if (_collabId == null) {
-      _showSnack('Collaboration indisponible', Colors.red);
-      return;
+      // Réessayer l'initialisation avant d'abandonner
+      await _initCollab();
+      if (_collabId == null) return;
     }
     setState(() => _inviteStatus[uid] = 'loading');
     HapticFeedback.lightImpact();
     try {
       await CollaborationService.addMember(collabId: _collabId!, uid: uid);
+      // Envoyer notification à l'ami ajouté
+      try {
+        final myUid = FirebaseAuth.instance.currentUser?.uid;
+        final profileName = widget.profile['name'] as String? ?? 'quelqu\'un';
+        if (myUid != null) {
+          await FirebaseFirestore.instance
+              .collection('notifications')
+              .doc(uid)
+              .collection('items')
+              .add({
+            'type': 'collab_joined',
+            'fromUid': myUid,
+            'collabId': _collabId,
+            'profileName': profileName,
+            'message': 'Tu as été ajouté à la liste de cadeaux pour $profileName !',
+            'createdAt': FieldValue.serverTimestamp(),
+            'read': false,
+          });
+        }
+      } catch (_) {} // notification non critique
       if (mounted) {
         setState(() => _inviteStatus[uid] = 'added');
         _showSnack('Ami ajouté à la collaboration !', _green);
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('_addFriendToCollab error: $e');
       if (mounted) setState(() => _inviteStatus[uid] = null);
       _showSnack('Erreur lors de l\'ajout', Colors.red);
     }
@@ -277,7 +311,36 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
           const SizedBox(height: 12),
 
           if (_isCreatingCollab)
-            const Expanded(child: Center(child: CircularProgressIndicator(color: _violet, strokeWidth: 2)))
+            const Expanded(child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: _violet, strokeWidth: 2),
+                  SizedBox(height: 12),
+                  Text('Préparation de la collaboration…',
+                    style: TextStyle(color: Colors.white54, fontSize: 13)),
+                ],
+              ),
+            ))
+          else if (_collabInitFailed)
+            Expanded(child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 40),
+                  const SizedBox(height: 12),
+                  const Text('Échec de la connexion',
+                    style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  const SizedBox(height: 16),
+                  TextButton.icon(
+                    onPressed: _initCollab,
+                    icon: const Icon(Icons.refresh, color: _violet),
+                    label: const Text('Réessayer',
+                      style: TextStyle(color: _violet, fontWeight: FontWeight.w600)),
+                  ),
+                ],
+              ),
+            ))
           else
             Expanded(
               child: TabBarView(

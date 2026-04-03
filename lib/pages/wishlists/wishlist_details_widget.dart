@@ -17,6 +17,7 @@ import '/components/shared_product_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 
 class WishlistDetailsWidget extends StatefulWidget {
   final String wishlistId;
@@ -345,6 +346,31 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
     );
   }
 
+  /// Persiste l'ordre des produits dans Firestore
+  Future<void> _saveProductOrder() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    try {
+      final batch = FirebaseFirestore.instance.batch();
+      for (int i = 0; i < _products.length; i++) {
+        final id = _products[i]['id'] as String?;
+        if (id != null && id.isNotEmpty) {
+          batch.update(
+            FirebaseFirestore.instance
+                .collection('users')
+                .doc(uid)
+                .collection('wishlists')
+                .doc(widget.wishlistId)
+                .collection('products')
+                .doc(id),
+            {'order': i},
+          );
+        }
+      }
+      await batch.commit();
+    } catch (_) {}
+  }
+
   Widget _buildContent() {
     if (_products.isEmpty) {
       return Center(
@@ -355,16 +381,21 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
       );
     }
 
-    return GridView.builder(
+    return ReorderableGridView.count(
+      crossAxisCount: 3,
+      childAspectRatio: 0.75,
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
       padding: const EdgeInsets.all(12),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        childAspectRatio: 0.65,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-      ),
-      itemCount: _products.length,
-      itemBuilder: (context, index) {
+      onReorder: (oldIndex, newIndex) {
+        HapticFeedback.mediumImpact();
+        setState(() {
+          final item = _products.removeAt(oldIndex);
+          _products.insert(newIndex, item);
+        });
+        _saveProductOrder();
+      },
+      children: List.generate(_products.length, (index) {
         final docData = _products[index];
         final productId = docData['id'] as String? ?? '';
 
@@ -379,13 +410,16 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
           'url': nested['product_url'] ?? docData['product_url'] ?? docData['url'] ?? '',
         };
 
-        return SharedProductCard(
-          product: normalizedProduct,
-          index: index,
-          showWishlistButton: true,
-          onRemove: productId.isNotEmpty ? () => _removeProduct(productId) : null,
+        return SizedBox(
+          key: ValueKey(productId.isNotEmpty ? productId : 'prod_$index'),
+          child: SharedProductCard(
+            product: normalizedProduct,
+            index: index,
+            showWishlistButton: true,
+            onRemove: productId.isNotEmpty ? () => _removeProduct(productId) : null,
+          ),
         );
-      },
+      }),
     );
   }
 }
