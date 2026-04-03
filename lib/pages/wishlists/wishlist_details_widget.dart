@@ -37,6 +37,9 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
   Map<String, String> _reservations = {}; // productId → reservedByUid
   bool _isOwner = true;
 
+  /// 2 colonnes par défaut (confortable), toggle vers 3 (compact)
+  int _gridColumns = 2;
+
   final Color violetColor = const Color(0xFF8A2BE2);
   final Color pinkColor = const Color(0xFFEC4899);
 
@@ -304,6 +307,23 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    // Toggle vue 2/3 colonnes
+                    IconButton(
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        setState(() {
+                          _gridColumns = _gridColumns == 2 ? 3 : 2;
+                        });
+                      },
+                      icon: Icon(
+                        _gridColumns == 2
+                            ? Icons.grid_view_rounded        // vue 3 col = compact
+                            : Icons.view_quilt_rounded,      // vue 2 col = confort
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                      tooltip: _gridColumns == 2 ? 'Vue compacte' : 'Vue confortable',
+                    ),
                     // Partager
                     IconButton(
                       onPressed: _shareWishlist,
@@ -381,12 +401,16 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
       );
     }
 
+    // Ratio adapté : 2 col → cartes plus hautes pour afficher nom+prix
+    //                3 col → cartes compactes (ancien comportement)
+    final double aspectRatio = _gridColumns == 2 ? 0.68 : 0.75;
+
     return ReorderableGridView.count(
-      crossAxisCount: 3,
-      childAspectRatio: 0.75,
-      crossAxisSpacing: 10,
-      mainAxisSpacing: 10,
-      padding: const EdgeInsets.all(12),
+      crossAxisCount: _gridColumns,
+      childAspectRatio: aspectRatio,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      padding: const EdgeInsets.all(14),
       onReorder: (oldIndex, newIndex) {
         HapticFeedback.mediumImpact();
         setState(() {

@@ -103,10 +103,10 @@ class SharedProductCard extends StatelessWidget {
                           ? CachedNetworkImage(
                               imageUrl: _image,
                               width: double.infinity,
-                              height: 120,
+                              height: 140,
                               fit: BoxFit.cover,
                               placeholder: (_, __) => Container(
-                                height: 120,
+                                height: 140,
                                 color: Colors.white.withOpacity(0.05),
                                 child: Center(
                                   child: CircularProgressIndicator(
@@ -116,7 +116,7 @@ class SharedProductCard extends StatelessWidget {
                                 ),
                               ),
                               errorWidget: (_, __, ___) => Container(
-                                height: 120,
+                                height: 140,
                                 color: Colors.white.withOpacity(0.05),
                                 child: const Icon(
                                   Icons.image_not_supported_rounded,
@@ -126,7 +126,7 @@ class SharedProductCard extends StatelessWidget {
                               ),
                             )
                           : Container(
-                              height: 120,
+                              height: 140,
                               color: Colors.white.withOpacity(0.05),
                               child: const Icon(
                                 Icons.card_giftcard_rounded,
@@ -191,10 +191,11 @@ class SharedProductCard extends StatelessWidget {
                 // ── Texte : brand / prix ──
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Marque
                         if (_brand.isNotEmpty)
                           Text(
                             _brand.toUpperCase(),
@@ -202,26 +203,40 @@ class SharedProductCard extends StatelessWidget {
                               fontSize: 9,
                               fontWeight: FontWeight.w700,
                               color: _violet,
-                              letterSpacing: 0.5,
+                              letterSpacing: 0.8,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
+                        const SizedBox(height: 3),
+                        // Nom du produit
+                        Text(
+                          _name,
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white.withOpacity(0.88),
+                            height: 1.25,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                         const Spacer(),
+                        // Prix
                         if (_price.isNotEmpty)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
-                                colors: [_gold.withOpacity(0.18), _pink.withOpacity(0.12)],
+                                colors: [_gold.withOpacity(0.20), _pink.withOpacity(0.14)],
                               ),
-                              borderRadius: BorderRadius.circular(7),
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               _price.contains('€') ? _price : '$_price €',
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w800,
                                 color: _gold,
                               ),
                             ),
