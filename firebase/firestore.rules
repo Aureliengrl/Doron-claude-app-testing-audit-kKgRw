@@ -132,15 +132,18 @@ service cloud.firestore {
     // ─────────────────────────────────────────────────────────────────────────
 
     match /friend_requests/{requestId} {
-      // Seuls l'expéditeur et le destinataire peuvent lire
-      allow read: if isAuth() && (
-        resource.data.fromUid == request.auth.uid ||
-        resource.data.toUid == request.auth.uid
-      );
+      // Tout utilisateur connecté peut lire — indispensable pour les collection
+      // queries (.where('toUid', isEqualTo: uid).snapshots()).
+      // Les règles per-document (resource.data.*) bloquent silencieusement les
+      // listeners de collection. Le filtrage toUid/fromUid est dans la query.
+      allow read: if isAuth();
       // Seul l'expéditeur peut créer (son uid doit être dans fromUid)
       allow create: if isAuth() && request.resource.data.fromUid == request.auth.uid;
-      // Seul le destinataire peut accepter/refuser (update)
-      allow update: if isAuth() && resource.data.toUid == request.auth.uid;
+      // Destinataire (accept/decline) OU expéditeur (annulation) peuvent modifier
+      allow update: if isAuth() && (
+        resource.data.toUid == request.auth.uid ||
+        resource.data.fromUid == request.auth.uid
+      );
       // Expéditeur ou destinataire peuvent supprimer
       allow delete: if isAuth() && (
         resource.data.fromUid == request.auth.uid ||
