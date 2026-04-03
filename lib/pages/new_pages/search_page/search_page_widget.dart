@@ -1,10 +1,13 @@
 import '/utils/app_logger.dart';
+import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '/components/cached_image.dart';
 import '/components/aesthetic_buttons.dart';
 import '/components/micro_interactions.dart' as micro;
@@ -1700,22 +1703,15 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     );
   }
 
-  /// Ajoute une photo dans la wishlist d'une personne (page Recherche).
+  /// Ajoute une photo dans la liste de cadeaux d'une personne (page Recherche).
+  /// ─ Stocke dans : users/{uid}/people/{personId}/gift_lists/   (même endroit que les autres cadeaux)
+  /// ─ NE passe plus par les wishlists albums (comportement précédent incorrect)
   Future<void> _addPhotoForPerson(Map<String, dynamic> profile) async {
     final personId = profile['id']?.toString() ?? '';
-    final wishlists = await FirebaseDataService.loadWishlists(personId: personId);
-    final personName = (profile["name"] as String?) ?? 'Personne';
-    String wishlistId;
-    if (wishlists.isEmpty) {
-      final newId = await FirebaseDataService.createWishlist(
-        name: 'Cadeaux pour $personName',
-        emoji: '\uD83C\uDF81',
-      );
-      if (newId == null || !mounted) return;
-      wishlistId = newId;
-    } else {
-      wishlistId = wishlists.first['id'] as String;
-    }
+    final personName = (profile['name'] as String?) ?? 'Personne';
+    if (personId.isEmpty) return;
+
+    // ── 1. Choix de la source image ────────────────────────────────
     ImageSource? source;
     await showModalBottomSheet(
       context: context,
@@ -1744,11 +1740,14 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       ),
     );
     if (source == null || !mounted) return;
+
+    // ── 2. Sélection de la photo ──────────────────────────────────
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: source!, imageQuality: 80, requestFullMetadata: false);
+    final picked = await picker.pickImage(
+      source: source!, imageQuality: 80, requestFullMetadata: false);
     if (picked == null || !mounted) return;
 
-    // — Dialog : saisie nom + prix —
+    // ── 3. Dialog Nom + Prix ────────────────────────────────────
     String productName = '';
     String productPrice = '';
     final nameCtrl = TextEditingController();
@@ -1761,7 +1760,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         title: Row(children: [
           const Icon(Icons.local_offer_rounded, color: Color(0xFF8A2BE2), size: 20),
           const SizedBox(width: 8),
-          Text('Détails du produit', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+          Text('Détails du produit', style: GoogleFonts.poppins(
+              color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
         ]),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
           TextField(
@@ -1771,11 +1771,13 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             decoration: InputDecoration(
               hintText: 'Nom du produit',
               hintStyle: GoogleFonts.poppins(color: Colors.white38),
-              prefixIcon: const Icon(Icons.shopping_bag_outlined, color: Colors.white38, size: 18),
+              prefixIcon: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF00D4FF), size: 18),
               filled: true,
               fillColor: Colors.white.withOpacity(0.07),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             ),
           ),
           const SizedBox(height: 12),
@@ -1786,11 +1788,13 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             decoration: InputDecoration(
               hintText: 'Prix (ex: 29.99)',
               hintStyle: GoogleFonts.poppins(color: Colors.white38),
-              prefixIcon: const Icon(Icons.euro, color: Colors.white38, size: 18),
+              prefixIcon: const Icon(Icons.euro_rounded, color: Color(0xFFF59E0B), size: 18),
               filled: true,
               fillColor: Colors.white.withOpacity(0.07),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             ),
           ),
         ]),
@@ -1809,7 +1813,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               backgroundColor: const Color(0xFF8A2BE2),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: Text('Ajouter', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700)),
+            child: Text('Ajouter', style: GoogleFonts.poppins(
+                color: Colors.white, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -1818,29 +1823,80 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     priceCtrl.dispose();
     if (confirmed != true || !mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    // ── 4. Upload Firebase Storage ────────────────────────────────
+    // Snack pendant l'upload (non bloquant : on lance aussi l'addGiftToPerson
+    // avec l'URL dès que disponible, sans bloquer l'UI)
+    final loadingSnack = SnackBar(
       content: Row(children: [
-        const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+        const SizedBox(width: 16, height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
         const SizedBox(width: 12),
         Text('Upload en cours...', style: GoogleFonts.poppins(color: Colors.white)),
       ]),
-      backgroundColor: const Color(0xFF0A1F3D), duration: const Duration(seconds: 10),
-    ));
-    final ok = await FirebaseDataService.addPhotoToWishlist(
-      wishlistId,
-      picked.path,
-      caption: productName.isNotEmpty ? productName : null,
-      productName: productName.isNotEmpty ? productName : null,
-      productPrice: productPrice.isNotEmpty ? productPrice : null,
+      backgroundColor: const Color(0xFF0A1F3D),
+      duration: const Duration(seconds: 30),
     );
+    ScaffoldMessenger.of(context).showSnackBar(loadingSnack);
+
+    final imageUrl = await _uploadPhotoToStorage(picked.path, personId);
+
     if (!mounted) return;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(ok ? '📷 Photo ajoutée !' : 'Erreur upload', style: GoogleFonts.poppins(color: Colors.white)),
-      backgroundColor: ok ? const Color(0xFF00D4FF).withOpacity(0.85) : Colors.red,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    ));
-    if (ok && mounted) setState(() {});
+
+    if (imageUrl == null) {
+      _showSnackBar('Erreur lors de l\'upload de la photo', isError: true);
+      return;
+    }
+
+    // ── 5. Construire le cadeau photo ──────────────────────────────
+    final photoGift = {
+      'id': 'photo_${DateTime.now().millisecondsSinceEpoch}',
+      'type': 'photo',
+      'name': productName.isNotEmpty ? productName : 'Photo',
+      'image': imageUrl,
+      'price': productPrice,
+      'caption': productName,
+      'brand': '',
+      'url': '',
+      'addedAt': DateTime.now().toIso8601String(),
+    };
+
+    // ── 6. Ajouter à la liste de cadeaux de la personne (✔ bon endroit) ──
+    final ok = await FirebaseDataService.addGiftToPerson(
+      personId: personId,
+      gift: photoGift,
+    );
+
+    if (!mounted) return;
+
+    if (ok) {
+      _showSnackBar('📷 Photo ajoutée aux cadeaux de $personName !');
+      // Recharger les données pour mettre à jour l'affichage
+      await _model.loadProfiles();
+      if (mounted) setState(() {});
+    } else {
+      _showSnackBar('Ce produit est déjà dans la liste', isError: false);
+    }
+  }
+
+  /// Upload une photo locale vers Firebase Storage et retourne l'URL de téléchargement.
+  /// Chemin : users/{uid}/person_photos/{personId}/{timestamp}.jpg
+  Future<String?> _uploadPhotoToStorage(String localPath, String personId) async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return null;
+      final photoId = DateTime.now().millisecondsSinceEpoch.toString();
+      final ref = FirebaseStorage.instance
+          .ref()
+          .child('users/$uid/person_photos/$personId/$photoId.jpg');
+      final upload = await ref.putFile(
+        File(localPath),
+        SettableMetadata(contentType: 'image/jpeg'),
+      );
+      return await upload.ref.getDownloadURL();
+    } catch (e) {
+      AppLogger.error('_uploadPhotoToStorage error', 'Search', e);
+      return null;
+    }
   }
 }
