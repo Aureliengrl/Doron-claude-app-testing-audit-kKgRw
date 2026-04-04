@@ -21,7 +21,9 @@ import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 
 class WishlistDetailsWidget extends StatefulWidget {
   final String wishlistId;
-  const WishlistDetailsWidget({Key? key, required this.wishlistId}) : super(key: key);
+  /// UID du propriétaire de la wishlist. Si null → c'est la wishlist de l'utilisateur courant.
+  final String? ownerUid;
+  const WishlistDetailsWidget({Key? key, required this.wishlistId, this.ownerUid}) : super(key: key);
 
   static String routeName = 'WishlistDetails';
   static String routePath = '/wishlist-details/:wishlistId';
@@ -35,7 +37,18 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
   List<Map<String, dynamic>> _products = [];
   bool _isLoading = true;
   Map<String, String> _reservations = {}; // productId → reservedByUid
-  bool _isOwner = true;
+
+  /// true si la wishlist appartient à l'utilisateur courant
+  bool get _isOwner {
+    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    if (myUid == null) return false;
+    if (widget.ownerUid == null) return true;
+    return widget.ownerUid == myUid;
+  }
+
+  /// UID effectif du propriétaire (l'ami ou soi-même)
+  String? get _effectiveOwnerUid =>
+      widget.ownerUid ?? FirebaseAuth.instance.currentUser?.uid;
 
   /// 2 colonnes par défaut (confortable), toggle vers 3 (compact)
   int _gridColumns = 2;
@@ -51,23 +64,85 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
 
   Future<void> _loadWishlistData() async {
     setState(() => _isLoading = true);
-    
-    // Fetch wishlist metadata (if available, else fallback)
-    final allWishlists = await FirebaseDataService.loadWishlists();
-    final match = allWishlists.where((w) => w['id'] == widget.wishlistId).toList();
-    
-    if (match.isNotEmpty) {
-      _wishlistData = match.first;
-    } else {
-      _wishlistData = {'name': 'Wishlist Publique', 'isPublic': true};
+
+    final ownerUid = _effectiveOwnerUid;
+    if (ownerUid == null) {
+      setState(() => _isLoading = false);
+      return;
     }
 
-    final products = await FirebaseDataService.loadWishlistProducts(widget.wishlistId);
-    
-    setState(() {
-      _products = products;
-      _isLoading = false;
-    });
+    if (_isOwner) {
+      // Ma propre wishlist : comportement normal via FirebaseDataService (cache local inclus)
+      final allWishlists = await FirebaseDataService.loadWishlists();
+      final match = allWishlists.where((w) => w['id'] == widget.wishlistId).toList();
+
+      if (match.isNotEmpty) {
+        _wishlistData = match.first;
+      } else {
+        _wishlistData = {'name': 'Wishlist', 'isPublic': true};
+      }
+
+      final products = await FirebaseDataService.loadWishlistProducts(widget.wishlistId);
+      setState(() {
+        _products = products;
+        _isLoading = false;
+      });
+    } else {
+      // Wishlist d'un ami : lire directement Firestore avec l'UID du propriétaire
+      await _loadFriendWishlist(ownerUid);
+    }
+  }
+
+  /// Charge la wishlist et ses produits pour un ami (ownerUid différent de l'utilisateur courant).
+  Future<void> _loadFriendWishlist(String ownerUid) async {
+    try {
+      // Metadata de la wishlist
+      final wishlistDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(ownerUid)
+          .collection('wishlists')
+          .doc(widget.wishlistId)
+          .get();
+
+      if (!wishlistDoc.exists) {
+        _wishlistData = {'name': 'Wishlist', 'isPublic': false};
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final wData = wishlistDoc.data()!;
+      _wishlistData = {
+        'id': wishlistDoc.id,
+        'name': wData['name'] ?? 'Wishlist',
+        'emoji': wData['emoji'] ?? '🎁',
+        'isPublic': wData['isPublic'] ?? false,
+        'coverPhoto': wData['coverPhoto'] ?? '',
+        'ownerUid': ownerUid,
+      };
+
+      // Produits — seulement si la wishlist est publique
+      if (wData['isPublic'] == true) {
+        final productsSnap = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(ownerUid)
+            .collection('wishlists')
+            .doc(widget.wishlistId)
+            .collection('products')
+            .orderBy('addedAt', descending: true)
+            .get();
+
+        _products = productsSnap.docs
+            .map((d) => <String, dynamic>{'id': d.id, ...d.data()})
+            .toList();
+      } else {
+        _products = [];
+      }
+    } catch (e) {
+      _wishlistData = {'name': 'Wishlist', 'isPublic': false};
+      _products = [];
+    }
+
+    setState(() => _isLoading = false);
   }
 
   Future<void> _removeProduct(String productId) async {
@@ -324,18 +399,20 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
                       ),
                       tooltip: _gridColumns == 2 ? 'Vue compacte' : 'Vue confortable',
                     ),
-                    // Partager
-                    IconButton(
-                      onPressed: _shareWishlist,
-                      icon: const Icon(Icons.share_rounded, color: Colors.white, size: 22),
-                      tooltip: 'Partager',
-                    ),
-                    // Date d'événement
-                    IconButton(
-                      onPressed: _setEventDate,
-                      icon: const Icon(Icons.event_rounded, color: Colors.white, size: 22),
-                      tooltip: 'Ajouter une date',
-                    ),
+                    // Partager — masqué en mode lecture seule
+                    if (_isOwner)
+                      IconButton(
+                        onPressed: _shareWishlist,
+                        icon: const Icon(Icons.share_rounded, color: Colors.white, size: 22),
+                        tooltip: 'Partager',
+                      ),
+                    // Date d'événement — masqué en mode lecture seule
+                    if (_isOwner)
+                      IconButton(
+                        onPressed: _setEventDate,
+                        icon: const Icon(Icons.event_rounded, color: Colors.white, size: 22),
+                        tooltip: 'Ajouter une date',
+                      ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -392,6 +469,33 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
   }
 
   Widget _buildContent() {
+    // Wishlist d'un ami privée
+    if (!_isOwner && _wishlistData?['isPublic'] != true) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.lock_outline_rounded, size: 72, color: Colors.white24),
+            const SizedBox(height: 20),
+            Text(
+              'Liste privée',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.white54,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Cette liste n\'est pas publique.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.white30),
+            ),
+          ],
+        ),
+      );
+    }
+
     if (_products.isEmpty) {
       return Center(
         child: Text(
@@ -404,6 +508,36 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
     // Ratio adapté : 2 col → cartes plus hautes pour afficher nom+prix
     //                3 col → cartes compactes (ancien comportement)
     final double aspectRatio = _gridColumns == 2 ? 0.68 : 0.75;
+
+    // Mode lecture seule (wishlist d'un ami) : grille simple sans réordre ni suppression
+    if (!_isOwner) {
+      return GridView.count(
+        crossAxisCount: _gridColumns,
+        childAspectRatio: aspectRatio,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        padding: const EdgeInsets.all(14),
+        children: List.generate(_products.length, (index) {
+          final docData = _products[index];
+          final productId = docData['id'] as String? ?? '';
+          final nested = docData['product'] as Map<String, dynamic>? ?? {};
+          final normalizedProduct = {
+            'id': productId,
+            'name': nested['product_title'] ?? docData['name'] ?? docData['product_name'] ?? 'Inconnu',
+            'brand': nested['platform'] ?? docData['brand'] ?? docData['source'] ?? '',
+            'image': nested['product_photo'] ?? docData['image'] ?? docData['image_url'] ?? '',
+            'price': nested['product_price'] ?? docData['price']?.toString() ?? '',
+            'url': nested['product_url'] ?? docData['product_url'] ?? docData['url'] ?? '',
+          };
+          return SharedProductCard(
+            product: normalizedProduct,
+            index: index,
+            showWishlistButton: false, // pas d'ajout à sa propre wishlist depuis le profil ami
+            onRemove: null, // lecture seule
+          );
+        }),
+      );
+    }
 
     return ReorderableGridView.count(
       crossAxisCount: _gridColumns,

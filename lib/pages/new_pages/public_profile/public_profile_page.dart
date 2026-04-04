@@ -36,6 +36,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   Map<String, dynamic>? _profile;
   List<Map<String, dynamic>> _wishlists = [];
   List<Map<String, dynamic>> _likedProducts = [];
+  bool _likedProductsArePrivate = false; // true si l'onglet "Produits likés" n'est pas accessible
   FriendshipStatus _friendshipStatus = FriendshipStatus.none;
   String? _requestId;
   bool _isLoading = true;
@@ -101,6 +102,11 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 
   Future<void> _loadLikedProducts() async {
+    // Les produits likés sont privés : on ne charge jamais ceux d'un autre utilisateur
+    if (!_isMyProfile) {
+      _likedProductsArePrivate = true;
+      return;
+    }
     try {
       final snap = await FirebaseFirestore.instance
           .collection('users')
@@ -540,7 +546,10 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     final coverUrl = wishlist['coverPhoto'] as String?;
 
     return GestureDetector(
-      onTap: () => context.push('/wishlist-details/${wishlist['id']}'),
+      onTap: () => context.push(
+        '/wishlist-details/${wishlist['id']}',
+        extra: {'ownerUid': widget.uid},
+      ),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
@@ -606,6 +615,42 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 
   Widget _buildLikedProducts() {
+    // Produits likés d'un autre utilisateur — toujours privés
+    if (_likedProductsArePrivate) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.07),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: const Icon(Icons.lock_outline_rounded, size: 38, color: Colors.white38),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Produits likés privés',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white54,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Les produits likés de cet utilisateur\nsont privés et non visibles.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.white30),
+            ),
+          ],
+        ),
+      );
+    }
+
     if (_likedProducts.isEmpty) {
       return Center(
         child: Column(

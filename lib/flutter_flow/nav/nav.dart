@@ -348,6 +348,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           requireAuth: true,
           builder: (context, params) => WishlistDetailsWidget(
             wishlistId: params.getParam<String>('wishlistId', ParamType.String) ?? '',
+            ownerUid: params.getParam<String>('ownerUid', ParamType.String),
           ),
         ),
         // Profil public par UID

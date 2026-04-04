@@ -47,11 +47,16 @@ service cloud.firestore {
 
       // Listes de souhaits
       match /wishlists/{wishlistId} {
-        allow read, write: if isOwner(userId);
+        // Lecture : propri\u00e9taire toujours + tout user auth\u00e9 pour les wishlists publiques (filtrage client)
+        allow read: if isAuth();
+        allow write: if isOwner(userId);
 
         // Produits dans la wishlist (sous-collection directe)
         match /products/{productId} {
-          allow read, write: if isOwner(userId);
+          // Lecture : propri\u00e9taire OU wishlist marqu\u00e9e comme publique
+          allow read: if isOwner(userId) ||
+            (isAuth() && get(/databases/$(database)/documents/users/$(userId)/wishlists/$(wishlistId)).data.isPublic == true);
+          allow write: if isOwner(userId);
         }
       }
 

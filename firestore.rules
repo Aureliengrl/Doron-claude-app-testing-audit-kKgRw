@@ -35,9 +35,14 @@ service cloud.firestore {
         allow update, delete: if isOwner(userId);
       }
       match /wishlists/{wishlistId} {
-        allow read, write: if isOwner(userId);
+        // Lecture : propriétaire + tout user authé (filtrage isPublic côté client)
+        allow read: if isAuth();
+        allow write: if isOwner(userId);
         match /products/{productId} {
-          allow read, write: if isOwner(userId);
+          // Lecture : propriétaire OU wishlist publique
+          allow read: if isOwner(userId) ||
+            (isAuth() && get(/databases/$(database)/documents/users/$(userId)/wishlists/$(wishlistId)).data.isPublic == true);
+          allow write: if isOwner(userId);
         }
       }
       match /people/{personId} {
