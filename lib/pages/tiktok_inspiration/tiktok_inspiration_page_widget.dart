@@ -717,7 +717,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
   Widget _buildProductImage(String imageUrl) {
     if (imageUrl.isEmpty) {
       return Container(
-        color: Colors.grey[900],
+        color: const Color(0xFF0D0D0D),
         child: Center(
           child: Icon(
             Icons.image_not_supported,
@@ -731,51 +731,78 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Dark background
+        // Fond sombre
         Container(color: const Color(0xFF0D0D0D)),
-        // Blurred background image for ambiance
+
+        // Image en background floue pour l'ambiance couleur
         Positioned.fill(
           child: CachedNetworkImage(
             imageUrl: imageUrl,
             fit: BoxFit.cover,
-            color: Colors.black.withOpacity(0.6),
+            color: Colors.black.withOpacity(0.72),
             colorBlendMode: BlendMode.darken,
-            errorWidget: (context, url, error) => const SizedBox.shrink(),
+            errorWidget: (_, __, ___) => const SizedBox.shrink(),
           ),
         ),
+
         // Blur overlay
         Positioned.fill(
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-            child: Container(color: Colors.black.withOpacity(0.4)),
+            filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+            child: Container(color: Colors.black.withOpacity(0.35)),
           ),
         ),
-        // Main image, fully visible with BoxFit.contain
+
+        // ─── Cadre produit centré à taille fixe ───
+        // Toutes les images occupent exactement la même zone,
+        // quelle que soit leur forme (portrait / paysage / carré).
         Center(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 60),
-            child: CachedNetworkImage(
-              imageUrl: imageUrl,
-              fit: BoxFit.contain,
-              width: double.infinity,
-              placeholder: (context, url) => const Center(
-                child: micro.ShimmerLoading(
-                  width: 200,
-                  height: 200,
-                  borderRadius: BorderRadius.all(Radius.circular(16)),
-                ),
-              ),
-              errorWidget: (context, url, error) => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline, size: 48, color: Colors.grey[700]),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Image non disponible',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: AspectRatio(
+              aspectRatio: 3 / 3.6, // ratio fixe identique pour tous
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.12),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.5),
+                      blurRadius: 40,
+                      spreadRadius: 4,
                     ),
                   ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(27),
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.contain, // image entière, jamais coupée
+                    placeholder: (context, url) => const Center(
+                      child: micro.ShimmerLoading(
+                        width: 200,
+                        height: 200,
+                        borderRadius: BorderRadius.all(Radius.circular(16)),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.error_outline, size: 48, color: Colors.grey[700]),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Image non disponible',
+                            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
