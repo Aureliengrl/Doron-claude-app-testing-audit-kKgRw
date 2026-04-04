@@ -181,6 +181,17 @@ service cloud.firestore {
       );
     }
 
+    // ── notifications ─────────────────────────────────────────────────────────
+
+    match /notifications/{targetUid} {
+      match /items/{itemId} {
+        allow read: if isOwner(targetUid);
+        // Tout user authé peut envoyer une notification à quelqu'un d'autre
+        allow create: if isAuth();
+        allow update, delete: if isOwner(targetUid);
+      }
+    }
+
     // ── fallback ─────────────────────────────────────────────────────────────
 
     match /{document=**} {

@@ -22,16 +22,16 @@ class CollaborationService {
 
     try {
       // Chercher une collaboration existante pour ce profil et cet owner
-      // Utilise un seul filtre pour éviter l'index composite, filtre ownerId côté client
+      // IMPORTANT: inclure where('ownerId') pour satisfaire les security rules Firestore
+      // (sans ce filtre, la query peut retourner des docs d'autres users → permission-denied)
       final existing = await _db
           .collection('collaborations')
           .where('profileId', isEqualTo: profileId)
+          .where('ownerId', isEqualTo: myUid)
           .get();
 
-      final myCollab = existing.docs.where((d) => d.data()['ownerId'] == myUid).toList();
-
-      if (myCollab.isNotEmpty) {
-        final doc = myCollab.first;
+      if (existing.docs.isNotEmpty) {
+        final doc = existing.docs.first;
         return {'collabId': doc.id, ...doc.data()};
       }
 
