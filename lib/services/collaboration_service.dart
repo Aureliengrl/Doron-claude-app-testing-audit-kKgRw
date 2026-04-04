@@ -358,7 +358,11 @@ class CollaborationService {
             'fromUid': data['fromUid'],
             'profileName': data['profileName'] ?? 'une liste',
             'fromName': sender['first_name'] ?? sender['display_name'] ?? 'Quelqu\'un',
-            'fromPhotoUrl': sender['photo_url'] ?? '',
+            'fromPhotoUrl': (sender['photo_url'] as String?)?.isNotEmpty == true
+                ? sender['photo_url'] as String
+                : (sender['photoUrl'] as String?)?.isNotEmpty == true
+                    ? sender['photoUrl'] as String
+                    : (sender['photoURL'] as String?) ?? '',
             'createdAt': data['createdAt'],
           });
         } catch (e) {

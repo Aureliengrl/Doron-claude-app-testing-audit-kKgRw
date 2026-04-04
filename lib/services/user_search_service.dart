@@ -99,7 +99,11 @@ class UserSearchService {
       'uid': uid,
       'displayName': displayName,
       'handle': data['handle'] ?? '',
-      'photoUrl': data['photo_url'] ?? '',
+      'photoUrl': (data['photo_url'] as String?)?.isNotEmpty == true
+          ? data['photo_url'] as String
+          : (data['photoUrl'] as String?)?.isNotEmpty == true
+              ? data['photoUrl'] as String
+              : (data['photoURL'] as String?) ?? '',
       'bio': data['bio'] ?? '',
       'city': data['city'] ?? '',
       'age': data['age'],

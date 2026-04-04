@@ -82,7 +82,11 @@ class FriendService {
                                ? (sender['email'] as String).split('@').first
                                : 'Utilisateur');
               handle = (sender['handle'] as String?) ?? (sender['username'] as String?) ?? '';
-              photoUrl = (sender['photo_url'] as String?) ?? '';
+              photoUrl = (sender['photo_url'] as String?)?.isNotEmpty == true
+                  ? sender['photo_url'] as String
+                  : (sender['photoUrl'] as String?)?.isNotEmpty == true
+                      ? sender['photoUrl'] as String
+                      : (sender['photoURL'] as String?) ?? '';
             }
           } catch (e) {
             AppLogger.debug('getPendingRequestsStream: cannot load sender $fromUid: $e', 'FriendService');
@@ -328,7 +332,11 @@ class FriendService {
                          sender['display_name'] as String? ??
                          sender['name'] as String? ?? 'Utilisateur',
           'handle': sender['handle'] ?? sender['username'] ?? '',
-          'photoUrl': sender['photo_url'] ?? '',
+          'photoUrl': (sender['photo_url'] as String?)?.isNotEmpty == true
+              ? sender['photo_url'] as String
+              : (sender['photoUrl'] as String?)?.isNotEmpty == true
+                  ? sender['photoUrl'] as String
+                  : (sender['photoURL'] as String?) ?? '',
           'createdAt': data['createdAt'],
         });
       }
@@ -373,7 +381,11 @@ class FriendService {
                            data['display_name'] as String? ??
                            data['name'] as String? ?? 'Utilisateur',
             'handle': data['handle'] ?? data['username'] ?? '',
-            'photoUrl': data['photo_url'] ?? '',
+            'photoUrl': (data['photo_url'] as String?)?.isNotEmpty == true
+                ? data['photo_url'] as String
+                : (data['photoUrl'] as String?)?.isNotEmpty == true
+                    ? data['photoUrl'] as String
+                    : (data['photoURL'] as String?) ?? '',
           });
         }
       }

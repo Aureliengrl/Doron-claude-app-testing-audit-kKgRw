@@ -132,9 +132,23 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     }
 
     try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erreur: utilisateur non authentifié.', style: GoogleFonts.outfit()),
+              backgroundColor: const Color(0xFFE53935),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        return;
+      }
+
       final storageRef = FirebaseStorage.instance
           .ref()
-          .child('users/${currentUserReference!.id}/profile_${DateTime.now().millisecondsSinceEpoch}.jpg');
+          .child('users/$uid/profile_${DateTime.now().millisecondsSinceEpoch}.jpg');
       // Compresser l'image avant l'upload
       final compressedFile = await ImageCompressUtils.compressImage(file);
       final fileToUpload = compressedFile ?? file;
@@ -142,7 +156,22 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       final uploadTask = await storageRef.putFile(fileToUpload);
       final downloadUrl = await uploadTask.ref.getDownloadURL();
 
-      await currentUserReference!.update(createUsersRecordData(photoUrl: downloadUrl));
+      // Écrire dans users (minuscules) — la collection correctement couverte par les règles Firestore
+      // ET synchroniser Firebase Auth pour que currentUserPhoto soit mis à jour immédiatement
+      await Future.wait([
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .update({'photo_url': downloadUrl}),
+        FirebaseAuth.instance.currentUser!.updatePhotoURL(downloadUrl),
+      ]);
+
+      // Écrire aussi dans Users (FlutterFlow legacy) si la doc existe, en best-effort
+      try {
+        if (currentUserReference != null) {
+          await currentUserReference!.update(createUsersRecordData(photoUrl: downloadUrl));
+        }
+      } catch (_) {}
 
       if (mounted) {
         setState(() {}); // Rafraîchit l'UI (via AuthUserStreamWidget)
