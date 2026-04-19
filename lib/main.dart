@@ -358,14 +358,16 @@ class _MyAppState extends State<MyApp> {
         if (child == null) {
           return const Scaffold(backgroundColor: Color(0xFF062248), body: Center(child: CircularProgressIndicator()));
         }
-        // DevicePreview builder doit englober ShowCaseWidget
-        return DevicePreview.appBuilder(context,
-          ShowCaseWidget(
-            builder: (context) => OfflineBannerWrapper(
-              child: child,
-            ),
-          ),
+        // BUG 5 FIX: DevicePreview.appBuilder était toujours actif, même en release.
+        // Il est maintenant conditionné à kDebugMode pour ne jamais apparaître
+        // sur TestFlight ou l'App Store.
+        final showcase = ShowCaseWidget(
+          builder: (context) => OfflineBannerWrapper(child: child),
         );
+        if (kDebugMode) {
+          return DevicePreview.appBuilder(context, showcase);
+        }
+        return showcase;
       },
     );
   }
@@ -411,6 +413,10 @@ class _NavBarPageState extends State<NavBarPage> {
   // Track previous friend request count for in-app notification
   int _previousFriendRequestCount = -1; // -1 = not yet initialized
 
+  // BUG 13 FIX: abonnement aux changements d'authentification pour
+  // réinitialiser les streams de badges après un re-login.
+  StreamSubscription? _authSub;
+
   @override
   void initState() {
     super.initState();
@@ -429,6 +435,26 @@ class _NavBarPageState extends State<NavBarPage> {
     _loadedPages.add(_currentIndex);
 
     _initBadgeStreams();
+
+    // BUG 13 FIX: Re-init les streams de badges à chaque changement d'auth
+    // (connexion / déconnexion / changement de compte).
+    _authSub = FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (!mounted) return;
+      // Annuler les anciens streams (liés à l'uid précédent)
+      _friendRequestSub?.cancel();
+      _chatUnreadSub?.cancel();
+      _previousFriendRequestCount = -1;
+      if (user != null) {
+        // Nouvel utilisateur connecté : réabonner les streams
+        _initBadgeStreams();
+      } else {
+        // Déconnecté : remettre les badges à zéro
+        safeSetState(() {
+          _friendRequestBadge = 0;
+          _unreadChatBadge = 0;
+        });
+      }
+    });
   }
 
   void _initBadgeStreams() {
@@ -540,6 +566,7 @@ class _NavBarPageState extends State<NavBarPage> {
 
   @override
   void dispose() {
+    _authSub?.cancel();
     _friendRequestSub?.cancel();
     _chatUnreadSub?.cancel();
     super.dispose();

@@ -16,6 +16,8 @@
   "author": "Doron Team",
   "license": "MIT",
   "dependencies": {
-    "firebase-admin": "^12.7.0"
+    "cheerio": "^1.2.0",
+    "firebase-admin": "^12.7.0",
+    "node-fetch": "^2.7.0"
   }
 }

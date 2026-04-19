@@ -184,17 +184,26 @@ class _FriendsPageState extends State<FriendsPage>
     }
   }
 
+  // BUG 12 FIX: _loadingStatuses est maintenant modifié dans setState()
+  // pour déclencher correctement les rebuilds (affichage/masquage des spinners).
   Future<void> _loadFriendshipStatus(String uid) async {
-    _loadingStatuses.add(uid);
+    if (mounted) setState(() => _loadingStatuses.add(uid));
     try {
       final result = await FriendService.getFriendshipStatus(uid);
       if (mounted) {
-        setState(() => _statusCache[uid] = result);
+        setState(() {
+          _statusCache[uid] = result;
+          _loadingStatuses.remove(uid);
+        });
       }
     } catch (_) {
-      if (mounted) setState(() => _statusCache[uid] = (status: FriendshipStatus.none, requestId: null));
+      if (mounted) {
+        setState(() {
+          _statusCache[uid] = (status: FriendshipStatus.none, requestId: null);
+          _loadingStatuses.remove(uid);
+        });
+      }
     }
-    _loadingStatuses.remove(uid);
   }
 
   // ─── Demandes ───────────────────────────────────────────────────────────
@@ -989,16 +998,7 @@ class _FriendsPageState extends State<FriendsPage>
     );
   }
 
-  // Ancienne méthode conservée pour compatibilité — n'est plus appelée
-  Widget _buildSearchHistoryList() {
-    return ListView(
-      children: [
-        _buildSearchHistoryHeader(),
-        ..._searchHistory.map((q) => _buildHistoryTile(q)),
-      ],
-    );
-  }
-
+  // BUG 7 FIX: méthode morte supprimée (_buildSearchHistoryList n'était jamais appelée).
 
   Widget _buildSearchResultTile(Map<String, dynamic> profile) {
     final photoUrl = profile['photoUrl'] as String? ?? '';

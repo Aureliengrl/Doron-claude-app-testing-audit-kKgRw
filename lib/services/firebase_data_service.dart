@@ -541,22 +541,19 @@ class FirebaseDataService {
 
     // ── Firebase ──────────────────────────────────────────────────────────
     try {
-      var query = _firestore
+      // BUG 1 FIX: utiliser la query construite conditionnellement plutôt qu'un
+      // nouveau _firestore.collection() qui ignore le filtre personId.
+      Query<Map<String, dynamic>> query = _firestore
           .collection('users')
           .doc(currentUserId)
           .collection('wishlists')
           .orderBy('createdAt', descending: true);
 
       if (personId != null) {
-        query = _firestore.collection('users').doc(currentUserId).collection('wishlists').orderBy('createdAt', descending: true).where('personId', isEqualTo: personId);
+        query = query.where('personId', isEqualTo: personId);
       }
 
-      final snapshot = await _firestore
-          .collection('users')
-          .doc(currentUserId)
-          .collection('wishlists')
-          .orderBy('createdAt', descending: true)
-          .get();
+      final snapshot = await query.get();
 
       final firebaseWishlists = snapshot.docs.map((doc) {
         return {'id': doc.id, ...doc.data()};
@@ -781,18 +778,26 @@ class FirebaseDataService {
           .collection('products')
           .doc(productId)
           .delete();
-      // Décrémenter le compteur (ignore si déjà à 0)
+      // BUG 11 FIX: décrémenter avec un set merge pour éviter les erreurs si
+      // productCount n'existe pas encore (nouvelles wishlists créées avant ce champ).
+      // On utilise une transaction pour garantir que le résultat est >= 0.
       try {
-        await _firestore
+        final ref = _firestore
             .collection('users')
             .doc(currentUserId)
             .collection('wishlists')
-            .doc(wishlistId)
-            .update({
-          'productCount': FieldValue.increment(-1),
-          'updatedAt': FieldValue.serverTimestamp(),
+            .doc(wishlistId);
+        await _firestore.runTransaction((txn) async {
+          final snap = await txn.get(ref);
+          final current = (snap.data()?['productCount'] as num?)?.toInt() ?? 0;
+          txn.update(ref, {
+            'productCount': current > 0 ? current - 1 : 0,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
         });
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.debug('productCount decrement warning: $e', 'Firebase');
+      }
       AppLogger.firebase('Product removed from wishlist: $productId');
       return true;
     } catch (e) {
@@ -803,31 +808,52 @@ class FirebaseDataService {
 
 
   /// Charge les produits d'une wishlist (retourne des Maps directement).
-  /// FIX: lit depuis la sous-collection products (pas l'indirection productIds)
+  /// BUG 10 FIX: Si un cache local existe, on le retourne immédiatement ET on
+  /// effectue une synchro Firebase. Si Firebase apporte de nouveaux produits,
+  /// on retourne la liste fusionnée (visible dès le prochain build du widget).
   static Future<List<Map<String, dynamic>>> loadWishlistProducts(
     String wishlistId,
   ) async {
     // ── Local d'abord ─────────────────────────────────────────────────────
+    List<Map<String, dynamic>> localList = [];
     try {
       final prefs = await SharedPreferences.getInstance();
       final localJson = prefs.getString(_key('wishlist_products_$wishlistId')) ?? '[]';
-      final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
-      if (localList.isNotEmpty) {
-        AppLogger.success('Loaded ${localList.length} products from wishlist (local)', 'Firebase');
-        // Si connecté, fusionner avec Firebase en arrière-plan
-        if (isLoggedIn) {
-          _loadWishlistProductsFromFirebase(wishlistId).then((fbProducts) {
-            // Sync silencieuse — les nouveaux IDs venant d'autres appareils
-            // seront disponibles au prochain chargement
-          });
-        }
-        return localList;
-      }
+      localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
     } catch (e) {
       AppLogger.error('Error loading wishlist products (local)', 'Firebase', e);
     }
-    // Pas de données locales → Firebase
-    return _loadWishlistProductsFromFirebase(wishlistId);
+
+    // Si pas connecté, retourner uniquement le local
+    if (!isLoggedIn) return localList;
+
+    // Toujours interroger Firebase pour obtenir les données à jour
+    // (inclut les produits ajoutés depuis un autre appareil)
+    try {
+      final fbProducts = await _loadWishlistProductsFromFirebase(wishlistId);
+      if (fbProducts.isEmpty) return localList;
+
+      // Merger : Firebase en priorité, produits locaux non encore sur Firebase ajoutés
+      final fbIds = fbProducts.map((p) => p['id']?.toString()).toSet();
+      final onlyLocal = localList.where((p) => !fbIds.contains(p['id']?.toString())).toList();
+      final merged = [...fbProducts, ...onlyLocal];
+
+      // Mettre à jour le cache local avec la liste fusionnée
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final serializable = merged.map((p) => {
+          ...p,
+          'addedAt': (p['addedAt'] is String) ? p['addedAt'] : DateTime.now().toIso8601String(),
+        }).toList();
+        await prefs.setString(_key('wishlist_products_$wishlistId'), json.encode(serializable));
+      } catch (_) {}
+
+      AppLogger.firebase('Loaded ${merged.length} products from wishlist (merged local+Firebase)');
+      return merged;
+    } catch (e) {
+      AppLogger.error('Error loading wishlist products from Firebase', 'Firebase', e);
+      return localList;
+    }
   }
 
   static Future<List<Map<String, dynamic>>> _loadWishlistProductsFromFirebase(
@@ -1537,10 +1563,11 @@ class FirebaseDataService {
   }) async {
     final listId = const Uuid().v4();
 
-    // Sauvegarder localement
+    // BUG 4 FIX: utiliser _key() pour préfixer par uid et éviter la fuite
+    // de données entre comptes sur le même appareil.
     try {
       final prefs = await SharedPreferences.getInstance();
-      final listsJson = prefs.getString('local_gift_lists_$personId') ?? '[]';
+      final listsJson = prefs.getString(_key('gift_lists_$personId')) ?? '[]';
       final lists = (json.decode(listsJson) as List).cast<Map<String, dynamic>>();
 
       lists.add({
@@ -1551,7 +1578,7 @@ class FirebaseDataService {
         'createdAt': DateTime.now().toIso8601String(),
       });
 
-      await prefs.setString('local_gift_lists_$personId', json.encode(lists));
+      await prefs.setString(_key('gift_lists_$personId'), json.encode(lists));
       AppLogger.success('Gift list saved locally for person $personId', 'Firebase');
     } catch (e) {
       AppLogger.error('Error saving gift list locally', 'Firebase', e);
@@ -1612,10 +1639,10 @@ class FirebaseDataService {
       }
     }
 
-    // Fallback local
+    // Fallback local (BUG 4 FIX: clé préfixée par uid)
     try {
       final prefs = await SharedPreferences.getInstance();
-      final listsJson = prefs.getString('local_gift_lists_$personId') ?? '[]';
+      final listsJson = prefs.getString(_key('gift_lists_$personId')) ?? '[]';
       final lists = (json.decode(listsJson) as List)
           .map((e) => e as Map<String, dynamic>)
           .toList();
@@ -1678,16 +1705,16 @@ class FirebaseDataService {
       // Sauvegarder la liste mise à jour
       final listId = currentList['id'] as String;
 
-      // Sauvegarder localement
+      // Sauvegarder localement (BUG 4 FIX: clé préfixée par uid)
       try {
         final prefs = await SharedPreferences.getInstance();
-        final listsJson = prefs.getString('local_gift_lists_$personId') ?? '[]';
+        final listsJson = prefs.getString(_key('gift_lists_$personId')) ?? '[]';
         final lists = (json.decode(listsJson) as List).cast<Map<String, dynamic>>();
 
         final listIndex = lists.indexWhere((l) => l['id'] == listId);
         if (listIndex != -1) {
           lists[listIndex]['gifts'] = gifts;
-          await prefs.setString('local_gift_lists_$personId', json.encode(lists));
+          await prefs.setString(_key('gift_lists_$personId'), json.encode(lists));
         }
 
         AppLogger.success('Gift added locally for person $personId', 'Firebase');
@@ -1726,10 +1753,10 @@ class FirebaseDataService {
   static Future<void> saveHomeFeed(List<Map<String, dynamic>> products) async {
     final feedId = const Uuid().v4();
 
-    // Sauvegarder localement
+    // BUG 4 FIX: clé préfixée par uid pour éviter la fuite entre comptes
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('local_home_feed_latest', json.encode({
+      await prefs.setString(_key('home_feed_latest'), json.encode({
         'id': feedId,
         'products': products,
         'createdAt': DateTime.now().toIso8601String(),
@@ -1784,10 +1811,10 @@ class FirebaseDataService {
       }
     }
 
-    // Fallback local
+    // Fallback local (BUG 4 FIX: clé préfixée par uid)
     try {
       final prefs = await SharedPreferences.getInstance();
-      final feedJson = prefs.getString('local_home_feed_latest');
+      final feedJson = prefs.getString(_key('home_feed_latest'));
       if (feedJson != null) {
         final feedData = json.decode(feedJson) as Map<String, dynamic>;
         final products = feedData['products'] as List?;
@@ -1803,7 +1830,10 @@ class FirebaseDataService {
     return null;
   }
 
-  /// Ajoute un produit (par son docId) dans une wishlist
+  /// Ajoute un produit (par son docId) dans une wishlist.
+  /// @deprecated Utiliser [addProductToWishlist] à la place.
+  /// Cette méthode rétrocompatible écrit encore dans `productIds` (ancien schéma).
+  /// BUG 6 FIX: remplacé print() par AppLogger.
   static Future<void> addToWishlist(String wishlistId, String productDocId) async {
     final userId = currentUserId;
     if (userId == null) return;
@@ -1818,7 +1848,7 @@ class FirebaseDataService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('❌ addToWishlist error: $e');
+      AppLogger.error('addToWishlist error', 'Firebase', e);
     }
   }
 }

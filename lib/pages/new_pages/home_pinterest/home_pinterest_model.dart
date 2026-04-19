@@ -1,4 +1,6 @@
-﻿class HomePinterestModel {
+import '/utils/app_logger.dart';
+
+class HomePinterestModel {
   String activeCategory = 'Pour toi';
   String activePriceFilter = 'all';
   String activeBrand = 'all'; // Filtre par marque/retailer
@@ -53,11 +55,11 @@
     if (likedProducts.contains(productId)) {
       likedProducts.remove(productId);
       likedProductTitles.remove(productTitle);
-      print('🗑️ Model: Produit retiré des favoris - ID: $productId, Titre: $productTitle');
+      AppLogger.debug('🗑️ Produit retiré des favoris - ID: $productId, Titre: $productTitle', 'Home');
     } else {
       likedProducts.add(productId);
       likedProductTitles.add(productTitle);
-      print('❤️ Model: Produit ajouté aux favoris - ID: $productId, Titre: $productTitle');
+      AppLogger.debug('❤️ Produit ajouté aux favoris - ID: $productId, Titre: $productTitle', 'Home');
     }
   }
 

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
+import '/utils/app_logger.dart';
 
 class ImageCompressUtils {
   static Future<File?> compressImage(File file, {int quality = 60, int minWidth = 800, int minHeight = 800}) async {
@@ -25,7 +26,7 @@ class ImageCompressUtils {
       }
       return null;
     } catch (e) {
-      print('Erreur de compression: $e');
+      AppLogger.error('Erreur de compression image', 'ImageCompress', e);
       return file; // Retourner le fichier original en cas d'erreur
     }
   }
