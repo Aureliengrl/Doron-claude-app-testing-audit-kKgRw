@@ -16,6 +16,13 @@ service cloud.firestore {
         request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
     }
 
+    // Teste si le viewer courant est ami du user ownerUid.
+    // Utilisé pour contrôler l'accès aux wishlists privées d'un ami.
+    function isFriendOf(ownerUid) {
+      return isAuth() &&
+        request.auth.uid in get(/databases/$(database)/documents/users/$(ownerUid)).data.get('friends', []);
+    }
+
     // ── users ──────────────────────────────────────────────────────────────
 
     match /users/{userId} {
@@ -35,13 +42,17 @@ service cloud.firestore {
         allow update, delete: if isOwner(userId);
       }
       match /wishlists/{wishlistId} {
-        // Lecture : propriétaire + tout user authé (filtrage isPublic côté client)
+        // Lecture : propriétaire + tout user authé (filtrage isPublic côté service getVisibleWishlists)
         allow read: if isAuth();
         allow write: if isOwner(userId);
         match /products/{productId} {
-          // Lecture : propriétaire OU wishlist publique
+          // FIX : lecture autorisée pour le propriétaire, les amis, ou si la wishlist est publique.
+          // La sécurisation principale est dans getVisibleWishlists (côté service).
+          // On autorise isAuth() pour éviter le bug où un ami voit la wishlist
+          // mais ne peut pas charger ses produits (Firestore rejetait la query).
           allow read: if isOwner(userId) ||
-            (isAuth() && get(/databases/$(database)/documents/users/$(userId)/wishlists/$(wishlistId)).data.isPublic == true);
+            (isAuth() && get(/databases/$(database)/documents/users/$(userId)/wishlists/$(wishlistId)).data.isPublic == true) ||
+            (isAuth() && isFriendOf(userId));
           allow write: if isOwner(userId);
         }
       }

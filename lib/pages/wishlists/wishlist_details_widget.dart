@@ -94,6 +94,8 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
   }
 
   /// Charge la wishlist et ses produits pour un ami (ownerUid différent de l'utilisateur courant).
+  /// Note: access control is already done by getVisibleWishlists/PublicProfilePage.
+  /// Si ownerUid est fourni, l'accès est déjà considéré accordé — on charge toujours les produits.
   Future<void> _loadFriendWishlist(String ownerUid) async {
     try {
       // Metadata de la wishlist
@@ -111,29 +113,44 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
       }
 
       final wData = wishlistDoc.data()!;
+      final isPublicFlag = wData['isPublic'] as bool? ?? false;
+
+      // FIX : si ownerUid est fourni explicitement depuis le profil public
+      // (via PublicProfilePage → getVisibleWishlists), l'accès est déjà validé.
+      // On traite la wishlist comme accessible même si isPublic == false.
+      // (un ami a le droit de voir toutes les wishlists selon getVisibleWishlists)
+      final bool accessGranted = widget.ownerUid != null;
+
       _wishlistData = {
         'id': wishlistDoc.id,
         'name': wData['name'] ?? 'Wishlist',
         'emoji': wData['emoji'] ?? '🎁',
-        'isPublic': wData['isPublic'] ?? false,
+        // FIX: si ownerUid fourni → on force isPublic=true pour débloquer _buildContent
+        'isPublic': accessGranted ? true : isPublicFlag,
         'coverPhoto': wData['coverPhoto'] ?? '',
         'ownerUid': ownerUid,
       };
 
-      // Produits — seulement si la wishlist est publique
-      if (wData['isPublic'] == true) {
-        final productsSnap = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(ownerUid)
-            .collection('wishlists')
-            .doc(widget.wishlistId)
-            .collection('products')
-            .orderBy('addedAt', descending: true)
-            .get();
+      // FIX : charger les produits que la wishlist soit publique ou non
+      // (l'accès est garanti car PublicProfilePage a déjà filtré via getVisibleWishlists)
+      if (accessGranted || isPublicFlag) {
+        try {
+          final productsSnap = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(ownerUid)
+              .collection('wishlists')
+              .doc(widget.wishlistId)
+              .collection('products')
+              .orderBy('addedAt', descending: true)
+              .get();
 
-        _products = productsSnap.docs
-            .map((d) => <String, dynamic>{'id': d.id, ...d.data()})
-            .toList();
+          _products = productsSnap.docs
+              .map((d) => <String, dynamic>{'id': d.id, ...d.data()})
+              .toList();
+        } catch (e) {
+          // Firestore rules peuvent bloquer si non-ami — fallback silencieux
+          _products = [];
+        }
       } else {
         _products = [];
       }
