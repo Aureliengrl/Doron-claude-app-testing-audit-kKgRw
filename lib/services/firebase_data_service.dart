@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import '/utils/app_logger.dart';
 import '/backend/backend.dart';
 import '/auth/firebase_auth/auth_util.dart';
+import '/services/optimistic_image_uploader.dart';
 
 /// Service pour gérer les données Firebase
 class FirebaseDataService {
@@ -669,8 +670,11 @@ class FirebaseDataService {
   }
 
   /// Ajoute une photo (depuis le disque local) à une wishlist.
-  /// Upload sur Firebase Storage, puis écrit un item `type:'photo'`
-  /// dans la sous-collection `products` et incrémente `productCount`.
+  /// ✅ VERSION OPTIMISTE — non-bloquante :
+  ///   1. Écrit immédiatement en local + Firestore avec le chemin du fichier local.
+  ///   2. Lance l'upload Firebase Storage EN ARRIÈRE-PLAN.
+  ///   3. Quand l'upload réussit, met à jour Firestore avec l'URL CDN.
+  /// → L'utilisateur voit sa photo instantanément dans la grille.
   static Future<bool> addPhotoToWishlist(
     String wishlistId,
     String localImagePath, {
@@ -683,72 +687,98 @@ class FirebaseDataService {
       if (uid == null || uid.isEmpty) return false;
 
       final photoId = '${DateTime.now().millisecondsSinceEpoch}';
-      final file = File(localImagePath);
+      final effectiveName =
+          productName?.isNotEmpty == true ? productName! : (caption ?? '');
 
-      // ── Upload Firebase Storage ───────────────────────────────────────
-      final ref = _storage
-          .ref()
-          .child('users/$uid/wishlist_photos/$wishlistId/$photoId.jpg');
-      final uploadTask = await ref.putFile(file);
-      final downloadUrl = await uploadTask.ref.getDownloadURL();
-
-      final effectiveName = productName?.isNotEmpty == true ? productName! : (caption ?? '');
-      final photoItem = {
+      // ── Item avec chemin local (affiché immédiatement) ──────────────────
+      final photoItemLocal = {
         'id': photoId,
         'type': 'photo',
-        'image': downloadUrl,
+        'image': localImagePath,   // fichier local — CachedImageWidget le gère
         'name': effectiveName,
         'caption': caption ?? effectiveName,
         'price': productPrice ?? '',
         'addedAt': DateTime.now().toIso8601String(),
+        '_uploading': true,        // flag discret pour indicateur optionnel
       };
 
-      // ── Local cache ────────────────────────────────────────────────────
+      // ── Écriture locale IMMÉDIATE ────────────────────────────────────────
       try {
         final prefs = await SharedPreferences.getInstance();
-        // liste produits
         final localJson = prefs.getString(_key('wishlist_products_$wishlistId')) ?? '[]';
         final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
-        localList.insert(0, photoItem);
+        localList.insert(0, photoItemLocal);
         await prefs.setString(_key('wishlist_products_$wishlistId'), json.encode(localList));
-        // compteur
+
         final wishlistsJson = prefs.getString(_key('wishlists')) ?? '[]';
         final wishlistsList = (json.decode(wishlistsJson) as List).cast<Map<String, dynamic>>();
         final idx = wishlistsList.indexWhere((w) => w['id']?.toString() == wishlistId);
         if (idx != -1) {
-          final current = (wishlistsList[idx]['productCount'] as int?) ?? 0;
-          wishlistsList[idx]['productCount'] = current + 1;
+          wishlistsList[idx]['productCount'] = ((wishlistsList[idx]['productCount'] as int?) ?? 0) + 1;
           await prefs.setString(_key('wishlists'), json.encode(wishlistsList));
         }
       } catch (_) {}
 
-      // ── Firestore ─────────────────────────────────────────────────────
-      await _firestore
-          .collection('users')
-          .doc(uid)
-          .collection('wishlists')
-          .doc(wishlistId)
-          .collection('products')
-          .doc(photoId)
-          .set({...photoItem, 'addedAt': FieldValue.serverTimestamp()});
+      // ── Écriture Firestore IMMÉDIATE (chemin local — sera remplacé) ──────
+      if (isLoggedIn) {
+        try {
+          await _firestore
+              .collection('users').doc(uid)
+              .collection('wishlists').doc(wishlistId)
+              .collection('products').doc(photoId)
+              .set({...photoItemLocal, 'addedAt': FieldValue.serverTimestamp()});
 
-      await _firestore
-          .collection('users')
-          .doc(uid)
-          .collection('wishlists')
-          .doc(wishlistId)
-          .update({
-        'productCount': FieldValue.increment(1),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+          await _firestore
+              .collection('users').doc(uid)
+              .collection('wishlists').doc(wishlistId)
+              .update({'productCount': FieldValue.increment(1), 'updatedAt': FieldValue.serverTimestamp()});
+        } catch (_) {}
+      }
 
-      AppLogger.firebase('Photo added to wishlist $wishlistId: $photoId');
+      // ── Upload en ARRIÈRE-PLAN — non awaité ─────────────────────────────
+      () async {
+        try {
+          final cdnUrl = await OptimisticImageUploader.uploadAndWait(
+            localPath: localImagePath,
+            storagePath: 'users/$uid/wishlist_photos/$wishlistId/$photoId.jpg',
+          );
+          if (cdnUrl == null) return;
+
+          // Remplacer le chemin local par l'URL CDN dans Firestore
+          if (isLoggedIn) {
+            await _firestore
+                .collection('users').doc(uid)
+                .collection('wishlists').doc(wishlistId)
+                .collection('products').doc(photoId)
+                .update({'image': cdnUrl, '_uploading': false});
+          }
+          // Mettre à jour le cache local
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            final localJson = prefs.getString(_key('wishlist_products_$wishlistId')) ?? '[]';
+            final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
+            final i = localList.indexWhere((p) => p['id']?.toString() == photoId);
+            if (i != -1) {
+              localList[i]['image'] = cdnUrl;
+              localList[i]['_uploading'] = false;
+              await prefs.setString(_key('wishlist_products_$wishlistId'), json.encode(localList));
+            }
+          } catch (_) {}
+
+          AppLogger.firebase('Photo wishlist upload terminé: $photoId → $cdnUrl');
+        } catch (e) {
+          AppLogger.error('addPhotoToWishlist background upload error', 'Firebase', e);
+        }
+      }();
+
+      AppLogger.firebase('Photo ajoutée optimistiquement à wishlist $wishlistId: $photoId');
       return true;
     } catch (e) {
       AppLogger.error('Error adding photo to wishlist', 'Firebase', e);
       return false;
     }
   }
+
 
   /// Retire un produit d'une wishlist.
   /// FIX: supprime depuis la sous-collection products
@@ -1747,7 +1777,50 @@ class FirebaseDataService {
     }
   }
 
-  // ============= HOME FEED =============
+  /// Met à jour un champ d'un cadeau existant dans la liste d'une personne.
+  /// Utilisé principalement pour remplacer le chemin local par l'URL CDN après upload.
+  static Future<void> updateGiftInPerson({
+    required String personId,
+    required String giftId,
+    required Map<String, dynamic> updates,
+  }) async {
+    try {
+      final currentList = await loadLatestGiftListForPerson(personId);
+      if (currentList == null) return;
+
+      final List<Map<String, dynamic>> gifts =
+          (currentList['gifts'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      final idx = gifts.indexWhere((g) => g['id']?.toString() == giftId);
+      if (idx == -1) return;
+
+      gifts[idx] = {...gifts[idx], ...updates};
+      final listId = currentList['id'] as String;
+
+      // ── Local ───────────────────────────────────────────────────────────
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final listsJson = prefs.getString(_key('gift_lists_$personId')) ?? '[]';
+        final lists = (json.decode(listsJson) as List).cast<Map<String, dynamic>>();
+        final li = lists.indexWhere((l) => l['id'] == listId);
+        if (li != -1) {
+          lists[li]['gifts'] = gifts;
+          await prefs.setString(_key('gift_lists_$personId'), json.encode(lists));
+        }
+      } catch (_) {}
+
+      // ── Firestore ───────────────────────────────────────────────────────
+      if (isLoggedIn) {
+        await _firestore
+            .collection('users').doc(currentUserId)
+            .collection('people').doc(personId)
+            .collection('gift_lists').doc(listId)
+            .update({'gifts': gifts});
+      }
+    } catch (e) {
+      AppLogger.error('updateGiftInPerson error', 'Firebase', e);
+    }
+  }
+
 
   /// Sauvegarde un feed d'accueil généré
   static Future<void> saveHomeFeed(List<Map<String, dynamic>> products) async {

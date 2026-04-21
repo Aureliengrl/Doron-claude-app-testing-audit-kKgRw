@@ -11,20 +11,20 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/services/product_url_service.dart';
 import '/services/firebase_data_service.dart';
+import '/services/optimistic_image_uploader.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '/pages/pages/change_language/change_language_widget.dart';
 import '/pages/pages/change_name/change_name_widget.dart';
 import '/pages/pages/components/change_password/change_password_widget.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'user_profile_model.dart';
 import '/components/liquid_glass_loader.dart';
 import 'dart:io';
 import '/components/product_detail_modal.dart';
 import '/components/shared_product_card.dart';
-import '/utils/image_compress_utils.dart';
 import '/services/photo_permission_service.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 export 'user_profile_model.dart';
 
 class UserProfileWidget extends StatefulWidget {
@@ -94,106 +94,95 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   }
 
   // ─── Changement de photo de profil ──────────────────────────
+
+  /// Chemin local de la préview de la photo de profil (avant upload CDN).
+  /// Null si aucune photo locale en cours d'upload.
+  File? _localProfilePhoto;
+
   Future<void> _changeProfilePicture() async {
     final pickedFile = await PhotoPermissionService.pickWithChoice(context);
-
     if (pickedFile == null || !mounted) return;
 
     final file = File(pickedFile.path);
 
-    if (currentUserReference == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erreur: utilisateur non trouvé.', style: GoogleFonts.outfit()),
-            backgroundColor: const Color(0xFFE53935),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-      return;
+    if (currentUserReference == null) return;
+
+    // ── Affichage OPTIMISTE IMMÉDIAT ────────────────────────────────────────
+    // On montre la photo locale dans l'avatar sans attendre l'upload
+    if (mounted) {
+      setState(() => _localProfilePhoto = file);
     }
 
+    // Snack discret (non-bloquant)
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const LiquidGlassLoader(size: 24, isDark: false),
-              const SizedBox(width: 16),
-              Text('Mise à jour de la photo...', style: GoogleFonts.outfit()),
-            ],
-          ),
-          backgroundColor: LiquidGlassTokens.pageDark,
-          duration: const Duration(seconds: 4),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Sauvegarde de la photo…', style: GoogleFonts.outfit()),
+        backgroundColor: LiquidGlassTokens.pageDark,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ));
     }
 
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Erreur: utilisateur non authentifié.', style: GoogleFonts.outfit()),
+      if (uid == null) return;
+
+      // ── Upload en arrière-plan via OptimisticImageUploader ──────────────
+      OptimisticImageUploader.upload(
+        localPath: pickedFile.path,
+        storagePath: 'users/$uid/profile_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        onUploadComplete: (downloadUrl) async {
+          // Écrire l'URL CDN dans Firestore + Auth
+          try {
+            await Future.wait([
+              FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(uid)
+                  .update({'photo_url': downloadUrl}),
+              FirebaseAuth.instance.currentUser!.updatePhotoURL(downloadUrl),
+            ]);
+            // Sync FlutterFlow legacy
+            try {
+              if (currentUserReference != null) {
+                await currentUserReference!
+                    .update(createUsersRecordData(photoUrl: downloadUrl));
+              }
+            } catch (_) {}
+          } catch (_) {}
+
+          if (mounted) {
+            // Effacer la photo locale (le CDN prend le relais)
+            setState(() => _localProfilePhoto = null);
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Photo de profil mise à jour ✓',
+                  style: GoogleFonts.outfit()),
+              backgroundColor: const Color(0xFF8A2BE2),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+            ));
+          }
+        },
+        onUploadError: (e) {
+          if (mounted) {
+            // Revenir à l'état précédent
+            setState(() => _localProfilePhoto = null);
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Erreur upload photo ($e)',
+                  style: GoogleFonts.outfit()),
               backgroundColor: const Color(0xFFE53935),
               behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-        return;
-      }
-
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('users/$uid/profile_${DateTime.now().millisecondsSinceEpoch}.jpg');
-      // Compresser l'image avant l'upload
-      final compressedFile = await ImageCompressUtils.compressImage(file);
-      final fileToUpload = compressedFile ?? file;
-      
-      final uploadTask = await storageRef.putFile(fileToUpload);
-      final downloadUrl = await uploadTask.ref.getDownloadURL();
-
-      // Écrire dans users (minuscules) — la collection correctement couverte par les règles Firestore
-      // ET synchroniser Firebase Auth pour que currentUserPhoto soit mis à jour immédiatement
-      await Future.wait([
-        FirebaseFirestore.instance
-            .collection('users')
-            .doc(uid)
-            .update({'photo_url': downloadUrl}),
-        FirebaseAuth.instance.currentUser!.updatePhotoURL(downloadUrl),
-      ]);
-
-      // Écrire aussi dans Users (FlutterFlow legacy) si la doc existe, en best-effort
-      try {
-        if (currentUserReference != null) {
-          await currentUserReference!.update(createUsersRecordData(photoUrl: downloadUrl));
-        }
-      } catch (_) {}
-
-      if (mounted) {
-        setState(() {}); // Rafraîchit l'UI (via AuthUserStreamWidget)
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Photo de profil mise à jour.', style: GoogleFonts.outfit()),
-            backgroundColor: const Color(0xFF8A2BE2),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+            ));
+          }
+        },
+      );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erreur lors du transfert ($e)', style: GoogleFonts.outfit()),
-            backgroundColor: const Color(0xFFE53935),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        setState(() => _localProfilePhoto = null);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Erreur ($e)', style: GoogleFonts.outfit()),
+          backgroundColor: const Color(0xFFE53935),
+          behavior: SnackBarBehavior.floating,
+        ));
       }
     }
   }
@@ -404,35 +393,52 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                 ],
                               ),
                               child: ClipOval(
-                                child: AuthUserStreamWidget(
-                                  builder: (context) => currentUserPhoto != null && currentUserPhoto!.isNotEmpty
-                                      ? CachedNetworkImage(
-                                          imageUrl: currentUserPhoto!,
-                                          fit: BoxFit.cover,
-                                          placeholder: (context, url) => Container(
-                                            color: Colors.grey[300],
+                                // ── Avatar optimiste ─────────────────────
+                                // Si un upload est en cours : fichier local
+                                // Sinon : URL CDN via AuthUserStreamWidget
+                                child: _localProfilePhoto != null
+                                    ? Stack(fit: StackFit.expand, children: [
+                                        Image.file(_localProfilePhoto!,
+                                            fit: BoxFit.cover),
+                                        // Micro-badge upload discret
+                                        Positioned(
+                                          bottom: 0, right: 0, left: 0,
+                                          child: Container(
+                                            height: 18,
+                                            color: Colors.black45,
                                             child: const Center(
-                                              child: LiquidGlassLoader(size: 16, isDark: false),
+                                              child: SizedBox(
+                                                width: 10, height: 10,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 1.5,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                          errorWidget: (context, url, error) => Container(
-                                            color: violetColor.withOpacity(0.3),
-                                            child: Icon(
-                                              Icons.person,
-                                              size: 40,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        )
-                                      : Container(
-                                          color: violetColor.withOpacity(0.3),
-                                          child: Icon(
-                                            Icons.person,
-                                            size: 40,
-                                            color: Colors.white,
                                           ),
                                         ),
-                                ),
+                                      ])
+                                    : AuthUserStreamWidget(
+                                        builder: (context) => currentUserPhoto != null && currentUserPhoto!.isNotEmpty
+                                            ? CachedNetworkImage(
+                                                imageUrl: currentUserPhoto!,
+                                                fit: BoxFit.cover,
+                                                placeholder: (context, url) => Container(
+                                                  color: Colors.grey[300],
+                                                  child: const Center(
+                                                    child: LiquidGlassLoader(size: 16, isDark: false),
+                                                  ),
+                                                ),
+                                                errorWidget: (context, url, error) => Container(
+                                                  color: violetColor.withOpacity(0.3),
+                                                  child: Icon(Icons.person, size: 40, color: Colors.white),
+                                                ),
+                                              )
+                                            : Container(
+                                                color: violetColor.withOpacity(0.3),
+                                                child: Icon(Icons.person, size: 40, color: Colors.white),
+                                              ),
+                                      ),
                               ),
                             ),
                             // Badge modifier

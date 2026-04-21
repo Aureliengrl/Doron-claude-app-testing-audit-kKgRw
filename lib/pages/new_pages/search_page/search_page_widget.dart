@@ -14,6 +14,7 @@ import '/components/micro_interactions.dart' as micro;
 import '/components/liquid_glass.dart';
 import '/services/product_url_service.dart';
 import '/services/firebase_data_service.dart';
+import '/services/optimistic_image_uploader.dart';
 import '/backend/backend.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/utils/pdf_export_utils.dart';
@@ -1823,57 +1824,64 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     priceCtrl.dispose();
     if (confirmed != true || !mounted) return;
 
-    // ── 4. Upload Firebase Storage ────────────────────────────────
-    // Snack pendant l'upload (non bloquant : on lance aussi l'addGiftToPerson
-    // avec l'URL dès que disponible, sans bloquer l'UI)
-    final loadingSnack = SnackBar(
-      content: Row(children: [
-        const SizedBox(width: 16, height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
-        const SizedBox(width: 12),
-        Text('Upload en cours...', style: GoogleFonts.poppins(color: Colors.white)),
-      ]),
-      backgroundColor: const Color(0xFF0A1F3D),
-      duration: const Duration(seconds: 30),
-    );
-    ScaffoldMessenger.of(context).showSnackBar(loadingSnack);
-
-    final imageUrl = await _uploadPhotoToStorage(picked.path, personId);
-
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-    if (imageUrl == null) {
-      _showSnackBar('Erreur lors de l\'upload de la photo', isError: true);
-      return;
-    }
-
-    // ── 5. Construire le cadeau photo ──────────────────────────────
-    final photoGift = {
-      'id': 'photo_${DateTime.now().millisecondsSinceEpoch}',
+    // ── 4. Affichage OPTIMISTE IMMÉDIAT ─────────────────────────────────
+    // Construire le gift avec le chemin local — l'image s'affiche instantanément
+    final photoId = 'photo_${DateTime.now().millisecondsSinceEpoch}';
+    final photoGiftLocal = {
+      'id': photoId,
       'type': 'photo',
       'name': productName.isNotEmpty ? productName : 'Photo',
-      'image': imageUrl,
+      'image': picked.path,    // fichier local — CachedImage le gère
       'price': productPrice,
       'caption': productName,
       'brand': '',
       'url': '',
       'addedAt': DateTime.now().toIso8601String(),
+      '_uploading': true,
     };
 
-    // ── 6. Ajouter à la liste de cadeaux de la personne (✔ bon endroit) ──
+    // ── 5. Ajouter immédiatement à la liste (cache local + Firestore placé) ─
     final ok = await FirebaseDataService.addGiftToPerson(
       personId: personId,
-      gift: photoGift,
+      gift: photoGiftLocal,
     );
 
     if (!mounted) return;
 
     if (ok) {
-      _showSnackBar('📷 Photo ajoutée aux cadeaux de $personName !');
-      // Recharger les données pour mettre à jour l'affichage
+      // Recharger la vue immédiatement pour montrer la photo locale
       await _model.loadProfiles();
       if (mounted) setState(() {});
+
+      // Snack discret non-bloquant
+      _showSnackBar('📷 Photo ajoutée ! Upload en cours…');
+
+      // ── 6. Upload en arrière-plan via OptimisticImageUploader ───────────
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        OptimisticImageUploader.upload(
+          localPath: picked.path,
+          storagePath: 'users/$uid/person_photos/$personId/$photoId.jpg',
+          onUploadComplete: (cdnUrl) async {
+            // Mettre à jour le gift avec l'URL CDN dans Firestore
+            try {
+              await FirebaseDataService.updateGiftInPerson(
+                personId: personId,
+                giftId: photoId,
+                updates: {'image': cdnUrl, '_uploading': false},
+              );
+            } catch (_) {}
+            if (mounted) {
+              await _model.loadProfiles();
+              if (mounted) setState(() {});
+              _showSnackBar('📷 Photo de $personName sauvegardée !');
+            }
+          },
+          onUploadError: (_) {
+            if (mounted) _showSnackBar('⚠️ Erreur upload — la photo est sauvegardée localement', isError: true);
+          },
+        );
+      }
     } else {
       _showSnackBar('Ce produit est déjà dans la liste', isError: false);
     }
@@ -1881,22 +1889,14 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
   /// Upload une photo locale vers Firebase Storage et retourne l'URL de téléchargement.
   /// Chemin : users/{uid}/person_photos/{personId}/{timestamp}.jpg
+  /// @deprecated — utiliser OptimisticImageUploader.upload() à la place
   Future<String?> _uploadPhotoToStorage(String localPath, String personId) async {
-    try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return null;
-      final photoId = DateTime.now().millisecondsSinceEpoch.toString();
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('users/$uid/person_photos/$personId/$photoId.jpg');
-      final upload = await ref.putFile(
-        File(localPath),
-        SettableMetadata(contentType: 'image/jpeg'),
-      );
-      return await upload.ref.getDownloadURL();
-    } catch (e) {
-      AppLogger.error('_uploadPhotoToStorage error', 'Search', e);
-      return null;
-    }
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return null;
+    final photoId = DateTime.now().millisecondsSinceEpoch.toString();
+    return OptimisticImageUploader.uploadAndWait(
+      localPath: localPath,
+      storagePath: 'users/$uid/person_photos/$personId/$photoId.jpg',
+    );
   }
 }
