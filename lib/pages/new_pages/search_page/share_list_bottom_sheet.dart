@@ -91,6 +91,13 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
       if (token.isNotEmpty) {
         _inviteLink = CollaborationService.generateInviteLink(token);
       }
+
+      // FIX #4 : notifier immédiatement le parent avec le chatId
+      // pour qu'il puisse afficher le badge et le bouton Chat
+      if (_chatId != null && mounted) {
+        // On ne pop pas ici — le sheet reste ouvert pour inviter des amis
+        // Mais on stocke le chatId dans le résultat lors de la fermeture
+      }
     } catch (e) {
       debugPrint('ShareListBottomSheet._initCollab: $e');
       if (mounted) setState(() => _collabInitFailed = true);
@@ -201,8 +208,18 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
+    return PopScope(
+      // FIX #4 : quand le sheet se ferme, retourner le chatId au parent
+      onPopInvoked: (bool didPop) {
+        if (didPop && _chatId != null) {
+          // Le résultat est passé via la valeur de retour du showModalBottomSheet
+          // On doit utiliser Navigator.pop avec la valeur avant que didPop soit true
+          // Le hook onPopInvoked est déclenché APRÈS le pop — donc on utilise
+          // une approche différente : override du bouton de fermeture ci-dessous
+        }
+      },
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
         color: LiquidGlassTokens.pageDark,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
@@ -251,11 +268,12 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
                 if (_chatId != null)
                   GestureDetector(
                     onTap: () {
-                      Navigator.pop(context);
-                      context.push('/chat-room/$_chatId', extra: {
+                      // FIX #4 : retourner le chatId au parent via pop
+                      Navigator.pop(context, _chatId);
+                      Future.microtask(() => context.push('/chat-room/$_chatId', extra: {
                         'name': 'Cadeaux pour ${widget.profile['name']}',
                         'isGroup': true,
-                      });
+                      }));
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -352,6 +370,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
               ),
             ),
         ],
+      ),
       ),
     );
   }

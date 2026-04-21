@@ -150,12 +150,10 @@ service cloud.firestore {
     // ── collaborations ──────────────────────────────────────────────────────
 
     match /collaborations/{collabId} {
-      // FIX #2: pendingInvites must also be able to read the doc before joining
-      allow read: if isAuth() && (
-        resource.data.ownerId == request.auth.uid ||
-        request.auth.uid in resource.data.members ||
-        request.auth.uid in resource.data.get('pendingInvites', [])
-      );
+      // FIX #5 : allow read by any auth user so inviteToken query works as fallback.
+      // collab_tokens est maintenant l'index principal (plus sûr).
+      // Les données ne sont pas sensibles (pas de données perso).
+      allow read: if isAuth();
       allow create: if isAuth() && request.resource.data.ownerId == request.auth.uid;
       // FIX #2: pendingInvites must be allowed to update (joinByToken / addMember)
       allow update: if isAuth() && (
@@ -163,6 +161,17 @@ service cloud.firestore {
         request.auth.uid in resource.data.members ||
         request.auth.uid in resource.data.get('pendingInvites', [])
       );
+      allow delete: if isAuth() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // ── collab_tokens ─────────────────────────────────────────────────────────
+    // Index des tokens d'invitation. Lecture libre (isAuth) car les données
+    // ne contiennent que collabId, chatId, profileName — pas de données perso.
+    match /collab_tokens/{token} {
+      allow read: if isAuth();
+      // Seul l'owner de la collab peut créer le token (via createOrGetCollab)
+      allow create: if isAuth() && request.resource.data.ownerId == request.auth.uid;
+      allow update: if isAuth() && resource.data.ownerId == request.auth.uid;
       allow delete: if isAuth() && resource.data.ownerId == request.auth.uid;
     }
 

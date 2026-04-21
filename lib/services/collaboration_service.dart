@@ -74,6 +74,16 @@ class CollaborationService {
       };
       await collabRef.set(collabData);
 
+      // ── FIX #5 : écrire dans collab_tokens pour que joinByToken puisse lire
+      // sans query sur collaborations (évite permission-denied sur la query)
+      await _db.collection('collab_tokens').doc(inviteToken).set({
+        'collabId': collabRef.id,
+        'chatId': chatRef.id,
+        'profileName': profileName,
+        'ownerId': myUid,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
       // Mettre à jour le profil avec chatId et collabId
       try {
         await _db
@@ -159,39 +169,50 @@ class CollaborationService {
 
   // ─── Ajouter un membre directement ────────────────────────────────────────
 
+  /// FIX #1 — addMember accepte chatId et profileName en paramètre facultatif.
+  /// Cela évite un get() sur la collab qui peut échouer si l'utilisateur
+  /// n'est pas encore dans members/pendingInvites (permission-denied).
   static Future<void> addMember({
     required String collabId,
     required String uid,
+    String? chatId,
+    String? profileName,
   }) async {
     try {
-      // Récupérer le chatId
-      final collabDoc = await _db.collection('collaborations').doc(collabId).get();
-      final data = collabDoc.data();
-      if (data == null) {
-        AppLogger.debug('❌ addMember: collab $collabId not found', 'Collab');
-        throw Exception('Collaboration introuvable');
-      }
-
-      final chatId = data['chatId'] as String?;
-      final profileName = data['profileName'] as String? ?? 'la liste';
-
-      // 1. Ajouter dans la collaboration (opération séparée)
+      // ── 1. Ajouter dans la collaboration ──────────────────────────────────
+      // On utilise set + merge : pas besoin de lire le doc d'abord.
       await _db.collection('collaborations').doc(collabId).set({
         'members': FieldValue.arrayUnion([uid]),
         'pendingInvites': FieldValue.arrayRemove([uid]),
       }, SetOptions(merge: true));
 
-      // 2. Ajouter dans le chat de groupe
-      if (chatId != null) {
+      // ── 2. Si chatId non fourni, tenter de le récupérer ────────────────────
+      String? resolvedChatId = chatId;
+      String resolvedName = profileName ?? 'la liste';
+
+      if (resolvedChatId == null) {
         try {
-          await _db.collection('chats').doc(chatId).set({
+          final collabDoc = await _db.collection('collaborations').doc(collabId).get();
+          if (collabDoc.exists) {
+            resolvedChatId = collabDoc.data()?['chatId'] as String?;
+            resolvedName = collabDoc.data()?['profileName'] as String? ?? resolvedName;
+          }
+        } catch (e) {
+          AppLogger.debug('⚠️ addMember: get chatId failed (non-critical): $e', 'Collab');
+        }
+      }
+
+      // ── 3. Ajouter dans le chat de groupe ──────────────────────────────────
+      if (resolvedChatId != null) {
+        try {
+          await _db.collection('chats').doc(resolvedChatId).set({
             'participants': FieldValue.arrayUnion([uid]),
           }, SetOptions(merge: true));
 
-          // Message système dans le chat
-          await _db.collection('chats').doc(chatId).collection('messages').add({
+          // Message système
+          await _db.collection('chats').doc(resolvedChatId).collection('messages').add({
             'senderId': 'system',
-            'text': '👤 Un nouveau membre a rejoint la collaboration pour $profileName !',
+            'text': '👤 Un nouveau membre a rejoint la collaboration pour $resolvedName !',
             'timestamp': FieldValue.serverTimestamp(),
             'type': 'system',
           });
@@ -200,7 +221,7 @@ class CollaborationService {
         }
       }
 
-      AppLogger.debug('✅ Membre $uid ajouté à $collabId', 'Collab');
+      AppLogger.debug('✅ Membre $uid ajouté à $collabId (chat: $resolvedChatId)', 'Collab');
     } catch (e) {
       AppLogger.debug('❌ CollaborationService.addMember: $e', 'Collab');
       rethrow;
@@ -271,46 +292,83 @@ class CollaborationService {
 
   // ─── Rejoindre via token (deep link) ──────────────────────────────────────
 
+  /// FIX #2 — joinByToken utilise la collection `collab_tokens` comme index.
+  /// La query directe sur `collaborations` échouait car la règle Firestore
+  /// ne permet pas la lecture sans être owner/member/pendingInvite.
+  /// `collab_tokens` a une règle allow read: if isAuth() → pas de problème.
   static Future<Map<String, dynamic>?> joinByToken(String token) async {
     final myUid = _myUid;
     if (myUid == null) return null;
 
+    try {
+      // ── 1. Lire le token depuis la collection dédiée ────────────────────────
+      final tokenDoc = await _db.collection('collab_tokens').doc(token).get();
+
+      if (!tokenDoc.exists) {
+        // Fallback : tenter la query directe sur collaborations (anciens tokens)
+        AppLogger.debug('⚠️ joinByToken: token absent de collab_tokens, fallback query', 'Collab');
+        return await _joinByTokenFallback(token, myUid);
+      }
+
+      final tokenData = tokenDoc.data()!;
+      final collabId = tokenData['collabId'] as String;
+      final chatId = tokenData['chatId'] as String?;
+      final profileName = tokenData['profileName'] as String? ?? 'la liste';
+
+      // ── 2. Vérifier si déjà membre ─────────────────────────────────────────
+      try {
+        final collabDoc = await _db.collection('collaborations').doc(collabId).get();
+        if (collabDoc.exists) {
+          final members = (collabDoc.data()?['members'] as List?)?.cast<String>() ?? [];
+          if (members.contains(myUid)) {
+            return {
+              'collabId': collabId,
+              'chatId': chatId,
+              'profileName': profileName,
+              'alreadyMember': true,
+            };
+          }
+        }
+      } catch (_) {} // Non-critique, continuer l'ajout
+
+      // ── 3. Ajouter comme membre (chatId fourni → pas de get() interne) ─────
+      await addMember(collabId: collabId, uid: myUid, chatId: chatId, profileName: profileName);
+
+      AppLogger.debug('✅ Rejoint par token: $collabId', 'Collab');
+      return {
+        'collabId': collabId,
+        'chatId': chatId,
+        'profileName': profileName,
+        'alreadyMember': false,
+      };
+    } catch (e) {
+      AppLogger.debug('❌ CollaborationService.joinByToken: $e', 'Collab');
+      return null;
+    }
+  }
+
+  /// Fallback pour les collaborations créées avant l'index collab_tokens.
+  static Future<Map<String, dynamic>?> _joinByTokenFallback(String token, String myUid) async {
     try {
       final snap = await _db
           .collection('collaborations')
           .where('inviteToken', isEqualTo: token)
           .limit(1)
           .get();
-
       if (snap.docs.isEmpty) return null;
-
       final collabDoc = snap.docs.first;
       final collab = collabDoc.data();
       final collabId = collabDoc.id;
+      final chatId = collab['chatId'] as String?;
+      final profileName = collab['profileName'] as String? ?? 'la liste';
       final members = (collab['members'] as List?)?.cast<String>() ?? [];
-
-      // Déjà membre ?
       if (members.contains(myUid)) {
-        return {
-          'collabId': collabId,
-          'chatId': collab['chatId'],
-          'profileName': collab['profileName'] ?? 'la liste',
-          'alreadyMember': true,
-        };
+        return {'collabId': collabId, 'chatId': chatId, 'profileName': profileName, 'alreadyMember': true};
       }
-
-      // Ajouter comme membre
-      await addMember(collabId: collabId, uid: myUid);
-
-      AppLogger.debug('✅ Rejoint par token: $collabId', 'Collab');
-      return {
-        'collabId': collabId,
-        'chatId': collab['chatId'],
-        'profileName': collab['profileName'] ?? 'la liste',
-        'alreadyMember': false,
-      };
+      await addMember(collabId: collabId, uid: myUid, chatId: chatId, profileName: profileName);
+      return {'collabId': collabId, 'chatId': chatId, 'profileName': profileName, 'alreadyMember': false};
     } catch (e) {
-      AppLogger.debug('❌ CollaborationService.joinByToken: $e', 'Collab');
+      AppLogger.debug('❌ joinByToken fallback: $e', 'Collab');
       return null;
     }
   }
