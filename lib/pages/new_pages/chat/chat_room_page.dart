@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -9,6 +10,7 @@ import 'dart:async';
 import 'dart:convert';
 import '/components/liquid_glass.dart';
 import '/components/liquid_glass_loader.dart';
+import '/components/product_detail_modal.dart';
 import '/services/firebase_data_service.dart';
 
 class ChatRoomPage extends StatefulWidget {
@@ -634,85 +636,131 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     } catch (_) {
       product = {'name': jsonText};
     }
-    final imageUrl = product['image_url'] as String? ?? product['imageUrl'] as String? ?? '';
-    final title = product['name'] as String? ?? product['title'] as String? ?? 'Produit';
-    final brand = product['brand'] as String? ?? '';
-    final price = product['price']?.toString() ?? '';
 
-    return Container(
-      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-      decoration: BoxDecoration(
-        color: isMe ? violetColor.withOpacity(0.85) : Colors.white.withOpacity(0.12),
-        borderRadius: BorderRadius.only(
-          topLeft: const Radius.circular(20),
-          topRight: const Radius.circular(20),
-          bottomLeft: Radius.circular(isMe ? 20 : 4),
-          bottomRight: Radius.circular(isMe ? 4 : 20),
+    final imageUrl = product['image_url'] as String? ?? product['imageUrl'] as String? ?? product['image'] as String? ?? '';
+    final title    = product['name']  as String? ?? product['title']  as String? ?? 'Produit';
+    final brand    = product['brand'] as String? ?? '';
+    final price    = product['price']?.toString() ?? '';
+    final url      = product['url']   as String? ?? product['product_url'] as String? ?? '';
+
+    // Normalise le format pour GlobalProductDetailModal
+    final normalizedProduct = {
+      'name':  title,
+      'brand': brand,
+      'price': price,
+      'image': imageUrl,
+      'url':   url,
+      ...product, // conserve les champs supplémentaires
+    };
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        GlobalProductDetailModal.show(context, normalizedProduct);
+      },
+      child: Container(
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        decoration: BoxDecoration(
+          color: isMe ? violetColor.withOpacity(0.85) : Colors.white.withOpacity(0.12),
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(20),
+            topRight: const Radius.circular(20),
+            bottomLeft: Radius.circular(isMe ? 20 : 4),
+            bottomRight: Radius.circular(isMe ? 4 : 20),
+          ),
+          border: isMe ? null : Border.all(color: Colors.white.withOpacity(0.1)),
         ),
-        border: isMe ? null : Border.all(color: Colors.white.withOpacity(0.1)),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (imageUrl.isNotEmpty)
-            CachedNetworkImage(
-              imageUrl: imageUrl,
-              height: 150,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              placeholder: (_, __) => Container(
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image produit
+            if (imageUrl.isNotEmpty)
+              CachedNetworkImage(
+                imageUrl: imageUrl,
                 height: 150,
-                color: Colors.white.withOpacity(0.05),
-                child: const Center(child: LiquidGlassLoader(size: 24)),
+                width: double.infinity,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => Container(
+                  height: 150,
+                  color: Colors.white.withOpacity(0.05),
+                  child: const Center(child: LiquidGlassLoader(size: 24)),
+                ),
+                errorWidget: (_, __, ___) => Container(
+                  height: 150,
+                  color: Colors.white.withOpacity(0.05),
+                  child: const Icon(Icons.image_not_supported, color: Colors.white38, size: 40),
+                ),
               ),
-              errorWidget: (_, __, ___) => Container(
-                height: 150,
-                color: Colors.white.withOpacity(0.05),
-                child: const Icon(Icons.image_not_supported, color: Colors.white38, size: 40),
+            // Infos produit
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (brand.isNotEmpty)
+                    Text(
+                      brand.toUpperCase(),
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFFEC4899),
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  const SizedBox(height: 2),
+                  Text(
+                    title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (price.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '$price €',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (brand.isNotEmpty)
-                  Text(
-                    brand.toUpperCase(),
-                    style: GoogleFonts.poppins(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFFEC4899),
-                      letterSpacing: 1,
-                    ),
-                  ),
-                const SizedBox(height: 2),
-                Text(
-                  title,
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+            // Barre d'action "Voir la fiche"
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: Colors.white.withOpacity(0.12)),
                 ),
-                if (price.isNotEmpty) ...[
-                  const SizedBox(height: 4),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.open_in_new_rounded,
+                      size: 13, color: Colors.white.withOpacity(0.55)),
+                  const SizedBox(width: 5),
                   Text(
-                    '$price \u20AC',
+                    'Voir la fiche produit',
                     style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 11,
+                      color: Colors.white.withOpacity(0.55),
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
