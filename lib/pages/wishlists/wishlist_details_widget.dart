@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:ui';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -465,6 +467,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
     try {
+      // ── Firebase : écriture du champ 'order' sur chaque produit ──────────
       final batch = FirebaseFirestore.instance.batch();
       for (int i = 0; i < _products.length; i++) {
         final id = _products[i]['id'] as String?;
@@ -479,9 +482,21 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
                 .doc(id),
             {'order': i},
           );
+          // Mettre à jour l'index en mémoire aussi (dédoublonne re-fetch)
+          _products[i]['order'] = i;
         }
       }
       await batch.commit();
+
+      // ── Cache local : mise à jour SharedPreferences ────────────────────
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final serializable = _products.map((p) => {
+          ...p,
+          'addedAt': (p['addedAt'] is String) ? p['addedAt'] : DateTime.now().toIso8601String(),
+        }).toList();
+        await prefs.setString('wishlist_products_${widget.wishlistId}', jsonEncode(serializable));
+      } catch (_) {}
     } catch (_) {}
   }
 

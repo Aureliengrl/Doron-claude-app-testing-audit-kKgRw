@@ -945,11 +945,12 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               final item = _model.personGifts[personId]!.removeAt(oldIndex);
               _model.personGifts[personId]!.insert(newIndex, item);
             });
+            // FIX: utiliser updateGiftOrderForPerson au lieu de saveGiftListForPerson
+            // pour modifier la liste existante et non en créer une nouvelle à chaque drag
             try {
-              await FirebaseDataService.saveGiftListForPerson(
+              await FirebaseDataService.updateGiftOrderForPerson(
                 personId: personId,
                 gifts: _model.personGifts[personId]!,
-                listName: 'Liste réorganisée',
               );
             } catch (_) {}
           },

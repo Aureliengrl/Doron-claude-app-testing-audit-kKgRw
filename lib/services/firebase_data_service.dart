@@ -891,15 +891,29 @@ class FirebaseDataService {
   ) async {
     if (!isLoggedIn) return [];
     try {
-      // Lire directement depuis la sous-collection products
-      final snapshot = await _firestore
-          .collection('users')
-          .doc(currentUserId)
-          .collection('wishlists')
-          .doc(wishlistId)
-          .collection('products')
-          .orderBy('addedAt', descending: true)
-          .get();
+      // Charger les produits en respectant l'ordre custom s'il existe,
+      // sinon fallback sur addedAt (tri inversé = plus récent en premier)
+      QuerySnapshot snapshot;
+      try {
+        snapshot = await _firestore
+            .collection('users')
+            .doc(currentUserId)
+            .collection('wishlists')
+            .doc(wishlistId)
+            .collection('products')
+            .orderBy('order')
+            .get();
+      } catch (_) {
+        // Index 'order' absent → fallback sur addedAt
+        snapshot = await _firestore
+            .collection('users')
+            .doc(currentUserId)
+            .collection('wishlists')
+            .doc(wishlistId)
+            .collection('products')
+            .orderBy('addedAt', descending: true)
+            .get();
+      }
 
       final products = snapshot.docs
           .map((d) => {'id': d.id, ...d.data()})
@@ -909,7 +923,6 @@ class FirebaseDataService {
       if (products.isNotEmpty) {
         try {
           final prefs = await SharedPreferences.getInstance();
-          // Convertir les Timestamps en string pour JSON
           final serializable = products.map((p) => {
             ...p,
             'addedAt': (p['addedAt'] is String) ? p['addedAt'] : DateTime.now().toIso8601String(),
@@ -1691,6 +1704,53 @@ class FirebaseDataService {
   ) async {
     final lists = await loadGiftListsForPerson(personId);
     return lists.isEmpty ? null : lists.first;
+  }
+
+  /// Met à jour l'ordre des cadeaux dans la liste EXISTANTE d'une personne.
+  /// Contrairement à saveGiftListForPerson (qui crée un nouveau doc),
+  /// cette méthode modifie le document le plus récent — idéale pour le drag-and-drop.
+  static Future<void> updateGiftOrderForPerson({
+    required String personId,
+    required List<Map<String, dynamic>> gifts,
+  }) async {
+    // ── Local (SharedPreferences) ──────────────────────────────────────────
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final listsJson = prefs.getString(_key('gift_lists_$personId')) ?? '[]';
+      final lists = (json.decode(listsJson) as List).cast<Map<String, dynamic>>();
+      if (lists.isNotEmpty) {
+        lists.first['gifts'] = gifts; // update in place
+        await prefs.setString(_key('gift_lists_$personId'), json.encode(lists));
+      }
+    } catch (e) {
+      AppLogger.error('Error updating gift order locally', 'Firebase', e);
+    }
+
+    // ── Firebase ───────────────────────────────────────────────────────────
+    if (!isLoggedIn) return;
+    try {
+      final snap = await _firestore
+          .collection('users')
+          .doc(currentUserId)
+          .collection('people')
+          .doc(personId)
+          .collection('gift_lists')
+          .orderBy('createdAt', descending: true)
+          .limit(1)
+          .get();
+
+      if (snap.docs.isEmpty) {
+        // Aucune liste existante → on en crée une
+        await saveGiftListForPerson(personId: personId, gifts: gifts);
+        return;
+      }
+
+      // Met à jour le doc le plus récent
+      await snap.docs.first.reference.update({'gifts': gifts});
+      AppLogger.firebase('Gift order updated for person $personId');
+    } catch (e) {
+      AppLogger.error('Error updating gift order on Firebase', 'Firebase', e);
+    }
   }
 
   /// Ajoute un cadeau à la liste de cadeaux d'une personne
