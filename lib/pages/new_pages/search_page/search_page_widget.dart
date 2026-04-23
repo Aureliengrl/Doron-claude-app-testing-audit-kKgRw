@@ -1824,14 +1824,13 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     priceCtrl.dispose();
     if (confirmed != true || !mounted) return;
 
-    // ── 4. Affichage OPTIMISTE IMMÉDIAT ─────────────────────────────────
-    // Construire le gift avec le chemin local — l'image s'affiche instantanément
+    // ── 4. Construction du gift local ────────────────────────────────────
     final photoId = 'photo_${DateTime.now().millisecondsSinceEpoch}';
     final photoGiftLocal = {
       'id': photoId,
       'type': 'photo',
       'name': productName.isNotEmpty ? productName : 'Photo',
-      'image': picked.path,    // fichier local — CachedImage le gère
+      'image': picked.path,    // chemin local — affiché immédiatement
       'price': productPrice,
       'caption': productName,
       'brand': '',
@@ -1840,51 +1839,67 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       '_uploading': true,
     };
 
-    // ── 5. Ajouter immédiatement à la liste (cache local + Firestore placé) ─
-    final ok = await FirebaseDataService.addGiftToPerson(
+    // ── 5. INJECTION OPTIMISTE IMMÉDIATE dans la grille ─────────────────
+    // On insère en tête de liste sans attendre Firebase → UI instantanée
+    _model.personGifts[personId] ??= [];
+    _model.personGifts[personId]!.insert(0, photoGiftLocal);
+    if (mounted) setState(() {}); // grille mise à jour en < 16ms
+
+    // Snack discret immédiat
+    _showSnackBar('📷 Photo ajoutée ! Upload en cours…');
+
+    // ── 6. Persistance en arrière-plan (Firebase + Storage) ─────────────
+    FirebaseDataService.addGiftToPerson(
       personId: personId,
       gift: photoGiftLocal,
-    );
+    ).then((ok) {
+      if (!ok) {
+        // Doublon détecté : retirer l'entrée optimiste
+        if (mounted) {
+          setState(() {
+            _model.personGifts[personId]?.removeWhere((g) => g['id'] == photoId);
+          });
+          _showSnackBar('Ce produit est déjà dans la liste', isError: false);
+        }
+      }
+    });
 
-    if (!mounted) return;
-
-    if (ok) {
-      // Recharger la vue immédiatement pour montrer la photo locale
-      await _model.loadProfiles();
-      if (mounted) setState(() {});
-
-      // Snack discret non-bloquant
-      _showSnackBar('📷 Photo ajoutée ! Upload en cours…');
-
-      // ── 6. Upload en arrière-plan via OptimisticImageUploader ───────────
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid != null) {
-        OptimisticImageUploader.upload(
-          localPath: picked.path,
-          storagePath: 'users/$uid/person_photos/$personId/$photoId.jpg',
-          onUploadComplete: (cdnUrl) async {
-            // Mettre à jour le gift avec l'URL CDN dans Firestore
-            try {
-              await FirebaseDataService.updateGiftInPerson(
-                personId: personId,
-                giftId: photoId,
-                updates: {'image': cdnUrl, '_uploading': false},
-              );
-            } catch (_) {}
-            if (mounted) {
-              await _model.loadProfiles();
-              if (mounted) setState(() {});
-              _showSnackBar('📷 Photo de $personName sauvegardée !');
-            }
-          },
-          onUploadError: (_) {
-            if (mounted) _showSnackBar('⚠️ Erreur upload — la photo est sauvegardée localement', isError: true);
-          },
+    // Upload Storage en arrière-plan
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      OptimisticImageUploader.upload(
+        localPath: picked.path,
+        storagePath: 'users/$uid/person_photos/$personId/$photoId.jpg',
+        onUploadComplete: (cdnUrl) async {
+          // Remplacer le chemin local par l'URL CDN dans la grille
+          if (mounted) {
+            setState(() {
+              final idx = _model.personGifts[personId]
+                  ?.indexWhere((g) => g['id'] == photoId) ?? -1;
+              if (idx != -1) {
+                _model.personGifts[personId]![idx] = {
+                  ..._model.personGifts[personId]![idx],
+                  'image': cdnUrl,
+                  '_uploading': false,
+                };
+              }
+            });
+          }
+          // Mettre à jour le gift avec l'URL CDN dans Firestore
+          try {
+            await FirebaseDataService.updateGiftInPerson(
+              personId: personId,
+              giftId: photoId,
+              updates: {'image': cdnUrl, '_uploading': false},
+            );
+          } catch (_) {}
+          if (mounted) _showSnackBar('📷 Photo de $personName sauvegardée !');
+        },
+        onUploadError: (_) {
+          if (mounted) _showSnackBar('⚠️ Erreur upload — photo sauvegardée localement', isError: true);
+        },
         );
       }
-    } else {
-      _showSnackBar('Ce produit est déjà dans la liste', isError: false);
-    }
   }
 
   /// Upload une photo locale vers Firebase Storage et retourne l'URL de téléchargement.
