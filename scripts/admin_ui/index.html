@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doron — Image Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0d0f14;
+    --surface:  #161921;
+    --card:     #1c2030;
+    --border:   #2a2f45;
+    --accent:   #6c63ff;
+    --accent2:  #a855f7;
+    --green:    #22c55e;
+    --yellow:   #f59e0b;
+    --red:      #ef4444;
+    --text:     #e2e8f0;
+    --muted:    #64748b;
+    --radius:   14px;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── Header ─────────────────────────────────────────── */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(13,15,20,.9);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .logo { font-size: 1.25rem; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; white-space: nowrap; }
+  .stats { display: flex; gap: 12px; flex-wrap: wrap; }
+  .stat-pill {
+    padding: 5px 14px; border-radius: 999px; font-size: .78rem; font-weight: 600;
+    background: var(--surface); border: 1px solid var(--border);
+  }
+  .stat-pill.done { border-color: var(--green); color: var(--green); }
+  .stat-pill.left { border-color: var(--yellow); color: var(--yellow); }
+
+  /* ── Toolbar ────────────────────────────────────────── */
+  .toolbar {
+    display: flex; gap: 10px; flex: 1; min-width: 280px; align-items: center;
+  }
+  .toolbar input, .toolbar select {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); padding: 8px 14px; font-size: .85rem; font-family: inherit;
+    outline: none; transition: border .2s;
+  }
+  .toolbar input { flex: 1; }
+  .toolbar input:focus, .toolbar select:focus { border-color: var(--accent); }
+
+  .btn-reload {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: 8px; color: #fff; padding: 8px 16px;
+    font-size: .85rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+    transition: opacity .2s;
+  }
+  .btn-reload:hover { opacity: .85; }
+
+  /* ── Progress bar ───────────────────────────────────── */
+  .progress-wrap { padding: 10px 24px 0; }
+  .progress-bar-bg { background: var(--surface); border-radius: 999px; height: 6px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--green)); transition: width .5s ease; }
+  .progress-label { font-size: .75rem; color: var(--muted); margin-top: 4px; }
+
+  /* ── Grid ───────────────────────────────────────────── */
+  main { padding: 20px 24px; }
+  .count-label { font-size: .8rem; color: var(--muted); margin-bottom: 14px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+
+  /* ── Card ───────────────────────────────────────────── */
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; transition: box-shadow .2s, border-color .2s;
+    display: flex; flex-direction: column;
+  }
+  .card:hover { box-shadow: 0 4px 32px rgba(108,99,255,.15); border-color: #3a3f5c; }
+  .card.is-fixed { border-color: var(--green); }
+  .card.is-saving { border-color: var(--yellow); animation: pulse .8s infinite; }
+  .card.save-ok  { border-color: var(--green); }
+  .card.save-err { border-color: var(--red); }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+
+  /* Image zone */
+  .img-wrap {
+    position: relative; width: 100%; height: 200px; background: #111;
+    overflow: hidden; cursor: pointer;
+  }
+  .img-wrap img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform .3s;
+  }
+  .img-wrap:hover img { transform: scale(1.04); }
+  .img-status {
+    position: absolute; top: 8px; right: 8px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--muted);
+  }
+  .img-status.ok  { background: var(--green); }
+  .img-status.err { background: var(--red); }
+  .img-status.fixed { background: var(--accent); }
+
+  .img-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,.55);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity .2s;
+    font-size: .8rem; color: #fff; text-align: center; padding: 8px;
+    word-break: break-all;
+  }
+  .img-wrap:hover .img-overlay { opacity: 1; }
+
+  /* Card body */
+  .card-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .card-brand { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--accent2); }
+  .card-name  { font-size: .9rem; font-weight: 600; line-height: 1.3; }
+  .card-cats  { display: flex; gap: 4px; flex-wrap: wrap; }
+  .cat-tag    { font-size: .65rem; padding: 2px 8px; border-radius: 999px; background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+
+  /* URL input row */
+  .url-row { display: flex; gap: 6px; margin-top: auto; }
+  .url-input {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); padding: 7px 10px;
+    font-size: .78rem; font-family: inherit; outline: none;
+    transition: border .2s;
+  }
+  .url-input:focus { border-color: var(--accent); }
+  .url-input::placeholder { color: var(--muted); }
+
+  .btn-save {
+    background: var(--accent); border: none; border-radius: 8px; color: #fff;
+    padding: 7px 14px; font-size: .8rem; font-weight: 600; cursor: pointer;
+    transition: background .2s, transform .1s; white-space: nowrap;
+  }
+  .btn-save:hover  { background: #5a52e0; }
+  .btn-save:active { transform: scale(.96); }
+  .btn-save:disabled { background: var(--muted); cursor: not-allowed; }
+
+  .save-msg { font-size: .72rem; min-height: 14px; padding: 2px 0; }
+  .save-msg.ok  { color: var(--green); }
+  .save-msg.err { color: var(--red); }
+
+  /* ── Empty / Loading ────────────────────────────────── */
+  .loading { text-align: center; padding: 80px 20px; color: var(--muted); }
+  .loading .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Empty state ────────────────────────────────────── */
+  .empty { text-align: center; padding: 60px 20px; color: var(--muted); font-size: .9rem; }
+
+  /* ── Toast ──────────────────────────────────────────── */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 20px; font-size: .85rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,.4);
+    transform: translateY(80px); opacity: 0;
+    transition: all .3s ease; z-index: 9999;
+    pointer-events: none;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.ok   { border-color: var(--green); color: var(--green); }
+  #toast.err  { border-color: var(--red);   color: var(--red); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🖼️ Doron Image Admin</div>
+  <div class="stats" id="stats">
+    <span class="stat-pill">Chargement…</span>
+  </div>
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="🔍 Rechercher un produit…">
+    <select id="brandFilter"><option value="">Toutes les marques</option></select>
+    <select id="statusFilter">
+      <option value="all">Tous</option>
+      <option value="todo">À corriger</option>
+      <option value="done">Déjà corrigés</option>
+    </select>
+    <button class="btn-reload" onclick="loadProducts()">↺ Recharger</button>
+  </div>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-label" id="progressLabel">Chargement…</div>
+</div>
+
+<main>
+  <div class="count-label" id="countLabel"></div>
+  <div id="grid" class="grid">
+    <div class="loading"><div class="spinner"></div>Chargement des produits…</div>
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<script>
+let ALL_PRODUCTS = [];
+
+// ── Load products ────────────────────────────────────────────────────
+async function loadProducts() {
+  document.getElementById('grid').innerHTML = '<div class="loading"><div class="spinner"></div>Chargement des produits…</div>';
+  try {
+    const r = await fetch('/api/products');
+    const { products } = await r.json();
+    ALL_PRODUCTS = products;
+    populateBrandFilter(products);
+    render();
+    updateStats();
+  } catch(e) {
+    document.getElementById('grid').innerHTML = `<div class="empty">❌ Erreur : ${e.message}</div>`;
+  }
+}
+
+// ── Stats ────────────────────────────────────────────────────────────
+async function updateStats() {
+  const r = await fetch('/api/stats');
+  const s = await r.json();
+  const pct = Math.round(s.fixed / s.total * 100);
+  document.getElementById('stats').innerHTML = `
+    <span class="stat-pill">📦 ${s.total} produits</span>
+    <span class="stat-pill done">✅ ${s.fixed} corrigés</span>
+    <span class="stat-pill left">⏳ ${s.remaining} restants</span>
+  `;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${pct}% complété — ${s.fixed} / ${s.total}`;
+}
+
+// ── Brand filter ─────────────────────────────────────────────────────
+function populateBrandFilter(products) {
+  const brands = [...new Set(products.map(p => p.brand).filter(Boolean))].sort();
+  const sel = document.getElementById('brandFilter');
+  sel.innerHTML = '<option value="">Toutes les marques</option>';
+  brands.forEach(b => {
+    const o = document.createElement('option');
+    o.value = b; o.textContent = b;
+    sel.appendChild(o);
+  });
+}
+
+// ── Render ───────────────────────────────────────────────────────────
+function render() {
+  const q      = document.getElementById('search').value.toLowerCase();
+  const brand  = document.getElementById('brandFilter').value;
+  const status = document.getElementById('statusFilter').value;
+
+  let filtered = ALL_PRODUCTS.filter(p => {
+    const txt = `${p.name} ${p.brand} ${(p.categories||[]).join(' ')}`.toLowerCase();
+    if (q && !txt.includes(q)) return false;
+    if (brand && p.brand !== brand) return false;
+    if (status === 'done' && !p.fixed) return false;
+    if (status === 'todo' && p.fixed)  return false;
+    return true;
+  });
+
+  document.getElementById('countLabel').textContent = `${filtered.length} produit${filtered.length > 1 ? 's' : ''} affiché${filtered.length > 1 ? 's' : ''}`;
+
+  if (!filtered.length) {
+    document.getElementById('grid').innerHTML = '<div class="empty">Aucun produit trouvé.</div>';
+    return;
+  }
+
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  filtered.forEach(p => grid.appendChild(buildCard(p)));
+}
+
+// ── Build card ───────────────────────────────────────────────────────
+function buildCard(p) {
+  const card = document.createElement('div');
+  card.className = 'card' + (p.fixed ? ' is-fixed' : '');
+  card.id = 'card-' + p.id;
+
+  const cats = (p.categories||[]).slice(0,3).map(c => `<span class="cat-tag">${c}</span>`).join('');
+  const imgSrc = p.image || 'about:blank';
+  const fixedBadge = p.fixed ? '<span style="color:var(--green);font-size:.7rem">✅ corrigé</span>' : '';
+
+  card.innerHTML = `
+    <div class="img-wrap" title="Cliquer pour prévisualiser">
+      <img id="img-${p.id}" src="${escHtml(imgSrc)}" alt="${escHtml(p.name)}"
+           onerror="this.src=''; this.parentElement.querySelector('.img-status').className='img-status err'"
+           onload="this.parentElement.querySelector('.img-status').className='img-status ok${p.fixed?' fixed':''}'">
+      <div class="img-status"></div>
+      <div class="img-overlay">${escHtml(imgSrc)}</div>
+    </div>
+    <div class="card-body">
+      <div class="card-brand">${escHtml(p.brand)} ${fixedBadge}</div>
+      <div class="card-name">${escHtml(p.name)}</div>
+      <div class="card-cats">${cats}</div>
+      <div class="url-row">
+        <input class="url-input" id="url-${p.id}" placeholder="Coller l'URL image officielle…"
+               onkeydown="if(event.key==='Enter') saveImage('${p.id}')">
+        <button class="btn-save" onclick="saveImage('${p.id}')">✓ Sauver</button>
+      </div>
+      <div class="save-msg" id="msg-${p.id}"></div>
+    </div>
+  `;
+  return card;
+}
+
+// ── Save image ───────────────────────────────────────────────────────
+async function saveImage(id) {
+  const input = document.getElementById('url-' + id);
+  const url   = input.value.trim();
+  const card  = document.getElementById('card-' + id);
+  const msg   = document.getElementById('msg-' + id);
+  const img   = document.getElementById('img-' + id);
+  const btn   = card.querySelector('.btn-save');
+
+  if (!url) { showMsg(msg, 'err', '⚠️ Colle une URL d\'abord'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '…';
+  card.className = 'card is-saving';
+  msg.className  = 'save-msg';
+  msg.textContent = '';
+
+  try {
+    const r = await fetch('/api/products/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: url }),
+    });
+    if (!r.ok) throw new Error((await r.json()).error);
+
+    // Mettre à jour l'image affichée
+    img.src = url;
+    input.value = '';
+    card.className = 'card is-fixed save-ok';
+    showMsg(msg, 'ok', '✅ Sauvegardé !');
+    showToast('✅ Image mise à jour', 'ok');
+
+    // Mettre à jour l'objet local
+    const p = ALL_PRODUCTS.find(x => x.id === id);
+    if (p) { p.image = url; p.fixed = true; }
+
+    updateStats();
+    setTimeout(() => { card.className = 'card is-fixed'; }, 2000);
+  } catch(e) {
+    card.className = 'card save-err';
+    showMsg(msg, 'err', '❌ ' + e.message);
+    showToast('❌ Erreur : ' + e.message, 'err');
+    setTimeout(() => { card.className = 'card'; }, 3000);
+  } finally {
+    btn.disabled  = false;
+    btn.textContent = '✓ Sauver';
+  }
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────
+function showMsg(el, type, text) {
+  el.className = 'save-msg ' + type;
+  el.textContent = text;
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + type;
+  setTimeout(() => { t.className = ''; }, 2500);
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Events ───────────────────────────────────────────────────────────
+document.getElementById('search').addEventListener('input', render);
+document.getElementById('brandFilter').addEventListener('change', render);
+document.getElementById('statusFilter').addEventListener('change', render);
+
+// ── Init ─────────────────────────────────────────────────────────────
+loadProducts();
+</script>
+</body>
+</html>
