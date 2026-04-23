@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '/services/firebase_data_service.dart';
 import '/services/product_url_service.dart';
+import '/services/gift_events_service.dart';
 import '/components/cached_image.dart';
 import '/components/connection_required_dialog.dart';
 import '/utils/app_logger.dart';
@@ -1287,6 +1288,11 @@ class GlobalProductDetailModal {
         personId: personId,
         gift: gift,
       );
+
+      if (success) {
+        // Notifie la SearchPage pour qu'elle injecte le cadeau en tête de grille
+        GiftEventsService.notifyGiftAdded(personId, gift);
+      }
 
       if (context.mounted) {
         if (success) {

@@ -26,6 +26,8 @@ import '/components/liquid_glass_empty_state_widget.dart';
 import '/components/liquid_glass_loader.dart';
 import '/components/product_detail_modal.dart';
 import '/services/friend_service.dart';
+import '/services/gift_events_service.dart';
+import 'dart:async';
 import 'package:image_picker/image_picker.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 
@@ -44,12 +46,28 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final Color violetColor = const Color(0xFF8A2BE2);
   bool _searchReorderMode = false;
+  StreamSubscription<GiftAddedEvent>? _giftEventSub;
 
   @override
   void initState() {
     super.initState();
     _model = SearchPageModel();
     _loadData();
+
+    // Écoute les cadeaux ajoutés depuis le modal produit (3 points → "Ajouter pour quelqu'un")
+    _giftEventSub = GiftEventsService.onGiftAdded.listen((event) {
+      if (!mounted) return;
+      // Injection optimiste en tête de liste sans recharger tous les profils
+      setState(() {
+        _model.personGifts[event.personId] ??= [];
+        // Éviter un doublon si le produit est déjà présent
+        final alreadyPresent = _model.personGifts[event.personId]!
+            .any((g) => g['id'] == event.gift['id']);
+        if (!alreadyPresent) {
+          _model.personGifts[event.personId]!.insert(0, event.gift);
+        }
+      });
+    });
   }
 
   Future<void> _loadData() async {
@@ -61,6 +79,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
   @override
   void dispose() {
+    _giftEventSub?.cancel();
     _model.dispose();
     super.dispose();
   }
