@@ -28,6 +28,7 @@ import 'flutter_flow/nav/nav.dart';
 import 'package:showcaseview/showcaseview.dart';
 import '/components/connection_required_dialog.dart';
 import '/components/modern_nav_bar.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import '/components/offline_banner.dart';
 import '/services/push_notifications_service.dart';
 import '/services/presence_service.dart';
@@ -575,6 +576,7 @@ class _NavBarPageState extends State<NavBarPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       resizeToAvoidBottomInset: !widget.disableResizeToAvoidBottomInset,
       body: Stack(
         children: [
@@ -613,27 +615,27 @@ class _NavBarPageState extends State<NavBarPage> {
               },
               items: [
                 NavBarItem(
-                  icon: Icons.home_outlined,
-                  activeIcon: Icons.home_rounded,
+                  icon: IconlyLight.home,
+                  activeIcon: IconlyBold.home,
                   label: 'Accueil',
                   iconSize: 24.0,
                   badgeCount: _unreadChatBadge,
                 ),
                 const NavBarItem(
-                  icon: Icons.search_outlined,
-                  activeIcon: Icons.search_rounded,
+                  icon: IconlyLight.search,
+                  activeIcon: IconlyBold.search,
                   label: 'Recherche',
                   iconSize: 24.0,
                 ),
                 const NavBarItem(
-                  icon: Icons.play_arrow_rounded,
-                  activeIcon: Icons.play_circle_rounded,
+                  icon: IconlyLight.discovery,
+                  activeIcon: IconlyBold.discovery,
                   label: 'Inspo',
-                  iconSize: 28.0,
+                  iconSize: 24.0,
                 ),
                 NavBarItem(
-                  icon: Icons.person_outline_rounded,
-                  activeIcon: Icons.person_rounded,
+                  icon: IconlyLight.profile,
+                  activeIcon: IconlyBold.profile,
                   label: 'Profil',
                   iconSize: 24.0,
                   badgeCount: _friendRequestBadge,
