@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -60,7 +60,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       _loadOtherUserIfDirect();
     }
 
-    // ── Brancher le stream du document chat pour lire readStatus + typingUsers ──
+    // â”€â”€ Brancher le stream du document chat pour lire readStatus + typingUsers â”€â”€
     _chatDocSub = FirebaseFirestore.instance
         .collection('chats')
         .doc(widget.chatId)
@@ -101,7 +101,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       await FirebaseFirestore.instance.collection('chats').doc(widget.chatId).set({
         'readStatus': {
           user.uid: FieldValue.serverTimestamp(),
-        }
+        },
+        // BUG 3 FIX: reset unread counter to 0 for current user on open
+        'unreadCount': {
+          user.uid: 0,
+        },
       }, SetOptions(merge: true));
     } catch (e) {
       debugPrint('Failed to update read status: $e');
@@ -142,7 +146,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
   
   String _formatMessageTime(Timestamp? timestamp) {
-    if (timestamp == null) return 'À l\'instant';
+    if (timestamp == null) return 'Ã€ l\'instant';
     final date = timestamp.toDate();
     return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
@@ -186,11 +190,20 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       };
       
       await messageRef.set(messageData);
-      
-      await FirebaseFirestore.instance.collection('chats').doc(widget.chatId).update({
+
+      // BUG 2 FIX: increment unreadCount for all other participants
+      final chatData = _effectiveChatData;
+      final participants = List<String>.from(chatData?['participants'] ?? []);
+      final Map<String, dynamic> unreadUpdate = {
         'lastMessage': text,
         'lastMessageTime': FieldValue.serverTimestamp(),
-      });
+      };
+      for (final pid in participants) {
+        if (pid != currentUser.uid) {
+          unreadUpdate['unreadCount.$pid'] = FieldValue.increment(1);
+        }
+      }
+      await FirebaseFirestore.instance.collection('chats').doc(widget.chatId).update(unreadUpdate);
     } catch (e) {
       debugPrint('Erreur d\'envoi: $e');
     }
@@ -220,7 +233,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   Widget _buildHeader(String title, bool isGroup) {
-    // Pour un chat 1-to-1, utiliser les infos de l'interlocuteur chargé
+    // Pour un chat 1-to-1, utiliser les infos de l'interlocuteur chargÃ©
     final displayName = !isGroup && _otherUserData != null
         ? ((_otherUserData!['first_name'] as String?) ??
            (_otherUserData!['display_name'] as String?) ??
@@ -251,7 +264,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
             onPressed: () => context.pop(),
           ),
-          // Avatar : vrai photo pour 1-to-1, icône groupe sinon
+          // Avatar : vrai photo pour 1-to-1, icÃ´ne groupe sinon
           Container(
             width: 40,
             height: 40,
@@ -307,7 +320,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           ),
           IconButton(
             icon: const Icon(IconlyLight.infoSquare, color: Colors.white),
-            onPressed: () {},
+            onPressed: () { context.push('/chat-info/' + widget.chatId, extra: _effectiveChatData); },
           ),
         ],
       ),
@@ -530,7 +543,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 controller: _messageController,
                 style: GoogleFonts.poppins(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Écrire un message...',
+                  hintText: 'Ã‰crire un message...',
                   hintStyle: GoogleFonts.poppins(color: Colors.white.withOpacity(0.4)),
                   border: InputBorder.none,
                 ),
@@ -602,7 +615,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           ),
           const SizedBox(width: 8),
           Text(
-            othersTyping.length == 1 ? 'Quelqu\'un écrit...' : 'Plusieurs personnes écrivent...',
+            othersTyping.length == 1 ? 'Quelqu\'un Ã©crit...' : 'Plusieurs personnes Ã©crivent...',
             style: GoogleFonts.poppins(
               fontSize: 11,
               color: Colors.white.withOpacity(0.6),
@@ -628,7 +641,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       .fadeOut(duration: 300.ms);
   }
 
-  // ── Rich card message builders ──
+  // â”€â”€ Rich card message builders â”€â”€
 
   Widget _buildProductCardMessage(String jsonText, bool isMe) {
     Map<String, dynamic> product = {};
@@ -651,7 +664,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       'price': price,
       'image': imageUrl,
       'url':   url,
-      ...product, // conserve les champs supplémentaires
+      ...product, // conserve les champs supplÃ©mentaires
     };
 
     return GestureDetector(
@@ -723,7 +736,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   if (price.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
-                      '$price €',
+                      '$price â‚¬',
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
@@ -842,7 +855,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     );
   }
 
-  // ── Bottom sheet : partager un produit ou une wishlist ──
+  // â”€â”€ Bottom sheet : partager un produit ou une wishlist â”€â”€
 
   void _showShareSheet() {
     showModalBottomSheet(
@@ -1309,3 +1322,5 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     );
   }
 }
+
+

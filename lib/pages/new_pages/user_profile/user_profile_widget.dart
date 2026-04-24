@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -58,20 +58,20 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     _model = UserProfileModel();
     _tabController = TabController(length: 2, vsync: this);
 
-    // Vérifier le mode anonyme
+    // VÃ©rifier le mode anonyme
     _checkAnonymousMode();
     // Charger les wishlists initiales + nb amis
     _loadWishlists();
     _loadFriendsCount();
 
-    // Charger les favoris et le profil après le premier frame
+    // Charger les favoris et le profil aprÃ¨s le premier frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && !_isAnonymous) {
         _model.loadFavourites();
       }
     });
 
-    // écouter les changements du model
+    // Ã©couter les changements du model
     _model.addListener(_onModelChanged);
   }
 
@@ -96,16 +96,16 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     super.dispose();
   }
 
-  // ─── Changement de photo de profil ──────────────────────────
+  // â”€â”€â”€ Changement de photo de profil â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  /// Chemin local affiché immédiatement avant que l'upload termine.
+  /// Chemin local affichÃ© immÃ©diatement avant que l'upload termine.
   File? _localProfilePhoto;
 
-  /// URL CDN mémorisée après upload — affichée même si AuthUserStream
-  /// n'est pas encore rafraîchi (évite le délai de latence).
+  /// URL CDN mÃ©morisÃ©e aprÃ¨s upload â€” affichÃ©e mÃªme si AuthUserStream
+  /// n'est pas encore rafraÃ®chi (Ã©vite le dÃ©lai de latence).
   String? _uploadedPhotoUrl;
 
-  /// Fallback avatar (initiales / icône)
+  /// Fallback avatar (initiales / icÃ´ne)
   Widget _buildAvatarFallback() => Container(
     color: violetColor.withOpacity(0.3),
     child: Icon(IconlyLight.profile, size: 40, color: Colors.white),
@@ -119,12 +119,12 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
 
-    // ── Affichage OPTIMISTE IMMÉDIAT ────────────────────────────────────────
+    // â”€â”€ Affichage OPTIMISTE IMMÃ‰DIAT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (mounted) setState(() { _localProfilePhoto = file; _uploadedPhotoUrl = null; });
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Sauvegarde de la photo…', style: GoogleFonts.outfit()),
+        content: Text('Sauvegarde de la photoâ€¦', style: GoogleFonts.outfit()),
         backgroundColor: LiquidGlassTokens.pageDark,
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
@@ -136,9 +136,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       storagePath: 'users/$uid/profile_${DateTime.now().millisecondsSinceEpoch}.jpg',
       onUploadComplete: (downloadUrl) async {
         try {
-          // ── Écriture ATOMIQUE : photo_url + photoUrl en un seul update ──
-          // Synchronise les deux champs → tous les lecteurs voient la photo
-          // immédiatement (public_profile_page, friend_service, etc.)
+          // â”€â”€ Ã‰criture ATOMIQUE : photo_url + photoUrl en un seul update â”€â”€
+          // Synchronise les deux champs â†’ tous les lecteurs voient la photo
+          // immÃ©diatement (public_profile_page, friend_service, etc.)
           await FirebaseFirestore.instance
               .collection('users')
               .doc(uid)
@@ -154,10 +154,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         if (mounted) {
           setState(() {
             _localProfilePhoto = null;
-            _uploadedPhotoUrl  = downloadUrl; // mémorisé → affiché immédiatement
+            _uploadedPhotoUrl  = downloadUrl; // mÃ©morisÃ© â†’ affichÃ© immÃ©diatement
           });
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Photo de profil mise à jour ✓', style: GoogleFonts.outfit()),
+            content: Text('Photo de profil mise Ã  jour âœ“', style: GoogleFonts.outfit()),
             backgroundColor: const Color(0xFF8A2BE2),
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 2),
@@ -187,8 +187,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       backgroundColor: LiquidGlassTokens.pageDark,
       body: CustomScrollView(
         slivers: [
-          // App Bar avec photo de profil et bouton paramêtres
-          _buildAppBar(),          // Tabs (Produits likés / Wishlists)
+          // App Bar avec photo de profil et bouton paramÃªtres
+          _buildAppBar(),          // Tabs (Produits likÃ©s / Wishlists)
           _buildTabBar(),
 
           // Contenu des tabs
@@ -203,7 +203,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       backgroundColor: LiquidGlassTokens.pageDark,
       body: Stack(
         children: [
-          // Contenu flouté
+          // Contenu floutÃ©
           CustomScrollView(
             slivers: [
               _buildAppBar(),
@@ -212,7 +212,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             ],
           ),
 
-          // Overlay flouté
+          // Overlay floutÃ©
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
@@ -261,7 +261,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Crée ton compte pour accéder à ton profil, tes produits likés et tes wishlists',
+                    'CrÃ©e ton compte pour accÃ©der Ã  ton profil, tes produits likÃ©s et tes wishlists',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
                       fontSize: 15,
@@ -383,7 +383,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                 ],
                               ),
                               child: ClipOval(
-                                // ── Avatar optimiste ─────────────────────
+                                // â”€â”€ Avatar optimiste â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                                 // Si un upload est en cours : fichier local
                                 // Sinon : URL CDN via AuthUserStreamWidget
                                 child: _localProfilePhoto != null
@@ -467,7 +467,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                           ],
                         ),
                         const SizedBox(width: 24),
-                        // Stats — Amis / Wishlists / Cadeaux
+                        // Stats â€” Amis / Wishlists / Cadeaux
                         Expanded(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -636,7 +636,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 children: [
                   const Icon(IconlyBold.heart),
                   const SizedBox(width: 8),
-                  Text('Produits likés'),
+                  Text('Produits likÃ©s'),
                 ],
               ),
             ),
@@ -678,7 +678,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             ),
             const SizedBox(height: 16),
             Text(
-              'Aucun produit liké',
+              'Aucun produit likÃ©',
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -687,7 +687,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             ),
             const SizedBox(height: 8),
             Text(
-              'Explore l\'accueil et like tes produits préférés !',
+              'Explore l\'accueil et like tes produits prÃ©fÃ©rÃ©s !',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 14,
@@ -773,7 +773,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 const SizedBox(height: 16),
                 Text('Aucune wishlist', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
                 const SizedBox(height: 8),
-                Text('Crée des wishlists pour organiser tes cadeaux', textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
+                Text('CrÃ©e des wishlists pour organiser tes cadeaux', textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
               ],
             ),
           );
@@ -797,7 +797,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 return GestureDetector(
                   onTap: () async {
                     await _showWishlistDetail(wishlist);
-                    // Recharger la liste pour mettre à jour le compteur sur la pochette
+                    // Recharger la liste pour mettre Ã  jour le compteur sur la pochette
                     _loadWishlists();
                   },
                   child: Container(
@@ -899,7 +899,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 );
               },
             ),
-            // — Bouton Créer un album —
+            // â€” Bouton CrÃ©er un album â€”
             Positioned(
               bottom: 90,
               left: 24,
@@ -929,7 +929,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     children: [
                       const Icon(Icons.add_rounded, color: Colors.white, size: 22),
                       const SizedBox(width: 8),
-                      Text('Créer un album', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
+                      Text('CrÃ©er un album', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
                     ],
                   ),
                 ),
@@ -939,10 +939,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         );
   }
 
-  /// Dialog de création d'un nouvel album (wishlist)
+  /// Dialog de crÃ©ation d'un nouvel album (wishlist)
   Future<bool?> _showCreateAlbumDialog() async {
     final nameController = TextEditingController();
-    final emojiController = TextEditingController(text: '🎁');
+    final emojiController = TextEditingController(text: 'ðŸŽ');
     bool isCreating = false;
 
     return showDialog<bool>(
@@ -966,7 +966,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 autofocus: true,
                 style: GoogleFonts.poppins(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Nom de l\'album (ex : pour Noël)',
+                  hintText: 'Nom de l\'album (ex : pour NoÃ«l)',
                   hintStyle: GoogleFonts.poppins(color: Colors.white38),
                   filled: true,
                   fillColor: Colors.white.withOpacity(0.07),
@@ -1000,13 +1000,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   : () {
                       final name = nameController.text.trim();
                       if (name.isEmpty) return;
-                      final emoji = emojiController.text.trim().isEmpty ? '🎁' : emojiController.text.trim();
+                      final emoji = emojiController.text.trim().isEmpty ? 'ðŸŽ' : emojiController.text.trim();
 
-                      // ── OPTIMISTIC UI :
-                      // 1. Fermer le dialog immédiatement
+                      // â”€â”€ OPTIMISTIC UI :
+                      // 1. Fermer le dialog immÃ©diatement
                       Navigator.pop(ctx, true);
 
-                      // 2. Ajouter localement pour affichage instantané
+                      // 2. Ajouter localement pour affichage instantanÃ©
                       final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
                       final optimisticWishlist = {
                         'id': tempId,
@@ -1018,7 +1018,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                       };
                       setState(() => _wishlists.insert(0, optimisticWishlist));
 
-                      // 3. Créer en arrière-plan dans Firestore
+                      // 3. CrÃ©er en arriÃ¨re-plan dans Firestore
                       FirebaseDataService.createWishlist(name: name, emoji: emoji).then((realId) {
                         if (realId != null && mounted) {
                           setState(() {
@@ -1028,7 +1028,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         }
                       });
                     },
-              child: Text('Créer', style: GoogleFonts.poppins(color: const Color(0xFF8A2BE2), fontWeight: FontWeight.w700)),
+              child: Text('CrÃ©er', style: GoogleFonts.poppins(color: const Color(0xFF8A2BE2), fontWeight: FontWeight.w700)),
             ),
           ],
         ),
@@ -1090,10 +1090,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('✅ Couverture mise à jour !')),
+        const SnackBar(content: Text('âœ… Couverture mise Ã  jour !')),
       );
 
-      // Mettre à jour immédiatement en mémoire + vider le cache image
+      // Mettre Ã  jour immÃ©diatement en mÃ©moire + vider le cache image
       setState(() {
         final idx = _wishlists.indexWhere((w) => w['id'] == wishlistId);
         if (idx != -1) {
@@ -1115,10 +1115,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
     if (!mounted) return;
 
-    // Normaliser les clés pour SharedProductCard (conserver le type pour routing photo/product)
+    // Normaliser les clÃ©s pour SharedProductCard (conserver le type pour routing photo/product)
     final normalizedProducts = products.map((p) => {
       'id': p['id'] ?? '',
-      'type': p['type'] ?? 'product',  // phénomène clé pour le routing PhotoItemCard
+      'type': p['type'] ?? 'product',  // phÃ©nomÃ¨ne clÃ© pour le routing PhotoItemCard
       'name': p['title'] ?? p['name'] ?? p['product_title'] ?? 'Produit',
       'brand': p['brand'] ?? p['platform'] ?? p['source'] ?? '',
       'price': (p['price'] ?? p['product_price'] ?? '').toString(),
@@ -1143,13 +1143,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           ),
           child: Column(
             children: [
-              // Poignée
+              // PoignÃ©e
               Container(
                 margin: const EdgeInsets.only(top: 12),
                 width: 40, height: 4,
                 decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
               ),
-              // En-tête
+              // En-tÃªte
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 12, 12, 0),
               child: Row(
@@ -1258,14 +1258,14 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   }
 
   /// Ouvre un picker pour ajouter une photo dans un album wishlist.
-  /// ─ Upload OPTIMISTE : la photo s'affiche immédiatement en local,
-  ///   l'upload Firebase se fait en arrière-plan.
+  /// â”€ Upload OPTIMISTE : la photo s'affiche immÃ©diatement en local,
+  ///   l'upload Firebase se fait en arriÃ¨re-plan.
   Future<Map<String, dynamic>?> _addPhotoToAlbum(
     String wishlistId, {
-    /// Callback appelé quand l'URL Firebase est disponible (mise à jour en arrière-plan)
+    /// Callback appelÃ© quand l'URL Firebase est disponible (mise Ã  jour en arriÃ¨re-plan)
     void Function(String photoId, String firebaseUrl, String price)? onUploaded,
   }) async {
-    // ── 1. Choix de la source ───────────────────────────────────────────────
+    // â”€â”€ 1. Choix de la source â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     ImageSource? source;
     await showModalBottomSheet(
       context: context,
@@ -1298,13 +1298,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     );
     if (source == null || !mounted) return null;
 
-    // ── 2. Sélection de la photo ────────────────────────────────────────────
+    // â”€â”€ 2. SÃ©lection de la photo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     final picked = source == ImageSource.gallery
         ? await PhotoPermissionService.pickFromGallery(context, imageQuality: 80)
         : await PhotoPermissionService.pickFromCamera(context, imageQuality: 80);
     if (picked == null || !mounted) return null;
 
-    // ── 3. Dialog Nom + Prix ────────────────────────────────────────────────
+    // â”€â”€ 3. Dialog Nom + Prix â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     String caption = '';
     String price = '';
     final captionCtrl = TextEditingController();
@@ -1318,7 +1318,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           children: [
             const Icon(IconlyLight.editSquare, color: Color(0xFF00D4FF), size: 22),
             const SizedBox(width: 8),
-            Text('Détails (optionnel)', style: GoogleFonts.poppins(
+            Text('DÃ©tails (optionnel)', style: GoogleFonts.poppins(
               color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
           ],
         ),
@@ -1379,20 +1379,20 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     priceCtrl.dispose();
     if (!mounted) return null;
 
-    // ── 4. Affichage OPTIMISTE immédiat (fichier local) ─────────────────────
+    // â”€â”€ 4. Affichage OPTIMISTE immÃ©diat (fichier local) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
     final localPath = picked.path;
     final optimisticEntry = {
       'id': tempId,
       'type': 'photo',
-      'image': localPath,      // chemin fichier local — PhotoItemCard le gère
+      'image': localPath,      // chemin fichier local â€” PhotoItemCard le gÃ¨re
       'caption': caption,
       'price': price,
       'url': '',
       '_isUploading': true,    // flag pour indicateur discret
     };
 
-    // ── 5. Upload en arrière-plan ───────────────────────────────────────────
+    // â”€â”€ 5. Upload en arriÃ¨re-plan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     FirebaseDataService.addPhotoToWishlist(
       wishlistId,
       localPath,
@@ -1403,7 +1403,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       if (!ok || !mounted) return;
       // Snack discret de confirmation
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('📷 Photo ajoutée !', style: GoogleFonts.poppins(
+        content: Text('ðŸ“· Photo ajoutÃ©e !', style: GoogleFonts.poppins(
             color: Colors.white, fontWeight: FontWeight.w600)),
         backgroundColor: const Color(0xFF10B981),
         behavior: SnackBarBehavior.floating,
@@ -1412,13 +1412,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       ));
     });
 
-    // Retourner l'entrée optimiste — la grille l'affiche immédiatement
+    // Retourner l'entrÃ©e optimiste â€” la grille l'affiche immÃ©diatement
     return optimisticEntry;
   }
-  // ─── Gamification & Stats ────────────────────────────────────────────────
-  // Removed "Ton activité" and "Badges" per user request.
+  // â”€â”€â”€ Gamification & Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Removed "Ton activitÃ©" and "Badges" per user request.
 
-  // ─── Actions & Modals ──────────────────────────────────────────────────────
+  // â”€â”€â”€ Actions & Modals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _shareProfile() async {
     final handle = _model.userProfile?['handle'] as String?;
     if (handle == null || handle.isEmpty) {
@@ -1436,7 +1436,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Lien copié ! $url', style: GoogleFonts.outfit()),
+          content: Text('Lien copiÃ© ! $url', style: GoogleFonts.outfit()),
           backgroundColor: const Color(0xFF8A2BE2),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -1446,12 +1446,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     }
   }
 
+  // â”€â”€â”€ ParamÃ¨tres â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   void _showSettingsBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) {
+      builder: (ctx) {
         return Container(
           decoration: BoxDecoration(
             color: LiquidGlassTokens.pageDark,
@@ -1464,17 +1465,17 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             children: [
               Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
               const SizedBox(height: 24),
-              Text('Paramètres', style: GoogleFonts.outfit(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('ParamÃ¨tres', style: GoogleFonts.outfit(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 24),
               LiquidGlassSurface(
                 child: Column(
                   children: [
                     ListTile(
                       leading: const Icon(IconlyLight.filter, color: Colors.white),
-                      title: Text('Modifier mes préférences (IA)', style: GoogleFonts.outfit(color: Colors.white)),
+                      title: Text('Modifier mes prÃ©fÃ©rences (IA)', style: GoogleFonts.outfit(color: Colors.white)),
                       trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
                       onTap: () {
-                        Navigator.pop(context);
+                        Navigator.pop(ctx);
                         context.pushNamed('OnboardingAdvancedWidget', extra: {
                           'skipUserQuestions': true,
                           'onlyUserQuestions': true,
@@ -1488,12 +1489,12 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                       title: Text('Changer le mot de passe', style: GoogleFonts.outfit(color: Colors.white)),
                       trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
                       onTap: () async {
-                        Navigator.pop(context);
+                        Navigator.pop(ctx);
                         await showModalBottomSheet(
                           isScrollControlled: true,
                           backgroundColor: Colors.transparent,
                           context: context,
-                          builder: (context) => Padding(padding: MediaQuery.viewInsetsOf(context), child: const ChangePasswordWidget()),
+                          builder: (c) => Padding(padding: MediaQuery.viewInsetsOf(c), child: const ChangePasswordWidget()),
                         );
                       },
                     ),
@@ -1503,55 +1504,51 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                       title: Text('Changer de langue', style: GoogleFonts.outfit(color: Colors.white)),
                       trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
                       onTap: () async {
-                        Navigator.pop(context);
+                        Navigator.pop(ctx);
                         await showModalBottomSheet(
                           isScrollControlled: true,
                           backgroundColor: Colors.transparent,
                           context: context,
-                          builder: (context) => Padding(padding: MediaQuery.viewInsetsOf(context), child: const ChangeLanguageWidget()),
+                          builder: (c) => Padding(padding: MediaQuery.viewInsetsOf(c), child: const ChangeLanguageWidget()),
                         );
+                      },
+                    ),
+                    Divider(color: Colors.white.withOpacity(0.1), height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.delete_forever_rounded, color: Colors.red),
+                      title: Text('Supprimer mon compte', style: GoogleFonts.outfit(color: Colors.red)),
+                      trailing: const Icon(Icons.chevron_right_rounded, color: Colors.red),
+                      onTap: () async {
+                        Navigator.pop(ctx);
+                        await _deleteAccount(context);
                       },
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               LiquidGlassPill(
                 height: 56,
                 activeColor: const Color(0xFFE53935),
                 isActive: true,
                 onTap: () async {
-                  var confirmDialogResponse = await showDialog<bool>(
-                        context: context,
-                        builder: (alertDialogContext) {
-                          return AlertDialog(
-                            backgroundColor: const Color(0xFF1E1E1E),
-                            title: const Text('Déconnexion', style: TextStyle(color: Colors.white)),
-                            content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?', style: TextStyle(color: Colors.white70)),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(alertDialogContext, false),
-                                child: const Text('Annuler', style: TextStyle(color: Colors.white54)),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(alertDialogContext, true),
-                                child: const Text('Se déconnecter', style: TextStyle(color: Color(0xFFE53935))),
-                              ),
-                            ],
-                          );
-                        },
-                      ) ?? false;
-
-                  if (confirmDialogResponse) {
+                  final confirm = await showDialog<bool>(
+                    context: ctx,
+                    builder: (alertCtx) => AlertDialog(
+                      backgroundColor: const Color(0xFF1E1E1E),
+                      title: const Text('DÃ©connexion', style: TextStyle(color: Colors.white)),
+                      content: const Text('ÃŠtes-vous sÃ»r de vouloir vous dÃ©connecter ?', style: TextStyle(color: Colors.white70)),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(alertCtx, false), child: const Text('Annuler', style: TextStyle(color: Colors.white54))),
+                        TextButton(onPressed: () => Navigator.pop(alertCtx, true), child: const Text('Se dÃ©connecter', style: TextStyle(color: Color(0xFFE53935)))),
+                      ],
+                    ),
+                  ) ?? false;
+                  if (confirm) {
                     await authManager.signOut();
-
                     final prefs = await SharedPreferences.getInstance();
-                    // On ne reset pas first_time_showcase, juste session
                     await prefs.remove('anonymous_mode');
-
-                    if (context.mounted) {
-                      context.go('/authentification');
-                    }
+                    if (ctx.mounted) ctx.go('/authentification');
                   }
                 },
                 child: Center(
@@ -1560,7 +1557,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     children: [
                       const Icon(IconlyLight.logout, color: Colors.white, size: 20),
                       const SizedBox(width: 12),
-                      Text('Se déconnecter', style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text('Se dÃ©connecter', style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -1573,22 +1570,215 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     );
   }
 
-  void _showEditProfileSheet(BuildContext context) async {
-    await showModalBottomSheet(
+  // BUG 9 FIX: Suppression du compte (Firebase Auth uniquement)
+  Future<void> _deleteAccount(BuildContext context) async {
+    final confirm1 = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1E1E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Supprimer le compte', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: Text(
+          'Cette action est irrÃ©versible. Votre compte sera dÃ©finitivement supprimÃ©.',
+          style: GoogleFonts.poppins(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Annuler', style: GoogleFonts.poppins(color: Colors.grey))),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('Continuer', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.w600))),
+        ],
+      ),
+    ) ?? false;
+    if (!confirm1 || !context.mounted) return;
+
+    final confirm2 = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1E1E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Confirmation finale', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.bold)),
+        content: Text('ÃŠtes-vous ABSOLUMENT sÃ»r ? Vous ne pourrez plus rÃ©cupÃ©rer votre compte.', style: GoogleFonts.poppins(color: Colors.white70)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Non, garder mon compte', style: GoogleFonts.poppins(color: Colors.white))),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('Oui, supprimer', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.w600))),
+        ],
+      ),
+    ) ?? false;
+    if (!confirm2 || !context.mounted) return;
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+      await user.delete();
+      await authManager.signOut();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('anonymous_mode');
+      if (context.mounted) context.go('/authentification');
+    } on FirebaseAuthException catch (e) {
+      if (!context.mounted) return;
+      if (e.code == 'requires-recent-login') {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Reconnectez-vous pour supprimer votre compte.', style: GoogleFonts.poppins()),
+          backgroundColor: Colors.orange[700],
+          behavior: SnackBarBehavior.floating,
+        ));
+        await authManager.signOut();
+        context.go('/authentification');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Erreur : ${e.message}', style: GoogleFonts.poppins()),
+          backgroundColor: Colors.red[700],
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Erreur inattendue : $e', style: GoogleFonts.poppins()),
+        backgroundColor: Colors.red[700],
+        behavior: SnackBarBehavior.floating,
+      ));
+    }
+  }
+
+  // BUG 8 FIX: Ã‰dition complÃ¨te du profil (nom, pseudo, bio)
+  void _showEditProfileSheet(BuildContext context) {
+    final nameCtrl = TextEditingController(text: _model.userProfile?['first_name'] as String? ?? '');
+    final handleCtrl = TextEditingController(text: _model.userProfile?['handle'] as String? ?? '');
+    final bioCtrl = TextEditingController(text: _model.userProfile?['bio'] as String? ?? '');
+
+    showModalBottomSheet(
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       context: context,
-      builder: (context) => Padding(
-        padding: MediaQuery.viewInsetsOf(context),
-        child: const ChangeNameWidget(),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModal) {
+          bool isSaving = false;
+          return Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Container(
+              decoration: BoxDecoration(
+                color: LiquidGlassTokens.pageDark,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                border: Border.all(color: Colors.white.withOpacity(0.1)),
+              ),
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)))),
+                  const SizedBox(height: 20),
+                  Text('Modifier le profil', style: GoogleFonts.outfit(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 24),
+                  Text('PrÃ©nom', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 6),
+                  _buildEditField(nameCtrl, 'Votre prÃ©nom', IconlyLight.profile),
+                  const SizedBox(height: 16),
+                  Text('Pseudo', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 6),
+                  _buildEditField(handleCtrl, 'votre_pseudo', IconlyLight.user1, prefix: '@'),
+                  const SizedBox(height: 16),
+                  Text('Bio', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 6),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.07),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withOpacity(0.15)),
+                    ),
+                    child: TextField(
+                      controller: bioCtrl,
+                      style: GoogleFonts.poppins(color: Colors.white),
+                      maxLines: 3,
+                      maxLength: 150,
+                      decoration: InputDecoration(
+                        hintText: 'Parlez de vous en quelques motsâ€¦',
+                        hintStyle: GoogleFonts.poppins(color: Colors.white38),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.all(12),
+                        counterStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 11),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isSaving ? null : () async {
+                        setModal(() => isSaving = true);
+                        try {
+                          final uid = FirebaseAuth.instance.currentUser?.uid;
+                          if (uid != null) {
+                            final newHandle = handleCtrl.text.trim().replaceAll('@', '').toLowerCase();
+                            await FirebaseFirestore.instance.collection('users').doc(uid).update({
+                              'first_name': nameCtrl.text.trim(),
+                              'display_name': nameCtrl.text.trim(),
+                              if (newHandle.isNotEmpty) 'handle': newHandle,
+                              'bio': bioCtrl.text.trim(),
+                            });
+                          }
+                          if (ctx.mounted) Navigator.pop(ctx);
+                          _model.loadFavourites();
+                          _loadWishlists();
+                        } catch (_) {
+                          setModal(() => isSaving = false);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: violetColor,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      child: isSaving
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : Text('Sauvegarder', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          );
+        },
       ),
-    ).then((_) {
-      _model.loadFavourites(); // Recharge pour sync les infos fraichement editées
-    });
+    );
+  }
+
+  Widget _buildEditField(TextEditingController ctrl, String hint, IconData icon, {String? prefix}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.07),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.15)),
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 12),
+          Icon(icon, color: Colors.white54, size: 18),
+          if (prefix != null) ...[
+            const SizedBox(width: 4),
+            Text(prefix, style: GoogleFonts.poppins(color: Colors.white54, fontSize: 15)),
+          ],
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: ctrl,
+              style: GoogleFonts.poppins(color: Colors.white, fontSize: 15),
+              decoration: InputDecoration(
+                hintText: hint,
+                hintStyle: GoogleFonts.poppins(color: Colors.white38),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
-// Délégué pour la tab bar sticky
+// DÃ©lÃ©guÃ© pour la tab bar sticky
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;
   final Color backgroundColor;
@@ -1614,3 +1804,5 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
     return false;
   }
 }
+
+

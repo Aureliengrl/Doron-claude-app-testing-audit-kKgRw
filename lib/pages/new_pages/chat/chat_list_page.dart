@@ -21,6 +21,11 @@ class ChatListPage extends StatefulWidget {
 
 class _ChatListPageState extends State<ChatListPage> {
   final Color violetColor = const Color(0xFF8A2BE2);
+
+  // BUG 4 FIX: cache des profils participants pour éviter un FutureBuilder
+  // par item (rebuild infini + surcharge Firestore à chaque scroll)
+  final Map<String, Map<String, dynamic>> _profileCache = {};
+
   String _formatTime(Timestamp? timestamp) {
     if (timestamp == null) return '';
     final now = DateTime.now();
@@ -37,6 +42,24 @@ class _ChatListPageState extends State<ChatListPage> {
     } else {
       return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
     }
+  }
+
+  /// Charge le profil d'un utilisateur depuis le cache ou Firestore.
+  Future<Map<String, dynamic>> _getProfile(String uid) async {
+    if (_profileCache.containsKey(uid)) return _profileCache[uid]!;
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        final profile = {
+          'name': data['display_name'] ?? data['first_name'] ?? 'Utilisateur',
+          'photo': data['photo_url'] ?? data['photoUrl'] ?? '',
+        };
+        _profileCache[uid] = profile;
+        return profile;
+      }
+    } catch (_) {}
+    return {'name': 'Utilisateur', 'photo': ''};
   }
 
   @override
@@ -199,8 +222,10 @@ class _ChatListPageState extends State<ChatListPage> {
             final isGroup = chatData['isGroup'] == true;
             final lastMessage = chatData['lastMessage'] as String? ?? '';
             final lastMessageTime = chatData['lastMessageTime'] as Timestamp?;
-            final unread = chatData['unreadCount']?[currentUser.uid] ?? 0;
-            
+            final unread = (chatData['unreadCount'] as Map?)?.entries
+                .firstWhere((e) => e.key == currentUser.uid, orElse: () => MapEntry('', 0))
+                .value ?? 0;
+
             Widget chatTile(String chatName, String photoUrl) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16),
@@ -211,7 +236,7 @@ class _ChatListPageState extends State<ChatListPage> {
                       context.push('/chat-room/$chatId', extra: {
                         ...chatData,
                         'id': chatId,
-                        'name': chatName, // Pass the resolved name
+                        'name': chatName,
                       });
                     },
                     borderRadius: BorderRadius.circular(16),
@@ -271,7 +296,7 @@ class _ChatListPageState extends State<ChatListPage> {
                                         chatName,
                                         style: GoogleFonts.poppins(
                                           fontSize: 16,
-                                          fontWeight: unread > 0 ? FontWeight.bold : FontWeight.w600,
+                                          fontWeight: (unread as int) > 0 ? FontWeight.bold : FontWeight.w600,
                                           color: Colors.white,
                                         ),
                                         maxLines: 1,
@@ -282,8 +307,8 @@ class _ChatListPageState extends State<ChatListPage> {
                                       _formatTime(lastMessageTime),
                                       style: GoogleFonts.poppins(
                                         fontSize: 12,
-                                        color: unread > 0 ? const Color(0xFFEC4899) : Colors.white.withOpacity(0.5),
-                                        fontWeight: unread > 0 ? FontWeight.bold : FontWeight.normal,
+                                        color: (unread as int) > 0 ? const Color(0xFFEC4899) : Colors.white.withOpacity(0.5),
+                                        fontWeight: (unread as int) > 0 ? FontWeight.bold : FontWeight.normal,
                                       ),
                                     ),
                                   ],
@@ -302,7 +327,7 @@ class _ChatListPageState extends State<ChatListPage> {
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    if (unread > 0)
+                                    if ((unread as int) > 0)
                                       Container(
                                         margin: const EdgeInsets.only(left: 8),
                                         padding: const EdgeInsets.all(6),
@@ -335,27 +360,29 @@ class _ChatListPageState extends State<ChatListPage> {
             if (isGroup) {
               return chatTile(chatData['name'] as String? ?? 'Groupe', '');
             } else {
-              // Extract the OTHER user's ID
+              // BUG 4 FIX: utilise le cache au lieu d'un FutureBuilder par item
               final participants = List<String>.from(chatData['participants'] ?? []);
               final otherUserId = participants.firstWhere(
-                (id) => id != currentUser.uid, 
-                orElse: () => currentUser.uid
+                (id) => id != currentUser.uid,
+                orElse: () => currentUser.uid,
               );
-              
+
               if (otherUserId == currentUser.uid) {
-                 return chatTile('Moi', '');
+                return chatTile('Moi', '');
               }
-              
-              return FutureBuilder<DocumentSnapshot>(
-                future: FirebaseFirestore.instance.collection('users').doc(otherUserId).get(),
-                builder: (context, userSnapshot) {
-                  String name = 'Utilisateur';
-                  String photo = '';
-                  if (userSnapshot.hasData && userSnapshot.data!.exists) {
-                    final userData = userSnapshot.data!.data() as Map<String, dynamic>;
-                    name = userData['display_name'] ?? userData['first_name'] ?? 'Utilisateur';
-                    photo = userData['photo_url'] ?? '';
-                  }
+
+              // Si déjà en cache → affiche directement (pas de rebuild infini)
+              if (_profileCache.containsKey(otherUserId)) {
+                final cached = _profileCache[otherUserId]!;
+                return chatTile(cached['name'] as String, cached['photo'] as String);
+              }
+
+              // Sinon charge une seule fois et met à jour le state
+              return FutureBuilder<Map<String, dynamic>>(
+                future: _getProfile(otherUserId),
+                builder: (ctx, snap) {
+                  final name = snap.data?['name'] as String? ?? 'Utilisateur';
+                  final photo = snap.data?['photo'] as String? ?? '';
                   return chatTile(name, photo);
                 },
               );
