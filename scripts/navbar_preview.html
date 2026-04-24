@@ -2,22 +2,17 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Doron — Liquid Glass Navbar Preview</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: 'Poppins', sans-serif;
-    background: #0A0014;
-    min-height: 100vh;
-    overflow: hidden;
-  }
+  body { font-family: 'Poppins', sans-serif; background: #0A0014; height: 100vh; overflow: hidden; touch-action: none; }
 
   .orb { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
   .orb-1 { width: 400px; height: 400px; top: -120px; left: -80px; background: radial-gradient(circle, rgba(138,43,226,0.35) 0%, transparent 70%); }
-  .orb-2 { width: 300px; height: 300px; top: 80px; right: -80px; background: radial-gradient(circle, rgba(236,72,153,0.25) 0%, transparent 70%); }
-  .orb-3 { width: 250px; height: 250px; bottom: 200px; left: 20%; background: radial-gradient(circle, rgba(138,43,226,0.18) 0%, transparent 70%); }
+  .orb-2 { width: 300px; height: 300px; top: 80px; right: -80px; background: radial-gradient(circle, rgba(236,72,153,0.22) 0%, transparent 70%); }
+  .orb-3 { width: 250px; height: 250px; bottom: 200px; left: 20%; background: radial-gradient(circle, rgba(138,43,226,0.15) 0%, transparent 70%); }
 
   .app-frame {
     position: relative; z-index: 1;
@@ -25,68 +20,68 @@
     height: 100vh; max-width: 430px; margin: 0 auto;
   }
 
-  .page-content { flex: 1; padding: 56px 20px 130px; overflow-y: auto; }
-  .page-title { font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 4px; }
-  .page-subtitle { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 24px; }
+  /* ── Pages viewport ── */
+  .pages-viewport {
+    flex: 1; overflow: hidden; position: relative;
+  }
 
-  .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .pages-track {
+    display: flex; height: 100%;
+    transition: transform 0.0s; /* controlled by JS */
+    will-change: transform;
+  }
+
+  .page {
+    min-width: 100%; height: 100%;
+    overflow-y: auto; overflow-x: hidden;
+    padding: 56px 20px 130px;
+    flex-shrink: 0;
+  }
+
+  .page-title { font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+  .page-subtitle { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 22px; }
+
+  .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
   .product-card {
     border-radius: 18px; overflow: hidden;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
-    backdrop-filter: blur(16px); cursor: pointer;
-    transition: transform 0.2s;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(14px);
   }
-  .product-card:hover { transform: scale(1.02); }
-  .product-img-ph { width: 100%; height: 120px; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+  .product-img-ph { width: 100%; height: 115px; display: flex; align-items: center; justify-content: center; font-size: 38px; }
   .product-info { padding: 10px 12px; }
-  .product-brand { font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; }
-  .product-name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.9); margin-bottom: 5px; line-height: 1.3; }
+  .product-brand { font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.42); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; }
+  .product-name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.88); margin-bottom: 5px; line-height: 1.3; }
   .product-price { font-size: 13px; font-weight: 700; background: linear-gradient(135deg,#D4AF37,#ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-  .section-label { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 14px; margin-top: 20px; }
-  .glass-row { display: flex; gap: 12px; }
-  .glass-chip {
-    flex: 1; padding: 12px 14px; text-align: center;
-    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 14px; backdrop-filter: blur(16px);
-  }
-  .chip-label { font-size: 10px; color: rgba(255,255,255,0.4); margin-bottom: 3px; }
+  .section-label { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 12px; margin-top: 16px; }
+  .glass-row { display: flex; gap: 10px; }
+  .glass-chip { flex: 1; padding: 11px 12px; text-align: center; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.09); border-radius: 14px; }
+  .chip-label { font-size: 10px; color: rgba(255,255,255,0.38); margin-bottom: 3px; }
   .chip-value { font-size: 18px; font-weight: 700; color: #fff; }
 
-  .search-box {
-    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.13);
-    border-radius: 14px; padding: 12px 14px; display: flex; align-items: center;
-    gap: 10px; margin-bottom: 20px;
-  }
+  .search-box { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 11px 14px; display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
 
-  .avatar-row {
-    display: flex; align-items: center; gap: 12px; padding: 12px 14px;
-    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
-    border-radius: 16px; backdrop-filter: blur(12px); margin-bottom: 10px;
-  }
-  .avt { width: 44px; height: 44px; border-radius: 50%; font-size: 20px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg,rgba(138,43,226,0.4),rgba(236,72,153,0.4)); border: 1px solid rgba(255,255,255,0.18); flex-shrink: 0; }
+  .avatar-row { display: flex; align-items: center; gap: 12px; padding: 11px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; margin-bottom: 9px; }
+  .avt { width: 42px; height: 42px; border-radius: 50%; font-size: 20px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg,rgba(138,43,226,0.4),rgba(236,72,153,0.4)); border: 1px solid rgba(255,255,255,0.15); flex-shrink: 0; }
   .avt-name { font-size: 13px; font-weight: 600; color: #fff; }
   .avt-sub { font-size: 11px; color: rgba(255,255,255,0.4); }
 
-  .tab-page { display: none; }
-  .tab-page.active { display: block; }
+  .profile-center { text-align: center; margin-bottom: 22px; }
+  .profile-avatar { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg,rgba(138,43,226,0.5),rgba(236,72,153,0.5)); margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 30px; border: 2px solid rgba(255,255,255,0.18); }
 
+  /* ── Info banner ── */
   .info-panel {
-    position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+    position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
     background: rgba(255,255,255,0.07); backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.13); border-radius: 14px;
-    padding: 10px 18px; font-size: 11px; color: rgba(255,255,255,0.6);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 14px;
+    padding: 9px 16px; font-size: 11px; color: rgba(255,255,255,0.55);
     text-align: center; max-width: 340px; width: calc(100% - 32px); z-index: 200;
   }
   .info-title { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 2px; }
 
-  /* ═══════════════════════════════════════
-     NAVBAR — Reference style
-     Pilule principale :
-       - Onglet actif = mini-pilule (icon + label côte à côte)
-       - Onglets inactifs = icône centrée uniquement
-     ═══════════════════════════════════════ */
+  /* ══════════════════════════════════════════════════
+     NAVBAR — Tab Scrubbing
+  ══════════════════════════════════════════════════ */
   .navbar-wrapper {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
     display: flex; justify-content: center;
@@ -100,11 +95,10 @@
     gap: 12px; pointer-events: all;
   }
 
-  /* ── Pilule principale ── */
+  /* Pilule principale */
   .navbar-pill {
     flex: 1; height: 64px; border-radius: 32px;
-    display: flex; align-items: center;
-    padding: 0 10px;
+    position: relative; overflow: hidden;
     backdrop-filter: blur(60px) saturate(200%);
     -webkit-backdrop-filter: blur(60px) saturate(200%);
     background: linear-gradient(
@@ -114,285 +108,246 @@
       rgba(255,255,255,0.10) 100%
     );
     box-shadow:
-      0 12px 40px rgba(138,43,226,0.30),
-      0 6px 20px rgba(0,0,0,0.35),
-      inset 0 1px 0 rgba(255,255,255,0.55),
-      inset 0 -1px 0 rgba(0,0,0,0.15);
-    position: relative;
-    overflow: visible;
+      0 12px 40px rgba(138,43,226,0.28),
+      0 6px 20px rgba(0,0,0,0.33),
+      inset 0 1px 0 rgba(255,255,255,0.52),
+      inset 0 -1px 0 rgba(0,0,0,0.14);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
   }
-  /* specular top */
   .navbar-pill::before {
     content: ''; position: absolute; inset: 0; border-radius: 32px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.22) 0%, transparent 42%);
-    pointer-events: none;
+    background: linear-gradient(180deg, rgba(255,255,255,0.20) 0%, transparent 40%);
+    pointer-events: none; z-index: 10;
   }
-  /* prismatic bottom */
   .navbar-pill::after {
-    content: ''; position: absolute; bottom: 1px; left: 15%; right: 15%; height: 1px;
+    content: ''; position: absolute; bottom: 1px; left: 15%; right: 15%; height: 1px; z-index: 10;
     background: linear-gradient(90deg,
-      rgba(255,100,100,0.12),
-      rgba(100,200,255,0.15),
-      rgba(180,100,255,0.18),
-      rgba(100,200,255,0.15),
-      rgba(255,100,100,0.12)
+      rgba(255,100,100,0.10), rgba(100,200,255,0.14),
+      rgba(180,100,255,0.16), rgba(100,200,255,0.14),
+      rgba(255,100,100,0.10)
     );
-    filter: blur(0.5px);
   }
 
-  /* ── Items container ── */
+  /* Items container */
   .nav-items {
-    display: flex; align-items: center; justify-content: space-around;
-    width: 100%; height: 100%; position: relative; z-index: 2;
+    display: flex; align-items: center; height: 100%;
+    position: relative; z-index: 2;
   }
 
-  /* ── Chaque item ── */
   .nav-item {
-    display: flex; align-items: center; justify-content: center;
-    gap: 7px;
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    height: 100%; position: relative;
+    transition: none;
+  }
+
+  /* ── Sliding pill indicator (DOM element, moved by JS) ── */
+  .pill-indicator {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
     height: 44px;
     border-radius: 22px;
-    cursor: pointer;
-    transition:
-      background 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-      padding 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-      box-shadow 0.3s ease;
-    padding: 0 10px;
-    position: relative;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .nav-item:active { transform: scale(0.93); }
-
-  /* Inactive: aucun fond, icône seule */
-  .nav-item .nav-icon { flex-shrink: 0; line-height: 0; }
-  .nav-item .nav-label-text {
-    font-size: 13px; font-weight: 600;
-    color: white; letter-spacing: 0.1px;
-    white-space: nowrap;
-    overflow: hidden;
-    max-width: 0;
-    opacity: 0;
-    transition:
-      max-width 0.35s cubic-bezier(0.34, 1.2, 0.64, 1),
-      opacity 0.25s ease;
-  }
-
-  /* ── ACTIVE état ── */
-  .nav-item.active {
     background: linear-gradient(
       135deg,
-      rgba(255,255,255,0.26) 0%,
+      rgba(255,255,255,0.28) 0%,
       rgba(255,255,255,0.10) 55%,
-      rgba(138,43,226,0.22) 100%
+      rgba(138,43,226,0.24) 100%
     );
     box-shadow:
-      0 4px 16px rgba(138,43,226,0.38),
-      inset 0 1px 0 rgba(255,255,255,0.50),
-      0 0 0 0.8px rgba(255,255,255,0.42);
-    padding: 0 16px;
+      0 5px 16px rgba(138,43,226,0.40),
+      inset 0 1px 0 rgba(255,255,255,0.48),
+      0 0 0 0.8px rgba(255,255,255,0.40);
+    pointer-events: none;
+    z-index: 1;
+    /* JS drives left + width — no CSS transition during drag */
+    will-change: left, width;
   }
+
+  /* Icon + label wrapper per item */
+  .nav-inner {
+    display: flex; align-items: center; gap: 7px;
+    padding: 0 10px;
+    position: relative; z-index: 3;
+    transition: none;
+  }
+
+  .nav-icon-svg {
+    flex-shrink: 0;
+    transition: none;
+  }
+
+  .nav-label-text {
+    font-size: 13px; font-weight: 600; color: white; letter-spacing: 0.1px;
+    white-space: nowrap; overflow: hidden;
+    max-width: 0; opacity: 0;
+    /* JS controls width/opacity for active state */
+    transition: max-width 0.32s cubic-bezier(0.34,1.2,0.64,1),
+                opacity 0.22s ease;
+  }
+
   .nav-item.active .nav-label-text {
-    max-width: 80px;
-    opacity: 1;
+    max-width: 70px; opacity: 1;
   }
 
   /* Badge */
   .badge {
-    position: absolute; top: -5px; right: -6px;
+    position: absolute; top: -5px; right: -8px;
     min-width: 17px; height: 17px; border-radius: 9px;
     background: linear-gradient(135deg, #FF4B4B, #FF2266);
-    border: 1.5px solid rgba(10,0,20,0.9);
+    border: 1.5px solid rgba(10,0,20,0.88);
     display: flex; align-items: center; justify-content: center;
     font-size: 9px; font-weight: 800; color: #fff; padding: 0 4px;
-    box-shadow: 0 2px 6px rgba(255,75,75,0.6);
-    animation: badgePop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 2px 6px rgba(255,75,75,0.55);
+    z-index: 20;
   }
-  @keyframes badgePop { from { transform: scale(0); } to { transform: scale(1); } }
 
-  /* ── Bouton profil circulaire ── */
+  /* Profil circle */
   .navbar-circle {
     width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    flex-direction: column; gap: 2px;
+    flex-direction: column; gap: 3px;
     cursor: pointer; position: relative;
     backdrop-filter: blur(60px) saturate(200%);
     -webkit-backdrop-filter: blur(60px) saturate(200%);
-    background: linear-gradient(
-      135deg,
-      rgba(255,255,255,0.18) 0%,
-      rgba(255,255,255,0.05) 50%,
-      rgba(255,255,255,0.10) 100%
-    );
-    box-shadow:
-      0 12px 40px rgba(138,43,226,0.30),
-      0 6px 20px rgba(0,0,0,0.35),
-      inset 0 1px 0 rgba(255,255,255,0.55);
-    transition: all 0.3s ease;
+    background: linear-gradient(135deg,rgba(255,255,255,0.18) 0%,rgba(255,255,255,0.05) 50%,rgba(255,255,255,0.10) 100%);
+    box-shadow: 0 12px 40px rgba(138,43,226,0.28),0 6px 20px rgba(0,0,0,0.33),inset 0 1px 0 rgba(255,255,255,0.52);
+    transition: background 0.3s ease, box-shadow 0.3s ease;
   }
   .navbar-circle::before {
     content: ''; position: absolute; inset: 0; border-radius: 50%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.22) 0%, transparent 45%);
+    background: linear-gradient(180deg, rgba(255,255,255,0.20) 0%, transparent 44%);
     pointer-events: none;
   }
   .navbar-circle:active { transform: scale(0.92); }
   .navbar-circle.active {
-    background: linear-gradient(
-      135deg,
-      rgba(138,43,226,0.60) 0%,
-      rgba(138,43,226,0.35) 55%,
-      rgba(236,72,153,0.28) 100%
-    );
-    box-shadow:
-      0 0 0 0.8px rgba(255,255,255,0.45),
-      0 12px 40px rgba(138,43,226,0.50),
-      0 6px 20px rgba(0,0,0,0.35);
+    background: linear-gradient(135deg,rgba(138,43,226,0.60) 0%,rgba(138,43,226,0.35) 55%,rgba(236,72,153,0.28) 100%);
+    box-shadow: 0 0 0 0.8px rgba(255,255,255,0.42),0 12px 40px rgba(138,43,226,0.50),0 6px 20px rgba(0,0,0,0.33);
   }
-  .circle-label {
-    font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.55);
-    transition: color 0.2s; letter-spacing: 0.2px;
-  }
+  .circle-label { font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.50); transition: color 0.2s; position: relative; z-index: 2; }
   .navbar-circle.active .circle-label { color: rgba(255,255,255,0.9); }
-
-  /* Spring bounce on activate */
-  @keyframes springBounce {
-    0%   { transform: scale(1.3); }
-    35%  { transform: scale(0.95); }
-    60%  { transform: scale(1.12); }
-    80%  { transform: scale(1.04); }
-    100% { transform: scale(1.0); }
-  }
-  .spring { animation: springBounce 0.45s cubic-bezier(0.34,1.56,0.64,1); }
-
-  .profile-circle-icon { position: relative; z-index: 2; line-height: 0; }
+  .circle-icon-wrap { position: relative; z-index: 2; }
 </style>
 </head>
 <body>
-<div class="orb orb-1"></div>
-<div class="orb orb-2"></div>
-<div class="orb orb-3"></div>
+<div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div>
 
 <div class="info-panel">
-  <div class="info-title">🔮 Doron — Liquid Glass Navbar v2</div>
-  <div>Pilule active = icon + label · Inactif = icône seule · Spring bounce</div>
+  <div class="info-title">🔮 Liquid Glass — Tab Scrubbing</div>
+  <div>Maintiens + glisse sur la navbar pour switcher · Spring snap au lâcher</div>
 </div>
 
 <div class="app-frame">
-  <div class="page-content">
 
-    <!-- HOME -->
-    <div class="tab-page active" id="page-0">
-      <div class="page-title">Accueil</div>
-      <div class="page-subtitle">Suggestions du moment</div>
-      <div class="cards-grid">
-        <div class="product-card"><div class="product-img-ph" style="background:linear-gradient(135deg,#1a0035,#3a0070)">🎒</div><div class="product-info"><div class="product-brand">Louis Vuitton</div><div class="product-name">Sac Neverfull</div><div class="product-price">1 450 €</div></div></div>
-        <div class="product-card"><div class="product-img-ph" style="background:linear-gradient(135deg,#001a35,#003570)">⌚</div><div class="product-info"><div class="product-brand">Rolex</div><div class="product-name">Datejust 36</div><div class="product-price">8 200 €</div></div></div>
-        <div class="product-card"><div class="product-img-ph" style="background:linear-gradient(135deg,#1a3500,#357000)">👟</div><div class="product-info"><div class="product-brand">Nike</div><div class="product-name">Air Max 270</div><div class="product-price">185 €</div></div></div>
-        <div class="product-card"><div class="product-img-ph" style="background:linear-gradient(135deg,#35001a,#700035)">🌸</div><div class="product-info"><div class="product-brand">Dior</div><div class="product-name">Miss Dior EDP</div><div class="product-price">125 €</div></div></div>
-      </div>
-      <div class="section-label">Stats</div>
-      <div class="glass-row">
-        <div class="glass-chip"><div class="chip-label">Wishlists</div><div class="chip-value">12</div></div>
-        <div class="glass-chip"><div class="chip-label">Amis</div><div class="chip-value">47</div></div>
-        <div class="glass-chip"><div class="chip-label">Messages</div><div class="chip-value">3</div></div>
-      </div>
-    </div>
+  <!-- Pages viewport -->
+  <div class="pages-viewport" id="viewport">
+    <div class="pages-track" id="track">
 
-    <!-- SEARCH -->
-    <div class="tab-page" id="page-1">
-      <div class="page-title">Recherche</div>
-      <div class="page-subtitle">Trouve le cadeau parfait</div>
-      <div class="search-box">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <span style="color:rgba(255,255,255,0.3);font-size:14px">iPhone 15 Pro, Nike Air…</span>
+      <!-- Accueil -->
+      <div class="page">
+        <div class="page-title">Accueil</div>
+        <div class="page-subtitle">Suggestions du moment</div>
+        <div class="cards-grid">
+          <div class="product-card"><div class="product-img-ph" style="background:linear-gradient(135deg,#1a0035,#3a0070)">🎒</div><div class="product-info"><div class="product-brand">Louis Vuitton</div><div class="product-name">Sac Neverfull</div><div class="product-price">1 450 €</div></div></div>
+          <div class="product-card"><div class="product-img-ph" style="background:linear-gradient(135deg,#001a35,#003570)">⌚</div><div class="product-info"><div class="product-brand">Rolex</div><div class="product-name">Datejust 36</div><div class="product-price">8 200 €</div></div></div>
+          <div class="product-card"><div class="product-img-ph" style="background:linear-gradient(135deg,#1a3500,#357000)">👟</div><div class="product-info"><div class="product-brand">Nike</div><div class="product-name">Air Max 270</div><div class="product-price">185 €</div></div></div>
+          <div class="product-card"><div class="product-img-ph" style="background:linear-gradient(135deg,#35001a,#700035)">🌸</div><div class="product-info"><div class="product-brand">Dior</div><div class="product-name">Miss Dior EDP</div><div class="product-price">125 €</div></div></div>
+        </div>
+        <div class="section-label">Stats</div>
+        <div class="glass-row">
+          <div class="glass-chip"><div class="chip-label">Wishlists</div><div class="chip-value">12</div></div>
+          <div class="glass-chip"><div class="chip-label">Amis</div><div class="chip-value">47</div></div>
+          <div class="glass-chip"><div class="chip-label">Messages</div><div class="chip-value">3</div></div>
+        </div>
       </div>
-      <div class="avatar-row"><div class="avt">📱</div><div><div class="avt-name">iPhone 15 Pro Max</div><div class="avt-sub">Apple · 1 329 €</div></div></div>
-      <div class="avatar-row"><div class="avt">🎧</div><div><div class="avt-name">AirPods Pro 2</div><div class="avt-sub">Apple · 279 €</div></div></div>
-      <div class="avatar-row"><div class="avt">👜</div><div><div class="avt-name">Sac Marmont</div><div class="avt-sub">Gucci · 2 100 €</div></div></div>
-    </div>
 
-    <!-- INSPO -->
-    <div class="tab-page" id="page-2">
-      <div class="page-title">Inspiration</div>
-      <div class="page-subtitle">Découverte ✨</div>
-      <div style="background:linear-gradient(135deg,rgba(138,43,226,0.18),rgba(236,72,153,0.12));border:1px solid rgba(138,43,226,0.25);border-radius:18px;padding:22px;text-align:center;margin-bottom:18px">
-        <div style="font-size:44px;margin-bottom:10px">✨</div>
-        <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:5px">Mode découverte</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.5)">Swipe pour découvrir des idées cadeaux</div>
+      <!-- Recherche -->
+      <div class="page">
+        <div class="page-title">Recherche</div>
+        <div class="page-subtitle">Trouve le cadeau parfait</div>
+        <div class="search-box">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span style="color:rgba(255,255,255,0.3);font-size:14px">iPhone 15 Pro, Nike Air…</span>
+        </div>
+        <div class="avatar-row"><div class="avt">📱</div><div><div class="avt-name">iPhone 15 Pro Max</div><div class="avt-sub">Apple · 1 329 €</div></div></div>
+        <div class="avatar-row"><div class="avt">🎧</div><div><div class="avt-name">AirPods Pro 2</div><div class="avt-sub">Apple · 279 €</div></div></div>
+        <div class="avatar-row"><div class="avt">👜</div><div><div class="avt-name">Sac Marmont</div><div class="avt-sub">Gucci · 2 100 €</div></div></div>
       </div>
-      <div class="cards-grid">
-        <div class="product-card"><div class="product-img-ph" style="background:linear-gradient(135deg,#2a0050,#500090)">💎</div><div class="product-info"><div class="product-brand">Cartier</div><div class="product-name">Bracelet Love</div><div class="product-price">6 800 €</div></div></div>
-        <div class="product-card"><div class="product-img-ph" style="background:linear-gradient(135deg,#001635,#003090)">🎮</div><div class="product-info"><div class="product-brand">Sony</div><div class="product-name">PS5 Pro</div><div class="product-price">799 €</div></div></div>
-      </div>
-    </div>
 
-    <!-- PROFILE -->
-    <div class="tab-page" id="page-3">
-      <div class="page-title">Mon Profil</div>
-      <div class="page-subtitle">@marc.g</div>
-      <div style="text-align:center;margin-bottom:24px">
-        <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,rgba(138,43,226,0.5),rgba(236,72,153,0.5));margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:32px;border:2px solid rgba(255,255,255,0.18)">👤</div>
-        <div style="font-size:17px;font-weight:700;color:#fff">Marc Girard</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.4)">Membre depuis 2024</div>
+      <!-- Inspo -->
+      <div class="page">
+        <div class="page-title">Inspiration</div>
+        <div class="page-subtitle">Découverte ✨</div>
+        <div style="background:linear-gradient(135deg,rgba(138,43,226,0.18),rgba(236,72,153,0.12));border:1px solid rgba(138,43,226,0.22);border-radius:18px;padding:20px;text-align:center;margin-bottom:16px">
+          <div style="font-size:42px;margin-bottom:9px">✨</div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:5px">Mode découverte</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.48)">Swipe pour découvrir des idées</div>
+        </div>
+        <div class="cards-grid">
+          <div class="product-card"><div class="product-img-ph" style="background:linear-gradient(135deg,#2a0050,#500090)">💎</div><div class="product-info"><div class="product-brand">Cartier</div><div class="product-name">Bracelet Love</div><div class="product-price">6 800 €</div></div></div>
+          <div class="product-card"><div class="product-img-ph" style="background:linear-gradient(135deg,#001635,#003090)">🎮</div><div class="product-info"><div class="product-brand">Sony</div><div class="product-name">PS5 Pro</div><div class="product-price">799 €</div></div></div>
+        </div>
       </div>
-      <div class="glass-row">
-        <div class="glass-chip"><div class="chip-label">Wishlists</div><div class="chip-value">8</div></div>
-        <div class="glass-chip"><div class="chip-label">Amis</div><div class="chip-value">47</div></div>
-        <div class="glass-chip"><div class="chip-label">Likés</div><div class="chip-value">134</div></div>
-      </div>
-    </div>
 
-  </div><!-- /page-content -->
+    </div><!-- /track -->
+  </div><!-- /viewport -->
 
-  <!-- ═══════ NAVBAR ═══════ -->
+  <!-- NAVBAR -->
   <div class="navbar-wrapper">
     <div class="navbar-row">
 
-      <div class="navbar-pill">
-        <div class="nav-items">
+      <!-- Pilule principale -->
+      <div class="navbar-pill" id="pill">
+        <!-- Indicateur glissant -->
+        <div class="pill-indicator" id="indicator"></div>
 
-          <!-- Accueil -->
-          <div class="nav-item active" id="item-0" data-index="0" onclick="switchTab(0)">
-            <div class="nav-icon" id="icon-0">
-              <div class="badge">3</div>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path d="M9 22V12H15V22M3 9L12 2L21 9V20C21 21.1 20.1 22 19 22H5C3.9 22 3 21.1 3 20V9Z" stroke="white" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+        <div class="nav-items" id="navItems">
+
+          <div class="nav-item active" data-index="0">
+            <div class="nav-inner">
+              <div class="nav-icon-svg" style="position:relative">
+                <div class="badge">3</div>
+                <svg id="svg-0" width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M20.04 11.56L12.74 4.24c-.82-.82-2.14-.82-2.96 0L2.1 11.49c-.58.5-.58 1.39 0 1.88.52.45 1.29.4 1.75-.07l.15-.15V19c0 1.1.9 2 2 2h4v-5h4v5h4c1.1 0 2-.9 2-2v-5.84l.15.14c.47.47 1.24.52 1.76.06.58-.5.58-1.38-.01-1.78z" fill="white"/>
+                </svg>
+              </div>
+              <div class="nav-label-text">Accueil</div>
             </div>
-            <div class="nav-label-text">Accueil</div>
           </div>
 
-          <!-- Recherche -->
-          <div class="nav-item" id="item-1" data-index="1" onclick="switchTab(1)">
-            <div class="nav-icon" id="icon-1">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <circle cx="11.5" cy="11.5" r="6.5" stroke="rgba(255,255,255,0.52)" stroke-width="1.8"/>
-                <path d="M16.5 17L20 20.5" stroke="rgba(255,255,255,0.52)" stroke-width="1.8" stroke-linecap="round"/>
-              </svg>
+          <div class="nav-item" data-index="1">
+            <div class="nav-inner">
+              <div class="nav-icon-svg">
+                <svg id="svg-1" width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <circle cx="11.5" cy="11.5" r="6.5" stroke="rgba(255,255,255,0.52)" stroke-width="1.8"/>
+                  <path d="M16.5 17L20 20.5" stroke="rgba(255,255,255,0.52)" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="nav-label-text">Recherche</div>
             </div>
-            <div class="nav-label-text">Recherche</div>
           </div>
 
-          <!-- Inspo -->
-          <div class="nav-item" id="item-2" data-index="2" onclick="switchTab(2)">
-            <div class="nav-icon" id="icon-2">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,0.52)" stroke-width="1.8"/>
-                <path d="M14.5 9.5L13 13l-3.5 1.5 1.5-3.5 3.5-1.5z" stroke="rgba(255,255,255,0.52)" stroke-width="1.5" stroke-linejoin="round"/>
-              </svg>
+          <div class="nav-item" data-index="2">
+            <div class="nav-inner">
+              <div class="nav-icon-svg">
+                <svg id="svg-2" width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,0.52)" stroke-width="1.8"/>
+                  <path d="M14.5 9.5L13 13l-3.5 1.5 1.5-3.5 3.5-1.5z" stroke="rgba(255,255,255,0.52)" stroke-width="1.5" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="nav-label-text">Inspo</div>
             </div>
-            <div class="nav-label-text">Inspo</div>
           </div>
 
         </div>
       </div>
 
-      <!-- Profil circle -->
-      <div class="navbar-circle" id="profile-btn" onclick="switchTab(3)">
-        <div class="profile-circle-icon" id="icon-3" style="position:relative">
+      <!-- Profil -->
+      <div class="navbar-circle" id="profileBtn" onclick="switchTab(3)">
+        <div class="circle-icon-wrap" style="position:relative">
           <div class="badge" style="top:-4px;right:-4px">2</div>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <svg id="svg-3" width="22" height="22" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="8" r="4" stroke="rgba(255,255,255,0.52)" stroke-width="1.8"/>
             <path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" stroke="rgba(255,255,255,0.52)" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
@@ -403,79 +358,270 @@
     </div>
   </div>
 
-</div>
+</div><!-- /app-frame -->
 
 <script>
-let current = 0;
+/* ═══════════════════════════════════════════════════════════
+   Tab Scrubbing — Liquid Glass Navbar
+   ► Drag horizontal sur la pilule → scrub pages + pilule
+   ► Spring snap au relâchement
+   ► Morphing (stretch) de la pilule entre les items
+═══════════════════════════════════════════════════════════ */
 
-// SVG pour chaque état
+const TABS = 3; // onglets dans la pilule
+let currentTab = 0;
+let dragStartX = 0;
+let dragStartTab = 0;
+let isDragging = false;
+let animFrame = null;
+
+// DOM refs
+const pill       = document.getElementById('pill');
+const indicator  = document.getElementById('indicator');
+const navItems   = document.querySelectorAll('.nav-item');
+const track      = document.getElementById('track');
+const viewport   = document.getElementById('viewport');
+
+// SVG content per state
 const svgs = {
   0: {
-    active: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20.04 11.56L12.74 4.24c-.82-.82-2.14-.82-2.96 0L2.1 11.49c-.58.5-.58 1.39 0 1.88.52.45 1.29.4 1.75-.07l.15-.15V19c0 1.1.9 2 2 2h4v-5h4v5h4c1.1 0 2-.9 2-2v-5.84l.15.14c.47.47 1.24.52 1.76.06.58-.5.58-1.38-.01-1.78z" fill="white"/></svg>`,
-    inactive: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 22V12H15V22M3 9L12 2L21 9V20C21 21.1 20.1 22 19 22H5C3.9 22 3 21.1 3 20V9Z" stroke="rgba(255,255,255,0.52)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+    active:   `<path d="M20.04 11.56L12.74 4.24c-.82-.82-2.14-.82-2.96 0L2.1 11.49c-.58.5-.58 1.39 0 1.88.52.45 1.29.4 1.75-.07l.15-.15V19c0 1.1.9 2 2 2h4v-5h4v5h4c1.1 0 2-.9 2-2v-5.84l.15.14c.47.47 1.24.52 1.76.06.58-.5.58-1.38-.01-1.78z" fill="white"/>`,
+    inactive: `<path d="M9 22V12H15V22M3 9L12 2L21 9V20C21 21.1 20.1 22 19 22H5C3.9 22 3 21.1 3 20V9Z" stroke="rgba(255,255,255,0.52)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>`
   },
   1: {
-    active: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="11.5" cy="11.5" r="6.5" fill="white" opacity="0.92"/><path d="M16.5 17L20 20.5" stroke="white" stroke-width="2.2" stroke-linecap="round"/></svg>`,
-    inactive: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="11.5" cy="11.5" r="6.5" stroke="rgba(255,255,255,0.52)" stroke-width="1.8"/><path d="M16.5 17L20 20.5" stroke="rgba(255,255,255,0.52)" stroke-width="1.8" stroke-linecap="round"/></svg>`
+    active:   `<circle cx="11.5" cy="11.5" r="6.5" fill="white" opacity="0.92"/><path d="M16.5 17L20 20.5" stroke="white" stroke-width="2.2" stroke-linecap="round"/>`,
+    inactive: `<circle cx="11.5" cy="11.5" r="6.5" stroke="rgba(255,255,255,0.52)" stroke-width="1.8"/><path d="M16.5 17L20 20.5" stroke="rgba(255,255,255,0.52)" stroke-width="1.8" stroke-linecap="round"/>`
   },
   2: {
-    active: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="white" stroke-width="1.8"/><path d="M14.5 9.5L13 13l-3.5 1.5 1.5-3.5 3.5-1.5z" fill="white"/></svg>`,
-    inactive: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,0.52)" stroke-width="1.8"/><path d="M14.5 9.5L13 13l-3.5 1.5 1.5-3.5 3.5-1.5z" stroke="rgba(255,255,255,0.52)" stroke-width="1.5" stroke-linejoin="round"/></svg>`
+    active:   `<circle cx="12" cy="12" r="9" stroke="white" stroke-width="1.8"/><path d="M14.5 9.5L13 13l-3.5 1.5 1.5-3.5 3.5-1.5z" fill="white"/>`,
+    inactive: `<circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,0.52)" stroke-width="1.8"/><path d="M14.5 9.5L13 13l-3.5 1.5 1.5-3.5 3.5-1.5z" stroke="rgba(255,255,255,0.52)" stroke-width="1.5" stroke-linejoin="round"/>`
   },
   3: {
-    active: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="white" opacity="0.95"/><path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>`,
-    inactive: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="rgba(255,255,255,0.52)" stroke-width="1.8"/><path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" stroke="rgba(255,255,255,0.52)" stroke-width="1.8" stroke-linecap="round"/></svg>`
+    active:   `<circle cx="12" cy="8" r="4" fill="white" opacity="0.95"/><path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" stroke="white" stroke-width="1.8" stroke-linecap="round"/>`,
+    inactive: `<circle cx="12" cy="8" r="4" stroke="rgba(255,255,255,0.52)" stroke-width="1.8"/><path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" stroke="rgba(255,255,255,0.52)" stroke-width="1.8" stroke-linecap="round"/>`
   }
 };
 
-function switchTab(idx) {
-  const prev = current;
-  current = idx;
-
-  // Pages
-  document.querySelectorAll('.tab-page').forEach((p,i) => p.classList.toggle('active', i===idx));
-
-  // Left items (0,1,2)
-  for (let i = 0; i < 3; i++) {
-    const item = document.getElementById('item-' + i);
-    const iconEl = document.getElementById('icon-' + i);
-    const wasActive = item.classList.contains('active');
-    const isActive = i === idx;
-
+// Mise à jour de l'état visuel discret (tab complet) 
+function updateTabUI(tabIdx) {
+  navItems.forEach((item, i) => {
+    const isActive = i === tabIdx;
     item.classList.toggle('active', isActive);
-
-    // Update SVG (keep badge if present)
-    const badge = iconEl.querySelector('.badge');
-    const badgeHtml = badge ? badge.outerHTML : '';
-    iconEl.innerHTML = badgeHtml + svgs[i][isActive ? 'active' : 'inactive'];
-
-    // Spring bounce
-    if (isActive && !wasActive) {
-      const iconSvg = iconEl.querySelector('svg');
-      if (iconSvg) {
-        iconSvg.classList.remove('spring');
-        void iconSvg.offsetWidth;
-        iconSvg.classList.add('spring');
-      }
+    const svg = document.getElementById('svg-' + i);
+    if (svg && svgs[i]) {
+      const badge = svg.parentNode.querySelector('.badge');
+      const badgeHtml = badge ? badge.outerHTML : '';
+      svg.parentNode.innerHTML = badgeHtml + `<svg id="svg-${i}" width="22" height="22" viewBox="0 0 24 24" fill="none">${svgs[i][isActive ? 'active' : 'inactive']}</svg>`;
     }
-  }
-
-  // Profile circle (idx 3)
-  const profileBtn = document.getElementById('profile-btn');
-  const profileIcon = document.getElementById('icon-3');
-  const profileActive = idx === 3;
-  profileBtn.classList.toggle('active', profileActive);
-
-  const profileBadge = profileIcon ? profileIcon.querySelector('.badge') : null;
-  const profileBadgeHtml = profileBadge ? profileBadge.outerHTML : '';
-  if (profileIcon) {
-    profileIcon.innerHTML = profileBadgeHtml + svgs[3][profileActive ? 'active' : 'inactive'];
-    if (profileActive && prev !== 3) {
-      const svg = profileIcon.querySelector('svg');
-      if (svg) { svg.classList.remove('spring'); void svg.offsetWidth; svg.classList.add('spring'); }
-    }
+  });
+  // Profile circle
+  const profileBtn = document.getElementById('profileBtn');
+  profileBtn.classList.toggle('active', tabIdx === 3);
+  const svg3 = document.getElementById('svg-3');
+  if (svg3) {
+    const p = svg3.parentNode;
+    const badge = p.querySelector('.badge');
+    const bh = badge ? badge.outerHTML : '';
+    p.innerHTML = bh + `<svg id="svg-3" width="22" height="22" viewBox="0 0 24 24" fill="none">${svgs[3][tabIdx === 3 ? 'active' : 'inactive']}</svg>`;
   }
 }
+
+// Position de chaque item dans la pilule (centre)
+function getItemCenters() {
+  const rect = pill.getBoundingClientRect();
+  return Array.from(navItems).map(item => {
+    const r = item.getBoundingClientRect();
+    return r.left - rect.left + r.width / 2;
+  });
+}
+
+// Largeur du pill indicator : s'étire quand entre deux onglets
+function getIndicatorGeometry(progress) {
+  // progress: float 0..TABS-1 (position continue)
+  const clamped = Math.max(0, Math.min(TABS - 1, progress));
+  const lower = Math.floor(clamped);
+  const upper = Math.min(TABS - 1, lower + 1);
+  const frac  = clamped - lower;
+
+  const centers = getItemCenters();
+  const pillRect = pill.getBoundingClientRect();
+
+  const cL = centers[lower];
+  const cU = centers[upper];
+
+  // Base width for active pill (icon + label space)
+  const baseW = 90; // approx width when settled on a tab
+  const minW  = 48; // minimum icon-only width
+
+  if (lower === upper || frac < 0.001) {
+    // Fully on one tab
+    return { left: cL - baseW / 2, width: baseW };
+  }
+
+  // Stretch between two tabs (liquid morph)
+  // Max stretch when frac = 0.5
+  const stretch = Math.sin(frac * Math.PI); // 0 → 1 → 0
+  const leftEdge  = cL - baseW / 2;
+  const rightEdge = cU + baseW / 2;
+  const stretchedW = (rightEdge - leftEdge) * stretch + baseW * (1 - stretch);
+
+  // Center of indicator follows finger
+  const center = cL + (cU - cL) * frac;
+  const leftPos = center - stretchedW / 2;
+
+  return { left: leftPos, width: stretchedW };
+}
+
+// Met à jour l'indicateur + les pages sans transition (pendant le drag)
+let _lastProgress = 0;
+function applyProgress(progress) {
+  _lastProgress = progress;
+  const { left, width } = getIndicatorGeometry(progress);
+
+  // Pilule indicator — SANS transition CSS
+  indicator.style.transition = 'none';
+  indicator.style.left  = left + 'px';
+  indicator.style.width = width + 'px';
+
+  // Pages — proportionnel
+  const vw = viewport.offsetWidth;
+  const clamped = Math.max(0, Math.min(TABS - 1, progress));
+  track.style.transition = 'none';
+  track.style.transform  = `translateX(${-clamped * vw}px)`;
+
+  // Icônes : active/inactive fluide selon la proximité
+  const rounded = Math.round(progress);
+  navItems.forEach((item, i) => {
+    const dist = Math.abs(i - progress);
+    // Icône en bold si < 0.3 de distance
+    const isActive = dist < 0.45;
+    const svg = item.querySelector('svg');
+    if (svg) {
+      const badge = svg.parentNode.querySelector('.badge');
+      const bh = badge ? badge.outerHTML : '';
+      svg.parentNode.innerHTML = bh + `<svg id="svg-${i}" width="22" height="22" viewBox="0 0 24 24" fill="none">${svgs[i][isActive ? 'active' : 'inactive']}</svg>`;
+    }
+    // Label : visible seulement sur tab cible snap
+    item.classList.toggle('active', i === rounded && Math.abs(i - progress) < 0.45);
+  });
+}
+
+// Spring animation vers une cible
+function springTo(targetProgress) {
+  const startProgress = _lastProgress;
+  const startTime = performance.now();
+  const duration = 420; // ms
+  // Bezier spring-like: easeOutBack
+  function easeOutBack(t) {
+    const c1 = 1.70158, c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+  }
+  function animate(now) {
+    const t = Math.min((now - startTime) / duration, 1);
+    const ease = easeOutBack(t);
+    const cur = startProgress + (targetProgress - startProgress) * ease;
+    indicator.style.transition = 'none';
+    track.style.transition     = 'none';
+    applyProgress(cur);
+    if (t < 1) {
+      animFrame = requestAnimationFrame(animate);
+    } else {
+      applyProgress(targetProgress);
+      currentTab = Math.round(targetProgress);
+      updateTabUI(currentTab);
+    }
+  }
+  if (animFrame) cancelAnimationFrame(animFrame);
+  animFrame = requestAnimationFrame(animate);
+}
+
+// Snap vers l'onglet le plus proche
+function snapToNearest() {
+  const target = Math.round(Math.max(0, Math.min(TABS - 1, _lastProgress)));
+  springTo(target);
+}
+
+// ── Switch direct (tap sur un item) ──
+function switchTab(idx) {
+  if (isDragging) return;
+  // Si c'est le profil
+  if (idx === 3) {
+    currentTab = 3;
+    updateTabUI(3);
+    // Indicator invisible (hors pilule)
+    indicator.style.transition = 'opacity 0.2s';
+    indicator.style.opacity = '0';
+    // Page profil : hors du track — on affiche un overlay
+    // Pour la démo, on scroll juste à la fin
+    const vw = viewport.offsetWidth;
+    track.style.transition = 'transform 0.4s cubic-bezier(0.34,1.2,0.64,1)';
+    track.style.transform  = `translateX(${-(TABS-1) * vw}px)`;
+    _lastProgress = TABS - 1;
+    return;
+  }
+  indicator.style.opacity = '1';
+  springTo(idx);
+}
+
+// ── Drag events ──
+function getX(e) {
+  return e.touches ? e.touches[0].clientX : e.clientX;
+}
+
+pill.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  isDragging = true;
+  dragStartX   = getX(e);
+  dragStartTab = _lastProgress;
+  if (animFrame) cancelAnimationFrame(animFrame);
+  indicator.style.opacity = '1';
+  pill.setPointerCapture(e.pointerId);
+});
+
+pill.addEventListener('pointermove', e => {
+  if (!isDragging) return;
+  e.preventDefault();
+  const dx = getX(e) - dragStartX;
+  const pillW = pill.offsetWidth;
+  const tabW  = pillW / TABS;
+  const delta = dx / tabW;
+  let progress = dragStartTab - delta;
+  progress = Math.max(-0.15, Math.min(TABS - 1 + 0.15, progress));
+  applyProgress(progress);
+});
+
+pill.addEventListener('pointerup', e => {
+  if (!isDragging) return;
+  isDragging = false;
+  snapToNearest();
+});
+
+pill.addEventListener('pointercancel', e => {
+  isDragging = false;
+  snapToNearest();
+});
+
+// Tap simple sur un item de la navbar
+navItems.forEach((item, i) => {
+  item.addEventListener('click', e => {
+    if (isDragging) return;
+    springTo(i);
+  });
+});
+
+// ── Init ──
+window.addEventListener('load', () => {
+  indicator.style.opacity = '1';
+  // Placer l'indicateur sur le premier onglet
+  requestAnimationFrame(() => {
+    applyProgress(0);
+    updateTabUI(0);
+  });
+});
+
+window.addEventListener('resize', () => {
+  applyProgress(_lastProgress);
+});
 </script>
 </body>
 </html>

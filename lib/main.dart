@@ -598,7 +598,7 @@ class _NavBarPageState extends State<NavBarPage> {
             }),
           ),
 
-          // Navbar flottante moderne
+          // Navbar flottante moderne — Tab Scrubbing
           Positioned(
             left: 0,
             right: 0,
@@ -610,8 +610,14 @@ class _NavBarPageState extends State<NavBarPage> {
                   _currentPage = null;
                   _currentIndex = i;
                   _currentPageName = _pageNames[i];
-                  _loadedPages.add(i); // Mark page as loaded when visited
+                  _loadedPages.add(i);
                 });
+              },
+              onTabScrub: (i) {
+                // Scrub en cours — pré-charger la page cible
+                if (!_loadedPages.contains(i)) {
+                  safeSetState(() => _loadedPages.add(i));
+                }
               },
               items: [
                 NavBarItem(
