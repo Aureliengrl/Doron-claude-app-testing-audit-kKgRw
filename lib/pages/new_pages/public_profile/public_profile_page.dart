@@ -86,6 +86,8 @@ class _PublicProfilePageState extends State<PublicProfilePage>
           'handle': data['handle'] ?? '',
           'photoUrl': data['photo_url'] ?? data['photoUrl'] ?? '',
           'bio': data['bio'] ?? '',
+          'isOnline': data['isOnline'] ?? false,
+          'lastSeen': data['lastSeen'],
         };
       }
     } catch (_) {
@@ -346,6 +348,34 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                       '@$handle',
                       style: GoogleFonts.outfit(fontSize: 14, color: Colors.white70),
                     ),
+                  // S9 FIX: afficher la presence en ligne sur le profil public
+                  if (!_isMyProfile) Builder(builder: (ctx) {
+                    final isOnline = _profile?['isOnline'] == true;
+                    final lastSeen = _profile?['lastSeen'];
+                    String statusText = '';
+                    Color statusColor = Colors.white38;
+                    if (isOnline) {
+                      statusText = 'En ligne';
+                      statusColor = const Color(0xFF10B981);
+                    } else if (lastSeen != null) {
+                      final seen = (lastSeen as dynamic).toDate() as DateTime;
+                      final diff = DateTime.now().difference(seen);
+                      if (diff.inMinutes < 1) { statusText = 'Vu a l instant'; statusColor = Colors.white54; }
+                      else if (diff.inMinutes < 60) { statusText = 'Vu il y a ${diff.inMinutes} min'; statusColor = Colors.white38; }
+                      else if (diff.inHours < 24) { statusText = 'Vu il y a ${diff.inHours}h'; statusColor = Colors.white38; }
+                    }
+                    if (statusText.isEmpty) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Row(
+                        children: [
+                          Container(width: 7, height: 7, decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle)),
+                          const SizedBox(width: 5),
+                          Text(statusText, style: GoogleFonts.outfit(fontSize: 12, color: statusColor)),
+                        ],
+                      ),
+                    );
+                  }),
                   if (bio.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),

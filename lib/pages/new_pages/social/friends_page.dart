@@ -554,16 +554,41 @@ class _FriendsPageState extends State<FriendsPage>
             child: Row(
               children: [
                 // Avatar cliquable
+                // S3 FIX: indicateur de presence en ligne sur l'avatar
                 GestureDetector(
                   onTap: () => _openProfile(uid),
-                  child: CircleAvatar(
-                    radius: 26,
-                    backgroundColor: _violet.withOpacity(0.3),
-                    backgroundImage: photoUrl.isNotEmpty ? CachedNetworkImageProvider(photoUrl) : null,
-                    child: photoUrl.isEmpty
-                        ? Text(name[0].toUpperCase(),
-                            style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white))
-                        : null,
+                  child: Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 26,
+                        backgroundColor: _violet.withOpacity(0.3),
+                        backgroundImage: photoUrl.isNotEmpty ? CachedNetworkImageProvider(photoUrl) : null,
+                        child: photoUrl.isEmpty
+                            ? Text(name[0].toUpperCase(),
+                                style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white))
+                            : null,
+                      ),
+                      StreamBuilder<DocumentSnapshot>(
+                        stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+                        builder: (ctx, snap) {
+                          if (!snap.hasData || !snap.data!.exists) return const SizedBox.shrink();
+                          final data = snap.data!.data() as Map<String, dynamic>? ?? {};
+                          if (data['isOnline'] != true) return const SizedBox.shrink();
+                          return Positioned(
+                            bottom: 2,
+                            right: 2,
+                            child: Container(
+                              width: 12, height: 12,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF10B981),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: const Color(0xFF0D0D1A), width: 2),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 14),

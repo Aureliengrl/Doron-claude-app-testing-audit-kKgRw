@@ -44,6 +44,24 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   // Pagination des messages
   int _messageLimit = 50;
 
+  // S15 FIX: cache noms expediteurs pour les messages de groupe
+  final Map<String, String> _senderNameCache = {};
+
+  Future<String> _getSenderName(String uid) async {
+    if (_senderNameCache.containsKey(uid)) return _senderNameCache[uid]!;
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        final name = data['first_name'] as String? ?? data['display_name'] as String? ?? 'Utilisateur';
+        _senderNameCache[uid] = name;
+        return name;
+      }
+    } catch (_) {}
+    _senderNameCache[uid] = 'Utilisateur';
+    return 'Utilisateur';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -293,8 +311,16 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 : null,
           ),
           const SizedBox(width: 12),
+          // S11 FIX: tapper sur avatar/nom pour acceder au profil de l'interlocuteur
           Expanded(
-            child: Column(
+            child: GestureDetector(
+              onTap: !isGroup && _otherUserData != null ? () {
+                final participants = List<String>.from(_effectiveChatData?['participants'] ?? []);
+                final currentUid = FirebaseAuth.instance.currentUser?.uid;
+                final otherUid = participants.firstWhere((id) => id != currentUid, orElse: () => '');
+                if (otherUid.isNotEmpty) context.push('/public-profile/$otherUid');
+              } : null,
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -314,8 +340,46 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       fontSize: 12,
                       color: Colors.white.withOpacity(0.6),
                     ),
+                  )
+                else
+                  // S3 FIX: afficher la presence en ligne dans le chat
+                  StreamBuilder<DocumentSnapshot>(
+                    stream: (() {
+                      final participants = List<String>.from(_effectiveChatData?['participants'] ?? []);
+                      final currentUid = FirebaseAuth.instance.currentUser?.uid;
+                      final otherUid = participants.firstWhere((id) => id != currentUid, orElse: () => '');
+                      if (otherUid.isEmpty) return const Stream.empty();
+                      return FirebaseFirestore.instance.collection('users').doc(otherUid).snapshots();
+                    })(),
+                    builder: (ctx, snap) {
+                      if (!snap.hasData || !snap.data!.exists) return const SizedBox.shrink();
+                      final data = snap.data!.data() as Map<String, dynamic>? ?? {};
+                      final isOnline = data['isOnline'] == true;
+                      final lastSeen = data['lastSeen'] as Timestamp?;
+                      String statusText = '';
+                      if (isOnline) {
+                        statusText = 'En ligne';
+                      } else if (lastSeen != null) {
+                        final diff = DateTime.now().difference(lastSeen.toDate());
+                        if (diff.inMinutes < 1) statusText = 'Vu a l instant';
+                        else if (diff.inMinutes < 60) statusText = 'Vu il y a ${diff.inMinutes} min';
+                        else if (diff.inHours < 24) statusText = 'Vu il y a ${diff.inHours}h';
+                      }
+                      if (statusText.isEmpty) return const SizedBox.shrink();
+                      return Row(
+                        children: [
+                          if (isOnline) Container(
+                            width: 7, height: 7,
+                            decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle),
+                          ),
+                          if (isOnline) const SizedBox(width: 4),
+                          Text(statusText, style: GoogleFonts.poppins(fontSize: 11, color: isOnline ? const Color(0xFF10B981) : Colors.white38)),
+                        ],
+                      );
+                    },
                   ),
               ],
+              ),
             ),
           ),
           IconButton(
@@ -346,10 +410,36 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          // S14 FIX: CTA pour le premier message
+          final chatData = _effectiveChatData;
+          final isGroup = chatData?['isGroup'] == true;
+          final otherName = !isGroup && _otherUserData != null
+              ? ((_otherUserData!['first_name'] as String?) ?? (_otherUserData!['display_name'] as String?) ?? 'votre ami')
+              : (chatData?['name'] as String? ?? 'le groupe');
           return Center(
-            child: Text(
-              'Aucun message',
-              style: GoogleFonts.poppins(color: Colors.white.withOpacity(0.5)),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF8A2BE2).withOpacity(0.15),
+                  ),
+                  child: const Icon(Icons.waving_hand_rounded, size: 48, color: Color(0xFF8A2BE2)),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Dites bonjour a $otherName !',
+                  style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Envoyez votre premier message',
+                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.white38),
+                ),
+              ],
             ),
           );
         }
@@ -418,19 +508,16 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               child: Column(
                 crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
+                  // S15 FIX: cache sender name - un seul fetch Firestore par UID (evite N appels par scroll)
                   if (!isMe && isGroup && senderId != null)
-                    FutureBuilder<DocumentSnapshot>(
-                      future: FirebaseFirestore.instance.collection('users').doc(senderId).get(),
-                      builder: (context, userSnap) {
-                        if (!userSnap.hasData) return const SizedBox();
-                        final userData = userSnap.data!.data() as Map<String, dynamic>? ?? {};
+                    FutureBuilder<String>(
+                      future: _getSenderName(senderId),
+                      builder: (context, snap) {
+                        if (!snap.hasData) return const SizedBox();
                         return Padding(
                           padding: const EdgeInsets.only(left: 12, bottom: 4),
                           child: Text(
-                            userData['first_name'] as String? ??  
-                            userData['display_name'] as String? ?? 
-                            userData['name'] as String? ?? 
-                            'Utilisateur',
+                            snap.data!,
                             style: GoogleFonts.poppins(
                               fontSize: 11,
                               color: Colors.white.withOpacity(0.5),
@@ -438,9 +525,62 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             ),
                           ),
                         );
-                      }
+                      },
                     ),
-                  Row(
+                  // S4 FIX: long-press pour copier ou supprimer le message
+                  GestureDetector(
+                    onLongPress: () {
+                      HapticFeedback.heavyImpact();
+                      final msgId = messages[index].id;
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.transparent,
+                        builder: (_) => Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1A0030),
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                            border: Border.all(color: Colors.white.withOpacity(0.1)),
+                          ),
+                          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+                              const SizedBox(height: 16),
+                              ListTile(
+                                leading: const Icon(Icons.copy_rounded, color: Colors.white),
+                                title: Text('Copier', style: GoogleFonts.poppins(color: Colors.white)),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  Clipboard.setData(ClipboardData(text: text));
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                    content: Text('Message copie', style: GoogleFonts.poppins()),
+                                    backgroundColor: const Color(0xFF8A2BE2),
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    duration: const Duration(seconds: 2),
+                                  ));
+                                },
+                              ),
+                              if (isMe) ListTile(
+                                leading: const Icon(Icons.delete_rounded, color: Colors.red),
+                                title: Text('Supprimer', style: GoogleFonts.poppins(color: Colors.red)),
+                                onTap: () async {
+                                  Navigator.pop(context);
+                                  await FirebaseFirestore.instance
+                                      .collection('chats')
+                                      .doc(widget.chatId)
+                                      .collection('messages')
+                                      .doc(msgId)
+                                      .delete();
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                    child: Row(
                     mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -476,6 +616,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                           ),
                         ),
                     ],
+                    ),
                   ),
                   Padding(
                     padding: EdgeInsets.only(
@@ -500,6 +641,23 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             size: 14,
                             color: isReadByOthers ? const Color(0xFF34D399) : Colors.white.withOpacity(0.4),
                           ),
+                          // S8 FIX: "Vu par" dans les groupes
+                          if (isGroup && isReadByOthers) ...[
+                            const SizedBox(width: 4),
+                            Builder(builder: (ctx) {
+                              final readStatuses = _chatDocData['readStatus'] as Map<String, dynamic>? ?? {};
+                              final readBy = readStatuses.keys.where((k) {
+                                if (k == currentUser.uid) return false;
+                                final t = readStatuses[k] as Timestamp?;
+                                return t != null && timestamp != null && t.compareTo(timestamp) >= 0;
+                              }).length;
+                              if (readBy == 0) return const SizedBox.shrink();
+                              return Text(
+                                'Vu $readBy',
+                                style: GoogleFonts.poppins(fontSize: 9, color: const Color(0xFF34D399)),
+                              );
+                            }),
+                          ],
                         ],
                       ],
                     ),
@@ -583,6 +741,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     );
   }
 
+  // S6 FIX: affiche le vrai prenom de la personne qui ecrit
   Widget _buildTypingIndicator() {
     if (_chatDocData.isEmpty || !_chatDocData.containsKey('typingUsers')) return const SizedBox.shrink();
     
@@ -594,7 +753,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       if (e.key == currentUser.uid) return false;
       final time = e.value as int?;
       if (time == null) return false;
-      // if it's older than 3 seconds, ignore
       return DateTime.now().millisecondsSinceEpoch - time < 3000;
     }).toList();
     
@@ -602,32 +760,45 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      child: Row(
-        children: [
-          Row(
+      child: FutureBuilder<String>(
+        future: (() async {
+          if (othersTyping.isEmpty) return '';
+          final uid = othersTyping.first.key;
+          return await _getSenderName(uid);
+        })(),
+        builder: (ctx, snap) {
+          final name = snap.data ?? '';
+          final typingText = othersTyping.length == 1
+              ? (name.isNotEmpty ? '$name ecrit...' : 'Quelqu un ecrit...')
+              : 'Plusieurs personnes ecrivent...';
+          return Row(
             children: [
-              _buildTypingDot(0),
-              const SizedBox(width: 4),
-              _buildTypingDot(200),
-              const SizedBox(width: 4),
-              _buildTypingDot(400),
+              Row(
+                children: [
+                  _buildTypingDot(0),
+                  const SizedBox(width: 4),
+                  _buildTypingDot(200),
+                  const SizedBox(width: 4),
+                  _buildTypingDot(400),
+                ],
+              ),
+              const SizedBox(width: 8),
+              Text(
+                typingText,
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  color: Colors.white.withOpacity(0.6),
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
             ],
-          ),
-          const SizedBox(width: 8),
-          Text(
-            othersTyping.length == 1 ? 'Quelqu\'un Ã©crit...' : 'Plusieurs personnes Ã©crivent...',
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              color: Colors.white.withOpacity(0.6),
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-        ],
-      ).animate().fadeIn(),
+          ).animate().fadeIn();
+        },
+      ),
     );
   }
 
-  Widget _buildTypingDot(int delayMs) {
+    Widget _buildTypingDot(int delayMs) {
     return Container(
       width: 4,
       height: 4,
@@ -1264,10 +1435,19 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         'timestamp': FieldValue.serverTimestamp(),
         'type': type,
       });
-      await FirebaseFirestore.instance.collection('chats').doc(widget.chatId).update({
+      // S5 FIX: incrementer unreadCount pour les autres participants (partage produit/wishlist)
+      final chatDataForTyped = _effectiveChatData;
+      final participantsForTyped = List<String>.from(chatDataForTyped?['participants'] ?? []);
+      final Map<String, dynamic> typedUpdate = {
         'lastMessage': previewText,
         'lastMessageTime': FieldValue.serverTimestamp(),
-      });
+      };
+      for (final pid in participantsForTyped) {
+        if (pid != currentUser.uid) {
+          typedUpdate['unreadCount.$pid'] = FieldValue.increment(1);
+        }
+      }
+      await FirebaseFirestore.instance.collection('chats').doc(widget.chatId).update(typedUpdate);
     } catch (e) {
       debugPrint('_sendTypedMessage: $e');
     }
@@ -1322,5 +1502,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     );
   }
 }
+
+
+
 
 
