@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,7 +13,7 @@ import '/components/liquid_glass_loader.dart';
 import '/components/shared_product_card.dart';
 import '/components/block_report_sheet.dart';
 
-/// Page de profil public — même layout que user_profile_widget.dart
+/// Page de profil public â€” mÃªme layout que user_profile_widget.dart
 /// Route : /public-profile/:uid
 class PublicProfilePage extends StatefulWidget {
   final String uid;
@@ -37,7 +37,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   Map<String, dynamic>? _profile;
   List<Map<String, dynamic>> _wishlists = [];
   List<Map<String, dynamic>> _likedProducts = [];
-  bool _likedProductsArePrivate = false; // true si l'onglet "Produits likés" n'est pas accessible
+  bool _likedProductsArePrivate = false; // true si l'onglet "Produits likÃ©s" n'est pas accessible
   FriendshipStatus _friendshipStatus = FriendshipStatus.none;
   String? _requestId;
   bool _isLoading = true;
@@ -103,7 +103,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 
   Future<void> _loadLikedProducts() async {
-    // Les produits likés sont privés : on ne charge jamais ceux d'un autre utilisateur
+    // Les produits likÃ©s sont privÃ©s : on ne charge jamais ceux d'un autre utilisateur
     if (!_isMyProfile) {
       _likedProductsArePrivate = true;
       return;
@@ -148,9 +148,9 @@ class _PublicProfilePageState extends State<PublicProfilePage>
             _friendshipStatus = FriendshipStatus.pendingSent;
             _requestId = id;
           });
-          _showSnack('✅ Demande envoyée !', _green);
+          _showSnack('âœ… Demande envoyÃ©e !', _green);
         } else {
-          _showSnack('❌ Erreur lors de l\'envoi', Colors.red);
+          _showSnack('âŒ Erreur lors de l\'envoi', Colors.red);
         }
         break;
       case FriendshipStatus.pendingSent:
@@ -161,7 +161,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
               _friendshipStatus = FriendshipStatus.none;
               _requestId = null;
             });
-            _showSnack('Demande annulée', Colors.grey);
+            _showSnack('Demande annulÃ©e', Colors.grey);
           }
         }
         break;
@@ -174,7 +174,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
               _requestId = null;
               _friendsCount++;
             });
-            _showSnack('👥 Vous êtes maintenant amis !', _green);
+            _showSnack('ðŸ‘¥ Vous Ãªtes maintenant amis !', _green);
           }
         }
         break;
@@ -185,7 +185,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
             _friendshipStatus = FriendshipStatus.none;
             _friendsCount = (_friendsCount - 1).clamp(0, 999);
           });
-          _showSnack('Retiré de vos amis', Colors.grey);
+          _showSnack('RetirÃ© de vos amis', Colors.grey);
         }
         break;
     }
@@ -214,9 +214,9 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     ));
   }
 
-  // ══════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // BUILD
-  // ══════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   @override
   Widget build(BuildContext context) {
@@ -236,7 +236,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     );
   }
 
-  // ─── App Bar (identique au profil perso) ───────────────────────────────────
+  // â”€â”€â”€ App Bar (identique au profil perso) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildAppBar() {
     final photoUrl = _profile!['photoUrl'] as String? ?? '';
@@ -301,6 +301,9 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                                   ? CachedNetworkImage(
                                       imageUrl: photoUrl,
                                       fit: BoxFit.cover,
+                                      cacheKey: 'pub_profile_' + photoUrl,
+                                      memCacheHeight: 160,
+                                      memCacheWidth: 160,
                                       placeholder: (_, __) => Container(
                                         color: Colors.grey[800],
                                         child: const Center(
@@ -315,7 +318,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                         ],
                       ),
                       const SizedBox(width: 24),
-                      // Stats — Amis / Wishlists / Cadeaux
+                      // Stats â€” Amis / Wishlists / Cadeaux
                       Expanded(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -354,7 +357,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                       ),
                     ),
                   const SizedBox(height: 12),
-                  // Boutons d'action — remplacent "Modifier/Amis/Partager" du profil perso
+                  // Boutons d'action â€” remplacent "Modifier/Amis/Partager" du profil perso
                   if (!_isMyProfile)
                     Row(
                       children: [
@@ -410,9 +413,9 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   Widget _buildFriendButton() {
     final configs = {
       FriendshipStatus.none: (label: 'Ajouter en ami', icon: IconlyLight.addUser, color: _violet),
-      FriendshipStatus.pendingSent: (label: 'En attente…', icon: Icons.hourglass_top_rounded, color: Colors.grey.shade600),
+      FriendshipStatus.pendingSent: (label: 'En attenteâ€¦', icon: Icons.hourglass_top_rounded, color: Colors.grey.shade600),
       FriendshipStatus.pendingReceived: (label: 'Accepter', icon: Icons.check_circle_rounded, color: _green),
-      FriendshipStatus.friends: (label: 'Amis ✓', icon: IconlyLight.people, color: const Color(0xFF6366F1)),
+      FriendshipStatus.friends: (label: 'Amis âœ“', icon: IconlyLight.people, color: const Color(0xFF6366F1)),
     };
     final cfg = configs[_friendshipStatus]!;
 
@@ -451,7 +454,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     );
   }
 
-  // ─── Tab Bar (identique au profil perso) ───────────────────────────────────
+  // â”€â”€â”€ Tab Bar (identique au profil perso) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildTabBar() {
     return SliverPersistentHeader(
@@ -482,7 +485,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                 children: [
                   const Icon(IconlyBold.heart),
                   const SizedBox(width: 8),
-                  const Text('Produits likés'),
+                  const Text('Produits likÃ©s'),
                 ],
               ),
             ),
@@ -493,7 +496,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     );
   }
 
-  // ─── Tab Content ────────────────────────────────────────────────────────────
+  // â”€â”€â”€ Tab Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildTabContent() {
     return SliverFillRemaining(
@@ -542,7 +545,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
 
   Widget _buildWishlistCard(Map<String, dynamic> wishlist) {
     final name = wishlist['name'] as String? ?? 'Wishlist';
-    final emoji = wishlist['emoji'] as String? ?? '🎁';
+    final emoji = wishlist['emoji'] as String? ?? 'ðŸŽ';
     final productCount = (wishlist['productCount'] as int?) ?? 0;
     final coverUrl = wishlist['coverPhoto'] as String?;
 
@@ -616,7 +619,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 
   Widget _buildLikedProducts() {
-    // Produits likés d'un autre utilisateur — toujours privés
+    // Produits likÃ©s d'un autre utilisateur â€” toujours privÃ©s
     if (_likedProductsArePrivate) {
       return Center(
         child: Column(
@@ -634,7 +637,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
             ),
             const SizedBox(height: 20),
             Text(
-              'Produits likés privés',
+              'Produits likÃ©s privÃ©s',
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -643,7 +646,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
             ),
             const SizedBox(height: 8),
             Text(
-              'Les produits likés de cet utilisateur\nsont privés et non visibles.',
+              'Les produits likÃ©s de cet utilisateur\nsont privÃ©s et non visibles.',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(fontSize: 14, color: Colors.white30),
             ),
@@ -659,11 +662,11 @@ class _PublicProfilePageState extends State<PublicProfilePage>
           children: [
             Icon(IconlyLight.heart, size: 80, color: Colors.white.withOpacity(0.35)),
             const SizedBox(height: 16),
-            Text('Aucun produit liké',
+            Text('Aucun produit likÃ©',
                 style: GoogleFonts.poppins(
                     fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
             const SizedBox(height: 8),
-            Text('Les produits likés de cet utilisateur apparaîtront ici',
+            Text('Les produits likÃ©s de cet utilisateur apparaÃ®tront ici',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
           ],
@@ -705,7 +708,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 }
 
-// ─── Délégué Tab Bar sticky ─────────────────────────────────────────────────
+// â”€â”€â”€ DÃ©lÃ©guÃ© Tab Bar sticky â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;
@@ -724,3 +727,4 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(_SliverTabBarDelegate oldDelegate) => false;
 }
+

@@ -98,25 +98,30 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
   // ─── Changement de photo de profil ──────────────────────────
 
-  /// Chemin local de la préview de la photo de profil (avant upload CDN).
-  /// Null si aucune photo locale en cours d'upload.
+  /// Chemin local affiché immédiatement avant que l'upload termine.
   File? _localProfilePhoto;
+
+  /// URL CDN mémorisée après upload — affichée même si AuthUserStream
+  /// n'est pas encore rafraîchi (évite le délai de latence).
+  String? _uploadedPhotoUrl;
+
+  /// Fallback avatar (initiales / icône)
+  Widget _buildAvatarFallback() => Container(
+    color: violetColor.withOpacity(0.3),
+    child: Icon(IconlyLight.profile, size: 40, color: Colors.white),
+  );
 
   Future<void> _changeProfilePicture() async {
     final pickedFile = await PhotoPermissionService.pickWithChoice(context);
     if (pickedFile == null || !mounted) return;
 
     final file = File(pickedFile.path);
-
-    if (currentUserReference == null) return;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
 
     // ── Affichage OPTIMISTE IMMÉDIAT ────────────────────────────────────────
-    // On montre la photo locale dans l'avatar sans attendre l'upload
-    if (mounted) {
-      setState(() => _localProfilePhoto = file);
-    }
+    if (mounted) setState(() { _localProfilePhoto = file; _uploadedPhotoUrl = null; });
 
-    // Snack discret (non-bloquant)
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Sauvegarde de la photo…', style: GoogleFonts.outfit()),
@@ -126,68 +131,50 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       ));
     }
 
-    try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return;
+    OptimisticImageUploader.upload(
+      localPath: pickedFile.path,
+      storagePath: 'users/$uid/profile_${DateTime.now().millisecondsSinceEpoch}.jpg',
+      onUploadComplete: (downloadUrl) async {
+        try {
+          // ── Écriture ATOMIQUE : photo_url + photoUrl en un seul update ──
+          // Synchronise les deux champs → tous les lecteurs voient la photo
+          // immédiatement (public_profile_page, friend_service, etc.)
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(uid)
+              .update({
+                'photo_url': downloadUrl, // champ natif
+                'photoUrl':  downloadUrl, // champ legacy FlutterFlow
+              });
+          await FirebaseAuth.instance.currentUser?.updatePhotoURL(downloadUrl);
+          // Invalider cache CDN pour forcer le rechargement
+          await CachedNetworkImage.evictFromCache(downloadUrl);
+        } catch (_) {}
 
-      // ── Upload en arrière-plan via OptimisticImageUploader ──────────────
-      OptimisticImageUploader.upload(
-        localPath: pickedFile.path,
-        storagePath: 'users/$uid/profile_${DateTime.now().millisecondsSinceEpoch}.jpg',
-        onUploadComplete: (downloadUrl) async {
-          // Écrire l'URL CDN dans Firestore + Auth
-          try {
-            await Future.wait([
-              FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(uid)
-                  .update({'photo_url': downloadUrl}),
-              FirebaseAuth.instance.currentUser!.updatePhotoURL(downloadUrl),
-            ]);
-            // Sync FlutterFlow legacy
-            try {
-              if (currentUserReference != null) {
-                await currentUserReference!
-                    .update(createUsersRecordData(photoUrl: downloadUrl));
-              }
-            } catch (_) {}
-          } catch (_) {}
-
-          if (mounted) {
-            // Effacer la photo locale (le CDN prend le relais)
-            setState(() => _localProfilePhoto = null);
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text('Photo de profil mise à jour ✓',
-                  style: GoogleFonts.outfit()),
-              backgroundColor: const Color(0xFF8A2BE2),
-              behavior: SnackBarBehavior.floating,
-              duration: const Duration(seconds: 2),
-            ));
-          }
-        },
-        onUploadError: (e) {
-          if (mounted) {
-            // Revenir à l'état précédent
-            setState(() => _localProfilePhoto = null);
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text('Erreur upload photo ($e)',
-                  style: GoogleFonts.outfit()),
-              backgroundColor: const Color(0xFFE53935),
-              behavior: SnackBarBehavior.floating,
-            ));
-          }
-        },
-      );
-    } catch (e) {
-      if (mounted) {
-        setState(() => _localProfilePhoto = null);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Erreur ($e)', style: GoogleFonts.outfit()),
-          backgroundColor: const Color(0xFFE53935),
-          behavior: SnackBarBehavior.floating,
-        ));
-      }
-    }
+        if (mounted) {
+          setState(() {
+            _localProfilePhoto = null;
+            _uploadedPhotoUrl  = downloadUrl; // mémorisé → affiché immédiatement
+          });
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Photo de profil mise à jour ✓', style: GoogleFonts.outfit()),
+            backgroundColor: const Color(0xFF8A2BE2),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ));
+        }
+      },
+      onUploadError: (e) {
+        if (mounted) {
+          setState(() { _localProfilePhoto = null; _uploadedPhotoUrl = null; });
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Erreur upload photo: $e', style: GoogleFonts.outfit()),
+            backgroundColor: const Color(0xFFE53935),
+            behavior: SnackBarBehavior.floating,
+          ));
+        }
+      },
+    );
   }
 
   @override
@@ -421,27 +408,32 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                           ),
                                         ),
                                       ])
-                                    : AuthUserStreamWidget(
-                                        builder: (context) => currentUserPhoto != null && currentUserPhoto!.isNotEmpty
-                                            ? CachedNetworkImage(
-                                                imageUrl: currentUserPhoto!,
-                                                fit: BoxFit.cover,
-                                                placeholder: (context, url) => Container(
-                                                  color: Colors.grey[300],
-                                                  child: const Center(
-                                                    child: LiquidGlassLoader(size: 16, isDark: false),
-                                                  ),
-                                                ),
-                                                errorWidget: (context, url, error) => Container(
-                                                  color: violetColor.withOpacity(0.3),
-                                                  child: Icon(IconlyLight.profile, size: 40, color: Colors.white),
-                                                ),
-                                              )
-                                            : Container(
-                                                color: violetColor.withOpacity(0.3),
-                                                child: Icon(IconlyLight.profile, size: 40, color: Colors.white),
-                                              ),
-                                      ),
+                                     : _uploadedPhotoUrl != null
+                                        ? CachedNetworkImage(
+                                            imageUrl: _uploadedPhotoUrl!,
+                                            fit: BoxFit.cover,
+                                            placeholder: (_, __) => Container(
+                                              color: violetColor.withOpacity(0.3),
+                                              child: const Center(child: LiquidGlassLoader(size: 16, isDark: false)),
+                                            ),
+                                            errorWidget: (_, __, ___) => _buildAvatarFallback(),
+                                          )
+                                        : AuthUserStreamWidget(
+                                            builder: (context) {
+                                              final url = currentUserPhoto?.isNotEmpty == true ? currentUserPhoto! : null;
+                                              return url != null
+                                                  ? CachedNetworkImage(
+                                                      imageUrl: url,
+                                                      fit: BoxFit.cover,
+                                                      placeholder: (_, __) => Container(
+                                                        color: Colors.grey[800],
+                                                        child: const Center(child: LiquidGlassLoader(size: 16, isDark: false)),
+                                                      ),
+                                                      errorWidget: (_, __, ___) => _buildAvatarFallback(),
+                                                    )
+                                                  : _buildAvatarFallback();
+                                            },
+                                          ),
                               ),
                             ),
                             // Badge modifier
