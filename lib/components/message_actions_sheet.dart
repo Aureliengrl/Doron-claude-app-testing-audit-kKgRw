@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -108,7 +109,7 @@ class MessageActionsSheet extends StatelessWidget {
           // Delete (only for own messages)
           if (isMe)
             _buildAction(
-              icon: Icons.delete_outline_rounded,
+              icon: IconlyLight.delete,
               label: 'Supprimer',
               color: Colors.red,
               onTap: () => _showDeleteOptions(context),
@@ -205,7 +206,7 @@ class MessageActionsSheet extends StatelessWidget {
             const SizedBox(height: 20),
             _DeleteOption(
               label: 'Supprimer pour moi',
-              icon: Icons.person_off_rounded,
+              icon: IconlyLight.profile,
               onTap: () {
                 Navigator.pop(context);
                 _deleteForMe();
@@ -214,7 +215,7 @@ class MessageActionsSheet extends StatelessWidget {
             const SizedBox(height: 10),
             _DeleteOption(
               label: 'Supprimer pour tous',
-              icon: Icons.delete_forever_rounded,
+              icon: IconlyBold.delete,
               isDestructive: true,
               onTap: () {
                 Navigator.pop(context);

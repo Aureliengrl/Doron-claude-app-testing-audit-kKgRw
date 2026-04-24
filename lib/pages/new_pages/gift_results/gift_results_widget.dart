@@ -1,6 +1,7 @@
 ﻿import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import '/components/liquid_glass.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -419,7 +420,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                         child: Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(color: Colors.black.withOpacity(0.45), shape: BoxShape.circle),
-                          child: const Icon(Icons.more_vert, color: Colors.white, size: 16),
+                          child: const Icon(IconlyLight.moreCircle, color: Colors.white, size: 16),
                         ),
                       ),
                     ),
@@ -433,7 +434,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                           boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 2))],
                         ),
                         child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          const Icon(Icons.star, color: Colors.white, size: 14),
+                          const Icon(IconlyBold.star, color: Colors.white, size: 14),
                           const SizedBox(width: 4),
                           Text('$matchPercent%', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
                         ]),
@@ -473,7 +474,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                               child: Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(color: isLiked ? Colors.red.withOpacity(0.1) : Colors.grey[100], shape: BoxShape.circle),
-                                child: Icon(isLiked ? Icons.favorite : Icons.favorite_border, color: isLiked ? Colors.red : const Color(0xFF9CA3AF), size: 20),
+                                child: Icon(isLiked ? IconlyBold.heart : IconlyLight.heart, color: isLiked ? Colors.red : const Color(0xFF9CA3AF), size: 20),
                               ),
                             )),
                             const Spacer(),
@@ -575,7 +576,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.star, color: Colors.white, size: 16),
+                          const Icon(IconlyBold.star, color: Colors.white, size: 16),
                           const SizedBox(width: 6),
                           Text(
                             '$matchPercent% Match',
@@ -718,7 +719,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                               elevation: 0,
                             ),
                             child: Icon(
-                              isLiked ? Icons.favorite : Icons.favorite_border,
+                              isLiked ? IconlyBold.heart : IconlyLight.heart,
                               color: isLiked ? Colors.white : const Color(0xFF6B7280),
                             ),
                           ),

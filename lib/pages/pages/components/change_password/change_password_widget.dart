@@ -7,6 +7,7 @@ import '/pages/pages/components/new_password_and_current_pass_error/new_password
 import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'change_password_model.dart';
@@ -207,8 +208,8 @@ class _ChangePasswordWidgetState extends State<ChangePasswordWidget> {
                       focusNode: FocusNode(skipTraversal: true),
                       child: Icon(
                         _model.passwordVisibility1
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
+                            ? IconlyLight.show
+                            : IconlyLight.hide,
                         size: 22,
                       ),
                     ),
@@ -318,8 +319,8 @@ class _ChangePasswordWidgetState extends State<ChangePasswordWidget> {
                       focusNode: FocusNode(skipTraversal: true),
                       child: Icon(
                         _model.passwordVisibility2
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
+                            ? IconlyLight.show
+                            : IconlyLight.hide,
                         size: 22,
                       ),
                     ),
@@ -429,8 +430,8 @@ class _ChangePasswordWidgetState extends State<ChangePasswordWidget> {
                       focusNode: FocusNode(skipTraversal: true),
                       child: Icon(
                         _model.passwordVisibility3
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
+                            ? IconlyLight.show
+                            : IconlyLight.hide,
                         size: 22,
                       ),
                     ),

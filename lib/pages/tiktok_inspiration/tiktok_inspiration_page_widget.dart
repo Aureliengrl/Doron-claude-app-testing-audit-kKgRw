@@ -1,6 +1,7 @@
 import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import '/components/product_detail_modal.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -311,7 +312,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.error_outline,
+              IconlyLight.danger,
               size: 64,
               color: Colors.red[400],
             ),
@@ -699,7 +700,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                     border: Border.all(color: _violetColor, width: 2),
                     color: Colors.transparent,
                   ),
-                  child: const Icon(Icons.more_horiz, color: Colors.white, size: 24),
+                  child: const Icon(IconlyLight.moreSquare, color: Colors.white, size: 24),
                 ),
               ),
               // Wishlist
@@ -720,7 +721,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
         color: const Color(0xFF0D0D0D),
         child: Center(
           child: Icon(
-            Icons.image_not_supported,
+            IconlyLight.image,
             size: 64,
             color: Colors.grey[700],
           ),
@@ -793,7 +794,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.error_outline, size: 48, color: Colors.grey[700]),
+                          Icon(IconlyLight.danger, size: 48, color: Colors.grey[700]),
                           const SizedBox(height: 8),
                           Text(
                             'Image non disponible',
@@ -815,7 +816,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
   Widget _buildLikeButton(Map<String, dynamic> product, bool isLiked) {
     return GlassmorphicButton(
       onPressed: () => _toggleFavorite(product),
-      icon: isLiked ? Icons.favorite : Icons.favorite_border,
+      icon: isLiked ? IconlyBold.heart : IconlyLight.heart,
       color: isLiked ? Colors.red : _violetColor,
       size: 56,
       isActive: isLiked,
@@ -859,7 +860,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 child: Row(
                   children: [
-                    const Icon(Icons.more_horiz, color: violet, size: 24),
+                    const Icon(IconlyLight.moreSquare, color: violet, size: 24),
                     const SizedBox(width: 12),
                     Text('Actions', style: GoogleFonts.poppins(
                       fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
@@ -875,7 +876,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                     color: violet.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.send_rounded, color: violet, size: 24),
+                  child: const Icon(IconlyBold.send, color: violet, size: 24),
                 ),
                 title: Text('Envoyer par message', style: GoogleFonts.poppins(
                   fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
@@ -978,7 +979,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
   Widget _buildWishlistButton(Map<String, dynamic> product) {
     return GlassmorphicButton(
       onPressed: () => _showWishlistModal(product),
-      icon: Icons.bookmark_border,
+      icon: IconlyLight.bookmark,
       color: _pinkColor,
       size: 56,
       isActive: false,
@@ -1035,7 +1036,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                 padding: const EdgeInsets.all(20),
                 child: Row(
                   children: [
-                    const Icon(Icons.bookmark_border, color: _violetColor, size: 28),
+                    const Icon(IconlyLight.bookmark, color: _violetColor, size: 28),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -1073,7 +1074,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                   padding: const EdgeInsets.all(40),
                   child: Column(
                     children: [
-                      Icon(Icons.list_alt, size: 60, color: Colors.grey[400]),
+                      Icon(IconlyLight.document, size: 60, color: Colors.grey[400]),
                       const SizedBox(height: 16),
                       Text(
                         'Aucune wishlist',
@@ -1113,7 +1114,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
-                            Icons.bookmark,
+                            IconlyBold.bookmark,
                             color: _violetColor,
                             size: 24,
                           ),
@@ -1277,7 +1278,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.bookmark, color: Colors.white, size: 20),
+                const Icon(IconlyBold.bookmark, color: Colors.white, size: 20),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(

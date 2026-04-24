@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -271,7 +272,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             child: (isGroup || photoUrl.isEmpty)
                 ? Center(
                     child: Icon(
-                      isGroup ? Icons.groups : Icons.person,
+                      isGroup ? IconlyBold.people : IconlyLight.profile,
                       color: Colors.white,
                       size: 20,
                     ),
@@ -305,7 +306,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.info_outline, color: Colors.white),
+            icon: const Icon(IconlyLight.infoSquare, color: Colors.white),
             onPressed: () {},
           ),
         ],
@@ -482,7 +483,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         if (isMe) ...[
                           const SizedBox(width: 4),
                           Icon(
-                            isReadByOthers ? Icons.done_all : Icons.check,
+                            isReadByOthers ? IconlyBold.shieldDone : Icons.check,
                             size: 14,
                             color: isReadByOthers ? const Color(0xFF34D399) : Colors.white.withOpacity(0.4),
                           ),
@@ -555,7 +556,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 ),
                 child: IconButton(
                   icon: Icon(
-                    Icons.send,
+                    IconlyLight.send,
                     color: hasText ? Colors.white : Colors.white30,
                     size: 20,
                   ),
@@ -689,7 +690,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 errorWidget: (_, __, ___) => Container(
                   height: 150,
                   color: Colors.white.withOpacity(0.05),
-                  child: const Icon(Icons.image_not_supported, color: Colors.white38, size: 40),
+                  child: const Icon(IconlyLight.image, color: Colors.white38, size: 40),
                 ),
               ),
             // Infos produit
@@ -835,7 +836,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             ),
           ),
           const SizedBox(width: 8),
-          const Icon(Icons.bookmark_rounded, color: Color(0xFFEC4899), size: 20),
+          const Icon(IconlyBold.bookmark, color: Color(0xFFEC4899), size: 20),
         ],
       ),
     );
@@ -886,7 +887,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             ),
             const SizedBox(height: 12),
             _buildShareOption(
-              icon: Icons.bookmark_rounded,
+              icon: IconlyBold.bookmark,
               color: const Color(0xFFEC4899),
               label: 'Partager une wishlist',
               sublabel: 'Envoie un album complet',
@@ -1019,14 +1020,14 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                           width: 56,
                                           height: 56,
                                           color: Colors.white10,
-                                          child: const Icon(Icons.image, color: Colors.white30),
+                                          child: const Icon(IconlyLight.image, color: Colors.white30),
                                         ),
                                       )
                                     : Container(
                                         width: 56,
                                         height: 56,
                                         color: Colors.white10,
-                                        child: const Icon(Icons.shopping_bag, color: Colors.white30),
+                                        child: const Icon(IconlyLight.buy, color: Colors.white30),
                                       ),
                               ),
                               const SizedBox(width: 12),
@@ -1065,7 +1066,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                   ],
                                 ),
                               ),
-                              const Icon(Icons.send_rounded, color: Color(0xFF8A2BE2), size: 20),
+                              const Icon(IconlyBold.send, color: Color(0xFF8A2BE2), size: 20),
                             ],
                           ),
                         ),
@@ -1113,7 +1114,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      const Icon(Icons.bookmark_rounded, color: Color(0xFFEC4899), size: 22),
+                      const Icon(IconlyBold.bookmark, color: Color(0xFFEC4899), size: 22),
                       const SizedBox(width: 10),
                       Text(
                         'Choisir une wishlist',
@@ -1213,7 +1214,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                   ],
                                 ),
                               ),
-                              const Icon(Icons.send_rounded, color: Color(0xFFEC4899), size: 20),
+                              const Icon(IconlyBold.send, color: Color(0xFFEC4899), size: 20),
                             ],
                           ),
                         ),

@@ -1,6 +1,7 @@
 import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -141,7 +142,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                           return Transform.rotate(
                             angle: value * 2 * 3.14159,
                             child: Icon(
-                              Icons.data_usage_outlined,
+                              IconlyLight.chart,
                               size: 80,
                               color: violetColor,
                             ),
@@ -884,7 +885,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                             : null,
                         backgroundColor: violetColor.withOpacity(0.3),
                         child: (user['photoUrl'] as String).isEmpty
-                            ? const Icon(Icons.person, color: Colors.white, size: 16)
+                            ? const Icon(IconlyLight.profile, color: Colors.white, size: 16)
                             : null,
                       ),
                       title: Text(
@@ -930,7 +931,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.verified_user, color: Color(0xFF10B981), size: 18),
+                    const Icon(IconlyBold.shieldDone, color: Color(0xFF10B981), size: 18),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -1254,7 +1255,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.lightbulb_outline,
+                          IconlyLight.infoSquare,
                           color: violetColor,
                           size: 20,
                         ),

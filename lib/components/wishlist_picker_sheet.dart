@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/services/firebase_data_service.dart';
@@ -154,7 +155,7 @@ class _WishlistPickerWidgetState extends State<_WishlistPickerWidget> {
                         gradient: LinearGradient(colors: [violetColor, pinkColor]),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.bookmark_add_rounded, color: Colors.white, size: 20),
+                      child: const Icon(IconlyBold.bookmark, color: Colors.white, size: 20),
                     ),
                     const SizedBox(width: 12),
                     Text(
@@ -190,7 +191,7 @@ class _WishlistPickerWidgetState extends State<_WishlistPickerWidget> {
                           width: 50,
                           height: 50,
                           color: Colors.white10,
-                          child: const Icon(Icons.image, color: Colors.white30),
+                          child: const Icon(IconlyLight.image, color: Colors.white30),
                         ),
                       ),
                     ),
@@ -231,7 +232,7 @@ class _WishlistPickerWidgetState extends State<_WishlistPickerWidget> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.list_alt_rounded, size: 48, color: Colors.white.withOpacity(0.3)),
+                                Icon(IconlyLight.document, size: 48, color: Colors.white.withOpacity(0.3)),
                                 const SizedBox(height: 12),
                                 Text(
                                   'Aucune wishlist créée',

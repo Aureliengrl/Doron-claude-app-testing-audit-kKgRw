@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
@@ -169,7 +170,7 @@ class _StoreFinderBottomSheetState extends State<StoreFinderBottomSheet> {
                 borderRadius: BorderRadius.circular(14),
               ),
               child:
-                  const Icon(Icons.location_on, color: Colors.white, size: 24),
+                  const Icon(IconlyBold.location, color: Colors.white, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -225,7 +226,7 @@ class _StoreFinderBottomSheetState extends State<StoreFinderBottomSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.location_off, size: 56, color: Colors.grey),
+            const Icon(IconlyLight.location, size: 56, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
               _error!,
@@ -244,7 +245,7 @@ class _StoreFinderBottomSheetState extends State<StoreFinderBottomSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.store_mall_directory_outlined,
+            const Icon(IconlyLight.buy,
                 size: 56, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
@@ -310,7 +311,7 @@ class _StoreFinderBottomSheetState extends State<StoreFinderBottomSheet> {
                     color: _violet.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.store, color: _violet, size: 24),
+                  child: const Icon(IconlyLight.buy, color: _violet, size: 24),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -376,7 +377,7 @@ class _StoreFinderBottomSheetState extends State<StoreFinderBottomSheet> {
                           ),
                           if (rating != null) ...[
                             const SizedBox(width: 8),
-                            const Icon(Icons.star,
+                            const Icon(IconlyBold.star,
                                 size: 12, color: Color(0xFFFBBF24)),
                             const SizedBox(width: 2),
                             Text(

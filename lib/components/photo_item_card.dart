@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -161,7 +162,7 @@ class PhotoItemCard extends StatelessWidget {
     if (_imageUrl.isEmpty) {
       return Container(
         color: _darkBg,
-        child: const Icon(Icons.photo, color: Colors.white24, size: 40),
+        child: const Icon(IconlyLight.image, color: Colors.white24, size: 40),
       );
     }
 
@@ -172,7 +173,7 @@ class PhotoItemCard extends StatelessWidget {
         fit: BoxFit.cover,
         errorBuilder: (_, __, ___) => Container(
           color: _darkBg,
-          child: const Icon(Icons.broken_image, color: Colors.white24, size: 40),
+          child: const Icon(IconlyLight.image, color: Colors.white24, size: 40),
         ),
       );
     }
@@ -192,7 +193,7 @@ class PhotoItemCard extends StatelessWidget {
       ),
       errorWidget: (_, __, ___) => Container(
         color: _darkBg,
-        child: const Icon(Icons.broken_image, color: Colors.white24, size: 40),
+        child: const Icon(IconlyLight.image, color: Colors.white24, size: 40),
       ),
     );
   }
@@ -223,7 +224,7 @@ class PhotoItemCard extends StatelessWidget {
                             height: 200,
                             color: _darkBg,
                             child:
-                                const Icon(Icons.photo, color: Colors.white24, size: 60),
+                                const Icon(IconlyLight.image, color: Colors.white24, size: 60),
                           ),
                   ),
                 ),

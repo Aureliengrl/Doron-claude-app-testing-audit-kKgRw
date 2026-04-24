@@ -1,6 +1,7 @@
 ﻿import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -285,7 +286,7 @@ class _LikedProductsPageWidgetState extends State<LikedProductsPageWidget> {
                 ),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.thumb_up_outlined, size: 60, color: goldColor),
+              child: Icon(IconlyLight.heart, size: 60, color: goldColor),
             ),
             const SizedBox(height: 24),
             Text(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -337,7 +338,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.exit_to_app, color: Colors.red, size: 20),
+            const Icon(IconlyLight.logout, color: Colors.red, size: 20),
             const SizedBox(width: 8),
             Text(
               'Quitter le groupe',

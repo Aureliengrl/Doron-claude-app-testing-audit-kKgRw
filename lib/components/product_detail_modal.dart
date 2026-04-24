@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -121,7 +122,7 @@ class GlobalProductDetailModal {
                                 ],
                               ),
                               child: Icon(
-                                Icons.more_vert,
+                                IconlyLight.moreCircle,
                                 color: violetColor,
                                 size: 18,
                               ),
@@ -157,7 +158,7 @@ class GlobalProductDetailModal {
                                 ],
                               ),
                               child: Icon(
-                                Icons.bookmark_border,
+                                IconlyLight.bookmark,
                                 color: violetColor,
                                 size: 18,
                               ),
@@ -198,7 +199,7 @@ class GlobalProductDetailModal {
                                 ],
                               ),
                               child: Icon(
-                                isLiked ? Icons.favorite : Icons.favorite_border,
+                                isLiked ? IconlyBold.heart : IconlyLight.heart,
                                 color: isLiked ? Colors.white : const Color(0xFF111827),
                                 size: 18,
                               ),
@@ -429,7 +430,7 @@ class GlobalProductDetailModal {
                 padding: const EdgeInsets.all(20),
                 child: Row(
                   children: [
-                    Icon(Icons.bookmark_border, color: violetColor, size: 28),
+                    Icon(IconlyLight.bookmark, color: violetColor, size: 28),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -464,7 +465,7 @@ class GlobalProductDetailModal {
                   padding: const EdgeInsets.all(40),
                   child: Column(
                     children: [
-                      Icon(Icons.list_alt, size: 60, color: Colors.white24),
+                      Icon(IconlyLight.document, size: 60, color: Colors.white24),
                       const SizedBox(height: 16),
                       Text(
                         'Aucune wishlist',
@@ -504,7 +505,7 @@ class GlobalProductDetailModal {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
-                            Icons.bookmark,
+                            IconlyBold.bookmark,
                             color: violetColor,
                             size: 24,
                           ),
@@ -679,7 +680,7 @@ class GlobalProductDetailModal {
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.bookmark, color: Colors.white, size: 20),
+                const Icon(IconlyBold.bookmark, color: Colors.white, size: 20),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -766,7 +767,7 @@ class GlobalProductDetailModal {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 child: Row(
                   children: [
-                    Icon(Icons.more_vert, color: violetColor, size: 24),
+                    Icon(IconlyLight.moreCircle, color: violetColor, size: 24),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -791,7 +792,7 @@ class GlobalProductDetailModal {
                     color: violetColor.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(Icons.send_rounded, color: violetColor, size: 24),
+                  child: Icon(IconlyBold.send, color: violetColor, size: 24),
                 ),
                 title: Text(
                   'Envoyer par message',
@@ -892,7 +893,7 @@ class GlobalProductDetailModal {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 child: Row(
                   children: [
-                    Icon(Icons.send_rounded, color: violetColor, size: 24),
+                    Icon(IconlyBold.send, color: violetColor, size: 24),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -928,7 +929,7 @@ class GlobalProductDetailModal {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.chat_bubble_outline, size: 48, color: Colors.white24),
+                              Icon(IconlyLight.chat, size: 48, color: Colors.white24),
                               const SizedBox(height: 16),
                               Text(
                                 'Aucune conversation',
@@ -1023,7 +1024,7 @@ class GlobalProductDetailModal {
           color: Colors.white,
         ),
       ),
-      trailing: Icon(Icons.send, color: violetColor, size: 20),
+      trailing: Icon(IconlyLight.send, color: violetColor, size: 20),
       onTap: () async {
         Navigator.pop(context);
         await _sendProductToChat(context, chatId, product);
@@ -1174,7 +1175,7 @@ class GlobalProductDetailModal {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.person_outline, size: 48, color: Colors.white24),
+                              Icon(IconlyLight.profile, size: 48, color: Colors.white24),
                               const SizedBox(height: 16),
                               Text(
                                 'Aucun proche',

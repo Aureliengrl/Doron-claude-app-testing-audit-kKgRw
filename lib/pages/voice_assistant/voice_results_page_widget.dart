@@ -1,6 +1,7 @@
 ﻿import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -430,7 +431,7 @@ class _VoiceResultsPageWidgetState extends State<VoiceResultsPageWidget> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(
-                            Icons.favorite,
+                            IconlyBold.heart,
                             size: 12,
                             color: Color(0xFFFF6B9D),
                           ),
@@ -519,7 +520,7 @@ class _VoiceResultsPageWidgetState extends State<VoiceResultsPageWidget> {
               color: Colors.red.withOpacity(0.1),
             ),
             child: const Icon(
-              Icons.error_outline,
+              IconlyLight.danger,
               size: 40,
               color: Colors.red,
             ),

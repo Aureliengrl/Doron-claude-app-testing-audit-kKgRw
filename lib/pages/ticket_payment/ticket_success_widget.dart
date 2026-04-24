@@ -1,5 +1,6 @@
 ﻿import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:confetti/confetti.dart';
@@ -223,7 +224,7 @@ class _TicketSuccessWidgetState extends State<TicketSuccessWidget>
       child: Column(
         children: [
           Icon(
-            Icons.mail_outline,
+            IconlyLight.message,
             color: violetColor,
             size: 48,
           ),
@@ -260,7 +261,7 @@ class _TicketSuccessWidgetState extends State<TicketSuccessWidget>
             child: Row(
               children: [
                 Icon(
-                  Icons.local_activity,
+                  IconlyLight.ticket,
                   color: goldColor,
                   size: 24,
                 ),
@@ -306,7 +307,7 @@ class _TicketSuccessWidgetState extends State<TicketSuccessWidget>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.explore, size: 24),
+                const Icon(IconlyLight.discovery, size: 24),
                 const SizedBox(width: 12),
                 Text(
                   'Découvrir l\'app',

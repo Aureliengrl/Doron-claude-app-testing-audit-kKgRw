@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
@@ -97,7 +98,7 @@ class _UserSearchBottomSheetState extends State<UserSearchBottomSheet> {
               decoration: InputDecoration(
                 hintText: 'Pseudo ou prénom...',
                 hintStyle: GoogleFonts.poppins(color: Colors.black54),
-                prefixIcon: const Icon(Icons.search, color: Colors.black54),
+                prefixIcon: const Icon(IconlyLight.search, color: Colors.black54),
                 filled: true,
                 fillColor: Colors.white,
                 contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
@@ -138,7 +139,7 @@ class _UserSearchBottomSheetState extends State<UserSearchBottomSheet> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.person_search, size: 60, color: Colors.white.withOpacity(0.2)),
+        Icon(IconlyLight.profile, size: 60, color: Colors.white.withOpacity(0.2)),
         const SizedBox(height: 16),
         Text(
           _searchController.text.isEmpty

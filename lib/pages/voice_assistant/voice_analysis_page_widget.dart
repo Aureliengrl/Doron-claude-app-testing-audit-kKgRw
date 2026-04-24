@@ -1,5 +1,6 @@
 ﻿import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
@@ -372,7 +373,7 @@ class _VoiceAnalysisPageWidgetState extends State<VoiceAnalysisPageWidget> {
                 color: Colors.red.withOpacity(0.2),
               ),
               child: const Icon(
-                Icons.error_outline,
+                IconlyLight.danger,
                 size: 50,
                 color: Colors.red,
               ),

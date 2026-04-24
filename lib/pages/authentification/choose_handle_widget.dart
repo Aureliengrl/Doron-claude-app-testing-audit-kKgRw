@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '/auth/firebase_auth/auth_util.dart';
@@ -131,7 +132,7 @@ class _ChooseHandleWidgetState extends State<ChooseHandleWidget> {
                 LiquidGlassInput(
                   controller: _handleController,
                   hintText: 'ex: marc_dupont',
-                  prefixIcon: Icons.alternate_email_rounded,
+                  prefixIcon: IconlyLight.message,
                   keyboardType: TextInputType.text,
                 ),
                 if (_errorMessage != null)

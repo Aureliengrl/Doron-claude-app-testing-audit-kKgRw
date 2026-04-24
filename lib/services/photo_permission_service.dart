@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '/utils/app_logger.dart';
@@ -94,13 +95,13 @@ class PhotoPermissionService {
             ),
             const SizedBox(height: 20),
             ListTile(
-              leading: const Icon(Icons.photo_library_rounded, color: Color(0xFF8A2BE2)),
+              leading: const Icon(IconlyLight.image, color: Color(0xFF8A2BE2)),
               title: const Text('Galerie photos', style: TextStyle(color: Colors.white)),
               subtitle: const Text('Choisir depuis votre bibliothèque', style: TextStyle(color: Colors.white54, fontSize: 12)),
               onTap: () { source = ImageSource.gallery; Navigator.pop(ctx); },
             ),
             ListTile(
-              leading: const Icon(Icons.camera_alt_rounded, color: Color(0xFFEC4899)),
+              leading: const Icon(IconlyBold.camera, color: Color(0xFFEC4899)),
               title: const Text('Appareil photo', style: TextStyle(color: Colors.white)),
               subtitle: const Text('Prendre une nouvelle photo', style: TextStyle(color: Colors.white54, fontSize: 12)),
               onTap: () { source = ImageSource.camera; Navigator.pop(ctx); },
@@ -126,7 +127,7 @@ class PhotoPermissionService {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: const [
-            Icon(Icons.photo_library_outlined, color: Color(0xFF8A2BE2)),
+            Icon(IconlyLight.image, color: Color(0xFF8A2BE2)),
             SizedBox(width: 10),
             Text('Accès requis', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -255,7 +256,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
       actions: [
         if (!_isMyProfile)
           IconButton(
-            icon: const Icon(Icons.more_vert_rounded, color: Colors.white),
+            icon: const Icon(IconlyLight.moreCircle, color: Colors.white),
             onPressed: () {
               final h = _profile?['handle'] as String? ?? _profile?['displayName'] as String? ?? '';
               BlockReportSheet.show(context, uid: widget.uid, handle: h);
@@ -388,7 +389,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                     color: Colors.white),
               ),
             )
-          : const Icon(Icons.person, size: 40, color: Colors.white),
+          : const Icon(IconlyLight.profile, size: 40, color: Colors.white),
     );
   }
 
@@ -408,10 +409,10 @@ class _PublicProfilePageState extends State<PublicProfilePage>
 
   Widget _buildFriendButton() {
     final configs = {
-      FriendshipStatus.none: (label: 'Ajouter en ami', icon: Icons.person_add_rounded, color: _violet),
+      FriendshipStatus.none: (label: 'Ajouter en ami', icon: IconlyLight.addUser, color: _violet),
       FriendshipStatus.pendingSent: (label: 'En attente…', icon: Icons.hourglass_top_rounded, color: Colors.grey.shade600),
       FriendshipStatus.pendingReceived: (label: 'Accepter', icon: Icons.check_circle_rounded, color: _green),
-      FriendshipStatus.friends: (label: 'Amis ✓', icon: Icons.people_rounded, color: const Color(0xFF6366F1)),
+      FriendshipStatus.friends: (label: 'Amis ✓', icon: IconlyLight.people, color: const Color(0xFF6366F1)),
     };
     final cfg = configs[_friendshipStatus]!;
 
@@ -446,7 +447,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
       blur: LiquidGlassTokens.blurLight,
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       onTap: _openDirectChat,
-      child: const Icon(Icons.chat_bubble_outline_rounded, color: Colors.white, size: 20),
+      child: const Icon(IconlyLight.chat, color: Colors.white, size: 20),
     );
   }
 
@@ -469,7 +470,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
               icon: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.list),
+                  const Icon(IconlyLight.document),
                   const SizedBox(width: 8),
                   const Text('Wishlists'),
                 ],
@@ -479,7 +480,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
               icon: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.favorite),
+                  const Icon(IconlyBold.heart),
                   const SizedBox(width: 8),
                   const Text('Produits likés'),
                 ],
@@ -512,7 +513,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.bookmark_border, size: 80, color: Colors.white.withOpacity(0.35)),
+            Icon(IconlyLight.bookmark, size: 80, color: Colors.white.withOpacity(0.35)),
             const SizedBox(height: 16),
             Text('Aucune wishlist publique',
                 style: GoogleFonts.poppins(
@@ -629,7 +630,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                 color: Colors.white.withOpacity(0.07),
                 border: Border.all(color: Colors.white12),
               ),
-              child: const Icon(Icons.lock_outline_rounded, size: 38, color: Colors.white38),
+              child: const Icon(IconlyLight.lock, size: 38, color: Colors.white38),
             ),
             const SizedBox(height: 20),
             Text(
@@ -656,7 +657,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.favorite_border, size: 80, color: Colors.white.withOpacity(0.35)),
+            Icon(IconlyLight.heart, size: 80, color: Colors.white.withOpacity(0.35)),
             const SizedBox(height: 16),
             Text('Aucun produit liké',
                 style: GoogleFonts.poppins(
@@ -689,7 +690,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.person_off_rounded, size: 72, color: Colors.white.withOpacity(0.2)),
+          Icon(IconlyLight.profile, size: 72, color: Colors.white.withOpacity(0.2)),
           const SizedBox(height: 16),
           Text('Utilisateur introuvable',
               style: GoogleFonts.poppins(color: Colors.white54, fontSize: 16)),

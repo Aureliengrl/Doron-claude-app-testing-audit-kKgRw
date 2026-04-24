@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -143,7 +144,7 @@ class _ModeChoiceWidgetState extends State<ModeChoiceWidget> with SingleTickerPr
                           _buildModeCard(
                             title: 'Entrée spéciale',
                             description: 'Parcours romantique pour la Saint-Valentin',
-                            icon: Icons.favorite,
+                            icon: IconlyBold.heart,
                             gradient: LinearGradient(
                               colors: [const Color(0xFFEC4899), const Color(0xFFF43F5E)],
                             ),

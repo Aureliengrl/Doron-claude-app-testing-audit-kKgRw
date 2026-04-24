@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -210,7 +211,7 @@ class _TicketPaymentWebViewState extends State<TicketPaymentWebView> {
           ),
           title: Row(
             children: [
-              const Icon(Icons.lock, color: Colors.white, size: 20),
+              const Icon(IconlyBold.lock, color: Colors.white, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Paiement sécurisé',
@@ -238,7 +239,7 @@ class _TicketPaymentWebViewState extends State<TicketPaymentWebView> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.error_outline,
+                        IconlyLight.danger,
                         size: 80,
                         color: Colors.red[300],
                       ),
@@ -350,7 +351,7 @@ class _TicketPaymentWebViewState extends State<TicketPaymentWebView> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.verified_user,
+                        IconlyBold.shieldDone,
                         color: goldColor,
                         size: 18,
                       ),

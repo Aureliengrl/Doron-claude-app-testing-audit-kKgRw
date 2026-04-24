@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -251,7 +252,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
                     gradient: const LinearGradient(colors: [_violet, _pink]),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.group_add_rounded, color: Colors.white, size: 20),
+                  child: const Icon(IconlyLight.addUser, color: Colors.white, size: 20),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -283,7 +284,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.chat_bubble_rounded, color: Colors.white, size: 14),
+                          const Icon(IconlyBold.chat, color: Colors.white, size: 14),
                           const SizedBox(width: 4),
                           Text('Chat', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
                         ],
@@ -345,7 +346,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, color: Colors.red, size: 40),
+                  const Icon(IconlyLight.danger, color: Colors.red, size: 40),
                   const SizedBox(height: 12),
                   const Text('Échec de la connexion',
                     style: TextStyle(color: Colors.white70, fontSize: 14)),
@@ -386,7 +387,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.people_outline, size: 56, color: Colors.white24),
+            const Icon(IconlyLight.people, size: 56, color: Colors.white24),
             const SizedBox(height: 12),
             Text('Aucun ami pour l\'instant', style: GoogleFonts.poppins(color: Colors.white54, fontSize: 15)),
             const SizedBox(height: 8),
@@ -515,7 +516,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
                     const SizedBox(width: 10),
                     Expanded(
                       child: _actionButton(
-                        icon: Icons.ios_share_rounded,
+                        icon: IconlyBold.send,
                         label: 'Partager',
                         color: _pink,
                         onTap: _shareLink,
@@ -539,7 +540,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
             ),
             child: Row(
               children: [
-                const Icon(Icons.info_outline_rounded, color: Colors.blue, size: 18),
+                const Icon(IconlyLight.infoSquare, color: Colors.blue, size: 18),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(

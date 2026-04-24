@@ -16,6 +16,7 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -237,7 +238,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
               color: Colors.white.withOpacity(0.45),
             ),
             prefixIcon: Icon(
-              Icons.search,
+              IconlyLight.search,
               color: Colors.white.withOpacity(0.70),
               size: 20,
             ),
@@ -292,7 +293,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
         child: Row(
           children: [
             Icon(
-              Icons.lightbulb_outline,
+              IconlyLight.infoSquare,
               color: violetColor,
               size: 20,
             ),
@@ -431,7 +432,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
                             ],
                           ),
                           child: const Icon(
-                            Icons.favorite,
+                            IconlyBold.heart,
                             color: Colors.white,
                             size: 18,
                           ),
@@ -516,7 +517,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
               shape: BoxShape.circle,
             ),
             child: Icon(
-              _searchQuery.isNotEmpty ? Icons.search_off : Icons.favorite_border,
+              _searchQuery.isNotEmpty ? IconlyLight.search : IconlyLight.heart,
               size: 64,
               color: violetColor,
             ),
@@ -657,7 +658,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
                                 }
                               }
                             },
-                            icon: const Icon(Icons.shopping_bag, size: 20),
+                            icon: const Icon(IconlyLight.buy, size: 20),
                             label: Text(
                               'Voir le produit',
                               style: GoogleFonts.poppins(
@@ -693,7 +694,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
                             ),
                             elevation: 0,
                           ),
-                          child: const Icon(Icons.delete, size: 20),
+                          child: const Icon(IconlyLight.delete, size: 20),
                         ),
                       ],
                     ),

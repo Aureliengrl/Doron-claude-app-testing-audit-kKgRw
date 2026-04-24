@@ -1,5 +1,6 @@
 import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -400,21 +401,21 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
             // Boutons
             _buildButton(
               label: 'Scanner tous les produits',
-              icon: Icons.search_rounded,
+              icon: IconlyBold.search,
               color: _violet,
               onTap: _isLoading ? null : _scanProducts,
             ),
             const SizedBox(height: 10),
             _buildButton(
               label: 'Corriger automatiquement (API Amazon)',
-              icon: Icons.auto_fix_high_rounded,
+              icon: IconlyLight.activity,
               color: const Color(0xFF10B981),
               onTap: _isLoading ? null : _fixProducts,
             ),
             const SizedBox(height: 10),
             _buildButton(
               label: 'Supprimer les produits sans photo',
-              icon: Icons.delete_sweep_rounded,
+              icon: IconlyBold.delete,
               color: Colors.red,
               onTap: _isLoading ? null : _deleteProductsWithoutImage,
             ),

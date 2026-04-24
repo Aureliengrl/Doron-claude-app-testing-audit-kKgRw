@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -139,7 +140,7 @@ class _VoiceGuidedOnboardingWidgetState
                                       : [],
                                 ),
                                 child: Icon(
-                                  model.isListening ? Icons.mic : Icons.mic_none,
+                                  model.isListening ? IconlyBold.voice : IconlyLight.voice,
                                   size: 60,
                                   color: Colors.white,
                                 ),
@@ -207,7 +208,7 @@ class _VoiceGuidedOnboardingWidgetState
                               ),
                               child: Row(
                                 children: [
-                                  Icon(Icons.error_outline,
+                                  Icon(IconlyLight.danger,
                                       color: Colors.red[700], size: 20),
                                   const SizedBox(width: 12),
                                   Expanded(

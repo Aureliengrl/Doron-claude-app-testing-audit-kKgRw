@@ -1,5 +1,6 @@
 ﻿import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
@@ -180,7 +181,7 @@ class _VoiceListeningPageWidgetState extends State<VoiceListeningPageWidget> {
                             : [],
                       ),
                       child: Icon(
-                        model.isListening ? Icons.mic : Icons.mic_none,
+                        model.isListening ? IconlyBold.voice : IconlyLight.voice,
                         size: 80,
                         color: Colors.white,
                       ),

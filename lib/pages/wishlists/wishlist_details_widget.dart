@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -406,14 +407,14 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
                     if (_isOwner)
                       IconButton(
                         onPressed: _shareWishlist,
-                        icon: const Icon(Icons.share_rounded, color: Colors.white, size: 22),
+                        icon: const Icon(IconlyBold.send, color: Colors.white, size: 22),
                         tooltip: 'Partager',
                       ),
                     // Date d'événement — masqué en mode lecture seule
                     if (_isOwner)
                       IconButton(
                         onPressed: _setEventDate,
-                        icon: const Icon(Icons.event_rounded, color: Colors.white, size: 22),
+                        icon: const Icon(IconlyLight.calendar, color: Colors.white, size: 22),
                         tooltip: 'Ajouter une date',
                       ),
                   ],
@@ -491,7 +492,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.lock_outline_rounded, size: 72, color: Colors.white24),
+            const Icon(IconlyLight.lock, size: 72, color: Colors.white24),
             const SizedBox(height: 20),
             Text(
               'Liste privée',
@@ -736,7 +737,7 @@ class _WishlistProductCard extends StatelessWidget {
                                 color: Colors.black.withOpacity(0.40),
                                 borderRadius: BorderRadius.circular(14),
                               ),
-                              child: const Icon(Icons.more_vert, color: Colors.white, size: 15),
+                              child: const Icon(IconlyLight.moreCircle, color: Colors.white, size: 15),
                             ),
                           ),
                         ),

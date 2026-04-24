@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Barre de recherche pour la page d'accueil
@@ -46,7 +47,7 @@ class SearchBarWidget extends StatelessWidget {
               color: const Color(0xFF9CA3AF),
             ),
             prefixIcon: Icon(
-              Icons.search,
+              IconlyLight.search,
               color: violetColor,
               size: 22,
             ),

@@ -1,6 +1,7 @@
 import '/utils/app_logger.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -578,7 +579,7 @@ class _OnboardingGiftsResultWidgetState
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.error_outline,
+                IconlyLight.danger,
                 size: 60,
                 color: Colors.red[400],
               ),
@@ -610,7 +611,7 @@ class _OnboardingGiftsResultWidgetState
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.info_outline, size: 18, color: Colors.red[700]),
+                      Icon(IconlyLight.infoSquare, size: 18, color: Colors.red[700]),
                       const SizedBox(width: 8),
                       Text(
                         'Détails:',
@@ -1077,7 +1078,7 @@ class _OnboardingGiftsResultWidgetState
                             SnackBar(
                               content: Row(
                                 children: [
-                                  const Icon(Icons.celebration, color: Colors.white, size: 20),
+                                  const Icon(IconlyBold.star, color: Colors.white, size: 20),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(

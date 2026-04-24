@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -38,7 +39,7 @@ class PopularBrands {
       id: 'all',
       name: 'Toutes',
       displayName: '✨ Toutes',
-      icon: Icons.apps_rounded,
+      icon: IconlyLight.category,
       color: Color(0xFF8A2BE2),
     ),
     BrandModel(
@@ -244,7 +245,7 @@ class _BrandFiltersWidgetState extends State<BrandFiltersWidget> {
                         )
                       : Center(
                           child: Icon(
-                            brand.icon ?? Icons.storefront,
+                            brand.icon ?? IconlyLight.buy,
                             color: isActive ? Colors.white : brandColor,
                           ),
                         ),

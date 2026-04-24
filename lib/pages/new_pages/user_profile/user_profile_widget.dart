@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart';
@@ -260,7 +261,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                       ),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.lock_outline, color: Colors.white, size: 40),
+                    child: const Icon(IconlyLight.lock, color: Colors.white, size: 40),
                   ),
                   const SizedBox(height: 24),
                   Text(
@@ -355,7 +356,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                       children: [
                         IconButton(
                           icon: const Icon(
-                            Icons.local_activity,
+                            IconlyLight.ticket,
                             color: Colors.white,
                             size: 28,
                           ),
@@ -365,7 +366,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         ),
                         IconButton(
                           icon: const Icon(
-                            Icons.menu_rounded,
+                            IconlyLight.moreSquare,
                             color: Colors.white,
                             size: 32,
                           ),
@@ -433,12 +434,12 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                                 ),
                                                 errorWidget: (context, url, error) => Container(
                                                   color: violetColor.withOpacity(0.3),
-                                                  child: Icon(Icons.person, size: 40, color: Colors.white),
+                                                  child: Icon(IconlyLight.profile, size: 40, color: Colors.white),
                                                 ),
                                               )
                                             : Container(
                                                 color: violetColor.withOpacity(0.3),
-                                                child: Icon(Icons.person, size: 40, color: Colors.white),
+                                                child: Icon(IconlyLight.profile, size: 40, color: Colors.white),
                                               ),
                                       ),
                               ),
@@ -464,7 +465,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                     ],
                                   ),
                                   child: Icon(
-                                    Icons.camera_alt,
+                                    IconlyLight.camera,
                                     size: 14,
                                     color: violetColor,
                                   ),
@@ -547,7 +548,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.people_outline, color: Colors.white, size: 16),
+                                const Icon(IconlyLight.people, color: Colors.white, size: 16),
                                 const SizedBox(width: 6),
                                 Text(
                                   'Amis',
@@ -631,7 +632,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
               icon: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.list),
+                  const Icon(IconlyLight.document),
                   const SizedBox(width: 8),
                   Text('Wishlists'),
                 ],
@@ -641,7 +642,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
               icon: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.favorite),
+                  const Icon(IconlyBold.heart),
                   const SizedBox(width: 8),
                   Text('Produits likés'),
                 ],
@@ -679,7 +680,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.favorite_border,
+              IconlyLight.heart,
               size: 80,
               color: Colors.white.withOpacity(0.35),
             ),
@@ -776,7 +777,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.bookmark_border, size: 80, color: Colors.white.withOpacity(0.35)),
+                Icon(IconlyLight.bookmark, size: 80, color: Colors.white.withOpacity(0.35)),
                 const SizedBox(height: 16),
                 Text('Aucune wishlist', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
                 const SizedBox(height: 8),
@@ -894,7 +895,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                     color: Colors.black.withOpacity(0.4),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(Icons.add_a_photo, color: Colors.white, size: 16),
+                                  child: const Icon(IconlyBold.camera, color: Colors.white, size: 16),
                                 ),
                               ),
                             ),
@@ -960,7 +961,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           title: Row(
             children: [
-              const Icon(Icons.bookmark_add_rounded, color: Color(0xFF8A2BE2), size: 24),
+              const Icon(IconlyBold.bookmark, color: Color(0xFF8A2BE2), size: 24),
               const SizedBox(width: 10),
               Text('Nouvel album', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18)),
             ],
@@ -1057,7 +1058,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       ),
       child: Center(
         child: Icon(
-          Icons.interests,
+          IconlyLight.activity,
           size: 48,
           color: Colors.white.withOpacity(0.5),
         ),
@@ -1198,7 +1199,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.add_photo_alternate_rounded, color: Color(0xFF00D4FF), size: 16),
+                              const Icon(IconlyBold.camera, color: Color(0xFF00D4FF), size: 16),
                               const SizedBox(width: 4),
                               Text('Photo', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF00D4FF))),
                             ],
@@ -1221,7 +1222,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.favorite_border_rounded, size: 64, color: Colors.white.withOpacity(0.2)),
+                      Icon(IconlyLight.heart, size: 64, color: Colors.white.withOpacity(0.2)),
                       const SizedBox(height: 16),
                       Text('Aucun produit dans cette liste', style: GoogleFonts.poppins(fontSize: 16, color: Colors.white38, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
@@ -1290,12 +1291,12 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
             ListTile(
-              leading: const Icon(Icons.photo_library_rounded, color: Color(0xFF00D4FF)),
+              leading: const Icon(IconlyLight.image, color: Color(0xFF00D4FF)),
               title: Text('Depuis la galerie', style: GoogleFonts.poppins(color: Colors.white)),
               onTap: () { source = ImageSource.gallery; Navigator.pop(ctx); },
             ),
             ListTile(
-              leading: const Icon(Icons.camera_alt_rounded, color: Color(0xFF00D4FF)),
+              leading: const Icon(IconlyBold.camera, color: Color(0xFF00D4FF)),
               title: Text('Prendre une photo', style: GoogleFonts.poppins(color: Colors.white)),
               onTap: () { source = ImageSource.camera; Navigator.pop(ctx); },
             ),
@@ -1323,7 +1324,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            const Icon(Icons.edit_note_rounded, color: Color(0xFF00D4FF), size: 22),
+            const Icon(IconlyLight.editSquare, color: Color(0xFF00D4FF), size: 22),
             const SizedBox(width: 8),
             Text('Détails (optionnel)', style: GoogleFonts.poppins(
               color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
@@ -1340,7 +1341,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
               decoration: InputDecoration(
                 hintText: 'Nom du produit (ex : Robe Zara)',
                 hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 13),
-                prefixIcon: const Icon(Icons.label_outline_rounded, color: Color(0xFF00D4FF), size: 18),
+                prefixIcon: const Icon(IconlyLight.document, color: Color(0xFF00D4FF), size: 18),
                 filled: true,
                 fillColor: Colors.white.withOpacity(0.07),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -1477,7 +1478,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 child: Column(
                   children: [
                     ListTile(
-                      leading: const Icon(Icons.tune_rounded, color: Colors.white),
+                      leading: const Icon(IconlyLight.filter, color: Colors.white),
                       title: Text('Modifier mes préférences (IA)', style: GoogleFonts.outfit(color: Colors.white)),
                       trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
                       onTap: () {
@@ -1491,7 +1492,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     ),
                     Divider(color: Colors.white.withOpacity(0.1), height: 1),
                     ListTile(
-                      leading: const Icon(Icons.lock_outline_rounded, color: Colors.white),
+                      leading: const Icon(IconlyLight.lock, color: Colors.white),
                       title: Text('Changer le mot de passe', style: GoogleFonts.outfit(color: Colors.white)),
                       trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
                       onTap: () async {
@@ -1506,7 +1507,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     ),
                     Divider(color: Colors.white.withOpacity(0.1), height: 1),
                     ListTile(
-                      leading: const Icon(Icons.language_rounded, color: Colors.white),
+                      leading: const Icon(IconlyLight.discovery, color: Colors.white),
                       title: Text('Changer de langue', style: GoogleFonts.outfit(color: Colors.white)),
                       trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
                       onTap: () async {
@@ -1565,7 +1566,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.logout_rounded, color: Colors.white, size: 20),
+                      const Icon(IconlyLight.logout, color: Colors.white, size: 20),
                       const SizedBox(width: 12),
                       Text('Se déconnecter', style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                     ],

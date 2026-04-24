@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -257,7 +258,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.favorite_border,
+                IconlyLight.heart,
                 size: 60,
                 color: violetColor,
               ),
@@ -327,7 +328,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Icon(
-                    Icons.favorite_rounded,
+                    IconlyBold.heart,
                     color: Colors.white,
                     size: 30,
                   ),
@@ -390,7 +391,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
-                                  isPublic ? Icons.lock_open : Icons.lock,
+                                  isPublic ? IconlyLight.lock : IconlyBold.lock,
                                   size: 11,
                                   color: isPublic ? const Color(0xFF10B981) : Colors.grey[500],
                                 ),
@@ -437,7 +438,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
                   },
                   tooltip: isPublic ? 'Rendre privée' : 'Rendre publique',
                   icon: Icon(
-                    isPublic ? Icons.lock_open : Icons.lock_outline,
+                    isPublic ? IconlyLight.lock : IconlyLight.lock,
                     color: isPublic ? const Color(0xFF10B981) : Colors.grey[400],
                     size: 22,
                   ),

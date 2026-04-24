@@ -1,5 +1,6 @@
 ﻿import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 /// Widget optimisé pour afficher des images avec cache automatique
@@ -247,7 +248,7 @@ class FullscreenProductImage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                Icons.image_not_supported_outlined,
+                IconlyLight.image,
                 size: 80,
                 color: Colors.white.withOpacity(0.5),
               ),
@@ -318,7 +319,7 @@ class FullscreenProductImage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.error_outline,
+                    IconlyLight.danger,
                     size: 60,
                     color: Colors.red.withOpacity(0.7),
                   ),

@@ -8,6 +8,7 @@ import 'dart:math';
 import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -253,7 +254,7 @@ class _ProductWidgetState extends State<ProductWidget>
                                     onRatingUpdate: (newValue) => safeSetState(
                                         () => _model.ratingBarValue = newValue),
                                     itemBuilder: (context, index) => Icon(
-                                      Icons.star_rounded,
+                                      IconlyBold.star,
                                       color: Color(0xFFFFDF00),
                                     ),
                                     direction: Axis.horizontal,
@@ -551,7 +552,7 @@ class _ProductWidgetState extends State<ProductWidget>
                                 return Padding(
                                   padding: EdgeInsets.all(5.0),
                                   child: Icon(
-                                    Icons.favorite_sharp,
+                                    IconlyBold.heart,
                                     color: Color(0xFFFF0000),
                                     size: 20.0,
                                   ),
@@ -560,7 +561,7 @@ class _ProductWidgetState extends State<ProductWidget>
                                 return Padding(
                                   padding: EdgeInsets.all(5.0),
                                   child: Icon(
-                                    Icons.favorite_border,
+                                    IconlyLight.heart,
                                     color:
                                         FlutterFlowTheme.of(context).alternate,
                                     size: 20.0,

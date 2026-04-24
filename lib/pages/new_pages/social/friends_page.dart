@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -408,7 +409,7 @@ class _FriendsPageState extends State<FriendsPage>
             child: Row(
               children: [
                 const SizedBox(width: 12),
-                const Icon(Icons.search, color: Colors.white54, size: 20),
+                const Icon(IconlyLight.search, color: Colors.white54, size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: TextField(
@@ -510,7 +511,7 @@ class _FriendsPageState extends State<FriendsPage>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.people_outline, size: 72, color: Colors.white24),
+                const Icon(IconlyLight.people, size: 72, color: Colors.white24),
                 const SizedBox(height: 20),
                 Text('Aucun ami pour l\'instant',
                     style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white54)),
@@ -577,7 +578,7 @@ class _FriendsPageState extends State<FriendsPage>
                       const SizedBox(height: 2),
                       Row(
                         children: [
-                          const Icon(Icons.people_rounded, size: 12, color: Color(0xFF10B981)),
+                          const Icon(IconlyLight.people, size: 12, color: Color(0xFF10B981)),
                           const SizedBox(width: 4),
                           Text('Amis', style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF10B981))),
                         ],
@@ -595,7 +596,7 @@ class _FriendsPageState extends State<FriendsPage>
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: _violet.withOpacity(0.4)),
                     ),
-                    child: const Icon(Icons.person_rounded, color: _violet, size: 18),
+                    child: const Icon(IconlyBold.profile, color: _violet, size: 18),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -608,7 +609,7 @@ class _FriendsPageState extends State<FriendsPage>
                       gradient: const LinearGradient(colors: [_violet, _pink]),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.chat_bubble_outline, color: Colors.white, size: 18),
+                    child: const Icon(IconlyLight.chat, color: Colors.white, size: 18),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -644,7 +645,7 @@ class _FriendsPageState extends State<FriendsPage>
                   },
                   child: const Padding(
                     padding: EdgeInsets.all(4),
-                    child: Icon(Icons.person_remove_outlined, color: Colors.white38, size: 20),
+                    child: Icon(IconlyLight.profile, color: Colors.white38, size: 20),
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -653,7 +654,7 @@ class _FriendsPageState extends State<FriendsPage>
                   onTap: () => BlockReportSheet.show(context, uid: uid, handle: handle.isNotEmpty ? handle : name),
                   child: const Padding(
                     padding: EdgeInsets.all(4),
-                    child: Icon(Icons.more_vert_rounded, color: Colors.white38, size: 20),
+                    child: Icon(IconlyLight.moreCircle, color: Colors.white38, size: 20),
                   ),
                 ),
               ],
@@ -690,7 +691,7 @@ class _FriendsPageState extends State<FriendsPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.person_off_outlined, size: 64, color: Colors.white24),
+            const Icon(IconlyLight.profile, size: 64, color: Colors.white24),
             const SizedBox(height: 16),
             Text('Aucun utilisateur trouvé', style: GoogleFonts.poppins(fontSize: 16, color: Colors.white38)),
           ],
@@ -719,7 +720,7 @@ class _FriendsPageState extends State<FriendsPage>
                   gradient: const LinearGradient(colors: [_violet, _pink]),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.people_rounded, size: 14, color: Colors.white),
+                child: const Icon(IconlyLight.people, size: 14, color: Colors.white),
               ),
               const SizedBox(width: 10),
               Text(
@@ -751,7 +752,7 @@ class _FriendsPageState extends State<FriendsPage>
               child: Center(
                 child: Column(
                   children: [
-                    const Icon(Icons.manage_search_rounded, size: 48, color: Colors.white24),
+                    const Icon(IconlyLight.search, size: 48, color: Colors.white24),
                     const SizedBox(height: 12),
                     Text('Cherche par @pseudo ou prénom',
                         style: GoogleFonts.poppins(fontSize: 14, color: Colors.white38)),
@@ -798,13 +799,13 @@ class _FriendsPageState extends State<FriendsPage>
     IconData sourceIcon;
     if (source.contains('contact')) {
       sourceLabel = 'Dans vos contacts';
-      sourceIcon = Icons.contacts_rounded;
+      sourceIcon = IconlyLight.people;
     } else if (mutualCount > 0) {
       sourceLabel = '$mutualCount ami${mutualCount > 1 ? 's' : ''} en commun';
-      sourceIcon = Icons.people_outline_rounded;
+      sourceIcon = IconlyLight.people;
     } else {
       sourceLabel = 'Suggestion';
-      sourceIcon = Icons.star_outline_rounded;
+      sourceIcon = IconlyLight.star;
     }
 
     return Padding(
@@ -919,7 +920,7 @@ class _FriendsPageState extends State<FriendsPage>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.person_add_rounded, size: 14, color: Colors.white),
+                const Icon(IconlyLight.addUser, size: 14, color: Colors.white),
                 const SizedBox(width: 4),
                 Text('Ajouter', style: GoogleFonts.poppins(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
               ],
@@ -934,7 +935,7 @@ class _FriendsPageState extends State<FriendsPage>
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
       child: Row(
         children: [
-          const Icon(Icons.history_rounded, size: 18, color: Colors.white54),
+          const Icon(IconlyLight.timeCircle, size: 18, color: Colors.white54),
           const SizedBox(width: 8),
           Text('Recherches récentes',
               style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white54)),
@@ -974,7 +975,7 @@ class _FriendsPageState extends State<FriendsPage>
             ),
             child: Row(
               children: [
-                const Icon(Icons.history_rounded, size: 16, color: Colors.white38),
+                const Icon(IconlyLight.timeCircle, size: 16, color: Colors.white38),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(query,
@@ -1059,7 +1060,7 @@ class _FriendsPageState extends State<FriendsPage>
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(color: Colors.white24),
                         ),
-                        child: const Icon(Icons.person_rounded, color: Colors.white54, size: 18),
+                        child: const Icon(IconlyBold.profile, color: Colors.white54, size: 18),
                       ),
                     ),
                   ],
@@ -1094,7 +1095,7 @@ class _FriendsPageState extends State<FriendsPage>
       case FriendshipStatus.none:
         return _actionChip(
           label: 'Ajouter en ami',
-          icon: Icons.person_add_outlined,
+          icon: IconlyLight.addUser,
           gradient: [_violet, _pink],
           onTap: () => _sendRequest(uid),
         );
@@ -1147,7 +1148,7 @@ class _FriendsPageState extends State<FriendsPage>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.people_rounded, size: 16, color: _green),
+                const Icon(IconlyLight.people, size: 16, color: _green),
                 const SizedBox(width: 6),
                 Text('Amis — Voir le profil', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: _green)),
                 const SizedBox(width: 4),
@@ -1243,7 +1244,7 @@ class _FriendsPageState extends State<FriendsPage>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.mark_email_read_outlined, size: 72, color: Colors.white24),
+                    const Icon(IconlyLight.notification, size: 72, color: Colors.white24),
                     const SizedBox(height: 20),
                     Text('Aucune demande en attente', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white54)),
                     const SizedBox(height: 8),
@@ -1279,7 +1280,7 @@ class _FriendsPageState extends State<FriendsPage>
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Row(
                         children: [
-                          const Icon(Icons.person_add_rounded, size: 14, color: Colors.white54),
+                          const Icon(IconlyLight.addUser, size: 14, color: Colors.white54),
                           const SizedBox(width: 6),
                           Text('Demandes d\'amis',
                               style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white54)),

@@ -7,6 +7,7 @@ import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -108,7 +109,7 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            const Icon(Icons.error_outline, color: Colors.redAccent, size: 22),
+            const Icon(IconlyLight.danger, color: Colors.redAccent, size: 22),
             const SizedBox(width: 8),
             Expanded(
               child: Text(

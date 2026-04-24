@@ -5,6 +5,7 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -77,7 +78,7 @@ class _EmptyDataWidgetState extends State<EmptyDataWidget>
         Align(
           alignment: AlignmentDirectional(0.0, -1.0),
           child: Icon(
-            Icons.production_quantity_limits,
+            IconlyLight.danger,
             color: Theme.of(context).brightness == Brightness.light
                 ? FlutterFlowTheme.of(context).primary
                 : FlutterFlowTheme.of(context).primaryText,

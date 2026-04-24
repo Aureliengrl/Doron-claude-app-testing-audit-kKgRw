@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -132,7 +133,7 @@ class _GalaTicketWidgetState extends State<GalaTicketWidget> with SingleTickerPr
                               ],
                             ),
                             child: const Icon(
-                              Icons.local_activity,
+                              IconlyLight.ticket,
                               size: 60,
                               color: Colors.white,
                             ),
@@ -173,7 +174,7 @@ class _GalaTicketWidgetState extends State<GalaTicketWidget> with SingleTickerPr
 
                           // Informations du gala
                           _buildInfoCard(
-                            icon: Icons.calendar_today,
+                            icon: IconlyLight.calendar,
                             title: 'Date',
                             subtitle: '14 Février 2026 • 19h00',
                             gradient: LinearGradient(colors: [violetColor, pinkColor]),
@@ -182,7 +183,7 @@ class _GalaTicketWidgetState extends State<GalaTicketWidget> with SingleTickerPr
                           const SizedBox(height: 16),
 
                           _buildInfoCard(
-                            icon: Icons.location_on,
+                            icon: IconlyBold.location,
                             title: 'Lieu',
                             subtitle: 'Grand Hôtel de Paris\n75008 Paris',
                             gradient: LinearGradient(colors: [goldColor, redColor]),
@@ -242,7 +243,7 @@ class _GalaTicketWidgetState extends State<GalaTicketWidget> with SingleTickerPr
                           // Bouton Acheter
                           _buildActionButton(
                             text: 'Acheter mon billet',
-                            icon: Icons.shopping_cart,
+                            icon: IconlyLight.buy,
                             gradient: LinearGradient(colors: [goldColor, redColor]),
                             onTap: () {
                               // Ouvrir la WebView sécurisée LYF PAY
@@ -255,7 +256,7 @@ class _GalaTicketWidgetState extends State<GalaTicketWidget> with SingleTickerPr
                           // Bouton Explorer en mode anonyme
                           _buildActionButton(
                             text: 'Explorer l\'app en mode invité',
-                            icon: Icons.explore,
+                            icon: IconlyLight.discovery,
                             gradient: LinearGradient(colors: [violetColor, pinkColor]),
                             onTap: () async {
                               // Activer le mode anonyme
@@ -284,7 +285,7 @@ class _GalaTicketWidgetState extends State<GalaTicketWidget> with SingleTickerPr
                             child: Row(
                               children: [
                                 Icon(
-                                  Icons.info_outline,
+                                  IconlyLight.infoSquare,
                                   color: goldColor,
                                   size: 24,
                                 ),

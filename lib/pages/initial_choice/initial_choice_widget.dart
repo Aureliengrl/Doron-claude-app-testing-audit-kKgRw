@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -141,7 +142,7 @@ class _InitialChoiceWidgetState extends State<InitialChoiceWidget> with SingleTi
                     // Bouton Gala
                     _buildButton(
                       text: 'Acheter un billet pour le gala',
-                      icon: Icons.local_activity,
+                      icon: IconlyLight.ticket,
                       gradient: LinearGradient(
                         colors: [const Color(0xFFF59E0B), const Color(0xFFEF4444)],
                       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -186,7 +187,7 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
               child: _isGroup ? CustomTextField(
                 controller: _groupNameController,
                 hint: 'Nom du groupe (Optionnel)',
-                icon: Icons.group_work,
+                icon: IconlyLight.people,
               ) : const SizedBox.shrink(),
             ),
           ),
@@ -198,7 +199,7 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
             child: CustomTextField(
               controller: _searchController,
               hint: 'Chercher un ami...',
-              icon: Icons.search,
+              icon: IconlyLight.search,
             ),
           ),
           const SizedBox(height: 16),

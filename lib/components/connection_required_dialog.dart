@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -64,7 +65,7 @@ class ConnectionRequiredDialog extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.lock_open,
+                IconlyLight.lock,
                 color: Colors.white,
                 size: 40,
               ),
@@ -101,11 +102,11 @@ class ConnectionRequiredDialog extends StatelessWidget {
             // Liste des bénéfices
             _buildBenefit(Icons.auto_awesome, 'Des suggestions IA ultra-personnalisées'),
             const SizedBox(height: 12),
-            _buildBenefit(Icons.bookmark_outline, 'Sauvegarde tes listes de cadeaux'),
+            _buildBenefit(IconlyLight.bookmark, 'Sauvegarde tes listes de cadeaux'),
             const SizedBox(height: 12),
-            _buildBenefit(Icons.favorite_border, 'Garde tes favoris synchronisés'),
+            _buildBenefit(IconlyLight.heart, 'Garde tes favoris synchronisés'),
             const SizedBox(height: 12),
-            _buildBenefit(Icons.people_outline, 'Crée des listes pour plusieurs personnes'),
+            _buildBenefit(IconlyLight.people, 'Crée des listes pour plusieurs personnes'),
 
             const SizedBox(height: 28),
 
@@ -133,7 +134,7 @@ class ConnectionRequiredDialog extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.rocket_launch, size: 20),
+                    const Icon(IconlyLight.activity, size: 20),
                     const SizedBox(width: 8),
                     Text(
                       'Commencer (3 min)',

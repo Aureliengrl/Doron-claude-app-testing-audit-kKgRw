@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -188,7 +189,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                         ),
                         borderRadius: BorderRadius.circular(18),
                       ),
-                      child: const Icon(Icons.alternate_email, color: Colors.white, size: 32),
+                      child: const Icon(IconlyLight.message, color: Colors.white, size: 32),
                     ),
 
                     const SizedBox(height: 24),

@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -119,7 +120,7 @@ class SharedProductCard extends StatelessWidget {
                                 height: 140,
                                 color: Colors.white.withOpacity(0.05),
                                 child: const Icon(
-                                  Icons.image_not_supported_rounded,
+                                  IconlyLight.image,
                                   color: Colors.white24,
                                   size: 40,
                                 ),
@@ -150,7 +151,7 @@ class SharedProductCard extends StatelessWidget {
                               color: Colors.black.withOpacity(0.50),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.more_vert, color: Colors.white, size: 15),
+                            child: const Icon(IconlyLight.moreCircle, color: Colors.white, size: 15),
                           ),
                         ),
                       ),

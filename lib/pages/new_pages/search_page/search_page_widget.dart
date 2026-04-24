@@ -2,6 +2,7 @@ import '/utils/app_logger.dart';
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -97,7 +98,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+                Icon(IconlyLight.danger, size: 64, color: Colors.red[400]),
                 const SizedBox(height: 24),
                 Text(
                   'Erreur',
@@ -163,7 +164,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     ),
                     child: const Center(
                       child: Icon(
-                        Icons.person_search,
+                        IconlyLight.profile,
                         color: Colors.white,
                         size: 40,
                       ),
@@ -373,7 +374,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     ],
                   ),
                   child: const Icon(
-                    Icons.chat_bubble_outline_rounded,
+                    IconlyLight.chat,
                     color: Colors.white,
                     size: 24,
                   ),
@@ -503,7 +504,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 alignment: Alignment.bottomCenter,
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Icon(
-                  Icons.delete_outline,
+                  IconlyLight.delete,
                   color: Colors.red.withOpacity(0.8),
                   size: 28,
                 ),
@@ -671,7 +672,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                                   shape: BoxShape.circle,
                                   border: Border.all(color: Colors.white, width: 1.5),
                                 ),
-                                child: const Icon(Icons.people, size: 10, color: Colors.white),
+                                child: const Icon(IconlyLight.people, size: 10, color: Colors.white),
                               ),
                             ),
                         ],
@@ -778,7 +779,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     runSpacing: 8,
                     children: [
                       _buildProfileActionButton(
-                        icon: Icons.ios_share,
+                        icon: IconlyBold.send,
                         label: 'Partager',
                         onTap: () async {
                           HapticFeedback.lightImpact();
@@ -798,7 +799,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         },
                       ),
                       _buildProfileActionButton(
-                        icon: Icons.edit_outlined,
+                        icon: IconlyLight.edit,
                         label: 'Modifier',
                         onTap: () {
                           // Retourner au quizz avec l'ID du profil
@@ -806,7 +807,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         },
                       ),
                       _buildProfileActionButton(
-                        icon: Icons.group_add,
+                        icon: IconlyLight.addUser,
                         label: 'Collaborer',
                         onTap: () {
                            showModalBottomSheet(
@@ -832,7 +833,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       ),
                       if (profile['chatId'] != null)
                         _buildProfileActionButton(
-                          icon: Icons.chat_bubble_outline,
+                          icon: IconlyLight.chat,
                           label: 'Chat',
                           onTap: () {
                              context.push('/chat-room/${profile['chatId']}', extra: {
@@ -843,7 +844,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           }
                         ),
                       _buildProfileActionButton(
-                        icon: Icons.add_photo_alternate_rounded,
+                        icon: IconlyBold.camera,
                         label: 'Photo',
                         onTap: () => _addPhotoForPerson(profile),
                       ),
@@ -908,7 +909,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     if (_model.profiles.isEmpty) {
       return const SliverToBoxAdapter(
         child: LiquidGlassEmptyStateWidget(
-          icon: Icons.person_add_alt_1,
+          icon: IconlyLight.addUser,
           title: 'Ajoutez votre première personne',
           subtitle: 'Cliquez sur le bouton + pour ajouter ou rejoindre une liste existante et générer des idées de cadeaux personnalisées.',
         ),
@@ -1034,7 +1035,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(
-                              Icons.stars_rounded,
+                              IconlyBold.star,
                               color: Colors.white,
                               size: 14,
                             ),
@@ -1071,7 +1072,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           ],
                         ),
                         child: const Icon(
-                          Icons.favorite,
+                          IconlyBold.heart,
                           color: Colors.white,
                           size: 18,
                         ),
@@ -1222,7 +1223,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             child: Row(
               children: [
                 Icon(
-                  Icons.lightbulb_outline,
+                  IconlyLight.infoSquare,
                   color: const Color(0xFF8A2BE2),
                   size: 28,
                 ),
@@ -1387,7 +1388,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           ],
                         ),
                         child: const Icon(
-                          Icons.favorite,
+                          IconlyBold.heart,
                           color: Colors.white,
                           size: 16,
                         ),
@@ -1506,7 +1507,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.person_search_rounded, color: Colors.white, size: 22),
+                    const Icon(IconlyLight.profile, color: Colors.white, size: 22),
                     const SizedBox(width: 10),
                     Text(
                       'TROUVER DES AMIS',
@@ -1570,7 +1571,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         content: Row(
           children: [
             Icon(
-              isError ? Icons.error_outline : Icons.check_circle,
+              isError ? IconlyLight.danger : Icons.check_circle,
               color: Colors.white,
               size: 20,
             ),
@@ -1633,7 +1634,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             const SizedBox(height: 20),
             // Bouton Collaborer sur la liste (chat de groupe)
             _buildAvatarOption(
-              icon: Icons.group_add,
+              icon: IconlyLight.addUser,
               label: 'Collaborer sur la liste de cadeaux',
               onTap: () {
                 Navigator.pop(ctx);
@@ -1662,7 +1663,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             if (uid != null) ...[
               const SizedBox(height: 12),
               _buildAvatarOption(
-                icon: Icons.person_add_outlined,
+                icon: IconlyLight.addUser,
                 label: 'Ajouter en ami',
                 onTap: () async {
                   Navigator.pop(ctx);
@@ -1681,7 +1682,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               ),
               const SizedBox(height: 12),
               _buildAvatarOption(
-                icon: Icons.chat_bubble_outline,
+                icon: IconlyLight.chat,
                 label: 'Envoyer un message',
                 onTap: () async {
                   Navigator.pop(ctx);
@@ -1748,12 +1749,12 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
           Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
           ListTile(
-            leading: const Icon(Icons.photo_library_rounded, color: Color(0xFF00D4FF)),
+            leading: const Icon(IconlyLight.image, color: Color(0xFF00D4FF)),
             title: Text('Depuis la galerie', style: GoogleFonts.poppins(color: Colors.white)),
             onTap: () { source = ImageSource.gallery; Navigator.pop(ctx); },
           ),
           ListTile(
-            leading: const Icon(Icons.camera_alt_rounded, color: Color(0xFF00D4FF)),
+            leading: const Icon(IconlyBold.camera, color: Color(0xFF00D4FF)),
             title: Text('Prendre une photo', style: GoogleFonts.poppins(color: Colors.white)),
             onTap: () { source = ImageSource.camera; Navigator.pop(ctx); },
           ),
@@ -1779,7 +1780,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         backgroundColor: const Color(0xFF1A0030),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(children: [
-          const Icon(Icons.local_offer_rounded, color: Color(0xFF8A2BE2), size: 20),
+          const Icon(IconlyLight.ticket, color: Color(0xFF8A2BE2), size: 20),
           const SizedBox(width: 8),
           Text('Détails du produit', style: GoogleFonts.poppins(
               color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
@@ -1792,7 +1793,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             decoration: InputDecoration(
               hintText: 'Nom du produit',
               hintStyle: GoogleFonts.poppins(color: Colors.white38),
-              prefixIcon: const Icon(Icons.shopping_bag_outlined, color: Color(0xFF00D4FF), size: 18),
+              prefixIcon: const Icon(IconlyLight.buy, color: Color(0xFF00D4FF), size: 18),
               filled: true,
               fillColor: Colors.white.withOpacity(0.07),
               border: OutlineInputBorder(

@@ -3,6 +3,7 @@ import '/services/product_validator_service.dart';
 import 'dart:ui';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -79,17 +80,17 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       onComplete: () {},
       steps: [
         TutorialStep(
-          icon: Icons.home_rounded,
+          icon: IconlyBold.home,
           title: 'Bienvenue sur Doron !',
           description: 'Découvre des idées cadeaux personnalisées pour toi et tes proches. Fais défiler pour explorer.',
         ),
         TutorialStep(
-          icon: Icons.search_rounded,
+          icon: IconlyBold.search,
           title: 'Recherche des cadeaux',
           description: 'Tape sur l\'onglet Recherche pour trouver le cadeau parfait pour quelqu\'un de spécial.',
         ),
         TutorialStep(
-          icon: Icons.favorite_rounded,
+          icon: IconlyBold.heart,
           title: 'Sauvegarde tes favoris',
           description: 'Appuie sur le cœur d\'un produit pour l\'ajouter à tes favoris et le retrouver facilement.',
         ),
@@ -99,7 +100,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           description: 'Dans ton profil, crée des listes de souhaits et partage-les avec tes amis.',
         ),
         TutorialStep(
-          icon: Icons.group_rounded,
+          icon: IconlyLight.people,
           title: 'Ajoute des amis',
           description: 'Recherche tes amis par @pseudo, envoie-leur une demande et vois leurs wishlists publiques.',
         ),
@@ -1215,7 +1216,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                             ],
                           ),
                           child: Icon(
-                            Icons.bookmark_border,
+                            IconlyLight.bookmark,
                             color: violetColor,
                             size: 16,
                           ),
@@ -1247,7 +1248,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                             ],
                           ),
                           child: Icon(
-                            isLiked ? Icons.favorite : Icons.favorite_border,
+                            isLiked ? IconlyBold.heart : IconlyLight.heart,
                             color: isLiked ? Colors.white : const Color(0xFF374151),
                             size: 16,
                           ),
@@ -1326,7 +1327,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    Icons.error_outline,
+                    IconlyLight.danger,
                     size: 50,
                     color: Colors.red[400],
                   ),
@@ -1627,7 +1628,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                           ],
                         ),
                         child: const Icon(
-                          Icons.favorite,
+                          IconlyBold.heart,
                           size: 16,
                           color: Colors.red,
                         ),
@@ -1782,7 +1783,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                                 ],
                               ),
                               child: Icon(
-                                Icons.bookmark_border,
+                                IconlyLight.bookmark,
                                 color: violetColor,
                                 size: 18,
                               ),
@@ -1826,7 +1827,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                                 ],
                               ),
                               child: Icon(
-                                isLiked ? Icons.favorite : Icons.favorite_border,
+                                isLiked ? IconlyBold.heart : IconlyLight.heart,
                                 color: isLiked ? Colors.white : const Color(0xFF111827),
                                 size: 18,
                               ),
@@ -2013,7 +2014,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 padding: const EdgeInsets.all(20),
                 child: Row(
                   children: [
-                    Icon(Icons.bookmark_border, color: violetColor, size: 28),
+                    Icon(IconlyLight.bookmark, color: violetColor, size: 28),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -2051,7 +2052,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                   padding: const EdgeInsets.all(40),
                   child: Column(
                     children: [
-                      Icon(Icons.list_alt, size: 60, color: Colors.grey[400]),
+                      Icon(IconlyLight.document, size: 60, color: Colors.grey[400]),
                       const SizedBox(height: 16),
                       Text(
                         'Aucune wishlist',
@@ -2091,7 +2092,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
-                            Icons.bookmark,
+                            IconlyBold.bookmark,
                             color: violetColor,
                             size: 24,
                           ),
@@ -2271,7 +2272,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.bookmark, color: Colors.white, size: 20),
+                const Icon(IconlyBold.bookmark, color: Colors.white, size: 20),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -123,7 +124,7 @@ class _ChatListPageState extends State<ChatListPage> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.group_add_rounded, color: Colors.white, size: 18),
+                        const Icon(IconlyLight.addUser, color: Colors.white, size: 18),
                         const SizedBox(width: 6),
                         Text(
                           'Groupe',
@@ -141,7 +142,7 @@ class _ChatListPageState extends State<ChatListPage> {
               const SizedBox(width: 8),
               // Bouton Nouveau Message (icône)
               IconButton(
-                icon: const Icon(Icons.edit_rounded, color: Colors.white),
+                icon: const Icon(IconlyBold.editSquare, color: Colors.white),
                 onPressed: () => _openCreateChat(forceGroup: false),
                 splashRadius: 24,
                 tooltip: 'Nouveau message',
@@ -169,7 +170,7 @@ class _ChatListPageState extends State<ChatListPage> {
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return const LiquidGlassEmptyStateWidget(
-            icon: Icons.chat_bubble_outline,
+            icon: IconlyLight.chat,
             title: 'Aucun message',
             subtitle: 'Commencez à discuter avec vos proches ou collaborez sur une liste de cadeaux.',
           );
@@ -250,7 +251,7 @@ class _ChatListPageState extends State<ChatListPage> {
                             ),
                             child: (isGroup || photoUrl.isEmpty) ? Center(
                               child: Icon(
-                                isGroup ? Icons.groups : Icons.person,
+                                isGroup ? IconlyBold.people : IconlyLight.profile,
                                 color: Colors.white,
                                 size: 28,
                               ),
