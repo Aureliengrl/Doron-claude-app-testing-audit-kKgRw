@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +13,7 @@ import '/backend/backend.dart';
 import '/services/product_url_service.dart';
 import '/services/firebase_data_service.dart';
 import '/services/optimistic_image_uploader.dart';
+import '/utils/image_compress_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '/pages/pages/change_language/change_language_widget.dart';
 import '/pages/pages/change_name/change_name_widget.dart';

@@ -401,23 +401,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    // Toggle vue 2/3 colonnes
-                    IconButton(
-                      onPressed: () {
-                        HapticFeedback.selectionClick();
-                        setState(() {
-                          _gridColumns = _gridColumns == 2 ? 3 : 2;
-                        });
-                      },
-                      icon: Icon(
-                        _gridColumns == 2
-                            ? Icons.grid_view_rounded        // vue 3 col = compact
-                            : Icons.view_quilt_rounded,      // vue 2 col = confort
-                        color: Colors.white,
-                        size: 22,
-                      ),
-                      tooltip: _gridColumns == 2 ? 'Vue compacte' : 'Vue confortable',
-                    ),
+                    // Vue fixée à 2 colonnes pour un rendu premium
                     // Partager — masqué en mode lecture seule
                     if (_isOwner)
                       IconButton(

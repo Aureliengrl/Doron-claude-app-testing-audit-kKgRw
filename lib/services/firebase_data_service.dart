@@ -893,7 +893,7 @@ class FirebaseDataService {
     try {
       // Charger les produits en respectant l'ordre custom s'il existe,
       // sinon fallback sur addedAt (tri inversé = plus récent en premier)
-      QuerySnapshot snapshot;
+      QuerySnapshot<Map<String, dynamic>> snapshot;
       try {
         snapshot = await _firestore
             .collection('users')
@@ -916,7 +916,7 @@ class FirebaseDataService {
       }
 
       final products = snapshot.docs
-          .map((d) => {'id': d.id, ...d.data()})
+          .map((d) => <String, dynamic>{'id': d.id, ...d.data()})
           .toList();
 
       // Sauvegarder en local pour la prochaine fois
