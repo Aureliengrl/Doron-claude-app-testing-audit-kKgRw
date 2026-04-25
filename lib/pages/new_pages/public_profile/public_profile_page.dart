@@ -88,6 +88,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
           'bio': data['bio'] ?? '',
           'isOnline': data['isOnline'] ?? false,
           'lastSeen': data['lastSeen'],
+          'birthday': data['birthday'],  // F3: anniversaire
         };
       }
     } catch (_) {
@@ -372,6 +373,33 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                           Container(width: 7, height: 7, decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle)),
                           const SizedBox(width: 5),
                           Text(statusText, style: GoogleFonts.outfit(fontSize: 12, color: statusColor)),
+                        ],
+                      ),
+                    );
+                  }),
+                  // F3: affichage de l'anniversaire de l'ami sur son profil public
+                  if (_friendshipStatus == FriendshipStatus.friends) Builder(builder: (ctx) {
+                    final b = _profile?['birthday'] as Map<String, dynamic>?;
+                    if (b == null) return const SizedBox.shrink();
+                    const months = ['', 'jan', 'fév', 'mar', 'avr', 'mai', 'juin', 'juil', 'août', 'sep', 'oct', 'nov', 'déc'];
+                    final now = DateTime.now();
+                    final day = (b['day'] as num).toInt();
+                    final month = (b['month'] as num).toInt();
+                    final isToday = now.day == day && now.month == month;
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Row(
+                        children: [
+                          Text(isToday ? '🎂' : '🎁', style: const TextStyle(fontSize: 14)),
+                          const SizedBox(width: 4),
+                          Text(
+                            isToday ? 'C'est son anniversaire aujourd'hui !' : 'Anniv: $day ${months[month]}',
+                            style: GoogleFonts.outfit(
+                              fontSize: 12,
+                              color: isToday ? const Color(0xFFEC4899) : Colors.white54,
+                              fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                            ),
+                          ),
                         ],
                       ),
                     );

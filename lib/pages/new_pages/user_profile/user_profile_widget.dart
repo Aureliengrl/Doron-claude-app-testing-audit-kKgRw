@@ -341,15 +341,17 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
+                        // F3: Bouton calendrier anniversaires (remplace le ticket)
                         IconButton(
                           icon: const Icon(
-                            IconlyLight.ticket,
+                            Icons.cake_rounded,
                             color: Colors.white,
                             size: 28,
                           ),
                           onPressed: () {
-                            context.push('/gala-ticket');
+                            context.push('/birthday-calendar');
                           },
+                          tooltip: 'Calendrier & Anniversaires',
                         ),
                         IconButton(
                           icon: const Icon(

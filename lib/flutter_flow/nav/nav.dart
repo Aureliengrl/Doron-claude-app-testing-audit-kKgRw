@@ -35,6 +35,7 @@ import '/pages/authentification/choose_handle_widget.dart';
 import '/pages/new_pages/social/friends_page.dart';
 import '/pages/new_pages/setup_profile/setup_profile_page.dart';
 import '/pages/new_pages/join_collab_page.dart';
+import '/pages/new_pages/birthday_calendar/birthday_calendar_page.dart'; // F3
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -382,6 +383,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => JoinCollabPage(
             token: params.getParam<String>('token', ParamType.String) ?? '',
           ),
+        ),
+        // F3: Calendrier anniversaires & fêtes
+        FFRoute(
+          name: BirthdayCalendarPage.routeName,
+          path: BirthdayCalendarPage.routePath,
+          requireAuth: true,
+          builder: (context, params) => const BirthdayCalendarPage(),
         ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );

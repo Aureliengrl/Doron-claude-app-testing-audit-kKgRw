@@ -1473,11 +1473,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   Widget _buildBottomActions() {
     return Row(
       children: [
-        // Bouton Messages/Chat (Rond)
-        _buildChatButtonWithBadge(),
-        const SizedBox(width: 16),
-        
-        // Bouton Trouver des amis (navigue vers FriendsPage)
+        // Bouton Trouver des amis (navigue vers FriendsPage) — F2: maintenant à gauche (Expanded)
         Expanded(
           child: Material(
             color: Colors.transparent,
@@ -1524,6 +1520,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             ),
           ),
         ),
+        const SizedBox(width: 16),
+        // Bouton Messages/Chat (Rond) — F2: maintenant à droite
+        _buildChatButtonWithBadge(),
       ],
     );
   }
