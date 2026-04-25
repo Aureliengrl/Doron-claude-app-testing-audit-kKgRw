@@ -13,6 +13,7 @@ import '/components/liquid_glass.dart';
 import '/components/liquid_glass_loader.dart';
 import '/components/product_detail_modal.dart';
 import '/services/firebase_data_service.dart';
+import '/pages/new_pages/occasion_question_page.dart'; // F6: flow questionnaire complet
 
 class ChatRoomPage extends StatefulWidget {
   final String chatId;
@@ -820,142 +821,85 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     );
   }
 
-  // F6: Questionnaire de création de liste depuis le chat
+  // F6: Lance le questionnaire existant complet (OccasionQuestionPage -> MomentTypePage)
   void _showWishlistPoll() {
     HapticFeedback.mediumImpact();
-    _showWishlistPollStep1();
-  }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => OccasionQuestionPage(
+          onComplete: (String occasion) {
+            // Called after OccasionQuestionPage, before MomentTypePage
+            // The actual result comes back via Navigator.pop in MomentTypePage
+          },
+        ),
+      ),
+    ).then((result) async {
+      // result = {'momentType': '...', 'giftTypes': [...], 'occasion': '...'}
+      // (retourné par Navigator.pop dans MomentTypePage)
+      if (result == null || !mounted) return;
 
-  String? _pollGender; // 'lui', 'elle', 'les2'
-  String? _pollBudget; // '<50', '50-100', '100-200', 'libre'
-  String? _pollOccasion; // 'noel', 'anniversaire', 'autre'
+      final occasion = result['occasion'] as String? ?? '';
+      final momentType = result['momentType'] as String? ?? '';
+      final giftTypes = (result['giftTypes'] as List?)?.join(', ') ?? '';
 
-  void _showWishlistPollStep1() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) => _buildPollSheet(
-        'Pour qui est-ce cadeau ?',
-        ['Lui 🧑', 'Elle 👩', 'Les deux 💑'],
-        (choice) {
-          _pollGender = choice;
-          Navigator.pop(ctx);
-          _showWishlistPollStep2();
+      // Envoyer un message récapitulatif dans le chat du groupe
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) return;
+
+      final occasionLabels = {
+        'anniversaire': '🎂 Anniversaire',
+        'noel': '🎄 Noël',
+        'saint-valentin': '💝 Saint-Valentin',
+        'mariage': '💍 Mariage',
+        'fete': '🥳 Fête',
+        'remerciement': '🙏 Remerciement',
+        'naissance': '👶 Naissance',
+        'diplome': '🎓 Diplôme',
+        'surprise': '🎁 Sans occasion',
+      };
+
+      final momentLabels = {
+        'product': '🎁 Un objet à offrir',
+        'experience': '✨ Une expérience',
+        'voucher': '🃏 Un bon cadeau',
+        'all': '🌟 Tout voir',
+      };
+
+      final occasionLabel = occasionLabels[occasion] ?? occasion;
+      final momentLabel = momentLabels[momentType] ?? momentType;
+
+      await FirebaseFirestore.instance
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .add({
+        'text': '🎁 Idées cadeaux en cours...\n\n'
+            '📅 Occasion : $occasionLabel\n'
+            '🛍 Type : $momentLabel\n\n'
+            '➡️ Voir les suggestions dans Recherche → Trouver un cadeau',
+        'senderId': 'system',
+        'type': 'wishlist_poll_result',
+        'timestamp': FieldValue.serverTimestamp(),
+        'pollData': {
+          'occasion': occasion,
+          'momentType': momentType,
+          'giftTypes': giftTypes,
         },
-      ),
-    );
-  }
+      });
 
-  void _showWishlistPollStep2() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) => _buildPollSheet(
-        'Quel est votre budget ?',
-        ['< 50€', '50-100€', '100-200€', 'Sans limite'],
-        (choice) {
-          _pollBudget = choice;
-          Navigator.pop(ctx);
-          _showWishlistPollStep3();
-        },
-      ),
-    );
-  }
-
-  void _showWishlistPollStep3() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) => _buildPollSheet(
-        'Quelle occasion ?',
-        ['Noël 🎄', 'Anniversaire 🎂', 'Fête des mères 👩', 'Autre 🎁'],
-        (choice) async {
-          _pollOccasion = choice;
-          Navigator.pop(ctx);
-          await _generateWishlistFromPoll();
-        },
-      ),
-    );
-  }
-
-  Widget _buildPollSheet(String question, List<String> choices, Function(String) onChoice) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A0030),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
-      ),
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(width: 36, height: 4,
-            decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 20),
-          Text('🎁 Créer une liste ensemble',
-            style: GoogleFonts.poppins(color: Colors.white54, fontSize: 12)),
-          const SizedBox(height: 8),
-          Text(question, style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center),
-          const SizedBox(height: 20),
-          Wrap(
-            spacing: 10, runSpacing: 10,
-            alignment: WrapAlignment.center,
-            children: choices.map((c) => GestureDetector(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                onChoice(c);
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)]),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Text(c, style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600)),
-              ),
-            )).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _generateWishlistFromPoll() async {
-    // Envoyer un message système dans le chat résumant le poll
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return;
-
-    final pollSummary = 'Pour: ${_pollGender ?? '?'} | Budget: ${_pollBudget ?? '?'} | Occasion: ${_pollOccasion ?? '?'}';
-    
-    await FirebaseFirestore.instance
-        .collection('chats')
-        .doc(chatId)
-        .collection('messages')
-        .add({
-      'text': '🎁 Liste créée ensemble\n$pollSummary\n→ Naviguez vers Recherche pour trouver des idées !',
-      'senderId': 'system',
-      'type': 'wishlist_poll_result',
-      'timestamp': FieldValue.serverTimestamp(),
-      'pollData': {
-        'gender': _pollGender,
-        'budget': _pollBudget,
-        'occasion': _pollOccasion,
-      },
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('🎁 Questionnaire envoyé dans le groupe !',
+              style: GoogleFonts.poppins()),
+          backgroundColor: const Color(0xFF8A2BE2),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ));
+      }
     });
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('🎁 Questionnaire envoyé dans le groupe !', style: GoogleFonts.poppins()),
-        backgroundColor: const Color(0xFF8A2BE2),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ));
-    }
   }
+
 
   Widget _buildTypingIndicator() {
     if (_chatDocData.isEmpty || !_chatDocData.containsKey('typingUsers')) return const SizedBox.shrink();
