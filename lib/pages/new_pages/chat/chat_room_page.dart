@@ -239,6 +239,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         child: Column(
           children: [
             _buildHeader(title, isGroup),
+            // F6: Banner wishlist épinglée (groupes)
+            _buildPinnedWishlistBanner(),
             Expanded(
               child: _buildMessagesList(),
             ),
@@ -742,6 +744,219 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   // S6 FIX: affiche le vrai prenom de la personne qui ecrit
+  // F6: Banner wishlist épinglée dans le chat groupe
+  Widget _buildPinnedWishlistBanner() {
+    if (!(chatData?['isGroup'] == true)) return const SizedBox.shrink();
+    final pinnedId = chatData?['pinnedWishlistId'] as String?;
+    if (pinnedId == null || pinnedId.isEmpty) {
+      // Proposer de créer/associer une liste si c'est un groupe sans wishlist
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF8A2BE2).withOpacity(0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFF8A2BE2).withOpacity(0.2)),
+        ),
+        child: Row(
+          children: [
+            const Text('🎁', style: TextStyle(fontSize: 16)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Associer une liste à ce groupe',
+                style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12),
+              ),
+            ),
+            GestureDetector(
+              onTap: () => _showWishlistPoll(),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)]),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text('Créer', style: GoogleFonts.poppins(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Wishlist épinglée existante
+    return FutureBuilder<DocumentSnapshot>(
+      future: FirebaseFirestore.instance.collection('wishlists').doc(pinnedId).get(),
+      builder: (ctx, snap) {
+        if (!snap.hasData) return const SizedBox.shrink();
+        final name = snap.data?.get('name') as String? ?? 'Liste partagée';
+        return GestureDetector(
+          onTap: () => context.push('/wishlist-details/$pinnedId'),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [const Color(0xFF8A2BE2).withOpacity(0.15), const Color(0xFFEC4899).withOpacity(0.08)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFEC4899).withOpacity(0.25)),
+            ),
+            child: Row(
+              children: [
+                const Text('🎁', style: TextStyle(fontSize: 16)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(name,
+                    style: GoogleFonts.poppins(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                ),
+                Text('Voir →',
+                  style: GoogleFonts.poppins(color: const Color(0xFFEC4899), fontSize: 12, fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // F6: Questionnaire de création de liste depuis le chat
+  void _showWishlistPoll() {
+    HapticFeedback.mediumImpact();
+    _showWishlistPollStep1();
+  }
+
+  String? _pollGender; // 'lui', 'elle', 'les2'
+  String? _pollBudget; // '<50', '50-100', '100-200', 'libre'
+  String? _pollOccasion; // 'noel', 'anniversaire', 'autre'
+
+  void _showWishlistPollStep1() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => _buildPollSheet(
+        'Pour qui est-ce cadeau ?',
+        ['Lui 🧑', 'Elle 👩', 'Les deux 💑'],
+        (choice) {
+          _pollGender = choice;
+          Navigator.pop(ctx);
+          _showWishlistPollStep2();
+        },
+      ),
+    );
+  }
+
+  void _showWishlistPollStep2() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => _buildPollSheet(
+        'Quel est votre budget ?',
+        ['< 50€', '50-100€', '100-200€', 'Sans limite'],
+        (choice) {
+          _pollBudget = choice;
+          Navigator.pop(ctx);
+          _showWishlistPollStep3();
+        },
+      ),
+    );
+  }
+
+  void _showWishlistPollStep3() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => _buildPollSheet(
+        'Quelle occasion ?',
+        ['Noël 🎄', 'Anniversaire 🎂', 'Fête des mères 👩', 'Autre 🎁'],
+        (choice) async {
+          _pollOccasion = choice;
+          Navigator.pop(ctx);
+          await _generateWishlistFromPoll();
+        },
+      ),
+    );
+  }
+
+  Widget _buildPollSheet(String question, List<String> choices, Function(String) onChoice) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A0030),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(width: 36, height: 4,
+            decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+          const SizedBox(height: 20),
+          Text('🎁 Créer une liste ensemble',
+            style: GoogleFonts.poppins(color: Colors.white54, fontSize: 12)),
+          const SizedBox(height: 8),
+          Text(question, style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center),
+          const SizedBox(height: 20),
+          Wrap(
+            spacing: 10, runSpacing: 10,
+            alignment: WrapAlignment.center,
+            children: choices.map((c) => GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                onChoice(c);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)]),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Text(c, style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600)),
+              ),
+            )).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _generateWishlistFromPoll() async {
+    // Envoyer un message système dans le chat résumant le poll
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    final pollSummary = 'Pour: ${_pollGender ?? '?'} | Budget: ${_pollBudget ?? '?'} | Occasion: ${_pollOccasion ?? '?'}';
+    
+    await FirebaseFirestore.instance
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .add({
+      'text': '🎁 Liste créée ensemble\n$pollSummary\n→ Naviguez vers Recherche pour trouver des idées !',
+      'senderId': 'system',
+      'type': 'wishlist_poll_result',
+      'timestamp': FieldValue.serverTimestamp(),
+      'pollData': {
+        'gender': _pollGender,
+        'budget': _pollBudget,
+        'occasion': _pollOccasion,
+      },
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('🎁 Questionnaire envoyé dans le groupe !', style: GoogleFonts.poppins()),
+        backgroundColor: const Color(0xFF8A2BE2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ));
+    }
+  }
+
   Widget _buildTypingIndicator() {
     if (_chatDocData.isEmpty || !_chatDocData.containsKey('typingUsers')) return const SizedBox.shrink();
     

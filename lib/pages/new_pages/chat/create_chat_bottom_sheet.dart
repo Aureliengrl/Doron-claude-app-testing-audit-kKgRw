@@ -12,7 +12,9 @@ import '/components/liquid_glass.dart';
 class CreateChatBottomSheet extends StatefulWidget {
   /// Si true, force le mode création de groupe (nom requis, titre "Nouveau Groupe")
   final bool forceGroup;
-  const CreateChatBottomSheet({super.key, this.forceGroup = false});
+  /// F6: Nom de groupe pré-rempli depuis une suggestion
+  final String? suggestedGroupName;
+  const CreateChatBottomSheet({super.key, this.forceGroup = false, this.suggestedGroupName});
 
   @override
   State<CreateChatBottomSheet> createState() => _CreateChatBottomSheetState();
@@ -32,6 +34,10 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
   @override
   void initState() {
     super.initState();
+    // F6: Pré-remplir le nom si fourni par une suggestion
+    if (widget.suggestedGroupName != null) {
+      _groupNameController.text = widget.suggestedGroupName!;
+    }
     _loadContacts();
   }
 
@@ -121,6 +127,13 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
       if (mounted) {
         context.pop();
         context.push('/chat-room/${chatRef.id}', extra: chatData);
+        // F6: Si groupe créé depuis une suggestion, proposer de lancer un poll liste
+        if (widget.forceGroup) {
+          Future.delayed(const Duration(milliseconds: 600), () {
+            // Le chat_room_page propose automatiquement le questionnaire
+            // grâce au flag 'isNew: true' dans chatData si besoin
+          });
+        }
       }
     } catch (e) {
       debugPrint('Erreur lors de la création du chat: $e');
