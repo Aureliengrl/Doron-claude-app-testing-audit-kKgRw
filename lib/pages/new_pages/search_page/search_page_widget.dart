@@ -810,6 +810,20 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         icon: IconlyLight.addUser,
                         label: 'Collaborer',
                         onTap: () {
+                           // #FIX-9: ne pas ouvrir si aucun cadeau ajouté
+                           final profileId = profile['id']?.toString() ?? profile['personId']?.toString() ?? '';
+                           final giftsList = _model.personGifts[profileId] ?? [];
+                           if (giftsList.isEmpty) {
+                             HapticFeedback.lightImpact();
+                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                               content: Text('Ajoutez d\'abord des idées cadeaux pour partager !', style: GoogleFonts.poppins(fontSize: 13)),
+                               backgroundColor: const Color(0xFFF59E0B),
+                               behavior: SnackBarBehavior.floating,
+                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                               margin: const EdgeInsets.all(12),
+                             ));
+                             return;
+                           }
                            showModalBottomSheet(
                              context: context,
                              isScrollControlled: true,

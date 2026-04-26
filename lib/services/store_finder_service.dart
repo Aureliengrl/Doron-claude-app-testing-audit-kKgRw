@@ -6,6 +6,12 @@ import '/utils/app_logger.dart';
 /// Utilise l'API Google Places Nearby Search pour trouver les enseignes
 /// proches d'une position géographique, en fonction de la marque produit.
 class StoreFinderService {
+  /// Retourne false si Google Maps n'est pas configuré — évite les erreurs silencieuses
+  static bool get isConfigured {
+    const key = String.fromEnvironment('GOOGLE_MAPS_KEY', defaultValue: '');
+    return key.isNotEmpty;
+  }
+
   // ── Configuration ─────────────────────────────────────────────────────────
   // ⚠️ Remplacer par votre clé API Google Places
   static const String _apiKey = 'YOUR_GOOGLE_PLACES_API_KEY';

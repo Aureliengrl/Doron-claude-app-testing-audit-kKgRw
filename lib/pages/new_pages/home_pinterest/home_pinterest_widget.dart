@@ -129,11 +129,28 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
     try {
       final uid = FirebaseAuth.instance.currentUser!.uid;
-      final snap = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .collection('favorites')
-          .get();
+      final col = FirebaseFirestore.instance.collection('users').doc(uid).collection('favorites');
+      final snap = await col.get();
+
+      // #FIX-7: migrer les favoris locaux vers Firebase si présents
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final localTitles = prefs.getStringList('local_favorite_titles') ?? [];
+        if (localTitles.isNotEmpty) {
+          final fbTitles = snap.docs.map((d) => d.data()['name'] as String? ?? '').toSet();
+          final toMigrate = localTitles.where((t) => t.isNotEmpty && !fbTitles.contains(t)).toList();
+          if (toMigrate.isNotEmpty) {
+            final batch = FirebaseFirestore.instance.batch();
+            for (final title in toMigrate) {
+              final docId = 'fav_m_${title.hashCode}';
+              batch.set(col.doc(docId), {'id': docId, 'name': title, 'brand': '', 'price': '', 'image': '', 'url': '', 'createdAt': FieldValue.serverTimestamp()});
+            }
+            await batch.commit();
+            AppLogger.debug('📦 Migration: ${toMigrate.length} favoris locaux vers Firebase', 'Fav');
+          }
+          await prefs.remove('local_favorite_titles');
+        }
+      } catch (_) {}
 
       if (mounted) {
         setState(() {

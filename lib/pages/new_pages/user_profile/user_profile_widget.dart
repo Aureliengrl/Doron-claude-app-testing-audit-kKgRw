@@ -1517,6 +1517,17 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     ),
                     Divider(color: Colors.white.withOpacity(0.1), height: 1),
                     ListTile(
+                      leading: const Icon(Icons.mic_rounded, color: Color(0xFF8A2BE2)),
+                      title: Text('Assistant vocal', style: GoogleFonts.outfit(color: Colors.white)),
+                      subtitle: Text('Trouver des cadeaux par la voix', style: GoogleFonts.outfit(color: Colors.white38, fontSize: 12)),
+                      trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        context.go('/voice-guided-onboarding');
+                      },
+                    ),
+                    Divider(color: Colors.white.withOpacity(0.1), height: 1),
+                    ListTile(
                       leading: const Icon(Icons.delete_forever_rounded, color: Colors.red),
                       title: Text('Supprimer mon compte', style: GoogleFonts.outfit(color: Colors.red)),
                       trailing: const Icon(Icons.chevron_right_rounded, color: Colors.red),
