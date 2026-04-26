@@ -244,14 +244,20 @@ class GlobalProductDetailModal {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        Text(
-                          '${product['price'] ?? product['product_price'] ?? 0}€'.replaceAll('€€', '€'),
-                          style: GoogleFonts.poppins(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: violetColor,
-                          ),
-                        ),
+                        // #FIX-2: masquer prix si 0 ou null
+                        Builder(builder: (_) {
+                          final _priceRaw = product['price'] ?? product['product_price'];
+                          final _priceStr = _priceRaw?.toString().replaceAll('\u20ac', '').trim() ?? '';
+                          final _isBlank = _priceStr.isEmpty || _priceStr == '0' || _priceStr == '0.0';
+                          return Text(
+                            _isBlank ? 'Prix non renseign\u00e9' : '${_priceStr}\u20ac',
+                            style: GoogleFonts.poppins(
+                              fontSize: _isBlank ? 16 : 32,
+                              fontWeight: FontWeight.bold,
+                              color: _isBlank ? Colors.white38 : violetColor,
+                            ),
+                          );
+                        }),
                         const SizedBox(height: 16),
                         if (product['description'] != null && (product['description'] as String).isNotEmpty)
                           Text(

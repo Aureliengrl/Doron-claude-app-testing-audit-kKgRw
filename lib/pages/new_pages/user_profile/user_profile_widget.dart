@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -1538,11 +1538,12 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     context: ctx,
                     builder: (alertCtx) => AlertDialog(
                       backgroundColor: const Color(0xFF1E1E1E),
-                      title: const Text('DÃ©connexion', style: TextStyle(color: Colors.white)),
-                      content: const Text('ÃŠtes-vous sÃ»r de vouloir vous dÃ©connecter ?', style: TextStyle(color: Colors.white70)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      title: const Text('Déconnexion', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?', style: TextStyle(color: Colors.white70)),
                       actions: [
                         TextButton(onPressed: () => Navigator.pop(alertCtx, false), child: const Text('Annuler', style: TextStyle(color: Colors.white54))),
-                        TextButton(onPressed: () => Navigator.pop(alertCtx, true), child: const Text('Se dÃ©connecter', style: TextStyle(color: Color(0xFFE53935)))),
+                        TextButton(onPressed: () => Navigator.pop(alertCtx, true), child: const Text('Se déconnecter', style: TextStyle(color: Color(0xFFE53935)))),
                       ],
                     ),
                   ) ?? false;

@@ -1,5 +1,6 @@
 import '/utils/app_logger.dart';
 import '/services/product_validator_service.dart';
+import 'dart:async';
 import 'dart:ui';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:flutter/material.dart';
@@ -50,6 +51,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
   final Color violetColor = const Color(0xFF8A2BE2);
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
+  Timer? _searchDebounce; // #FIX-6: debounce 300ms pour la recherche
 
   // ==========================================================
   // SHOWCASE / TUTORIAL KEYS
@@ -339,7 +341,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       // Convertir au format attendu, normaliser et ajouter URLs intelligentes
       final products = rawProducts.map((product) {
         final validated = ProductValidatorService.normalize(product);
-        return {
+        // #FIX-1 (feed): préserver tous les champs enrichis (buyLinks, etc.)
+        return <String, dynamic>{
+          ...product,
           'id': product['id'],
           'name': validated['name'],
           'brand': validated['brand'],
@@ -355,7 +359,15 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         };
       }).toList();
 
-      AppLogger.debug('?? ${products.length} produits convertis pour affichage', 'Debug');
+      AppLogger.debug(
+      // #FIX-10a: produits avec image en premier, puis par score de match
+      products.sort((a, b) {
+        final aHasImage = (a['image']?.toString() ?? '').isNotEmpty ? 0 : 1;
+        final bHasImage = (b['image']?.toString() ?? '').isNotEmpty ? 0 : 1;
+        if (aHasImage != bHasImage) return aHasImage.compareTo(bHasImage);
+        return ((b['match'] as int?) ?? 0).compareTo((a['match'] as int?) ?? 0);
+      });
+      '?? ${products.length} produits convertis pour affichage', 'Debug');
 
       // Sauvegarder les nouveaux IDs dans le cache
       final newSeenIds = <String>[...seenProductIds.map((id) => id.toString())];
