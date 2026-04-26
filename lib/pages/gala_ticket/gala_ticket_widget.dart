@@ -263,7 +263,7 @@ class _GalaTicketWidgetState extends State<GalaTicketWidget> with SingleTickerPr
                               final prefs = await SharedPreferences.getInstance();
                               await prefs.setBool('anonymous_mode', true);
                               if (mounted) {
-                                context.go('/HomePinterest');
+                                context.go('/home-pinterest');
                               }
                             },
                             outlined: true,

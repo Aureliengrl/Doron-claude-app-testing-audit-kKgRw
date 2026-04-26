@@ -272,7 +272,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => context.go('/auth'),
+                      onPressed: () => context.go('/authentification'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: violetColor,
                         padding: const EdgeInsets.symmetric(vertical: 16),

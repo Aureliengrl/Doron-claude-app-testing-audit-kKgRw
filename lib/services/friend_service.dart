@@ -412,7 +412,7 @@ class FriendService {
           .get();
 
       for (final doc in snap.docs) {
-        final participants = (doc.data()['participants'] as List).cast<String>();
+        final participants = (doc.data()['participants'] as List?)?.cast<String>() ?? [];
         if (participants.contains(friendUid) && participants.length == 2) {
           return doc.id;
         }

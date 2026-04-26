@@ -1,4 +1,4 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
@@ -57,7 +57,7 @@ class _VoiceResultsPageWidgetState extends State<VoiceResultsPageWidget> {
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () {
               // Retourner à la page de recherche
-              context.go('/search');
+              context.go('/search-page');
             },
           ),
           title: const Text(
@@ -472,7 +472,9 @@ class _VoiceResultsPageWidgetState extends State<VoiceResultsPageWidget> {
                       children: [
                         Expanded(
                           child: Text(
-                            '${productPrice}€',
+                            productPrice == '0' || productPrice.isEmpty
+                              ? 'Prix non renseigné'
+                              : '${productPrice}€',
                             style: const TextStyle(
                               fontFamily: 'Outfit',
                               color: Color(0xFFFF6B9D),

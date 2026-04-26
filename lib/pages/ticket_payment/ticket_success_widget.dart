@@ -292,7 +292,7 @@ class _TicketSuccessWidgetState extends State<TicketSuccessWidget>
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () {
-              context.go('/HomePinterest');
+              context.go('/home-pinterest');
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: violetColor,
