@@ -27,8 +27,8 @@ class HomePinterestModel {
   bool showFreeShipping = false;
 
   // Pagination
-  static const int productsPerPage = 30;
-  static const int infiniteScrollChunk = 15;
+  static const int productsPerPage = 50;       // 50 produits au 1er chargement (au lieu de 30)
+  static const int infiniteScrollChunk = 25;  // 25 de plus par scroll (au lieu de 15)
   int currentPage = 0;
   bool hasMore = true;
 

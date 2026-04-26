@@ -8,8 +8,8 @@ class SmoothPageRoute<T> extends PageRouteBuilder<T> {
 
   SmoothPageRoute({
     required this.page,
-    this.duration = const Duration(milliseconds: 400),
-    this.curve = Curves.easeInOutCubic,
+    this.duration = const Duration(milliseconds: 250),
+    this.curve = Curves.easeOutCubic,
   }) : super(
           pageBuilder: (context, animation, secondaryAnimation) => page,
           transitionDuration: duration,
@@ -46,8 +46,8 @@ class ScalePageRoute<T> extends PageRouteBuilder<T> {
 
   ScalePageRoute({
     required this.page,
-    this.duration = const Duration(milliseconds: 350),
-    this.curve = Curves.easeInOutCubic,
+    this.duration = const Duration(milliseconds: 220),
+    this.curve = Curves.easeOutCubic,
   }) : super(
           pageBuilder: (context, animation, secondaryAnimation) => page,
           transitionDuration: duration,
@@ -79,7 +79,7 @@ class PremiumPageRoute<T> extends PageRouteBuilder<T> {
 
   PremiumPageRoute({
     required this.page,
-    this.duration = const Duration(milliseconds: 450),
+    this.duration = const Duration(milliseconds: 280),
   }) : super(
           pageBuilder: (context, animation, secondaryAnimation) => page,
           transitionDuration: duration,
@@ -140,7 +140,7 @@ class BottomSheetPageRoute<T> extends PageRouteBuilder<T> {
 
   BottomSheetPageRoute({
     required this.page,
-    this.duration = const Duration(milliseconds: 400),
+    this.duration = const Duration(milliseconds: 240),
   }) : super(
           pageBuilder: (context, animation, secondaryAnimation) => page,
           transitionDuration: duration,

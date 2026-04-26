@@ -1,4 +1,4 @@
-﻿import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 import '/utils/app_logger.dart';
@@ -145,11 +145,11 @@ class ProductMatchingService {
         }
       }
 
-      // Limite de chargement raisonnable : 500 docs suffisent pour le scoring
-      // (vs l'ancien limit(10000) qui téléchargeait toute la base)
-      const int _loadLimit = 500;
+      // Limite de chargement : 300 docs suffisent pour le scoring
+      // (moins de données = plus rapide, Firestore cache après la 1ère requête)
+      const int loadLimit = 300;
 
-      Future<List<Map<String, dynamic>>> _fetchProducts({
+      Future<List<Map<String, dynamic>>> fetchProducts({
         required String collection,
         String? categoryTag,
       }) async {
@@ -157,7 +157,10 @@ class ProductMatchingService {
         if (categoryTag != null) {
           q = q.where('tags', arrayContains: categoryTag);
         }
-        final snap = await q.limit(_loadLimit).get();
+        // serverAndCache : utilise le cache Firestore SDK si disponible (< 1s)
+        final snap = await q.limit(loadLimit).get(
+          const GetOptions(source: Source.serverAndCache),
+        );
         return snap.docs.map((doc) {
           final data = doc.data();
           data['id'] = doc.id;
@@ -166,7 +169,7 @@ class ProductMatchingService {
       }
 
       // 1️⃣ Tentative avec filtre catégorie
-      var allProducts = await _fetchProducts(
+      var allProducts = await fetchProducts(
         collection: 'gifts',
         categoryTag: serverCategoryTag,
       );
@@ -175,14 +178,14 @@ class ProductMatchingService {
       // 2️⃣ Si résultat vide avec filtre, retry sans filtre catégorie
       if (allProducts.isEmpty && serverCategoryTag != null) {
         AppLogger.warning('⚠️ Aucun produit avec filtre catégorie, retry sans filtre', 'Matching');
-        allProducts = await _fetchProducts(collection: 'gifts');
+        allProducts = await fetchProducts(collection: 'gifts');
         AppLogger.firebase('📦 ${allProducts.length} docs sans filtre catégorie');
       }
 
       // 3️⃣ Fallback vers collection 'products' si 'gifts' toujours vide
       if (allProducts.isEmpty) {
         AppLogger.warning('⚠️ Collection gifts vide, fallback vers products...', 'Matching');
-        allProducts = await _fetchProducts(collection: 'products');
+        allProducts = await fetchProducts(collection: 'products');
         AppLogger.firebase('📦 ${allProducts.length} docs depuis collection products');
       }
 

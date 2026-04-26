@@ -290,71 +290,65 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     }
 
     try {
-      // Charger les tags utilisateur depuis Firebase
-      final userProfileTags = await FirebaseDataService.loadUserProfileTags();
+      // ⚡ PARALLÉLISER : charger tags utilisateur + SharedPreferences en même temps
+      final futures = await Future.wait<dynamic>([
+        FirebaseDataService.loadUserProfileTags(),
+        SharedPreferences.getInstance(),
+      ]);
 
-      AppLogger.debug('??? User profile tags: $userProfileTags', 'Debug');
+      final userProfileTags = futures[0] as Map<String, dynamic>?;
+      final prefs = futures[1] as SharedPreferences;
+
+      // Mettre en cache les tags pour _loadMoreProducts (pas besoin de re-fetch)
+      _cachedUserTags = userProfileTags;
 
       // Extraire et stocker le prénom
       final firstName = userProfileTags?['firstName'] as String? ?? '';
       _model.setFirstName(firstName);
 
-      // ? TOUJOURS utiliser les tags, même vides (ProductMatchingService gère ça)
       final tagsToUse = userProfileTags ?? {};
 
-      AppLogger.debug('?? Tags utilisés pour matching: $tagsToUse', 'Debug');
-
-      // Charger les sections thématiques (seulement pour "Pour toi")
+      // Charger les sections thématiques EN ARRIÈRE-PLAN (ne bloque PAS les produits)
       if (_model.activeCategory == 'Pour toi' && userProfileTags != null) {
-        try {
-          final sections = await ProductMatchingService.getHomeSections(
-            userTags: userProfileTags,
-          );
-          if (mounted) {
-            setState(() {
-              _model.setSections(sections);
-            });
+        // Lancer sans await — les produits s'affichent immédiatement
+        Future.microtask(() async {
+          try {
+            final sections = await ProductMatchingService.getHomeSections(
+              userTags: userProfileTags,
+            );
+            if (mounted) {
+              setState(() {
+                _model.setSections(sections);
+              });
+            }
+          } catch (e) {
+            AppLogger.debug('⚠️ Erreur sections (arrière-plan): $e', 'Debug');
           }
-        } catch (e) {
-          AppLogger.debug('? Erreur chargement sections: $e', 'Debug');
-        }
-      } else {
-        // Clear sections si on n'est pas dans "Pour toi"
-        if (mounted) {
-          setState(() {
-            _model.setSections([]);
-          });
-        }
+        });
+      } else if (mounted) {
+        setState(() { _model.setSections([]); });
       }
 
       // Charger la liste des IDs de produits déjà vus depuis le cache
-      final prefs = await SharedPreferences.getInstance();
-      final seenProductIds = prefs.getStringList('seen_home_product_ids_${_model.activeCategory}')?.map((s) => int.tryParse(s) ?? 0).toList() ?? [];
-      AppLogger.debug('?? ${seenProductIds.length} produits déjà vus dans la catégorie ${_model.activeCategory}', 'Debug');
-
-      // ?? Générer les produits via ProductMatchingService (Firebase-first)
-      AppLogger.debug('?? Appel ProductMatchingService avec ${tagsToUse.length} tags...', 'Debug');
+      final seenProductIds = prefs
+          .getStringList('seen_home_product_ids_${_model.activeCategory}')
+          ?.map((s) => int.tryParse(s) ?? 0)
+          .toList() ?? [];
 
       // Déterminer le mode de filtrage selon la catégorie
-      // "Pour toi" = DISCOVERY (souple, personnalisé mais pas restrictif)
-      // Autres catégories = HOME (plus strict car filtre actif)
       final filterMode = _model.activeCategory == 'Pour toi' ? 'discovery' : 'home';
-      AppLogger.debug('?? Mode de filtrage: $filterMode pour catégorie "${_model.activeCategory}"', 'Debug');
 
       final rawProducts = await ProductMatchingService.getPersonalizedProducts(
         userTags: tagsToUse,
         count: HomePinterestModel.productsPerPage,
         category: _model.activeCategory != 'Pour toi' ? _model.activeCategory : null,
         excludeProductIds: seenProductIds,
-        filteringMode: filterMode, // DISCOVERY pour "Pour toi", HOME pour les autres
+        filteringMode: filterMode,
       );
 
-      AppLogger.debug('? ProductMatchingService a retourné ${rawProducts.length} produits', 'Debug');
-
-      // Convertir au format attendu, normaliser et ajouter URLs intelligentes
+      // Convertir au format attendu
       final products = rawProducts.map((product) {
         final validated = ProductValidatorService.normalize(product);
-        // #FIX-1 (feed): préserver tous les champs enrichis (buyLinks, etc.)
         return <String, dynamic>{
           ...product,
           'id': product['id'],
@@ -362,65 +356,66 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           'brand': validated['brand'],
           'price': product['price'] ?? 0,
           'image': validated['image'],
-          'url': (validated['url'] as String).isNotEmpty ? validated['url'] : ProductUrlService.generateProductUrl(product),
+          'url': (validated['url'] as String).isNotEmpty
+              ? validated['url']
+              : ProductUrlService.generateProductUrl(product),
           'source': product['source'] ?? 'Amazon',
           'categories': product['categories'] ?? [],
-          // FIX CRASH: matchScore peut être int ou double
           'match': (product['_matchScore'] is int
               ? product['_matchScore'] as int
-              : (product['_matchScore'] is double ? (product['_matchScore'] as double).toInt() : 0)).clamp(0, 100),
+              : (product['_matchScore'] is double
+                  ? (product['_matchScore'] as double).toInt()
+                  : 0))
+              .clamp(0, 100),
         };
       }).toList();
 
-      AppLogger.debug(
-      // #FIX-10a: produits avec image en premier, puis par score de match
+      // Trier : produits avec image en premier, puis par score
       products.sort((a, b) {
         final aHasImage = (a['image']?.toString() ?? '').isNotEmpty ? 0 : 1;
         final bHasImage = (b['image']?.toString() ?? '').isNotEmpty ? 0 : 1;
         if (aHasImage != bHasImage) return aHasImage.compareTo(bHasImage);
         return ((b['match'] as int?) ?? 0).compareTo((a['match'] as int?) ?? 0);
       });
-      '?? ${products.length} produits convertis pour affichage', 'Debug');
 
-      // Sauvegarder les nouveaux IDs dans le cache
-      final newSeenIds = <String>[...seenProductIds.map((id) => id.toString())];
-      for (var product in products) {
-        final productId = product['id']?.toString() ?? '';
-        if (productId.isNotEmpty && !newSeenIds.contains(productId)) {
-          newSeenIds.add(productId);
+      // Sauvegarder les nouveaux IDs dans le cache EN ARRIÈRE-PLAN
+      Future.microtask(() async {
+        final newSeenIds = <String>[...seenProductIds.map((id) => id.toString())];
+        for (var product in products) {
+          final productId = product['id']?.toString() ?? '';
+          if (productId.isNotEmpty && !newSeenIds.contains(productId)) {
+            newSeenIds.add(productId);
+          }
         }
-      }
-      // Limiter à 300 IDs max pour ne pas surcharger
-      if (newSeenIds.length > 300) {
-        newSeenIds.removeRange(0, newSeenIds.length - 300);
-      }
-      await prefs.setStringList('seen_home_product_ids_${_model.activeCategory}', newSeenIds);
-      AppLogger.debug('?? ${newSeenIds.length} produits dans le cache (${products.length} nouveaux ajoutés)', 'Debug');
+        if (newSeenIds.length > 300) {
+          newSeenIds.removeRange(0, newSeenIds.length - 300);
+        }
+        await prefs.setStringList(
+            'seen_home_product_ids_${_model.activeCategory}', newSeenIds);
+      });
 
       if (mounted) {
         setState(() {
           _model.setProducts(products);
           _model.hasMore = products.length >= HomePinterestModel.productsPerPage;
           _model.setLoading(false);
-          _model.clearError(); // Clear any previous errors on success
+          _model.clearError();
         });
       }
     } catch (e) {
-      AppLogger.debug('? Erreur chargement produits: $e', 'Debug');
+      AppLogger.debug('❌ Erreur chargement produits: $e', 'Debug');
 
-      // Parser l'erreur pour extraire des détails utiles
       String errorMessage = 'Erreur de chargement';
       String errorDetails = e.toString();
 
-      // Analyser le type d'erreur
       if (errorDetails.contains('SocketException') || errorDetails.contains('Network')) {
-        errorMessage = '?? Pas de connexion';
-        errorDetails = 'Vérifie ta connexion internet et tire pour rafraéchir.';
+        errorMessage = '📵 Pas de connexion';
+        errorDetails = 'Vérifie ta connexion internet et tire pour rafraîchir.';
       } else if (errorDetails.contains('firebase') || errorDetails.contains('Firestore')) {
-        errorMessage = '?? Erreur Firebase';
+        errorMessage = '⚠️ Erreur Firebase';
         errorDetails = 'Impossible de charger les produits depuis la base de données. Réessaye plus tard.';
       } else {
-        errorMessage = '?? Erreur de chargement';
+        errorMessage = '🔄 Erreur de chargement';
         errorDetails = 'Une erreur est survenue lors du chargement des produits.';
       }
 

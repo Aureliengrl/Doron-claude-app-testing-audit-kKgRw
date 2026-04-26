@@ -14,6 +14,18 @@ class FirebaseDataService {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
   static final FirebaseStorage _storage = FirebaseStorage.instance;
 
+  // ─── Cache mémoire (TTL 5 min) pour éviter les allers-retours Firestore ───
+  static Map<String, dynamic>? _profileTagsCache;
+  static DateTime? _profileTagsCacheTime;
+  static const _profileTagsTtl = Duration(minutes: 5);
+
+  /// Invalide le cache des profile tags (appeler au logout / update profil)
+  static void invalidateProfileTagsCache() {
+    _profileTagsCache = null;
+    _profileTagsCacheTime = null;
+    AppLogger.info('Profile tags cache invalidated', 'Firebase');
+  }
+
   /// Retourne l'ID de l'utilisateur connecté
   static String? get currentUserId => _auth.currentUser?.uid;
 
@@ -1145,15 +1157,31 @@ class FirebaseDataService {
     }
   }
 
-  /// Charge les tags du profil utilisateur
+  /// Charge les tags du profil utilisateur.
+  /// ✅ CACHE MÉMOIRE (TTL 5 min) — évite un aller-retour Firestore à chaque rechargement.
   static Future<Map<String, dynamic>?> loadUserProfileTags() async {
+    // ── Cache hit ? ──────────────────────────────────────────────────────────
+    if (_profileTagsCache != null && _profileTagsCacheTime != null) {
+      final age = DateTime.now().difference(_profileTagsCacheTime!);
+      if (age < _profileTagsTtl) {
+        AppLogger.debug('⚡ Profile tags from cache (${age.inSeconds}s old)', 'Firebase');
+        return _profileTagsCache;
+      }
+    }
+
     // Essayer Firebase d'abord si connecté
     if (isLoggedIn) {
       try {
-        final doc = await _firestore.collection('users').doc(currentUserId).get();
+        // GetOptions.serverAndCache → utilise le cache Firestore SDK si dispo
+        final doc = await _firestore
+            .collection('users')
+            .doc(currentUserId)
+            .get(const GetOptions(source: Source.serverAndCache));
         if (doc.exists && doc.data()?['profile']?['tags'] != null) {
           AppLogger.firebase('Loaded user profile tags from Firebase');
-          return doc.data()!['profile']['tags'] as Map<String, dynamic>;
+          _profileTagsCache = doc.data()!['profile']['tags'] as Map<String, dynamic>;
+          _profileTagsCacheTime = DateTime.now();
+          return _profileTagsCache;
         }
       } catch (e) {
         AppLogger.error('Error loading user profile tags from Firebase', 'Firebase', e);
@@ -1166,7 +1194,10 @@ class FirebaseDataService {
       final localData = prefs.getString(_key('user_profile_tags'));
       if (localData != null) {
         AppLogger.success('Loaded user profile tags from local storage', 'Firebase');
-        return json.decode(localData) as Map<String, dynamic>;
+        final data = json.decode(localData) as Map<String, dynamic>;
+        _profileTagsCache = data;
+        _profileTagsCacheTime = DateTime.now();
+        return data;
       }
     } catch (e) {
       AppLogger.error('Error loading user profile tags locally', 'Firebase', e);
