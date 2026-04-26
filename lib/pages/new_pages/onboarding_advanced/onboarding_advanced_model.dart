@@ -4,7 +4,6 @@ import 'dart:math' as math;
 import '/services/firebase_data_service.dart';
 import '/services/first_time_service.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingAdvancedModel {
   int currentStep = 0;

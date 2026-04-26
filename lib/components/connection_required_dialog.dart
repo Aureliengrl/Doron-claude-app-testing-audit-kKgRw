@@ -4,8 +4,6 @@ import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '/components/liquid_glass.dart';
 
 /// Dialog demandant la connexion avec liste des bénéfices
 class ConnectionRequiredDialog extends StatelessWidget {

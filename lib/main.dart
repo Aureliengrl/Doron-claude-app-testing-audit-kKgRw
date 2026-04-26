@@ -11,7 +11,6 @@ import 'dart:async';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'auth/firebase_auth/firebase_user_provider.dart';
@@ -23,10 +22,8 @@ import '/theme/doron_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/internationalization.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'flutter_flow/nav/nav.dart';
 import 'package:showcaseview/showcaseview.dart';
-import '/components/connection_required_dialog.dart';
 import '/components/modern_nav_bar.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import '/components/offline_banner.dart';

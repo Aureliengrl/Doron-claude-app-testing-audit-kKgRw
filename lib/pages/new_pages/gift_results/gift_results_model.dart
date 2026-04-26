@@ -2,8 +2,6 @@
 import 'package:flutter/material.dart';
 import '/services/openai_onboarding_service.dart';
 import '/services/firebase_data_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 
 class GiftResultsModel {
   String activeFilter = 'Tous';

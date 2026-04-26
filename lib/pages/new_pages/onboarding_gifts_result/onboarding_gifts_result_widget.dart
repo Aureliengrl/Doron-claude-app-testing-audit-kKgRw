@@ -9,8 +9,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:confetti/confetti.dart';
-import 'package:spring/spring.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '/services/product_matching_service.dart';
 import '/services/firebase_data_service.dart';
 import '/services/product_url_service.dart';

@@ -1,21 +1,10 @@
 import '/backend/api_requests/api_calls.dart';
 import '/backend/backend.dart';
 import '/backend/schema/structs/index.dart';
-import '/flutter_flow/flutter_flow_animations.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/pages/pages/components/open_ai_result_bottom_sheet/open_ai_result_bottom_sheet_widget.dart';
 import '/pages/pages/components/text_field_with_heading/text_field_with_heading_widget.dart';
-import 'dart:math';
-import 'dart:ui';
-import '/custom_code/actions/index.dart' as actions;
 import 'gift_generator_widget.dart' show GiftGeneratorWidget;
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class GiftGeneratorModel extends FlutterFlowModel<GiftGeneratorWidget> {
   ///  Local state fields for this page.

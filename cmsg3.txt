@@ -1,0 +1,9 @@
+chore: supprimer 270 imports inutilises dans 62 fichiers
+
+Nettoyage automatique via flutter analyze + auto_clean_imports.js.
+Avant: 450 warnings unused_import
+Apres: 0 warnings unused_import
+Avant: 1876 issues
+Apres: 1606 issues (uniquement info/style)
+
+Zero erreurs de compilation dans lib/ production code.

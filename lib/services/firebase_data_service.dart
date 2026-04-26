@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -7,7 +6,6 @@ import 'dart:convert';
 import 'package:uuid/uuid.dart';
 import '/utils/app_logger.dart';
 import '/backend/backend.dart';
-import '/auth/firebase_auth/auth_util.dart';
 import '/services/optimistic_image_uploader.dart';
 
 /// Service pour gérer les données Firebase

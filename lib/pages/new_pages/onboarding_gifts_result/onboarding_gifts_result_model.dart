@@ -1,5 +1,4 @@
 ﻿import '/utils/app_logger.dart';
-import 'package:flutter/material.dart';
 
 /// Model pour gérer l'état de la page de résultats cadeaux post-onboarding
 class OnboardingGiftsResultModel {

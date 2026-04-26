@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '/components/liquid_glass.dart';
 import '/services/store_finder_service.dart';
 import '/utils/app_logger.dart';
 

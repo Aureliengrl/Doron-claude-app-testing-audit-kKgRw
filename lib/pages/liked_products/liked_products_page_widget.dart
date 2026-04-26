@@ -5,15 +5,11 @@ import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '/backend/backend.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/components/liquid_glass.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
-import '/components/wishlist_picker_sheet.dart';
-import '/components/product_detail_modal.dart';
 import '/components/shared_product_card.dart';
 
 class LikedProductsPageWidget extends StatefulWidget {

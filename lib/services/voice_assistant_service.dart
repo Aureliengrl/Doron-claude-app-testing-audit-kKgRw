@@ -1,6 +1,5 @@
 ﻿import '/utils/app_logger.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
-import 'package:flutter/foundation.dart';
 
 /// Service pour gérer la reconnaissance vocale
 class VoiceAssistantService {
