@@ -109,7 +109,7 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            const Icon(IconlyLight.danger, color: Colors.redAccent, size: 22),
+            const Icon(Icons.error_outline, color: Colors.redAccent, size: 22),
             const SizedBox(width: 8),
             Expanded(
               child: Text(

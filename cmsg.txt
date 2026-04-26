@@ -1,8 +1,0 @@
-fix: audit 2 - coherences et bugs critiques
-
-- Route /auth (inexistante) -> /authentification dans user_profile [CRASH]
-- Route /search (inexistante) -> /search-page dans voice_results [CRASH]
-- Route /HomePinterest (mauvaise casse) -> /home-pinterest dans gala_ticket + ticket_success [CRASH]
-- Null crash: (participants as List) -> (participants as List?) dans friend_service [CRASH]
-- Prix 0 affiche maintenant Prix non renseigne dans voice_results (coherence)
-- Syntaxe Text() widget corrigee dans voice_results

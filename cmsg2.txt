@@ -1,0 +1,7 @@
+fix: flutter analyze - zero compilation errors in lib production code
+
+Corrections:
+- IconlyLight.danger (undefined getter) -> Icons.error_outline dans authentification_widget
+- analysis_options.yaml: exclusion de test/, scripts/, temp_clone_lib/
+- pubspec.yaml: ajout du package test en dev_dependencies
+- test/matching: _topN() calls avec argument n manquant corriges

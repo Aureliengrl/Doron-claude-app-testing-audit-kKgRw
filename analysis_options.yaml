@@ -27,6 +27,9 @@ analyzer:
     - "lib/backend/**"            # FlutterFlow generated backend
     - "lib/flutter_flow/**"       # FlutterFlow generated UI utilities
     - "lib/custom_code/**"        # FlutterFlow custom actions (legacy)
+    - "test/**"                   # Test files use package:test which needs dart test runner
+    - "temp_clone_lib/**"         # Temp scripts directory
+    - "scripts/**"                # CLI/populate scripts (not production app code)
 
 linter:
   rules:

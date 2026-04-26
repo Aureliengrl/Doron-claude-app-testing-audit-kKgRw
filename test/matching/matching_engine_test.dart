@@ -348,7 +348,7 @@ void main() {
         'gender_homme', 'cat_tech', 'budget_200+',
         'passion_musique', 'passion_tech', 'age_adulte', 'style_moderne'
       };
-      final top5 = _topN(tags, {});
+      final top5 = _topN(tags, {}, 5);
       print('🎯 Homme 32 musique+tech 200€+: $top5');
       expect(top5.any((n) => n.contains('AirPods') || n.contains('Sony')), isTrue);
     });
@@ -358,7 +358,7 @@ void main() {
         'gender_mixte', 'cat_tendances', 'budget_0_50',
         'passion_jeuxvideo', 'passion_tech', 'age_enfant'
       };
-      final top5 = _topN(tags, {});
+      final top5 = _topN(tags, {}, 5);
       print('🎯 Enfant 10 ans jeux 50€: $top5');
       expect(top5.any((n) => n.contains('Lego') || n.contains('Science Kit')), isTrue);
     });
@@ -377,7 +377,7 @@ void main() {
         'gender_homme', 'cat_mode', 'budget_100_200',
         'passion_sport', 'passion_mode', 'style_streetwear', 'age_ado'
       };
-      final top5 = _topN(tags, {});
+      final top5 = _topN(tags, {}, 5);
       print('🎯 Homme 20 streetwear 100€: $top5');
       expect(top5.any((n) => n.contains('Nike') || n.contains('Gourde')), isTrue);
     });
@@ -387,7 +387,7 @@ void main() {
         'gender_mixte', 'cat_food', 'budget_50_100',
         'passion_cuisine', 'context_amoureux', 'age_adulte'
       };
-      final top5 = _topN(tags, {});
+      final top5 = _topN(tags, {}, 5);
       print('🎯 Couple cuisine 50-100€: $top5');
       expect(top5.any((n) => n.contains('Marcolini') || n.contains('Bougie')), isTrue);
     });
