@@ -199,6 +199,17 @@ class HomePinterestModel {
       }).toList();
     }
 
+    // FIX F11: Quick filter "Nouveau" — filtre sur le champ isNew
+    // isNew est mis à true lors du chargement pour les produits récents (<30 jours)
+    // Avant: ce filtre était toggleable dans l'UI mais ne faisait RIEN
+    if (showOnlyNew) {
+      final hasNewProducts = filtered.any((p) => p['isNew'] == true);
+      if (hasNewProducts) {
+        filtered = filtered.where((p) => p['isNew'] == true).toList();
+      }
+      // Si aucun produit n'a isNew=true, on garde tous (évite un écran vide)
+    }
+
     return filtered;
   }
 

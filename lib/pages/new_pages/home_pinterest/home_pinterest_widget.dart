@@ -329,14 +329,16 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         setState(() { _model.setSections([]); });
       }
 
-      // Charger la liste des IDs de produits déjà vus depuis le cache
+      // FIX F1: Garder les IDs Firebase en String (pas de conversion int.tryParse)
+      // Les IDs Firebase sont des Strings (ex: "AbCdEf123") — la conversion en int
+      // retournait 0 pour tous les IDs non numériques → l'anti-doublon ne fonctionnait pas
       final seenProductIds = prefs
           .getStringList('seen_home_product_ids_${_model.activeCategory}')
-          ?.map((s) => int.tryParse(s) ?? 0)
-          .toList() ?? [];
+          ?? [];
 
-      // Déterminer le mode de filtrage selon la catégorie
-      final filterMode = _model.activeCategory == 'Pour toi' ? 'discovery' : 'home';
+      // FIX F4: 'Pour toi' utilise 'home' (genre strict) et non 'discovery' (aucun filtre)
+      // 'discovery' est réservé à la page Inspirations/Tiktok
+      const filterMode = 'home';
 
       final rawProducts = await ProductMatchingService.getPersonalizedProducts(
         userTags: tagsToUse,
@@ -361,12 +363,14 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
               : ProductUrlService.generateProductUrl(product),
           'source': product['source'] ?? 'Amazon',
           'categories': product['categories'] ?? [],
-          'match': (product['_matchScore'] is int
-              ? product['_matchScore'] as int
-              : (product['_matchScore'] is double
-                  ? (product['_matchScore'] as double).toInt()
-                  : 0))
-              .clamp(0, 100),
+          // FIX F5: Score normalisé sur base 400 (150 bonus + ~250 max bonus)
+          // Avant: clamp(0,100) -> tous les bons produits à 100%, différenciation perdue
+          'match': (() {
+            final raw = product['_matchScore'] is int
+                ? (product['_matchScore'] as int).toDouble()
+                : (product['_matchScore'] is double ? product['_matchScore'] as double : 150.0);
+            return ((raw / 400.0) * 100).clamp(0, 100).toInt();
+          })(),
         };
       }).toList();
 
@@ -379,8 +383,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       });
 
       // Sauvegarder les nouveaux IDs dans le cache EN ARRIÈRE-PLAN
+      // FIX F1: seenProductIds est déjà List<String> — pas besoin de .toString()
       Future.microtask(() async {
-        final newSeenIds = <String>[...seenProductIds.map((id) => id.toString())];
+        final newSeenIds = <String>[...seenProductIds];
         for (var product in products) {
           final productId = product['id']?.toString() ?? '';
           if (productId.isNotEmpty && !newSeenIds.contains(productId)) {
@@ -441,21 +446,22 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     try {
       _model.incrementPage();
 
-      // Charger les tags utilisateur (nouvelle architecture)
-      final userProfileTags = await FirebaseDataService.loadUserProfileTags();
+      // FIX F6: Utiliser le cache _cachedUserTags en priorité — évite un appel Firebase
+      // à chaque scroll infini (économise ~50ms de latence par page supplémentaire)
+      final userProfileTags = _cachedUserTags ?? await FirebaseDataService.loadUserProfileTags();
       final prefs = await SharedPreferences.getInstance();
-      final seenProductIds = prefs.getStringList('seen_home_product_ids_${_model.activeCategory}')?.map((s) => int.tryParse(s) ?? 0).toList() ?? [];
+      // FIX F1: IDs gardés en String directement — int.tryParse retournait 0 pour les IDs Firebase
+      final seenProductIds = prefs.getStringList('seen_home_product_ids_${_model.activeCategory}') ?? [];
 
-      // ?? Générer plus de produits via ProductMatchingService (Firebase-first)
       final rawProducts = await ProductMatchingService.getPersonalizedProducts(
         userTags: userProfileTags ?? {},
         count: HomePinterestModel.productsPerPage,
         category: _model.activeCategory != 'Pour toi' ? _model.activeCategory : null,
         excludeProductIds: seenProductIds,
-        filteringMode: "home", // Mode HOME: Strict sur sexe (basé sur soi-même)
+        filteringMode: 'home', // Mode HOME: strict sur sexe
       );
 
-      // Convertir au format attendu, normaliser et ajouter URLs intelligentes
+      // Convertir au format attendu
       final products = rawProducts.map((product) {
         final validated = ProductValidatorService.normalize(product);
         return {
@@ -467,15 +473,18 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           'url': (validated['url'] as String).isNotEmpty ? validated['url'] : ProductUrlService.generateProductUrl(product),
           'source': product['source'] ?? 'Amazon',
           'categories': product['categories'] ?? [],
-          // FIX CRASH: matchScore peut être int ou double
-          'match': (product['_matchScore'] is int
-              ? product['_matchScore'] as int
-              : (product['_matchScore'] is double ? (product['_matchScore'] as double).toInt() : 0)).clamp(0, 100),
+          // FIX F5: Score normalisé /400 (base = 150 + ~250 bonus max)
+          'match': (() {
+            final raw = product['_matchScore'] is int
+                ? (product['_matchScore'] as int).toDouble()
+                : (product['_matchScore'] is double ? product['_matchScore'] as double : 150.0);
+            return ((raw / 400.0) * 100).clamp(0, 100).toInt();
+          })(),
         };
       }).toList();
 
-      // Mettre à jour le cache
-      final newSeenIds = <String>[...seenProductIds.map((id) => id.toString())];
+      // FIX F1: seenProductIds est List<String> — plus besoin de .toString()
+      final newSeenIds = <String>[...seenProductIds];
       for (var product in products) {
         final productId = product['id']?.toString() ?? '';
         if (productId.isNotEmpty && !newSeenIds.contains(productId)) {
@@ -495,9 +504,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         });
       }
 
-      AppLogger.debug('? Chargé ${products.length} produits supplémentaires (page ${_model.currentPage})', 'Debug');
+      AppLogger.debug('✅ Chargé ${products.length} produits supplémentaires (page ${_model.currentPage})', 'Debug');
     } catch (e) {
-      AppLogger.debug('? Erreur chargement plus de produits: $e', 'Debug');
+      AppLogger.debug('❌ Erreur chargement plus de produits: $e', 'Debug');
       if (mounted) {
         setState(() {
           _model.setLoadingMore(false);

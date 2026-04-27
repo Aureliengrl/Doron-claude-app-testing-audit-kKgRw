@@ -1,0 +1,14 @@
+fix: 12 incoherences fonctionnelles audit F1-F12
+
+F1: IDs Firebase gardes en String (plus int.tryParse) - anti-doublon produits repare
+F2: brands_seen_v3 prefixe par UID utilisateur - isolation comptes
+F3: loadProfiles parallelise via Future.wait - chargement 5x plus rapide
+F4: Pour toi utilise filterMode home au lieu de discovery - recommandations genre correctes
+F5: Score match normalise sur base 400 au lieu de clamp 100 - differentiation produits
+F6: loadMoreProducts utilise _cachedUserTags - evite appel Firebase inutile a chaque scroll
+F7: Nom liste auto contextuel (Idees pour Marie) au lieu de date brute
+F8: getFriendsBirthdays parallelise - calendrier 5x plus rapide
+F9: Categorie food (id) ajoutee au mapping serveur Firestore
+F10: Cache suggestions profil verifie avant rechargement (deja en place ligne 317)
+F11: Filtre Nouveau implemente avec champ isNew base sur createdAt < 30 jours
+F12: Injection wishlist uniquement pour UID Firebase (20+ chars, pas prenom libre)

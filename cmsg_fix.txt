@@ -1,1 +1,0 @@
-fix audit bugs: securite cache logout, icones invalides, off-by-one profil, soft-delete, pull-to-refresh search, GetOptions anon, calendar profil

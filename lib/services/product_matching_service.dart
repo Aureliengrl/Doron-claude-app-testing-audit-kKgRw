@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 import '/utils/app_logger.dart';
@@ -90,12 +91,14 @@ class ProductMatchingService {
       AppLogger.debug('📋 User tags complets: $userTags', 'Matching');
       AppLogger.info('🚫 Exclusion de ${excludeProductIds?.length ?? 0} produits', 'Matching');
 
-      // 🎲 Charger brands vues depuis SharedPreferences (anti-doublon)
+      // FIX F2: clé isolée par UID — évite que les marques vues par l'utilisateur A
+      // influencent les recommandations de l'utilisateur B sur le même appareil
       List<String> effectiveBrandsSeen = brandsSeen ?? [];
       if (effectiveBrandsSeen.isEmpty) {
         try {
+          final uid = FirebaseAuth.instance.currentUser?.uid ?? 'anon';
           final prefs = await SharedPreferences.getInstance();
-          effectiveBrandsSeen = prefs.getStringList('brands_seen_v3') ?? [];
+          effectiveBrandsSeen = prefs.getStringList('brands_seen_v3_$uid') ?? [];
           AppLogger.debug('🏷️ Marques déjà vues (${effectiveBrandsSeen.length}): $effectiveBrandsSeen', 'Matching');
         } catch (e) {
           AppLogger.warning('⚠️ Impossible de charger brands_seen: $e', 'Matching');
@@ -132,14 +135,15 @@ class ProductMatchingService {
         AppLogger.info('👤 Genre: $genderFilter (scoring côté client)', 'Matching');
       }
 
-      // Convertir la catégorie UI en tag Firebase pour filtrage serveur
+      // FIX F9: La catégorie 'food' (id) ne contient pas 'Food' (nom UI) → le filtre serveur
+      // n'était jamais activé, 300 docs chargés sans filtrage Firebase
       if (category != null && category != 'Pour toi' && category != 'all') {
-        if (category.contains('Tendances')) serverCategoryTag = 'cat_tendances';
-        else if (category.contains('Tech')) serverCategoryTag = 'cat_tech';
-        else if (category.contains('Mode')) serverCategoryTag = 'cat_mode';
-        else if (category.contains('Maison')) serverCategoryTag = 'cat_maison';
-        else if (category.contains('Beauté') || category.contains('Beaute')) serverCategoryTag = 'cat_beaute';
-        else if (category.contains('Food') || category.contains('Gastronomie')) serverCategoryTag = 'cat_food';
+        if (category.contains('Tendances') || category == 'trending') serverCategoryTag = 'cat_tendances';
+        else if (category.contains('Tech') || category == 'tech') serverCategoryTag = 'cat_tech';
+        else if (category.contains('Mode') || category == 'fashion') serverCategoryTag = 'cat_mode';
+        else if (category.contains('Maison') || category == 'home') serverCategoryTag = 'cat_maison';
+        else if (category.contains('Beauté') || category.contains('Beaute') || category == 'beauty') serverCategoryTag = 'cat_beaute';
+        else if (category.contains('Food') || category.contains('Gastronomie') || category == 'food') serverCategoryTag = 'cat_food';
         if (serverCategoryTag != null) {
           AppLogger.firebase('📁 Filtrage Firebase côté serveur: tags arrayContains $serverCategoryTag');
         }
@@ -198,27 +202,24 @@ class ProductMatchingService {
       AppLogger.success('✅ ${allProducts.length} produits chargés depuis Firebase', 'Matching');
 
 
-      // =====================================================================
-      // 4️⃣ INJECTION DES WISHLISTS (Si un username Doron est fourni)
-      // =====================================================================
-      final personIdentifier = userTags['personIdentifier'] ?? userTags['personName']; 
-      if (personIdentifier != null && personIdentifier.toString().isNotEmpty) {
-        // On essaie de récupérer la wishlist pour ce username/name
+      // FIX F12: N'injecter la wishlist QUE si personIdentifier est un UID Firebase
+      // (format: 20-28 chars alphanumériques). Un prénom libre comme "Marie" peut
+      // matcher n'importe quel utilisateur Doron nommé Marie, y compris des inconnus.
+      final personIdentifier = userTags['personUid'] ?? userTags['personIdentifier'];
+      final looksLikeUid = personIdentifier != null &&
+          personIdentifier.toString().length >= 20 &&
+          !personIdentifier.toString().contains(' ');
+      if (looksLikeUid) {
         final wishlistProducts = await _fetchWishlistByUsername(personIdentifier.toString());
         if (wishlistProducts.isNotEmpty) {
-           AppLogger.info('🎁 Addition de ${wishlistProducts.length} produits provenant de la wishlist de $personIdentifier', 'Matching');
-           
-           // Pour éviter les doublons avec Firebase
+           AppLogger.info('🎁 Wishlist de $personIdentifier: ${wishlistProducts.length} produits injectés', 'Matching');
            final existingIds = allProducts.map((p) => p['id']).toSet();
            for (final wp in wishlistProducts) {
              if (!existingIds.contains(wp['id'])) {
                allProducts.add(wp);
              } else {
-               // Mettre à jour le produit existant pour lui ajouter le flag
                final index = allProducts.indexWhere((p) => p['id'] == wp['id']);
-               if (index != -1) {
-                 allProducts[index]['isFromRecipientWishlist'] = true;
-               }
+               if (index != -1) allProducts[index]['isFromRecipientWishlist'] = true;
              }
            }
         }
@@ -450,7 +451,7 @@ class ProductMatchingService {
         AppLogger.info('📁 Filtrage catégorie "$category": ${categoryFilteredCount} produits exclus, ${selectedProducts.length} produits retenus', 'Matching');
       }
 
-      // 💾 Sauvegarder les top-5 marques vues → anti-doublon session suivante
+      // FIX F2: clé isolée par UID pour ne pas polluer les autres comptes
       try {
         final seenBrands = selectedProducts
             .take(10)
@@ -460,9 +461,10 @@ class ProductMatchingService {
             .take(5)
             .toList();
         if (seenBrands.isNotEmpty) {
+          final uid = FirebaseAuth.instance.currentUser?.uid ?? 'anon';
           final prefs = await SharedPreferences.getInstance();
-          await prefs.setStringList('brands_seen_v3', seenBrands);
-          AppLogger.debug('💾 Marques sauvegardées pour prochaine session: $seenBrands', 'Matching');
+          await prefs.setStringList('brands_seen_v3_$uid', seenBrands);
+          AppLogger.debug('💾 Marques sauvegardées (uid=$uid): $seenBrands', 'Matching');
         }
       } catch (e) {
         AppLogger.warning('⚠️ Impossible de sauvegarder brands_seen: $e', 'Matching');
@@ -511,13 +513,31 @@ class ProductMatchingService {
 
       for (var product in selectedProducts) {
         final imageUrl = _extractImageUrl(product);
-        product['image'] = imageUrl; // Ajouter/remplacer le champ 'image' standardisé
+        product['image'] = imageUrl;
 
         if (imageUrl.contains('placeholder')) {
           imagesPlaceholder++;
         } else {
           imagesFound++;
         }
+
+        // FIX F11: Marquer les produits récents (< 30 jours) comme isNew
+        // pour que le filtre "Nouveau" de la page Home soit fonctionnel
+        try {
+          final createdAt = product['createdAt'];
+          if (createdAt != null) {
+            DateTime? createdDate;
+            if (createdAt is DateTime) {
+              createdDate = createdAt;
+            } else if (createdAt.runtimeType.toString().contains('Timestamp')) {
+              createdDate = (createdAt as dynamic).toDate() as DateTime;
+            }
+            if (createdDate != null) {
+              final age = DateTime.now().difference(createdDate).inDays;
+              product['isNew'] = age <= 30;
+            }
+          }
+        } catch (_) {}
       }
 
       AppLogger.success('🖼️ Images extraites: $imagesFound URLs valides, $imagesPlaceholder placeholders', 'Matching');

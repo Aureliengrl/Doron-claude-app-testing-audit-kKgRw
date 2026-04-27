@@ -1,4 +1,4 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import '/services/firebase_data_service.dart';
 import '/services/product_matching_service.dart';
@@ -31,18 +31,17 @@ class SearchPageModel {
       isLoading = true;
       errorMessage = null;
 
-      // Nouvelle architecture: charger les personnes depuis la collection people
+      // Charger les personnes depuis la collection people
       final people = await FirebaseDataService.loadPeople();
 
-      // Transformer les personnes en format de profils pour la UI
-      profiles = [];
-      for (var person in people) {
+      // FIX F3: Traiter TOUS les profils en parallèle avec Future.wait
+      // Avant: boucle séquentielle → 5 profils × 3-6s = 15-30s de chargement
+      // Après: toutes les générations lancées simultanément → ~3-6s max
+      final profileFutures = people.map((person) async {
         final personId = person['id'] as String;
         final tags = person['tags'] as Map<String, dynamic>? ?? {};
         final meta = person['meta'] as Map<String, dynamic>? ?? {};
 
-        // Extraire le nom du destinataire depuis les tags
-        // Utiliser 'name' (prénom réel) ou 'personName' s'il existe, sinon fallback sur 'recipient'
         final recipientName = tags['name'] as String? ??
                                tags['personName'] as String? ??
                                tags['recipient'] as String? ??
@@ -50,18 +49,14 @@ class SearchPageModel {
         final relation = tags['recipient'] as String? ?? tags['relation'] as String? ?? 'Proche';
         final occasion = tags['occasion'] as String? ?? 'Occasion';
 
-        // Générer initiales et couleur (basées sur le prénom réel et la relation)
         final initials = _generateInitials(recipientName, relation);
         final color = _generateColor(recipientName);
 
-        // FIX: Vérifier si c'est la première génération (isPendingFirstGen)
         final isPendingFirstGen = meta['isPendingFirstGen'] == true;
-
         List<Map<String, dynamic>> gifts = [];
 
         if (isPendingFirstGen) {
-          // 🎯 PREMIÈRE GÉNÉRATION: Générer les cadeaux directement
-          AppLogger.debug('🔄 Génération de cadeaux pour $recipientName (isPendingFirstGen=true)', 'Debug');
+          AppLogger.debug('🔄 Génération cadeaux pour $recipientName (isPendingFirstGen=true)', 'Debug');
           try {
             final rawGifts = await ProductMatchingService.getPersonalizedProducts(
               userTags: tags,
@@ -69,7 +64,6 @@ class SearchPageModel {
               filteringMode: "person",
             );
 
-            // Convertir au format attendu et ajouter URLs intelligentes
             gifts = rawGifts.map((product) {
               return {
                 'id': product['id'],
@@ -80,63 +74,76 @@ class SearchPageModel {
                 'url': ProductUrlService.generateProductUrl(product),
                 'source': product['source'] ?? 'Amazon',
                 'categories': product['categories'] ?? [],
-                'match': (product['_matchScore'] is int
-                    ? product['_matchScore'] as int
-                    : (product['_matchScore'] is double ? (product['_matchScore'] as double).toInt() : 0)).clamp(0, 100),
+                'match': (() {
+                  final raw = product['_matchScore'] is int
+                      ? (product['_matchScore'] as int).toDouble()
+                      : (product['_matchScore'] is double ? product['_matchScore'] as double : 150.0);
+                  return ((raw / 400.0) * 100).clamp(0, 100).toInt();
+                })(),
               };
             }).toList();
 
             AppLogger.debug('✅ ${gifts.length} cadeaux générés pour $recipientName', 'Debug');
 
-            // Auto-sauvegarder pour éviter de regénérer à chaque fois
             if (gifts.isNotEmpty) {
               try {
-                final listName = 'Liste ${DateTime.now().day}/${DateTime.now().month}';
+                // FIX F7: Nom de liste contextuel au lieu d'une date brute
+                // Avant: 'Liste 27/4' — aucun contexte sur la personne ou l'occasion
+                final listName = 'Idées pour $recipientName';
                 await FirebaseDataService.saveGiftListForPerson(
                   personId: personId,
                   gifts: gifts,
                   listName: listName,
                 );
                 await FirebaseDataService.updatePersonPendingFlag(personId, false);
-                AppLogger.debug('💾 Auto-sauvegarde effectuée pour $recipientName', 'Debug');
+                AppLogger.debug('💾 Auto-sauvegarde "$listName" effectuée', 'Debug');
               } catch (e) {
                 AppLogger.debug('⚠️ Erreur auto-save (non-bloquant): $e', 'Debug');
               }
             }
           } catch (e) {
             AppLogger.debug('❌ Erreur génération cadeaux pour $recipientName: $e', 'Debug');
-            // Fallback: essayer de charger depuis Firebase quand même
             final giftListData = await FirebaseDataService.loadLatestGiftListForPerson(personId);
             gifts = (giftListData?['gifts'] as List? ?? []).cast<Map<String, dynamic>>();
           }
         } else {
-          // Charger normalement depuis Firebase (personne déjà générée)
           final giftListData = await FirebaseDataService.loadLatestGiftListForPerson(personId);
           gifts = (giftListData?['gifts'] as List? ?? []).cast<Map<String, dynamic>>();
           AppLogger.debug('📦 ${gifts.length} cadeaux chargés depuis Firebase pour $recipientName', 'Debug');
         }
 
-        // Mettre en cache les cadeaux
-        personGifts[personId] = gifts;
+        return {
+          'profile': {
+            'id': personId,
+            'name': recipientName,
+            'initials': initials,
+            'color': color,
+            'relation': relation,
+            'occasion': occasion,
+            'tags': tags,
+            'meta': meta,
+          },
+          'personId': personId,
+          'gifts': gifts,
+        };
+      }).toList();
 
-        profiles.add({
-          'id': personId,
-          'name': recipientName,
-          'initials': initials,
-          'color': color,
-          'relation': relation,
-          'occasion': occasion,
-          'tags': tags,
-          'meta': meta,
-        });
+      // Attendre que tous les profils soient traités en parallèle
+      final results = await Future.wait(profileFutures, eagerError: false);
+
+      // Reconstruire les listes dans l'ordre original
+      profiles = [];
+      for (final result in results) {
+        final personId = result['personId'] as String;
+        final gifts = result['gifts'] as List<Map<String, dynamic>>;
+        personGifts[personId] = gifts;
+        profiles.add(result['profile'] as Map<String, dynamic>);
       }
 
-      // Sélectionner le premier profil par défaut s'il y en a
+      // Sélectionner le premier profil par défaut
       if (profiles.isNotEmpty && selectedProfileId == null) {
-        // Utiliser l'ID du premier profil (normalisé en int)
         selectedProfileId = _normalizeId(profiles[0]['id']);
 
-        // Charger les favoris de cette personne (ne pas bloquer si ça échoue)
         final personId = profiles[0]['id'].toString();
         try {
           await loadPersonFavorites(personId);
@@ -144,10 +151,8 @@ class SearchPageModel {
           AppLogger.debug('⚠️ Could not load favorites (non-blocking): $e', 'Debug');
         }
 
-        // Définir le contexte actuel
         await FirebaseDataService.setCurrentPersonContext(personId);
 
-        // Charger les suggestions pour cette personne (ne pas bloquer si ça échoue)
         if (personGifts[personId]?.isNotEmpty == true) {
           try {
             await loadSuggestionsForPerson(personId);
@@ -158,7 +163,7 @@ class SearchPageModel {
       }
 
       isLoading = false;
-      AppLogger.debug('✅ Loaded ${profiles.length} people with their gift lists', 'Debug');
+      AppLogger.debug('✅ ${profiles.length} profils chargés en parallèle', 'Debug');
     } catch (e) {
       AppLogger.debug('❌ Error loading profiles: $e', 'Debug');
       isLoading = false;

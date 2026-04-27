@@ -49,24 +49,28 @@ class BirthdayService {
     try {
       final userDoc = await _db.collection('users').doc(uid).get();
       final friends = List<String>.from(userDoc.data()?['friends'] ?? []);
-      final result = <Map<String, dynamic>>[];
+      if (friends.isEmpty) return [];
 
-      for (final friendUid in friends) {
-        try {
-          final doc = await _db.collection('users').doc(friendUid).get();
-          if (!doc.exists) continue;
-          final data = doc.data()!;
-          final b = data['birthday'] as Map<String, dynamic>?;
-          if (b == null) continue;
-          result.add({
-            'uid': friendUid,
-            'name': data['first_name'] ?? data['display_name'] ?? 'Ami',
-            'handle': data['handle'] ?? '',
-            'photoUrl': data['photoUrl'] ?? '',
-            'day': (b['day'] as num).toInt(),
-            'month': (b['month'] as num).toInt(),
-          });
-        } catch (_) {}
+      // FIX F8: Parallélisation — avant: N requêtes séquentielles (1 par ami)
+      // Après: toutes lancées simultanément → temps = max(1 requête) au lieu de somme
+      final docs = await Future.wait(
+        friends.map((friendUid) => _db.collection('users').doc(friendUid).get()),
+      );
+
+      final result = <Map<String, dynamic>>[];
+      for (final doc in docs) {
+        if (!doc.exists) continue;
+        final data = doc.data()!;
+        final b = data['birthday'] as Map<String, dynamic>?;
+        if (b == null) continue;
+        result.add({
+          'uid': doc.id,
+          'name': data['first_name'] ?? data['display_name'] ?? 'Ami',
+          'handle': data['handle'] ?? '',
+          'photoUrl': data['photoUrl'] ?? '',
+          'day': (b['day'] as num).toInt(),
+          'month': (b['month'] as num).toInt(),
+        });
       }
       return result;
     } catch (_) {
