@@ -207,7 +207,7 @@ class _VoiceGuidedOnboardingWidgetState
                               ),
                               child: Row(
                                 children: [
-                                  Icon(IconlyLight.danger,
+                                  Icon(Icons.error_outline,
                                       color: Colors.red[700], size: 20),
                                   const SizedBox(width: 12),
                                   Expanded(

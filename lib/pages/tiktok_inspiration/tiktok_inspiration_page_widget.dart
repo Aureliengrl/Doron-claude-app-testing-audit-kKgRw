@@ -308,7 +308,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              IconlyLight.danger,
+              Icons.error_outline,
               size: 64,
               color: Colors.red[400],
             ),
@@ -790,7 +790,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(IconlyLight.danger, size: 48, color: Colors.grey[700]),
+                          Icon(Icons.error_outline, size: 48, color: Colors.grey[700]),
                           const SizedBox(height: 8),
                           Text(
                             'Image non disponible',

@@ -47,6 +47,8 @@ class FirebaseDataService {
   static Future<void> clearLocalCache() async {
     final uid = _auth.currentUser?.uid;
     if (uid == null) return;
+    // Invalider le cache mémoire immédiatement (avant le signOut)
+    invalidateProfileTagsCache();
     try {
       final prefs = await SharedPreferences.getInstance();
       final allKeys = prefs.getKeys();

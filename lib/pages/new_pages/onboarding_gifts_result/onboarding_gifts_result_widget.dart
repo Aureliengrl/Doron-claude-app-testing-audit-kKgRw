@@ -577,7 +577,7 @@ class _OnboardingGiftsResultWidgetState
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                IconlyLight.danger,
+                Icons.error_outline,
                 size: 60,
                 color: Colors.red[400],
               ),

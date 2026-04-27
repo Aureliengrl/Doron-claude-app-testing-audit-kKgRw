@@ -522,7 +522,7 @@ class _VoiceResultsPageWidgetState extends State<VoiceResultsPageWidget> {
               color: Colors.red.withOpacity(0.1),
             ),
             child: const Icon(
-              IconlyLight.danger,
+              Icons.error_outline,
               size: 40,
               color: Colors.red,
             ),

@@ -102,7 +102,7 @@ void main() async {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(IconlyLight.danger, color: Colors.white, size: 48),
+                const Icon(Icons.error_outline, color: Colors.white, size: 48),
                 const SizedBox(height: 16),
                 const Text(
                   'ERREUR WIDGET',
@@ -220,7 +220,7 @@ void main() async {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(IconlyLight.danger, color: Colors.white, size: 48),
+                  const Icon(Icons.error_outline, color: Colors.white, size: 48),
                   const SizedBox(height: 16),
                   const Text('CRITICAL INIT ERROR', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),

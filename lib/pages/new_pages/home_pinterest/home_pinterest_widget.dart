@@ -203,7 +203,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
               .limit(100); // Augmenté de 50 à 100 pour plus de contenu
         }
 
-        snapshot = await query.get();
+        snapshot = await query.get(const GetOptions(source: Source.serverAndCache));
       } catch (firestoreError) {
         AppLogger.debug('?? Erreur requête avec orderBy (index manquant?): $firestoreError', 'Debug');
         AppLogger.debug('?? Fallback: chargement sans tri par popularité', 'Debug');
@@ -900,7 +900,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           Expanded(
             child: Text(
               _model.isAnonymousMode
-                  ? 'Mode découverte ??\nLes cadeaux les plus populaires du moment'
+                  ? 'Mode découverte 🔍\nLes cadeaux les plus populaires du moment'
                   : (_model.firstName.isNotEmpty
                       ? 'Bienvenue ${_model.firstName} !\nVoici ta sélection personnalisée'
                       : 'Bienvenue !\nVoici ta sélection personnalisée'),
@@ -1347,7 +1347,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    IconlyLight.danger,
+                    Icons.error_outline,
                     size: 50,
                     color: Colors.red[400],
                   ),

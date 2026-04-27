@@ -346,7 +346,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(IconlyLight.danger, color: Colors.red, size: 40),
+                  const Icon(Icons.error_outline, color: Colors.red, size: 40),
                   const SizedBox(height: 12),
                   const Text('Échec de la connexion',
                     style: TextStyle(color: Colors.white70, fontSize: 14)),

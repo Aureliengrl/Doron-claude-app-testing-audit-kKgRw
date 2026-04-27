@@ -373,7 +373,7 @@ class _VoiceAnalysisPageWidgetState extends State<VoiceAnalysisPageWidget> {
                 color: Colors.red.withOpacity(0.2),
               ),
               child: const Icon(
-                IconlyLight.danger,
+                Icons.error_outline,
                 size: 50,
                 color: Colors.red,
               ),

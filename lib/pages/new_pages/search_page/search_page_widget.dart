@@ -93,7 +93,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(IconlyLight.danger, size: 64, color: Colors.red[400]),
+                Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
                 const SizedBox(height: 24),
                 Text(
                   'Erreur',
@@ -187,9 +187,16 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: LiquidGlassTokens.pageDark,
-      body: Stack(
-        children: [
-          // Contenu principal scrollable avec physics premium
+      body: RefreshIndicator(
+        color: const Color(0xFF8A2BE2),
+        backgroundColor: const Color(0xFF1A0030),
+        onRefresh: () async {
+          HapticFeedback.mediumImpact();
+          await _loadData();
+        },
+        child: Stack(
+          children: [
+            // Contenu principal scrollable avec physics premium
           CustomScrollView(
             physics: const BouncingScrollPhysics(
               parent: AlwaysScrollableScrollPhysics(),
@@ -241,7 +248,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               child: _buildBottomActions(),
             ),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -557,38 +565,31 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 );
               },
               onDismissed: (direction) async {
-                // Supprimer la personne de Firebase
-                await FirebaseDataService.deletePerson(profileId.toString());
-
-                // Supprimer du modéle local
+                // FIX: Soft-delete — suppression Firebase différée avec annulation
+                final removedProfile = _model.profiles[index - 1];
                 setState(() {
-                  _model.profiles.removeAt(index);
+                  _model.profiles.removeAt(index - 1); // FIX: index-1 car index=0 = bouton "Ajouter"
                   if (_model.selectedProfileId == profileIdInt) {
                     _model.selectedProfileId = null;
                   }
                 });
-
-                // SnackBar de confirmation
+                bool cancelled = false;
+                // Afficher snackbar avec annulation
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Row(
-                        children: [
-                          const Icon(Icons.check_circle, color: Colors.white, size: 20),
-                          const SizedBox(width: 12),
-                          Text(
-                            '${profile['name']} supprimé(e)',
-                            style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-                      backgroundColor: Colors.red,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('${profile[\'name\']} supprimé(e)', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    backgroundColor: Colors.red[700],
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 4),
+                    action: SnackBarAction(label: 'Annuler', textColor: Colors.white, onPressed: () {
+                      cancelled = true;
+                      setState(() { _model.profiles.insert(index - 1, removedProfile); _model.selectedProfileId = profileIdInt; });
+                    }),
+                  ));
                 }
+                await Future.delayed(const Duration(seconds: 4));
+                if (!cancelled) await FirebaseDataService.deletePerson(profileId.toString());
+                // Continuer si non annulé
               },
               child: Material(
                 color: Colors.transparent,
@@ -1579,7 +1580,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         content: Row(
           children: [
             Icon(
-              isError ? IconlyLight.danger : Icons.check_circle,
+              isError ? Icons.error_outline : Icons.check_circle,
               color: Colors.white,
               size: 20,
             ),

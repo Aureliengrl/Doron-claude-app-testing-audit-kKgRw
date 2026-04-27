@@ -319,7 +319,7 @@ class FullscreenProductImage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    IconlyLight.danger,
+                    Icons.error_outline,
                     size: 60,
                     color: Colors.red.withOpacity(0.7),
                   ),

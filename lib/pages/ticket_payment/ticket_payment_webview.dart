@@ -239,7 +239,7 @@ class _TicketPaymentWebViewState extends State<TicketPaymentWebView> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        IconlyLight.danger,
+                        Icons.error_outline,
                         size: 80,
                         color: Colors.red[300],
                       ),

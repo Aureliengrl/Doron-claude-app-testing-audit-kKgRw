@@ -75,7 +75,7 @@ class _EmptyDataWidgetState extends State<EmptyDataWidget>
         Align(
           alignment: AlignmentDirectional(0.0, -1.0),
           child: Icon(
-            IconlyLight.danger,
+            Icons.error_outline,
             color: Theme.of(context).brightness == Brightness.light
                 ? FlutterFlowTheme.of(context).primary
                 : FlutterFlowTheme.of(context).primaryText,
