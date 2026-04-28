@@ -626,7 +626,13 @@ class TransitionInfo {
   final Duration duration;
   final Alignment? alignment;
 
-  static TransitionInfo appDefault() => TransitionInfo(hasTransition: false);
+  static TransitionInfo appDefault() => const TransitionInfo(
+        hasTransition: true,
+        transitionType: PageTransitionType.fade,
+        // PERF AXE 4: 200ms — navigation perçue comme instantanée
+        duration: Duration(milliseconds: 200),
+      );
+
 }
 
 class RootPageContext {

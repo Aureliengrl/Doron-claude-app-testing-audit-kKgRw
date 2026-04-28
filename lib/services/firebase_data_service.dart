@@ -14,10 +14,11 @@ class FirebaseDataService {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
   static final FirebaseStorage _storage = FirebaseStorage.instance;
 
-  // ─── Cache mémoire (TTL 5 min) pour éviter les allers-retours Firestore ───
+  // ─── Cache mémoire (TTL 15 min) pour éviter les allers-retours Firestore ───
+  // PERF: Porté de 5min à 15min — les tags de profil changent rarement
   static Map<String, dynamic>? _profileTagsCache;
   static DateTime? _profileTagsCacheTime;
-  static const _profileTagsTtl = Duration(minutes: 5);
+  static const _profileTagsTtl = Duration(minutes: 15);
 
   /// Invalide le cache des profile tags (appeler au logout / update profil)
   static void invalidateProfileTagsCache() {
@@ -60,6 +61,22 @@ class FirebaseDataService {
     } catch (e) {
       AppLogger.error('Error clearing local cache', 'Firebase', e);
     }
+  }
+
+  /// Méthode de préchauffage — appeler après le login ou au démarrage.
+  /// Charge les tags en arrière-plan pour que le 1er affichage de la Home soit instantané.
+  static Future<void> warmUp() async {
+    if (!isLoggedIn) return;
+    try {
+      // Lance en parallèle : cache profil + Firestore SDK cache
+      await Future.wait([
+        loadUserProfileTags(),
+        _firestore.collection('gifts').limit(12).get(
+          const GetOptions(source: Source.serverAndCache),
+        ),
+      ]);
+      AppLogger.info('⚡ WarmUp complété — cache prêt', 'Firebase');
+    } catch (_) {}
   }
 
   // ============= ONBOARDING ANSWERS =============
