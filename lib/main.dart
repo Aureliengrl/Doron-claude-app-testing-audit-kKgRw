@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:ui';
 import 'dart:async';
+import 'package:intl/date_symbol_data_local.dart'; // BUG FIX: locale fr_FR pour table_calendar
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -160,6 +161,10 @@ void main() async {
     } catch (e) { AppLogger.debug('Init Error: $e', 'Main'); }
 
     await initFirebase().timeout(const Duration(seconds: 8), onTimeout: () => throw Exception('Firebase init timeout! Native iOS config is missing or blocking.'));
+
+    // BUG FIX: Initialiser la locale fr_FR pour table_calendar (noms de mois en français)
+    // Sans ceci, le calendrier affiche les mois en anglais ou crashe
+    await initializeDateFormatting('fr_FR', null);
     
     // Do not await push notification setup, as the native permission prompt can block runApp and cause a white screen.
     PushNotificationsService.initialize();

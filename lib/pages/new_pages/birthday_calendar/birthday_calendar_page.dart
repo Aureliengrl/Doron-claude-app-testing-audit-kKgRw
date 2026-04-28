@@ -335,7 +335,7 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
           Text('À venir — 30 prochains jours',
             style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          ...upcoming.take(5).expand((entry) {
+          ...upcoming.expand((entry) {
             const months = ['', 'jan', 'fév', 'mar', 'avr', 'mai', 'juin', 'juil', 'août', 'sep', 'oct', 'nov', 'déc'];
             final diff = entry.key.difference(now).inDays;
             final label = diff == 0 ? 'Aujourd\'hui'
