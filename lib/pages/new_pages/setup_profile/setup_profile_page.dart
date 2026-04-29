@@ -25,6 +25,16 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  // Anniversaire (optionnel — jour + mois uniquement)
+  int? _birthdayDay;
+  int? _birthdayMonth;
+  bool _birthdayExpanded = false;
+
+  static const _months = [
+    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -63,7 +73,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
     });
 
     try {
-      // 1. Vérifier disponibilité
+      // 1. Vérifier disponibilité du handle
       final available = await _isHandleAvailable(handle);
       if (!available) {
         setState(() {
@@ -89,29 +99,39 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
           ? nameInput
           : (currentUser?.displayName ?? '');
       final displayNameLower = displayName.toLowerCase().trim();
-      // searchName = prénom (le plus utile pour être trouvé) OU handle
       final searchName = displayNameLower.isNotEmpty ? displayNameLower : handle;
 
-      // 2. Sauvegarder le handle + nom dans le profil utilisateur (critique)
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      // 2. Données de base du profil
+      final profileData = <String, dynamic>{
         'handle': handle,
         'handle_lower': handle,
         'display_name': displayName,
         'first_name': displayName,
-        // Champs index pour la recherche
         'searchName': searchName,
         'display_name_lower': displayNameLower,
         'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      };
 
-      // 3. Mettre à jour l'index handles (non critique — ne bloque pas si ça échoue)
+      // 3. Ajouter l'anniversaire si renseigné
+      if (_birthdayDay != null && _birthdayMonth != null) {
+        profileData['birthday'] = {
+          'day': _birthdayDay,
+          'month': _birthdayMonth,
+        };
+      }
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .set(profileData, SetOptions(merge: true));
+
+      // 4. Mettre à jour l'index handles
       try {
         await FirebaseFirestore.instance.collection('handles').doc(handle).set({
           'uid': uid,
           'createdAt': FieldValue.serverTimestamp(),
         });
       } catch (indexErr) {
-        // L'index handles est secondaire — on continue quand même
         debugPrint('[SetupProfile] handles index write failed: $indexErr');
       }
 
@@ -135,42 +155,35 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
         children: [
           // Background blobs
           Positioned(
-            top: -100,
-            left: -80,
+            top: -100, left: -80,
             child: Container(
-              width: 350,
-              height: 350,
+              width: 350, height: 350,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFF8A2BE2).withOpacity(0.35),
-                    Colors.transparent,
-                  ],
-                ),
+                gradient: RadialGradient(colors: [
+                  const Color(0xFF8A2BE2).withOpacity(0.35),
+                  Colors.transparent,
+                ]),
               ),
             ),
           ),
           Positioned(
-            bottom: -80,
-            right: -60,
+            bottom: -80, right: -60,
             child: Container(
-              width: 280,
-              height: 280,
+              width: 280, height: 280,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFFEC4899).withOpacity(0.25),
-                    Colors.transparent,
-                  ],
-                ),
+                gradient: RadialGradient(colors: [
+                  const Color(0xFFEC4899).withOpacity(0.25),
+                  Colors.transparent,
+                ]),
               ),
             ),
           ),
+
           // Content
           SafeArea(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Form(
                 key: _formKey,
@@ -181,8 +194,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
 
                     // Icon
                     Container(
-                      width: 64,
-                      height: 64,
+                      width: 64, height: 64,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
@@ -195,7 +207,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                     const SizedBox(height: 24),
 
                     Text(
-                      'Choisis ton\nnom d\'utilisateur',
+                      'Crée ton profil',
                       style: GoogleFonts.poppins(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -205,7 +217,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'C\'est ton identifiant unique sur Doron. Tes amis pourront te retrouver avec ce nom.',
+                      'Quelques infos pour personnaliser ton expérience Doron.',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: Colors.white.withOpacity(0.55),
@@ -213,9 +225,23 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                       ),
                     ),
 
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 32),
 
-                    // Champ handle
+                    // ── ANNIVERSAIRE (optionnel) ──────────────────────────
+                    _buildBirthdaySection(),
+
+                    const SizedBox(height: 28),
+
+                    // ── HANDLE ───────────────────────────────────────────
+                    Text(
+                      'Nom d\'utilisateur',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white.withOpacity(0.85),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.06),
@@ -257,12 +283,8 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                                 LengthLimitingTextInputFormatter(30),
                               ],
                               validator: (val) {
-                                if (val == null || val.trim().isEmpty) {
-                                  return 'Champ obligatoire';
-                                }
-                                if (val.trim().length < 3) {
-                                  return 'Au moins 3 caractères';
-                                }
+                                if (val == null || val.trim().isEmpty) return 'Champ obligatoire';
+                                if (val.trim().length < 3) return 'Au moins 3 caractères';
                                 return null;
                               },
                             ),
@@ -270,7 +292,6 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 8),
                     Text(
                       'Uniquement lettres, chiffres, _ et . — min. 3 caractères',
@@ -282,7 +303,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
 
                     const SizedBox(height: 28),
 
-                    // Champ nom d'affichage
+                    // ── PRÉNOM ───────────────────────────────────────────
                     Text(
                       'Ton prénom',
                       style: GoogleFonts.poppins(
@@ -322,13 +343,9 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                           ),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
                         ),
-                        inputFormatters: [
-                          LengthLimitingTextInputFormatter(50),
-                        ],
+                        inputFormatters: [LengthLimitingTextInputFormatter(50)],
                         validator: (val) {
-                          if (val == null || val.trim().isEmpty) {
-                            return 'Champ obligatoire';
-                          }
+                          if (val == null || val.trim().isEmpty) return 'Champ obligatoire';
                           return null;
                         },
                       ),
@@ -338,16 +355,13 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                       const SizedBox(height: 12),
                       Text(
                         _errorMessage!,
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          color: Colors.redAccent,
-                        ),
+                        style: GoogleFonts.poppins(fontSize: 13, color: Colors.redAccent),
                       ),
                     ],
 
-                    const Spacer(),
+                    const SizedBox(height: 40),
 
-                    // Bouton Continuer
+                    // ── BOUTON CONTINUER ─────────────────────────────────
                     GestureDetector(
                       onTap: _isLoading ? null : () { HapticFeedback.mediumImpact(); _save(); },
                       child: Container(
@@ -383,7 +397,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                       ),
                     ),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),
@@ -391,6 +405,157 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
           ),
         ],
       ),
+    );
+  }
+
+  // ── Section anniversaire ──────────────────────────────────────────────────
+
+  Widget _buildBirthdaySection() {
+    final hasBirthday = _birthdayDay != null && _birthdayMonth != null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // En-tête cliquable
+        GestureDetector(
+          onTap: () => setState(() => _birthdayExpanded = !_birthdayExpanded),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            decoration: BoxDecoration(
+              color: hasBirthday
+                  ? const Color(0xFF8A2BE2).withOpacity(0.15)
+                  : Colors.white.withOpacity(0.06),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: hasBirthday
+                    ? const Color(0xFF8A2BE2).withOpacity(0.5)
+                    : Colors.white.withOpacity(0.15),
+              ),
+            ),
+            child: Row(
+              children: [
+                Text('🎂', style: const TextStyle(fontSize: 22)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Ton anniversaire',
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        hasBirthday
+                            ? '$_birthdayDay ${_months[_birthdayMonth! - 1]}'
+                            : 'Optionnel — apparaît dans le calendrier de tes amis',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: hasBirthday
+                              ? const Color(0xFFEC4899)
+                              : Colors.white.withOpacity(0.4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  _birthdayExpanded
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
+                  color: Colors.white54,
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Sélecteurs déroulants
+        if (_birthdayExpanded) ...[
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              // Jour
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Jour',
+                        style: GoogleFonts.poppins(color: Colors.white54, fontSize: 12)),
+                    const SizedBox(height: 6),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white.withOpacity(0.15)),
+                      ),
+                      child: DropdownButton<int>(
+                        value: _birthdayDay,
+                        hint: Text('Jour',
+                            style: GoogleFonts.poppins(color: Colors.white38, fontSize: 14)),
+                        dropdownColor: const Color(0xFF1A0030),
+                        underline: const SizedBox(),
+                        isExpanded: true,
+                        style: GoogleFonts.poppins(color: Colors.white, fontSize: 15),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        items: List.generate(31, (i) => i + 1).map((d) => DropdownMenuItem(
+                          value: d,
+                          child: Text('$d'),
+                        )).toList(),
+                        onChanged: (v) => setState(() => _birthdayDay = v),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Mois
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Mois',
+                        style: GoogleFonts.poppins(color: Colors.white54, fontSize: 12)),
+                    const SizedBox(height: 6),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white.withOpacity(0.15)),
+                      ),
+                      child: DropdownButton<int>(
+                        value: _birthdayMonth,
+                        hint: Text('Mois',
+                            style: GoogleFonts.poppins(color: Colors.white38, fontSize: 14)),
+                        dropdownColor: const Color(0xFF1A0030),
+                        underline: const SizedBox(),
+                        isExpanded: true,
+                        style: GoogleFonts.poppins(color: Colors.white, fontSize: 15),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        items: List.generate(12, (i) => i + 1).map((m) => DropdownMenuItem(
+                          value: m,
+                          child: Text(_months[m - 1]),
+                        )).toList(),
+                        onChanged: (v) => setState(() => _birthdayMonth = v),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          // Note RGPD
+          const SizedBox(height: 8),
+          Text(
+            '🔒 Seuls le jour et le mois sont enregistrés (pas l\'année)',
+            style: GoogleFonts.poppins(fontSize: 11, color: Colors.white30),
+          ),
+        ],
+      ],
     );
   }
 }
