@@ -1,4 +1,4 @@
-﻿import 'dart:ui';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
@@ -647,7 +647,7 @@ class _FriendsPageState extends State<FriendsPage>
                       builder: (ctx) => AlertDialog(
                         backgroundColor: const Color(0xFF1E1E1E),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        title: Text('Retirer cet ami ?', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                        title: Text(context.tr('Retirer cet ami ?', 'Remove this friend?'), style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
                         content: Text(
                           'Vous ne pourrez plus voir ses wishlists priv\u00e9es ni collaborer avec lui.',
                           style: GoogleFonts.poppins(color: Colors.white70),
@@ -659,7 +659,7 @@ class _FriendsPageState extends State<FriendsPage>
                           ),
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, true),
-                            child: Text('Retirer', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.w600)),
+                            child: Text(context.tr('Retirer', 'Remove'), style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.w600)),
                           ),
                         ],
                       ),

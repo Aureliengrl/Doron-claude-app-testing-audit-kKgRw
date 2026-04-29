@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
@@ -166,7 +166,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
   
   String _formatMessageTime(Timestamp? timestamp) {
-    if (timestamp == null) return 'Ã€ l\'instant';
+    if (timestamp == null) return context.tr('À l\'instant', 'Just now');
     final date = timestamp.toDate();
     return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
@@ -705,7 +705,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 controller: _messageController,
                 style: GoogleFonts.poppins(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: context.tr('Ã‰crire un message...', 'Write a message...'),
+                  hintText: context.tr('Écrire un message...', 'Write a message...'),
                   hintStyle: GoogleFonts.poppins(color: Colors.white.withOpacity(0.4)),
                   border: InputBorder.none,
                 ),
@@ -748,8 +748,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   // S6 FIX: affiche le vrai prenom de la personne qui ecrit
   // F6: Banner wishlist épinglée dans le chat groupe
   Widget _buildPinnedWishlistBanner() {
-    if (!(chatData?['isGroup'] == true)) return const SizedBox.shrink();
-    final pinnedId = chatData?['pinnedWishlistId'] as String?;
+    if (!(_effectiveChatData?['isGroup'] == true)) return const SizedBox.shrink();
+    final pinnedId = _effectiveChatData?['pinnedWishlistId'] as String?;
     if (pinnedId == null || pinnedId.isEmpty) {
       // Proposer de créer/associer une liste si c'est un groupe sans wishlist
       return Container(
@@ -872,7 +872,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
       await FirebaseFirestore.instance
           .collection('chats')
-          .doc(chatId)
+          .doc(widget.chatId)
           .collection('messages')
           .add({
         'text': '🎁 Idées cadeaux en cours...\n\n'
@@ -929,8 +929,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         builder: (ctx, snap) {
           final name = snap.data ?? '';
           final typingText = othersTyping.length == 1
-              ? (name.isNotEmpty ? '$name ecrit...' : 'Quelqu un ecrit...')
-              : 'Plusieurs personnes ecrivent...';
+              ? (name.isNotEmpty
+                  ? context.tr('$name écrit...', '$name is typing...')
+                  : context.tr('Quelqu\'un écrit...', 'Someone is typing...'))
+              : context.tr('Plusieurs personnes écrivent...', 'Several people are typing...');
           return Row(
             children: [
               Row(
@@ -1170,7 +1172,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  '$productCount produit${productCount != 1 ? 's' : ''}',
+                  context.isEn ? '$productCount product${productCount != 1 ? 's' : ''}' : '$productCount produit${productCount != 1 ? 's' : ''}' ,
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     color: Colors.white.withOpacity(0.6),
