@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -25,6 +25,7 @@ import '/services/photo_permission_service.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 export 'user_profile_model.dart';
+import '/utils/app_tr.dart';
 
 class UserProfileWidget extends StatefulWidget {
   const UserProfileWidget({super.key});
@@ -347,7 +348,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                           onPressed: () {
                             context.push('/birthday-calendar');
                           },
-                          tooltip: 'Calendrier & Anniversaires',
+                          tooltip: context.tr('Calendrier & Anniversaires', 'Calendar & Birthdays'),
                         ),
                         IconButton(
                           icon: const Icon(
@@ -470,9 +471,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              _buildProfileStat('Amis', '$_friendsCount'),
-                              _buildProfileStat('Wishlists', '${_wishlists.length}'),
-                              _buildProfileStat('Cadeaux', '${_model.favourites.length}'),
+                              _buildProfileStat(context.tr('Amis', 'Friends'), '$_friendsCount'),
+                              _buildProfileStat(context.tr('Wishlists', 'Wishlists'), '${_wishlists.length}'),
+                              _buildProfileStat(context.tr('Cadeaux', 'Gifts'), '${_model.favourites.length}'),
                             ],
                           ),
                         ),
@@ -624,7 +625,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 children: [
                   const Icon(IconlyLight.document),
                   const SizedBox(width: 8),
-                  Text('Wishlists'),
+                  Text(context.tr('Wishlists', 'Wishlists')),
                 ],
               ),
             ),
@@ -927,7 +928,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     children: [
                       const Icon(Icons.add_rounded, color: Colors.white, size: 22),
                       const SizedBox(width: 8),
-                      Text('CrÃ©er un album', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
+                      Text(context.tr('Créer un album', 'Create album'), style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
                     ],
                   ),
                 ),
@@ -953,7 +954,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             children: [
               const Icon(IconlyBold.bookmark, color: Color(0xFF8A2BE2), size: 24),
               const SizedBox(width: 10),
-              Text('Nouvel album', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18)),
+              Text(context.tr('Nouvel album', 'New album'), style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 18)),
             ],
           ),
           content: Column(
@@ -964,7 +965,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 autofocus: true,
                 style: GoogleFonts.poppins(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Nom de l\'album (ex : pour NoÃ«l)',
+                  hintText: context.tr('Nom de l\'album (ex : pour Noël)', 'Album name (e.g. for Christmas)'),
                   hintStyle: GoogleFonts.poppins(color: Colors.white38),
                   filled: true,
                   fillColor: Colors.white.withOpacity(0.07),
@@ -977,7 +978,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 controller: emojiController,
                 style: GoogleFonts.poppins(color: Colors.white, fontSize: 22),
                 decoration: InputDecoration(
-                  hintText: 'Emoji (optionnel)',
+                  hintText: context.tr('Emoji (optionnel)', 'Emoji (optional)'),
                   hintStyle: GoogleFonts.poppins(color: Colors.white38),
                   filled: true,
                   fillColor: Colors.white.withOpacity(0.07),
@@ -990,7 +991,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: Text('Annuler', style: GoogleFonts.poppins(color: Colors.white54)),
+              child: Text(context.tr('Annuler', 'Cancel'), style: GoogleFonts.poppins(color: Colors.white54)),
             ),
             TextButton(
               onPressed: isCreating
@@ -1026,7 +1027,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         }
                       });
                     },
-              child: Text('CrÃ©er', style: GoogleFonts.poppins(color: const Color(0xFF8A2BE2), fontWeight: FontWeight.w700)),
+              child: Text(context.tr('Créer', 'Create'), style: GoogleFonts.poppins(color: const Color(0xFF8A2BE2), fontWeight: FontWeight.w700)),
             ),
           ],
         ),
@@ -1064,7 +1065,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
     // Show loading indicator
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Upload de la couverture en cours...')),
+      SnackBar(content: Text(context.tr('Upload de la couverture en cours...', 'Uploading cover...'))),
     );
 
     try {
@@ -1102,7 +1103,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur lors de l\'upload: $e')),
+        SnackBar(content: Text(context.tr('Erreur lors de l\'upload: $e', 'Upload error: $e'))),
       );
     }
   }
@@ -1166,7 +1167,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                             style: GoogleFonts.poppins(fontSize: 13, color: Colors.white54),
                           ),
                             Text(
-                              '${sheetProducts.length} article${sheetProducts.length > 1 ? 's' : ''}',
+                              '${sheetProducts.length} ${context.tr(sheetProducts.length > 1 ? 'articles' : 'article', sheetProducts.length > 1 ? 'items' : 'item')}',
                               style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF8A2BE2)),
                         ),
                       ],
@@ -1191,7 +1192,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                             children: [
                               const Icon(IconlyBold.camera, color: Color(0xFF00D4FF), size: 16),
                               const SizedBox(width: 4),
-                              Text('Photo', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF00D4FF))),
+                              Text(context.tr('Photo', 'Photo'), style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF00D4FF))),
                             ],
                           ),
                         ),
@@ -1282,12 +1283,12 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
             ListTile(
               leading: const Icon(IconlyLight.image, color: Color(0xFF00D4FF)),
-              title: Text('Depuis la galerie', style: GoogleFonts.poppins(color: Colors.white)),
+              title: Text(context.tr('Depuis la galerie', 'From gallery'), style: GoogleFonts.poppins(color: Colors.white)),
               onTap: () { source = ImageSource.gallery; Navigator.pop(ctx); },
             ),
             ListTile(
               leading: const Icon(IconlyBold.camera, color: Color(0xFF00D4FF)),
-              title: Text('Prendre une photo', style: GoogleFonts.poppins(color: Colors.white)),
+              title: Text(context.tr('Prendre une photo', 'Take a photo'), style: GoogleFonts.poppins(color: Colors.white)),
               onTap: () { source = ImageSource.camera; Navigator.pop(ctx); },
             ),
           ],
@@ -1678,7 +1679,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 children: [
                   Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)))),
                   const SizedBox(height: 20),
-                  Text('Modifier le profil', style: GoogleFonts.outfit(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text(context.tr('Modifier le profil', 'Edit profile'), style: GoogleFonts.outfit(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 24),
                   Text('PrÃ©nom', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 6),

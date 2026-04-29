@@ -1,6 +1,7 @@
 ﻿import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '/utils/app_tr.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import '/components/liquid_glass.dart';

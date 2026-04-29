@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '/utils/app_tr.dart';
 
 /// Page onboarding — Quel type de cadeau cherchez-vous ?
 /// 3 options principales : objet physique, expérience, bon cadeau.

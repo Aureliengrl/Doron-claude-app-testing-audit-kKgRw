@@ -1,5 +1,6 @@
 ﻿import 'dart:ui';
 import 'package:flutter/material.dart';
+import '/utils/app_tr.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -386,7 +387,7 @@ class _FriendsPageState extends State<FriendsPage>
             icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
             onPressed: () => context.pop(),
           ),
-          Text('Amis', style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text(context.tr('Amis', 'Friends'), style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
         ],
       ),
     );
@@ -605,7 +606,7 @@ class _FriendsPageState extends State<FriendsPage>
                         children: [
                           const Icon(IconlyLight.people, size: 12, color: Color(0xFF10B981)),
                           const SizedBox(width: 4),
-                          Text('Amis', style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF10B981))),
+                          Text(context.tr('Amis', 'Friends'), style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF10B981))),
                         ],
                       ),
                     ],
@@ -654,7 +655,7 @@ class _FriendsPageState extends State<FriendsPage>
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, false),
-                            child: Text('Annuler', style: GoogleFonts.poppins(color: Colors.grey)),
+                            child: Text(context.tr('Annuler', 'Cancel'), style: GoogleFonts.poppins(color: Colors.grey)),
                           ),
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, true),
@@ -919,7 +920,7 @@ class _FriendsPageState extends State<FriendsPage>
             children: [
               const Icon(Icons.check_rounded, size: 14, color: _green),
               const SizedBox(width: 4),
-              Text('Amis', style: GoogleFonts.poppins(fontSize: 12, color: _green, fontWeight: FontWeight.w600)),
+              Text(context.tr('Amis', 'Friends'), style: GoogleFonts.poppins(fontSize: 12, color: _green, fontWeight: FontWeight.w600)),
             ],
           ),
         );
@@ -949,7 +950,7 @@ class _FriendsPageState extends State<FriendsPage>
               children: [
                 const Icon(IconlyLight.addUser, size: 14, color: Colors.white),
                 const SizedBox(width: 4),
-                Text('Ajouter', style: GoogleFonts.poppins(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
+                Text(context.tr('Ajouter', 'Add'), style: GoogleFonts.poppins(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
               ],
             ),
           ),
@@ -1140,7 +1141,7 @@ class _FriendsPageState extends State<FriendsPage>
           children: [
             Expanded(
               child: _actionChip(
-                label: 'Accepter',
+                label: context.tr('Accepter', 'Accept'),
                 icon: Icons.check_rounded,
                 gradient: [_green, const Color(0xFF059669)],
                 onTap: cached.requestId != null ? () => _acceptFromSearch(uid, cached.requestId!) : null,
@@ -1149,7 +1150,7 @@ class _FriendsPageState extends State<FriendsPage>
             const SizedBox(width: 8),
             Expanded(
               child: _actionChip(
-                label: 'Refuser',
+                label: context.tr('Refuser', 'Decline'),
                 icon: Icons.close_rounded,
                 color: Colors.red.shade700,
                 onTap: cached.requestId != null ? () async {

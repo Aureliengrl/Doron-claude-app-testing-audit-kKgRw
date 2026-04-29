@@ -1,6 +1,7 @@
-import '/utils/app_logger.dart';
+﻿import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '/utils/app_tr.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -1334,7 +1335,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 const SizedBox(width: 8),
               ],
               Text(
-                isLastStep ? 'Découvrir mes cadeaux' : 'Continuer',
+                isLastStep ? 'Découvrir mes cadeaux' : context.tr('Continuer', 'Continue'),
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,

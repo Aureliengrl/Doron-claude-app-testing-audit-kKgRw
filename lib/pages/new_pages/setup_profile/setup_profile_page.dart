@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -31,8 +31,8 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
   bool _birthdayExpanded = false;
 
   static const _months = [
-    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
+    context.tr('Janvier', 'January'), 'Février', context.tr('Mars', 'March'), context.tr('Avril', 'April'), context.tr('Mai', 'May'), context.tr('Juin', 'June'),
+    context.tr('Juillet', 'July'), 'Août', context.tr('Septembre', 'September'), context.tr('Octobre', 'October'), context.tr('Novembre', 'November'), 'Décembre',
   ];
 
   @override
@@ -441,7 +441,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Ton anniversaire',
+                        context.tr('Ton anniversaire', 'Your birthday'),
                         style: GoogleFonts.poppins(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -483,7 +483,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Jour',
+                    Text(context.tr('Jour', 'Day'),
                         style: GoogleFonts.poppins(color: Colors.white54, fontSize: 12)),
                     const SizedBox(height: 6),
                     Container(
@@ -494,7 +494,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                       ),
                       child: DropdownButton<int>(
                         value: _birthdayDay,
-                        hint: Text('Jour',
+                        hint: Text(context.tr('Jour', 'Day'),
                             style: GoogleFonts.poppins(color: Colors.white38, fontSize: 14)),
                         dropdownColor: const Color(0xFF1A0030),
                         underline: const SizedBox(),
@@ -518,7 +518,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Mois',
+                    Text(context.tr('Mois', 'Month'),
                         style: GoogleFonts.poppins(color: Colors.white54, fontSize: 12)),
                     const SizedBox(height: 6),
                     Container(
@@ -529,7 +529,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                       ),
                       child: DropdownButton<int>(
                         value: _birthdayMonth,
-                        hint: Text('Mois',
+                        hint: Text(context.tr('Mois', 'Month'),
                             style: GoogleFonts.poppins(color: Colors.white38, fontSize: 14)),
                         dropdownColor: const Color(0xFF1A0030),
                         underline: const SizedBox(),

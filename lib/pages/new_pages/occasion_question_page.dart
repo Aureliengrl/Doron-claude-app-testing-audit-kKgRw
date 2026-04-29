@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '/utils/app_tr.dart';
 import 'moment_type_page.dart';
 
 /// Page onboarding — Quelle est l'occasion ?
@@ -124,7 +125,7 @@ class _OccasionQuestionPageState extends State<OccasionQuestionPage> {
                             builder: (_) => MomentTypePage(occasion: _selected),
                           ));
                         },
-                  child: const Text('Continuer',
+                  child: const Text(context.tr('Continuer', 'Continue'),
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),

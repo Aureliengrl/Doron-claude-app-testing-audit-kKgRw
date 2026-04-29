@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import '/utils/app_tr.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -327,7 +328,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             _buildProfileStat('Amis', '$_friendsCount'),
-                            _buildProfileStat('Wishlists', '${_wishlists.length}'),
+                            _buildProfileStat(context.tr('Wishlists', 'Wishlists'), '${_wishlists.length}'),
                             _buildProfileStat('Cadeaux', '${_likedProducts.length}'),
                           ],
                         ),
@@ -470,7 +471,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
 
   Widget _buildFriendButton() {
     final configs = {
-      FriendshipStatus.none: (label: 'Ajouter en ami', icon: IconlyLight.addUser, color: _violet),
+      FriendshipStatus.none: (label: context.tr('Ajouter en ami', 'Add as friend'), icon: IconlyLight.addUser, color: _violet),
       FriendshipStatus.pendingSent: (label: 'En attenteâ€¦', icon: Icons.hourglass_top_rounded, color: Colors.grey.shade600),
       FriendshipStatus.pendingReceived: (label: 'Accepter', icon: Icons.check_circle_rounded, color: _green),
       FriendshipStatus.friends: (label: 'Amis âœ“', icon: IconlyLight.people, color: const Color(0xFF6366F1)),
@@ -533,7 +534,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                 children: [
                   const Icon(IconlyLight.document),
                   const SizedBox(width: 8),
-                  const Text('Wishlists'),
+                  const Text(context.tr('Wishlists', 'Wishlists')),
                 ],
               ),
             ),
@@ -576,7 +577,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
           children: [
             Icon(IconlyLight.bookmark, size: 80, color: Colors.white.withOpacity(0.35)),
             const SizedBox(height: 16),
-            Text('Aucune wishlist publique',
+            Text(context.tr('Aucune wishlist publique', 'No public wishlists'),
                 style: GoogleFonts.poppins(
                     fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
             const SizedBox(height: 8),

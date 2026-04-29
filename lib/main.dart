@@ -33,6 +33,7 @@ import '/services/presence_service.dart';
 import '/services/friend_service.dart';
 import '/utils/user_display_helper.dart';
 import 'index.dart';
+import '/utils/app_tr.dart';
 
 /// Service de logging d'erreurs global pour capturer les crashs en release
 class ErrorLogService {
@@ -162,9 +163,10 @@ void main() async {
 
     await initFirebase().timeout(const Duration(seconds: 8), onTimeout: () => throw Exception('Firebase init timeout! Native iOS config is missing or blocking.'));
 
-    // BUG FIX: Initialiser la locale fr_FR pour table_calendar (noms de mois en français)
-    // Sans ceci, le calendrier affiche les mois en anglais ou crashe
+    // Initialiser les locales FR + EN pour table_calendar
+    // Permet le switch dynamique de langue sans redémarrage
     await initializeDateFormatting('fr_FR', null);
+    await initializeDateFormatting('en_US', null);
     
     // Do not await push notification setup, as the native permission prompt can block runApp and cause a white screen.
     PushNotificationsService.initialize();
@@ -533,7 +535,7 @@ class _NavBarPageState extends State<NavBarPage> {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Nouvelle demande d\'ami de $senderName',
+                context.tr('Nouvelle demande d\'ami de $senderName', 'New friend request from $senderName'),
                 style: GoogleFonts.poppins(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -551,7 +553,7 @@ class _NavBarPageState extends State<NavBarPage> {
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 100),
         duration: const Duration(seconds: 4),
         action: SnackBarAction(
-          label: 'Voir',
+          label: context.tr('Voir', 'View'),
           textColor: Colors.white,
           onPressed: () {
             // Navigate to profile tab where friend requests are visible
@@ -625,26 +627,26 @@ class _NavBarPageState extends State<NavBarPage> {
                 NavBarItem(
                   icon: IconlyLight.home,
                   activeIcon: IconlyBold.home,
-                  label: 'Accueil',
+                  label: context.tr('Accueil', 'Home'),
                   iconSize: 24.0,
                   badgeCount: _unreadChatBadge,
                 ),
-                const NavBarItem(
+                NavBarItem(
                   icon: IconlyLight.search,
                   activeIcon: IconlyBold.search,
-                  label: 'Recherche',
+                  label: context.tr('Recherche', 'Search'),
                   iconSize: 24.0,
                 ),
-                const NavBarItem(
+                NavBarItem(
                   icon: IconlyLight.discovery,
                   activeIcon: IconlyBold.discovery,
-                  label: 'Inspo',
+                  label: context.tr('Inspo', 'Inspo'),
                   iconSize: 24.0,
                 ),
                 NavBarItem(
                   icon: IconlyLight.profile,
                   activeIcon: IconlyBold.profile,
-                  label: 'Profil',
+                  label: context.tr('Profil', 'Profile'),
                   iconSize: 24.0,
                   badgeCount: _friendRequestBadge,
                 ),

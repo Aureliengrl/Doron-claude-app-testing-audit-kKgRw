@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import '/utils/app_tr.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -552,7 +553,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               const SizedBox(height: 16),
                               ListTile(
                                 leading: const Icon(Icons.copy_rounded, color: Colors.white),
-                                title: Text('Copier', style: GoogleFonts.poppins(color: Colors.white)),
+                                title: Text(context.tr('Copier', 'Copy'), style: GoogleFonts.poppins(color: Colors.white)),
                                 onTap: () {
                                   Navigator.pop(context);
                                   Clipboard.setData(ClipboardData(text: text));
@@ -567,7 +568,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               ),
                               if (isMe) ListTile(
                                 leading: const Icon(Icons.delete_rounded, color: Colors.red),
-                                title: Text('Supprimer', style: GoogleFonts.poppins(color: Colors.red)),
+                                title: Text(context.tr('Supprimer', 'Delete'), style: GoogleFonts.poppins(color: Colors.red)),
                                 onTap: () async {
                                   Navigator.pop(context);
                                   await FirebaseFirestore.instance
@@ -704,7 +705,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 controller: _messageController,
                 style: GoogleFonts.poppins(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Ã‰crire un message...',
+                  hintText: context.tr('Ã‰crire un message...', 'Write a message...'),
                   hintStyle: GoogleFonts.poppins(color: Colors.white.withOpacity(0.4)),
                   border: InputBorder.none,
                 ),

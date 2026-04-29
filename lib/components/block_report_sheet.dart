@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '/utils/app_tr.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/components/liquid_glass.dart';
@@ -180,7 +181,7 @@ class _BlockReportSheetState extends State<BlockReportSheet> {
               onTap: () => Navigator.pop(context),
               child: Center(
                 child: Text(
-                  'Annuler',
+                  context.tr('Annuler', 'Cancel'),
                   style: GoogleFonts.poppins(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,

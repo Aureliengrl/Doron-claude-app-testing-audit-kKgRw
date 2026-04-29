@@ -1,5 +1,6 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/material.dart';
+import '/utils/app_tr.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -827,7 +828,7 @@ class GlobalProductDetailModal {
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(
-              'Annuler',
+              context.tr('Annuler', 'Cancel'),
               style: GoogleFonts.poppins(color: Colors.grey[600]),
             ),
           ),

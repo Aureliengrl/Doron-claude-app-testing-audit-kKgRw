@@ -1,5 +1,6 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 import 'package:flutter/material.dart';
+import '/utils/app_tr.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -73,7 +74,7 @@ class ConnectionRequiredDialog extends StatelessWidget {
 
             // Titre
             Text(
-              title ?? 'Connexion requise',
+              title ?? context.tr('Connexion requise', 'Sign in required'),
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 24,

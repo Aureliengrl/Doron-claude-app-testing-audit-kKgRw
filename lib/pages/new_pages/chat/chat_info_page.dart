@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import '/utils/app_tr.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -106,7 +107,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Annuler', style: GoogleFonts.poppins(color: Colors.white54)),
+            child: Text(context.tr('Annuler', 'Cancel'), style: GoogleFonts.poppins(color: Colors.white54)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
@@ -341,7 +342,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
             const Icon(IconlyLight.logout, color: Colors.red, size: 20),
             const SizedBox(width: 8),
             Text(
-              'Quitter le groupe',
+              context.tr('Quitter le groupe', 'Leave group'),
               style: GoogleFonts.poppins(
                 color: Colors.red,
                 fontWeight: FontWeight.w600,

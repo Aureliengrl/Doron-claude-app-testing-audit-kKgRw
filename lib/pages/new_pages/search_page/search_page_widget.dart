@@ -1,4 +1,4 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +15,7 @@ import '/backend/backend.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/utils/pdf_export_utils.dart';
 import 'search_page_model.dart';
+import '/utils/app_tr.dart';
 export 'search_page_model.dart';
 import 'user_search_bottom_sheet.dart';
 import 'share_list_bottom_sheet.dart';
@@ -308,7 +309,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Trouvez le cadeau parfait pour vos proches',
+                context.tr('Trouvez le cadeau parfait pour vos proches', 'Find the perfect gift for your loved ones'),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   color: Colors.white.withOpacity(0.9),
@@ -525,7 +526,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       side: BorderSide(color: Colors.white.withOpacity(0.18)),
                     ),
                     title: Text(
-                      'Supprimer cette personne ?',
+                      context.tr('Supprimer cette personne ?', 'Remove this person?'),
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.bold,
                         fontSize: 20,
@@ -581,7 +582,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     backgroundColor: Colors.red[700],
                     behavior: SnackBarBehavior.floating,
                     duration: const Duration(seconds: 4),
-                    action: SnackBarAction(label: 'Annuler', textColor: Colors.white, onPressed: () {
+                    action: SnackBarAction(label: context.tr('Annuler', 'Cancel'), textColor: Colors.white, onPressed: () {
                       cancelled = true;
                       setState(() { _model.profiles.insert(index - 1, removedProfile); _model.selectedProfileId = profileIdInt; });
                     }),
@@ -754,7 +755,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Cadeaux pour ${profile['name']}',
+                    context.tr('Cadeaux pour ', 'Gifts for ') + ${profile['name']}',
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -848,7 +849,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           onTap: () {
                              context.push('/chat-room/${profile['chatId']}', extra: {
                                'id': profile['chatId'],
-                               'name': 'Cadeaux pour ${profile['name']}',
+                               'name': context.tr('Cadeaux pour ', 'Gifts for ') + ${profile['name']}',
                                'isGroup': true,
                              });
                           }
@@ -1662,7 +1663,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       profile['isShared'] = true;
                     });
                     context.push('/chat-room/$chatId', extra: {
-                      'name': 'Cadeaux pour $name',
+                      'name': context.tr('Cadeaux pour ', 'Gifts for ') + $name',
                       'isGroup': true,
                     });
                   }
@@ -1832,7 +1833,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Annuler', style: GoogleFonts.poppins(color: Colors.white54)),
+            child: Text(context.tr('Annuler', 'Cancel'), style: GoogleFonts.poppins(color: Colors.white54)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -1844,7 +1845,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               backgroundColor: const Color(0xFF8A2BE2),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: Text('Ajouter', style: GoogleFonts.poppins(
+            child: Text(context.tr('Ajouter', 'Add'), style: GoogleFonts.poppins(
                 color: Colors.white, fontWeight: FontWeight.w700)),
           ),
         ],

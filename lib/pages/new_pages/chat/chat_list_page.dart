@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,6 +12,7 @@ import '/components/liquid_glass_empty_state_widget.dart';
 import '/components/liquid_glass_loader.dart';
 import 'create_chat_bottom_sheet.dart';
 import '/services/birthday_service.dart'; // F6: suggestions anniversaire
+import '/utils/app_tr.dart';
 
 class ChatListPage extends StatefulWidget {
   const ChatListPage({super.key});
@@ -36,10 +37,11 @@ class _ChatListPageState extends State<ChatListPage> {
     if (diff.inDays == 0 && now.day == date.day) {
       return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
     } else if (diff.inDays == 1 || (diff.inDays == 0 && now.day != date.day)) {
-      return 'Hier';
+      // 'Hier' / 'Yesterday' — needs context, handled in chatTile
+      return context.tr('Hier', 'Yesterday');
     } else if (diff.inDays < 7) {
-      const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-      return days[date.weekday - 1];
+      // Day abbreviations — handled per-locale in chatTile
+      return context.isEn ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][date.weekday-1] : ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'][date.weekday-1];
     } else {
       return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
     }
@@ -159,8 +161,8 @@ class _ChatListPageState extends State<ChatListPage> {
 
   Future<List<Map<String,dynamic>>> _loadGroupSuggestions() async {
     final suggestions = <Map<String,dynamic>>[
-      {'emoji': '🎉', 'title': 'Cadeau commun', 'type': 'gift'},
-      {'emoji': '👨‍👩‍👧', 'title': 'Groupe Famille', 'type': 'family'},
+      {'emoji': '🎉', 'title': context.isEn ? 'Group gift' : 'Cadeau commun', 'type': 'gift'},
+      {'emoji': '👨‍👩‍👧', 'title': context.isEn ? 'Family Group' : 'Groupe Famille', 'type': 'family'},
       {'emoji': '👫', 'title': 'Déjeuner surprise', 'type': 'surprise'},
     ];
 
@@ -222,7 +224,7 @@ class _ChatListPageState extends State<ChatListPage> {
               ),
               const SizedBox(width: 8),
               Text(
-                'Messages',
+                context.tr('Messages', 'Messages'),
                 style: GoogleFonts.poppins(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -236,7 +238,7 @@ class _ChatListPageState extends State<ChatListPage> {
             children: [
               // Bouton Nouveau Groupe
               Tooltip(
-                message: 'Nouveau groupe',
+                message: context.tr('Nouveau groupe', 'New group'),
                 child: GestureDetector(
                   onTap: () => _openCreateChat(forceGroup: true),
                   child: Container(
@@ -260,7 +262,7 @@ class _ChatListPageState extends State<ChatListPage> {
                         const Icon(IconlyLight.addUser, color: Colors.white, size: 18),
                         const SizedBox(width: 6),
                         Text(
-                          'Groupe',
+                          context.tr('Groupe', 'Group'),
                           style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 13,
@@ -278,7 +280,7 @@ class _ChatListPageState extends State<ChatListPage> {
                 icon: const Icon(IconlyBold.editSquare, color: Colors.white),
                 onPressed: () => _openCreateChat(forceGroup: false),
                 splashRadius: 24,
-                tooltip: 'Nouveau message',
+                tooltip: context.tr('Nouveau message', 'New message'),
               ),
             ],
           ),
@@ -289,7 +291,7 @@ class _ChatListPageState extends State<ChatListPage> {
 
   Widget _buildChatsList() {
     final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return const Center(child: Text('Non connecté', style: TextStyle(color: Colors.white)));
+    if (currentUser == null) return Center(child: Text(context.tr('Non connecté', 'Not connected'), style: const TextStyle(color: Colors.white)));
 
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
@@ -302,10 +304,13 @@ class _ChatListPageState extends State<ChatListPage> {
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const LiquidGlassEmptyStateWidget(
+          return LiquidGlassEmptyStateWidget(
             icon: IconlyLight.chat,
-            title: 'Aucun message',
-            subtitle: 'Commencez à discuter avec vos proches ou collaborez sur une liste de cadeaux.',
+            title: context.tr('Aucun message', 'No messages'),
+            subtitle: context.tr(
+              'Commencez à discuter avec vos proches ou collaborez sur une liste de cadeaux.',
+              'Start chatting with your friends or collaborate on a gift list.',
+            ),
           );
         }
 
@@ -478,7 +483,7 @@ class _ChatListPageState extends State<ChatListPage> {
               );
 
               if (otherUserId == currentUser.uid) {
-                return chatTile('Moi', '');
+                return chatTile(context.tr('Moi', 'Me'), '');
               }
 
               // Si déjà en cache → affiche directement (pas de rebuild infini)

@@ -1,4 +1,4 @@
-import '/utils/app_logger.dart';
+﻿import '/utils/app_logger.dart';
 import '/services/product_validator_service.dart';
 import 'dart:async';
 import 'dart:ui';
@@ -29,6 +29,7 @@ import '/components/aesthetic_buttons.dart';
 import '/components/micro_interactions.dart' as micro;
 import '/components/liquid_glass.dart';
 import 'home_pinterest_model.dart';
+import '/utils/app_tr.dart';
 import 'home_pinterest_widgets_extra.dart';
 export 'home_pinterest_model.dart';
 
@@ -198,7 +199,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         Query query;
 
         // Si catégorie spécifique, filtrer
-        if (_model.activeCategory != 'Pour toi') {
+        if (_model.activeCategory != context.tr('Pour toi', 'For you')) {
           final categoryLower = _model.activeCategory.toLowerCase();
           // ATTENTION: Cette requête nécessite un index composite dans Firestore
           // Si l'index n'existe pas, on va fallback sur une requête sans orderBy
@@ -223,7 +224,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
         // Fallback: requête sans orderBy (ne nécessite pas d'index composite)
         Query fallbackQuery;
-        if (_model.activeCategory != 'Pour toi') {
+        if (_model.activeCategory != context.tr('Pour toi', 'For you')) {
           final categoryLower = _model.activeCategory.toLowerCase();
           fallbackQuery = FirebaseFirestore.instance
               .collection('gifts')
@@ -322,7 +323,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       final tagsToUse = userProfileTags ?? {};
 
       // Charger les sections thématiques EN ARRIÈRE-PLAN (ne bloque PAS les produits)
-      if (_model.activeCategory == 'Pour toi' && userProfileTags != null) {
+      if (_model.activeCategory == context.tr('Pour toi', 'For you') && userProfileTags != null) {
         // Lancer sans await — les produits s'affichent immédiatement
         Future.microtask(() async {
           try {
@@ -349,14 +350,14 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           .getStringList('seen_home_product_ids_${_model.activeCategory}')
           ?? [];
 
-      // FIX F4: 'Pour toi' utilise 'home' (genre strict) et non 'discovery' (aucun filtre)
+      // FIX F4: context.tr('Pour toi', 'For you') utilise 'home' (genre strict) et non 'discovery' (aucun filtre)
       // 'discovery' est réservé à la page Inspirations/Tiktok
       const filterMode = 'home';
 
       final rawProducts = await ProductMatchingService.getPersonalizedProducts(
         userTags: tagsToUse,
         count: HomePinterestModel.productsPerPage,
-        category: _model.activeCategory != 'Pour toi' ? _model.activeCategory : null,
+        category: _model.activeCategory != context.tr('Pour toi', 'For you') ? _model.activeCategory : null,
         excludeProductIds: seenProductIds,
         filteringMode: filterMode,
       );
@@ -481,7 +482,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       final rawProducts = await ProductMatchingService.getPersonalizedProducts(
         userTags: userProfileTags ?? {},
         count: HomePinterestModel.productsPerPage,
-        category: _model.activeCategory != 'Pour toi' ? _model.activeCategory : null,
+        category: _model.activeCategory != context.tr('Pour toi', 'For you') ? _model.activeCategory : null,
         excludeProductIds: seenProductIds,
         filteringMode: 'home', // Mode HOME: strict sur sexe
       );
@@ -595,7 +596,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           backgroundColor: isCurrentlyLiked ? Colors.grey[600] : const Color(0xFF10B981),
           duration: const Duration(seconds: 2),
           action: SnackBarAction(
-            label: 'Connexion',
+            label: context.tr('Connexion', 'Sign in'),
             textColor: Colors.white,
             onPressed: () => context.go('/authentification'),
           ),

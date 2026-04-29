@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '/services/birthday_service.dart';
+import '/utils/app_tr.dart';
 import '/components/liquid_glass.dart';
 
 class BirthdayCalendarPage extends StatefulWidget {
@@ -83,7 +84,7 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
         onPressed: () => Navigator.of(context).pop(),
       ),
       title: Text(
-        'Calendrier',
+        context.tr('Calendrier', 'Calendar'),
         style: GoogleFonts.outfit(
           color: Colors.white,
           fontWeight: FontWeight.bold,
@@ -117,7 +118,7 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
           eventLoader: _getEventsForDay,
           calendarFormat: CalendarFormat.month,
           startingDayOfWeek: StartingDayOfWeek.monday,
-          locale: 'fr_FR',
+          locale: context.isEn ? 'en_US' : 'fr_FR',
 
           calendarStyle: CalendarStyle(
             outsideDaysVisible: false,
