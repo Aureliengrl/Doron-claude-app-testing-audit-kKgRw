@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '/components/liquid_glass.dart';
+import '/components/cached_image.dart';
 import 'onboarding_advanced_model.dart';
 export 'onboarding_advanced_model.dart';
 
@@ -879,15 +880,11 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                   children: _handleSuggestions.map((user) {
                     return ListTile(
                       dense: true,
-                      leading: CircleAvatar(
+                      leading: CachedCircleAvatar(
+                        photoUrl: user['photoUrl'] as String?,
                         radius: 16,
-                        backgroundImage: (user['photoUrl'] as String).isNotEmpty
-                            ? NetworkImage(user['photoUrl'] as String)
-                            : null,
                         backgroundColor: violetColor.withOpacity(0.3),
-                        child: (user['photoUrl'] as String).isEmpty
-                            ? const Icon(IconlyLight.profile, color: Colors.white, size: 16)
-                            : null,
+                        fallback: const Icon(IconlyLight.profile, color: Colors.white, size: 16),
                       ),
                       title: Text(
                         '@${user['handle']}',

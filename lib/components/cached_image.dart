@@ -386,3 +386,78 @@ Future<void> preloadImages(BuildContext context, List<String> imageUrls) async {
 
   AppLogger.debug('✅ Preloaded ${validUrls.length} images', 'Debug');
 }
+
+/// Avatar circulaire avec cache réseau complet.
+///
+/// Remplace `CircleAvatar(backgroundImage: NetworkImage(...))` qui ne met
+/// jamais en cache les images réseau. Ce widget utilise [CachedNetworkImage]
+/// en interne, garantissant que chaque photo n'est téléchargée qu'une seule
+/// fois par session.
+///
+/// Usage :
+/// ```dart
+/// CachedCircleAvatar(
+///   photoUrl: user['photoUrl'],
+///   radius: 24,
+///   fallback: Text('A', style: ...),  // affiché si pas de photo
+/// )
+/// ```
+class CachedCircleAvatar extends StatelessWidget {
+  final String? photoUrl;
+  final double radius;
+  final Color? backgroundColor;
+  final Widget? fallback;
+
+  static const _violet = Color(0xFF8A2BE2);
+
+  const CachedCircleAvatar({
+    super.key,
+    required this.photoUrl,
+    this.radius = 20,
+    this.backgroundColor,
+    this.fallback,
+  });
+
+  bool get _hasPhoto => photoUrl != null && photoUrl!.isNotEmpty && photoUrl!.startsWith('http');
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = backgroundColor ?? _violet.withOpacity(0.3);
+    final size = radius * 2;
+
+    if (!_hasPhoto) {
+      return CircleAvatar(
+        radius: radius,
+        backgroundColor: bg,
+        child: fallback ?? Icon(Icons.person, color: Colors.white, size: radius),
+      );
+    }
+
+    return ClipOval(
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: CachedNetworkImage(
+          imageUrl: photoUrl!,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          fadeInDuration: const Duration(milliseconds: 150),
+          placeholder: (_, __) => Container(
+            width: size,
+            height: size,
+            color: bg,
+            child: fallback ?? Icon(Icons.person, color: Colors.white54, size: radius),
+          ),
+          errorWidget: (_, __, ___) => Container(
+            width: size,
+            height: size,
+            color: bg,
+            child: fallback ?? Icon(Icons.person, color: Colors.white54, size: radius),
+          ),
+        ),
+      ),
+    );
+  }
+}
+

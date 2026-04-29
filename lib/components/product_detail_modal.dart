@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
@@ -1204,7 +1204,7 @@ class GlobalProductDetailModal {
       leading: CircleAvatar(
         radius: 24,
         backgroundColor: violetColor.withOpacity(0.2),
-        backgroundImage: (photoUrl != null && photoUrl.isNotEmpty) ? NetworkImage(photoUrl) : null,
+        backgroundImage: (photoUrl != null && photoUrl.isNotEmpty) ? CachedNetworkImageProvider(photoUrl) : null,
         child: (photoUrl == null || photoUrl.isEmpty)
             ? Text(
                 name.isNotEmpty ? name[0].toUpperCase() : '?',
@@ -1422,7 +1422,7 @@ class GlobalProductDetailModal {
                           leading: CircleAvatar(
                             radius: 24,
                             backgroundColor: const Color(0xFFEC4899).withOpacity(0.2),
-                            backgroundImage: (personPhoto != null && personPhoto.isNotEmpty) ? NetworkImage(personPhoto) : null,
+                            backgroundImage: (personPhoto != null && personPhoto.isNotEmpty) ? CachedNetworkImageProvider(personPhoto) : null,
                             child: (personPhoto == null || personPhoto.isEmpty)
                                 ? Text(
                                     personEmoji ?? (personName.isNotEmpty ? personName[0].toUpperCase() : '?'),
