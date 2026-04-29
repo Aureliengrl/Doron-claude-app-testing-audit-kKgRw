@@ -47,7 +47,8 @@ class SharedProductCard extends StatelessWidget {
     final raw = product['price'] ?? product['product_price'] ?? '';
     return raw.toString();
   }
-  String get _image => product['image'] ?? product['imageUrl'] ?? product['product_photo'] ?? product['photo'] ?? '';
+  // FIX: Ajout du fallback 'image_url' — couvre tous les formats Firestore
+  String get _image => product['image'] ?? product['imageUrl'] ?? product['product_photo'] ?? product['image_url'] ?? product['photo'] ?? '';
   String get _url => product['url'] ?? product['product_url'] ?? product['link'] ?? '';
 
   Map<String, dynamic> get _normalized => {
@@ -106,15 +107,10 @@ class SharedProductCard extends StatelessWidget {
                               width: double.infinity,
                               height: 140,
                               fit: BoxFit.cover,
+                              // FIX: placeholder simple sans spinner (cohérent avec le reste de l'app)
                               placeholder: (_, __) => Container(
                                 height: 140,
                                 color: Colors.white.withOpacity(0.05),
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    color: _violet,
-                                    strokeWidth: 2,
-                                  ),
-                                ),
                               ),
                               errorWidget: (_, __, ___) => Container(
                                 height: 140,
