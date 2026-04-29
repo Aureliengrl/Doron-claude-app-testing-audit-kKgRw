@@ -1,4 +1,4 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import '/services/product_validator_service.dart';
 import 'dart:async';
 import 'dart:ui';
@@ -118,6 +118,21 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     );
   }
 
+  /// Traduit le label d'une catégorie selon la langue active
+  String _translateCategory(String id, String nameFr) {
+    if (!context.isEn) return nameFr;
+    switch (id) {
+      case 'all':      return 'For you';
+      case 'trending': return 'Trending';
+      case 'tech':     return 'Tech';
+      case 'fashion':  return 'Fashion';
+      case 'home':     return 'Home';
+      case 'beauty':   return 'Beauty';
+      case 'food':     return 'Food';
+      default:         return nameFr;
+    }
+  }
+
   /// Charge les favoris depuis Firebase users/{uid}/favorites
   Future<void> _loadFavorites() async {
     if (FirebaseAuth.instance.currentUser == null) {
@@ -199,14 +214,14 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         Query query;
 
         // Si catégorie spécifique, filtrer
-        if (_model.activeCategory != context.tr('Pour toi', 'For you')) {
-          final categoryLower = _model.activeCategory.toLowerCase();
+        if (_model.activeCategoryId != 'all') {
+          final categoryId = _model.activeCategoryId;
           // ATTENTION: Cette requête nécessite un index composite dans Firestore
           // Si l'index n'existe pas, on va fallback sur une requête sans orderBy
           query = FirebaseFirestore.instance
               .collection('gifts')
               .where('active', isEqualTo: true)
-              .where('categories', arrayContains: categoryLower)
+              .where('categories', arrayContains: categoryId)
               .orderBy('popularity', descending: true)
               .limit(100); // Augmenté de 50 à 100 pour plus de contenu
         } else {
@@ -229,7 +244,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           fallbackQuery = FirebaseFirestore.instance
               .collection('gifts')
               .where('active', isEqualTo: true)
-              .where('categories', arrayContains: categoryLower)
+              .where('categories', arrayContains: categoryId)
               .limit(100); // Augmenté de 50 à 100 pour plus de contenu
         } else {
           fallbackQuery = FirebaseFirestore.instance
@@ -323,7 +338,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       final tagsToUse = userProfileTags ?? {};
 
       // Charger les sections thématiques EN ARRIÈRE-PLAN (ne bloque PAS les produits)
-      if (_model.activeCategory == context.tr('Pour toi', 'For you') && userProfileTags != null) {
+      if (_model.activeCategoryId == 'all' && userProfileTags != null) {
         // Lancer sans await — les produits s'affichent immédiatement
         Future.microtask(() async {
           try {
@@ -357,7 +372,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       final rawProducts = await ProductMatchingService.getPersonalizedProducts(
         userTags: tagsToUse,
         count: HomePinterestModel.productsPerPage,
-        category: _model.activeCategory != context.tr('Pour toi', 'For you') ? _model.activeCategory : null,
+        // BUG FIX: utiliser l'ID pour le filtre categorie (independant de la langue)
+        category: _model.activeCategoryId != 'all' ? _model.activeCategoryId : null,
         excludeProductIds: seenProductIds,
         filteringMode: filterMode,
       );
@@ -639,7 +655,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('❤️ Ajouté aux favoris !', style: GoogleFonts.poppins()),
+            content: Text(context.tr('❤️ Ajouté aux favoris !', '❤️ Added to favourites!'), style: GoogleFonts.poppins()),
             backgroundColor: const Color(0xFF10B981),
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
@@ -729,7 +745,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     const Icon(Icons.check_circle, color: Colors.white, size: 20),
                     const SizedBox(width: 8),
                     Text(
-                      '? ${_model.products.length} cadeaux chargés !',
+                    context.tr('✨ ${_model.products.length} cadeaux chargés !', '✨ ${_model.products.length} gifts loaded!'),
                       style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
                     ),
                   ],
@@ -960,7 +976,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         Padding(
           padding: const EdgeInsets.only(left: 24, bottom: 8), // Aligné avec 24
           child: Text(
-            'Categories',
+            context.tr('Cat\u00e9gories', 'Categories'),
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -976,7 +992,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             itemCount: _model.categories.length,
             itemBuilder: (context, index) {
               final category = _model.categories[index];
-              final isActive = _model.activeCategory == category['name'];
+              // BUG FIX: isActive utilise l'ID (insensible a la langue)
+              final isActive = _model.activeCategoryId == category['id'];
 
           return Padding(
             padding: const EdgeInsets.only(right: 16), // Espacement uniforme constant (16)
@@ -1022,7 +1039,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        category['name'] as String,
+                        _translateCategory(category['id'] as String, category['name'] as String),
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,

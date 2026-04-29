@@ -1,7 +1,8 @@
 import '/utils/app_logger.dart';
 
 class HomePinterestModel {
-  String activeCategory = 'Pour toi';
+  String activeCategory = 'Pour toi'; // Label d'affichage (traduit dynamiquement dans le widget)
+  String activeCategoryId = 'all';    // ID logique — utilisé pour Firestore & comparaisons
   String activePriceFilter = 'all';
   String activeBrand = 'all'; // Filtre par marque/retailer
   Set<int> likedProducts = {};
@@ -112,6 +113,7 @@ class HomePinterestModel {
     currentPage = 0;
     hasMore = true;
     products.clear();
+    // NB: on ne réinitialise PAS activeCategoryId ici — on le fait explicitement lors du changement de catégorie
   }
 
   void incrementPage() {

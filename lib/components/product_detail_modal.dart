@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
@@ -250,7 +250,7 @@ class GlobalProductDetailModal {
                           final _priceStr = _priceRaw?.toString().replaceAll('\u20ac', '').trim() ?? '';
                           final _isBlank = _priceStr.isEmpty || _priceStr == '0' || _priceStr == '0.0';
                           return Text(
-                            _isBlank ? 'Prix non renseign\u00e9' : '${_priceStr}\u20ac',
+                            _isBlank ? context.tr('Prix non renseigné', 'Price not listed') : '${_priceStr}€',
                             style: GoogleFonts.poppins(
                               fontSize: _isBlank ? 16 : 32,
                               fontWeight: FontWeight.bold,
@@ -272,7 +272,7 @@ class GlobalProductDetailModal {
                           )
                         else
                           Text(
-                            'Cadeau parfait par ${product['brand'] as String? ?? product['source'] as String? ?? product['platform'] as String? ?? 'une marque de qualité'}',
+                          context.tr('Cadeau parfait par ${product['brand'] as String? ?? product['source'] as String? ?? product['platform'] as String? ?? 'une marque de qualité'}', 'The perfect gift from ${product['brand'] as String? ?? product['source'] as String? ?? product['platform'] as String? ?? 'a quality brand'}'),
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               color: Colors.white60,
@@ -358,7 +358,7 @@ class GlobalProductDetailModal {
         return Padding(
           padding: const EdgeInsets.only(top: 4),
           child: Text(
-            'Aucun lien disponible',
+            context.tr('Aucun lien disponible', 'No link available'),
             style: GoogleFonts.poppins(fontSize: 13, color: Colors.white38),
             textAlign: TextAlign.center,
           ),
@@ -393,7 +393,7 @@ class GlobalProductDetailModal {
         Row(
           children: [
             Text(
-              'Où acheter',
+            context.tr('Où acheter', 'Where to buy'),
               style: GoogleFonts.poppins(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
@@ -482,7 +482,7 @@ class GlobalProductDetailModal {
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
-                                    'Meilleur prix',
+                                    context.tr('Meilleur prix', 'Best price'),
                                     style: GoogleFonts.poppins(
                                       fontSize: 9,
                                       fontWeight: FontWeight.bold,
@@ -533,7 +533,7 @@ class GlobalProductDetailModal {
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Connexion requise pour les favoris.', style: GoogleFonts.poppins()),
+          content: Text(context.tr('Connexion requise pour les favoris.', 'Sign in to save favourites.'), style: GoogleFonts.poppins()),
           backgroundColor: Colors.orange,
         ),
       );
@@ -633,7 +633,7 @@ class GlobalProductDetailModal {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Ajouter à une wishlist',
+                            context.tr('Ajouter à une wishlist', 'Add to a wishlist'),
                             style: GoogleFonts.poppins(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -664,7 +664,7 @@ class GlobalProductDetailModal {
                       Icon(IconlyLight.document, size: 60, color: Colors.white24),
                       const SizedBox(height: 16),
                       Text(
-                        'Aucune wishlist',
+                        context.tr('Aucune wishlist', 'No wishlists'),
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -673,7 +673,7 @@ class GlobalProductDetailModal {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Crée ta première wishlist ci-dessous',
+                        context.tr('Crée ta première wishlist ci-dessous', 'Create your first wishlist below'),
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: Colors.white54,
@@ -746,7 +746,7 @@ class GlobalProductDetailModal {
                     },
                     icon: const Icon(Icons.add, color: Colors.white),
                     label: Text(
-                      'Créer une nouvelle wishlist',
+                      context.tr('Créer une nouvelle wishlist', 'Create a new wishlist'),
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -880,7 +880,7 @@ class GlobalProductDetailModal {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Ajouté à la wishlist !',
+                    context.tr('Ajouté à la wishlist !', 'Added to wishlist!'),
                     style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
@@ -903,7 +903,7 @@ class GlobalProductDetailModal {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur lors de l\'ajout à la wishlist', style: GoogleFonts.poppins()),
+            content: Text(context.tr('Erreur lors de l\'ajout à la wishlist', 'Error adding to wishlist'), style: GoogleFonts.poppins()),
             backgroundColor: Colors.red,
           ),
         );
@@ -999,7 +999,7 @@ class GlobalProductDetailModal {
                   ),
                 ),
                 subtitle: Text(
-                  'Partager ce produit dans une conversation',
+                  context.tr('Partager ce produit dans une conversation', 'Share this product in a conversation'),
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     color: Colors.white54,
@@ -1031,7 +1031,7 @@ class GlobalProductDetailModal {
                   ),
                 ),
                 subtitle: Text(
-                  'Ajouter ce cadeau dans la liste d\'un proche',
+                  context.tr('Ajouter ce cadeau dans la liste d\'un proche', 'Add this gift to a friend\'s list'),
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     color: Colors.white54,
@@ -1093,7 +1093,7 @@ class GlobalProductDetailModal {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Envoyer par message',
+                        context.tr('Envoyer par message', 'Send in a message'),
                         style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -1341,7 +1341,7 @@ class GlobalProductDetailModal {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Ajouter pour quelqu\'un',
+                        context.tr('Ajouter pour quelqu\'un', 'Add for someone'),
                         style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
