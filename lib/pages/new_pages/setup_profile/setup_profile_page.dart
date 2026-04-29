@@ -1,10 +1,12 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/utils/app_tr.dart';
 
 /// Page affichée une seule fois après la première connexion,
 /// uniquement si l'utilisateur n'a pas encore de handle.
@@ -30,9 +32,20 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
   int? _birthdayMonth;
   bool _birthdayExpanded = false;
 
-  static const _months = [
-    context.tr('Janvier', 'January'), 'Février', context.tr('Mars', 'March'), context.tr('Avril', 'April'), context.tr('Mai', 'May'), context.tr('Juin', 'June'),
-    context.tr('Juillet', 'July'), 'Août', context.tr('Septembre', 'September'), context.tr('Octobre', 'October'), context.tr('Novembre', 'November'), 'Décembre',
+  // ── Mois dynamiques (dépendent de la langue) ─────────────────────────────
+  List<String> _months(BuildContext ctx) => [
+    ctx.tr('Janvier', 'January'),
+    ctx.tr('Février', 'February'),
+    ctx.tr('Mars', 'March'),
+    ctx.tr('Avril', 'April'),
+    ctx.tr('Mai', 'May'),
+    ctx.tr('Juin', 'June'),
+    ctx.tr('Juillet', 'July'),
+    ctx.tr('Août', 'August'),
+    ctx.tr('Septembre', 'September'),
+    ctx.tr('Octobre', 'October'),
+    ctx.tr('Novembre', 'November'),
+    ctx.tr('Décembre', 'December'),
   ];
 
   @override
@@ -78,7 +91,10 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
       if (!available) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Ce nom d\'utilisateur est déjà pris. Essaie-en un autre.';
+          _errorMessage = context.tr(
+            'Ce nom d\'utilisateur est déjà pris. Essaie-en un autre.',
+            'This username is already taken. Try another one.',
+          );
         });
         return;
       }
@@ -88,7 +104,10 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
       if (uid == null) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Session expirée. Reconnecte-toi.';
+          _errorMessage = context.tr(
+            'Session expirée. Reconnecte-toi.',
+            'Session expired. Please sign in again.',
+          );
         });
         return;
       }
@@ -142,7 +161,10 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
       debugPrint('[SetupProfile] _save error: $e\n$st');
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Une erreur est survenue. Réessaie. ($e)';
+        _errorMessage = context.tr(
+          'Une erreur est survenue. Réessaie. ($e)',
+          'An error occurred. Please try again. ($e)',
+        );
       });
     }
   }
@@ -190,7 +212,12 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 24),
+
+                    // ── SÉLECTEUR DE LANGUE ──────────────────────────────
+                    _buildLanguageSelector(),
+
+                    const SizedBox(height: 32),
 
                     // Icon
                     Container(
@@ -207,7 +234,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                     const SizedBox(height: 24),
 
                     Text(
-                      'Crée ton profil',
+                      context.tr('Crée ton profil', 'Create your profile'),
                       style: GoogleFonts.poppins(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -217,7 +244,10 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Quelques infos pour personnaliser ton expérience Doron.',
+                      context.tr(
+                        'Quelques infos pour personnaliser ton expérience Doron.',
+                        'A few details to personalise your Doron experience.',
+                      ),
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: Colors.white.withOpacity(0.55),
@@ -234,7 +264,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
 
                     // ── HANDLE ───────────────────────────────────────────
                     Text(
-                      'Nom d\'utilisateur',
+                      context.tr('Nom d\'utilisateur', 'Username'),
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -283,8 +313,12 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                                 LengthLimitingTextInputFormatter(30),
                               ],
                               validator: (val) {
-                                if (val == null || val.trim().isEmpty) return 'Champ obligatoire';
-                                if (val.trim().length < 3) return 'Au moins 3 caractères';
+                                if (val == null || val.trim().isEmpty) {
+                                  return context.tr('Champ obligatoire', 'Required field');
+                                }
+                                if (val.trim().length < 3) {
+                                  return context.tr('Au moins 3 caractères', 'At least 3 characters');
+                                }
                                 return null;
                               },
                             ),
@@ -294,7 +328,10 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Uniquement lettres, chiffres, _ et . — min. 3 caractères',
+                      context.tr(
+                        'Uniquement lettres, chiffres, _ et . — min. 3 caractères',
+                        'Letters, numbers, _ and . only — min. 3 characters',
+                      ),
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Colors.white.withOpacity(0.35),
@@ -305,7 +342,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
 
                     // ── PRÉNOM ───────────────────────────────────────────
                     Text(
-                      'Ton prénom',
+                      context.tr('Ton prénom', 'Your first name'),
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -314,7 +351,10 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'C\'est le nom que tes amis verront.',
+                      context.tr(
+                        'C\'est le nom que tes amis verront.',
+                        'This is the name your friends will see.',
+                      ),
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         color: Colors.white.withOpacity(0.45),
@@ -336,7 +376,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                         ),
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: 'Ex : Marie',
+                          hintText: context.tr('Ex : Marie', 'E.g. John'),
                           hintStyle: GoogleFonts.poppins(
                             fontSize: 18,
                             color: Colors.white.withOpacity(0.25),
@@ -345,7 +385,9 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                         ),
                         inputFormatters: [LengthLimitingTextInputFormatter(50)],
                         validator: (val) {
-                          if (val == null || val.trim().isEmpty) return 'Champ obligatoire';
+                          if (val == null || val.trim().isEmpty) {
+                            return context.tr('Champ obligatoire', 'Required field');
+                          }
                           return null;
                         },
                       ),
@@ -386,7 +428,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                           child: _isLoading
                               ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
                               : Text(
-                                  'Continuer →',
+                                  context.tr('Continuer →', 'Continue →'),
                                   style: GoogleFonts.poppins(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -408,10 +450,97 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
     );
   }
 
+  // ── Sélecteur de langue ───────────────────────────────────────────────────
+
+  Widget _buildLanguageSelector() {
+    final isEn = context.isEn;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withOpacity(0.12)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 🇫🇷 Français
+          _buildLangButton(
+            label: '🇫🇷  Français',
+            isSelected: !isEn,
+            onTap: () {
+              setAppLanguage(context, 'fr');
+              // Rebuild cette page pour mettre à jour toutes les strings
+              if (mounted) setState(() {});
+            },
+          ),
+          const SizedBox(width: 6),
+          // 🇬🇧 English
+          _buildLangButton(
+            label: '🇬🇧  English',
+            isSelected: isEn,
+            onTap: () {
+              setAppLanguage(context, 'en');
+              if (mounted) setState(() {});
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLangButton({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? const LinearGradient(
+                  colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                )
+              : null,
+          color: isSelected ? null : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF8A2BE2).withOpacity(0.35),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected ? Colors.white : Colors.white.withOpacity(0.45),
+          ),
+        ),
+      ),
+    );
+  }
+
   // ── Section anniversaire ──────────────────────────────────────────────────
 
   Widget _buildBirthdaySection() {
     final hasBirthday = _birthdayDay != null && _birthdayMonth != null;
+    final months = _months(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -434,7 +563,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
             ),
             child: Row(
               children: [
-                Text('🎂', style: const TextStyle(fontSize: 22)),
+                const Text('🎂', style: TextStyle(fontSize: 22)),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -450,8 +579,11 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                       ),
                       Text(
                         hasBirthday
-                            ? '$_birthdayDay ${_months[_birthdayMonth! - 1]}'
-                            : 'Optionnel — apparaît dans le calendrier de tes amis',
+                            ? '$_birthdayDay ${months[_birthdayMonth! - 1]}'
+                            : context.tr(
+                                'Optionnel — apparaît dans le calendrier de tes amis',
+                                'Optional — appears in your friends\' calendar',
+                              ),
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: hasBirthday
@@ -538,7 +670,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         items: List.generate(12, (i) => i + 1).map((m) => DropdownMenuItem(
                           value: m,
-                          child: Text(_months[m - 1]),
+                          child: Text(months[m - 1]),
                         )).toList(),
                         onChanged: (v) => setState(() => _birthdayMonth = v),
                       ),
@@ -551,7 +683,10 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
           // Note RGPD
           const SizedBox(height: 8),
           Text(
-            '🔒 Seuls le jour et le mois sont enregistrés (pas l\'année)',
+            context.tr(
+              '🔒 Seuls le jour et le mois sont enregistrés (pas l\'année)',
+              '🔒 Only day and month are saved (not the year)',
+            ),
             style: GoogleFonts.poppins(fontSize: 11, color: Colors.white30),
           ),
         ],
