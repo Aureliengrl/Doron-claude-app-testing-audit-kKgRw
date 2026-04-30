@@ -36,6 +36,11 @@ import '/pages/new_pages/social/friends_page.dart';
 import '/pages/new_pages/setup_profile/setup_profile_page.dart';
 import '/pages/new_pages/join_collab_page.dart';
 import '/pages/new_pages/birthday_calendar/birthday_calendar_page.dart'; // F3
+import '/pages/new_pages/secret_santa/secret_santa_hub_page.dart';
+import '/pages/new_pages/secret_santa/secret_santa_create_page.dart';
+import '/pages/new_pages/secret_santa/secret_santa_lobby_page.dart';
+import '/pages/new_pages/secret_santa/secret_santa_reveal_page.dart';
+import '/pages/new_pages/secret_santa/secret_santa_wishlist_page.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -390,6 +395,43 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: BirthdayCalendarPage.routePath,
           requireAuth: true,
           builder: (context, params) => const BirthdayCalendarPage(),
+        ),
+        // ── Secret Santa ─────────────────────────────────────────────────
+        FFRoute(
+          name: SecretSantaHubPage.routeName,
+          path: SecretSantaHubPage.routePath,
+          requireAuth: true,
+          builder: (context, params) => const SecretSantaHubPage(),
+        ),
+        FFRoute(
+          name: SecretSantaCreatePage.routeName,
+          path: SecretSantaCreatePage.routePath,
+          requireAuth: true,
+          builder: (context, params) => const SecretSantaCreatePage(),
+        ),
+        FFRoute(
+          name: SecretSantaLobbyPage.routeName,
+          path: SecretSantaLobbyPage.routePath,
+          requireAuth: true,
+          builder: (context, params) => SecretSantaLobbyPage(
+            groupId: params.getParam<String>('groupId', ParamType.String) ?? '',
+          ),
+        ),
+        FFRoute(
+          name: SecretSantaRevealPage.routeName,
+          path: SecretSantaRevealPage.routePath,
+          requireAuth: true,
+          builder: (context, params) => SecretSantaRevealPage(
+            groupId: params.getParam<String>('groupId', ParamType.String) ?? '',
+          ),
+        ),
+        FFRoute(
+          name: SecretSantaWishlistPage.routeName,
+          path: SecretSantaWishlistPage.routePath,
+          requireAuth: true,
+          builder: (context, params) => SecretSantaWishlistPage(
+            groupId: params.getParam<String>('groupId', ParamType.String) ?? '',
+          ),
         ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );

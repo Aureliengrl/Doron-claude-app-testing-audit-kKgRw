@@ -212,6 +212,48 @@ service cloud.firestore {
       }
     }
 
+    // ── secret_santa_groups ─────────────────────────────────────────────────
+    // Sécurité : chaque participant ne peut lire QUE sa propre paire (pairs/{uid})
+
+    match /secret_santa_groups/{groupId} {
+      allow read: if isAuth() &&
+        (resource.data.createdBy == request.auth.uid ||
+         request.auth.uid in resource.data.participantUids);
+      allow create: if isAuth() && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isAuth() && (
+        resource.data.createdBy == request.auth.uid ||
+        request.auth.uid in resource.data.participantUids
+      );
+      allow delete: if isAuth() && resource.data.createdBy == request.auth.uid;
+
+      match /participants/{uid} {
+        allow read: if isAuth() && (
+          uid == request.auth.uid ||
+          get(/databases/$(database)/documents/secret_santa_groups/$(groupId)).data.participantUids.hasAny([request.auth.uid])
+        );
+        allow write: if isAuth() && (
+          uid == request.auth.uid ||
+          get(/databases/$(database)/documents/secret_santa_groups/$(groupId)).data.createdBy == request.auth.uid
+        );
+      }
+
+      match /pairs/{uid} {
+        // SEUL le bénéficiaire (le giver) peut lire sa propre paire.
+        // Personne d'autre — même l'organisateur — ne peut voir les autres paires.
+        allow read: if isAuth() && request.auth.uid == uid;
+        // L'organisateur (createdBy) peut écrire les paires pendant le tirage
+        allow write: if isAuth() &&
+          get(/databases/$(database)/documents/secret_santa_groups/$(groupId)).data.createdBy == request.auth.uid;
+      }
+    }
+
+    // ── ss_tokens (index tokens pour join-by-code) ──────────────────────────
+    match /ss_tokens/{token} {
+      allow read: if isAuth();
+      allow create: if isAuth() && request.resource.data.createdBy == request.auth.uid;
+      allow delete: if isAuth() && resource.data.createdBy == request.auth.uid;
+    }
+
     // ── fallback ─────────────────────────────────────────────────────────────
 
     match /{document=**} {

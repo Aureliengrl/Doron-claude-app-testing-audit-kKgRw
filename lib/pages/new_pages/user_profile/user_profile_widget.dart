@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -1245,6 +1245,42 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         index: i,
                         showWishlistButton: false,
                       ),
+                    const SizedBox(height: 10),
+                    // Secret Santa button
+                    GestureDetector(
+                      onTap: () => context.push('/secret-santa'),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 16),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF8A2BE2).withOpacity(0.35),
+                              blurRadius: 16,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            const Text('🎅', style: TextStyle(fontSize: 20)),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Secret Santa',
+                              style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                            const Spacer(),
+                            const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 14),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
