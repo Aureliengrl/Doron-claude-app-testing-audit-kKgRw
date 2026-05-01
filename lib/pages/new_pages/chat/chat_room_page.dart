@@ -352,8 +352,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       final participants = List<String>.from(_effectiveChatData?['participants'] ?? []);
                       final currentUid = FirebaseAuth.instance.currentUser?.uid;
                       final otherUid = participants.firstWhere((id) => id != currentUid, orElse: () => '');
-                      if (otherUid.isEmpty) return const Stream.empty();
-                      return FirebaseFirestore.instance.collection('users').doc(otherUid).snapshots() as Stream<DocumentSnapshot>;
+                      if (otherUid.isEmpty) return const Stream<DocumentSnapshot>.empty();
+                      return FirebaseFirestore.instance.collection('users').doc(otherUid).snapshots();
                     })(),
                     builder: (ctx, snap) {
                       if (!snap.hasData || !snap.data!.exists) return const SizedBox.shrink();

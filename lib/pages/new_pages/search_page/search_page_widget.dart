@@ -578,7 +578,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 // Afficher snackbar avec annulation
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text("${profile['name']} supprimé(e)")', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    content: Text("${profile['name']} supprimé(e)", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                     backgroundColor: Colors.red[700],
                     behavior: SnackBarBehavior.floating,
                     duration: const Duration(seconds: 4),

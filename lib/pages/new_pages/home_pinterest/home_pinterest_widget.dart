@@ -221,7 +221,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           query = FirebaseFirestore.instance
               .collection('gifts')
               .where('active', isEqualTo: true)
-              .where('categories', arrayContains: categoryLower)
+              .where('categories', arrayContains: categoryId.toLowerCase())
               .orderBy('popularity', descending: true)
               .limit(100); // Augmenté de 50 à 100 pour plus de contenu
         } else {
