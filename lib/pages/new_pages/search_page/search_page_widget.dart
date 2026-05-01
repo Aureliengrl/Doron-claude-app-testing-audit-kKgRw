@@ -1,4 +1,4 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
@@ -578,7 +578,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 // Afficher snackbar avec annulation
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('${profile[\'name\']} supprimé(e)', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    content: Text("${profile['name']} supprimé(e)")', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                     backgroundColor: Colors.red[700],
                     behavior: SnackBarBehavior.floating,
                     duration: const Duration(seconds: 4),
@@ -669,7 +669,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                                   shape: BoxShape.circle,
                                   border: Border.all(color: Colors.white, width: 1.5),
                                 ),
-                                child: const Icon(IconlyLight.people, size: 10, color: Colors.white),
+                                child: const Icon(IconlyLight.user2, size: 10, color: Colors.white),
                               ),
                             ),
                         ],
@@ -1663,7 +1663,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       profile['isShared'] = true;
                     });
                     context.push('/chat-room/$chatId', extra: {
-                      'name': context.tr('Cadeaux pour ', 'Gifts for ') + $name',
+                      'name': context.tr('Cadeaux pour ', 'Gifts for ') + (profile['name'] as String? ?? ''),
                       'isGroup': true,
                     });
                   }

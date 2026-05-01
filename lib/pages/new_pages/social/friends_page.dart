@@ -1,4 +1,4 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
@@ -14,6 +14,8 @@ import '/services/collaboration_service.dart';
 import '/services/suggestion_service.dart';
 import '/utils/app_logger.dart';
 import '/components/block_report_sheet.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 /// Page Amis â€” 3 onglets : Mes amis / Rechercher / Demandes reÃ§ues
 /// â”€ Chaque rÃ©sultat de recherche affiche le statut exact (none/pending/friend)
@@ -512,7 +514,7 @@ class _FriendsPageState extends State<FriendsPage>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(IconlyLight.people, size: 72, color: Colors.white24),
+                const Icon(IconlyLight.user2, size: 72, color: Colors.white24),
                 const SizedBox(height: 20),
                 Text('Aucun ami pour l\'instant',
                     style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white54)),
@@ -604,7 +606,7 @@ class _FriendsPageState extends State<FriendsPage>
                       const SizedBox(height: 2),
                       Row(
                         children: [
-                          const Icon(IconlyLight.people, size: 12, color: Color(0xFF10B981)),
+                          const Icon(IconlyLight.user2, size: 12, color: Color(0xFF10B981)),
                           const SizedBox(width: 4),
                           Text(context.tr('Amis', 'Friends'), style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF10B981))),
                         ],
@@ -748,7 +750,7 @@ class _FriendsPageState extends State<FriendsPage>
                   gradient: const LinearGradient(colors: [_violet, _pink]),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(IconlyLight.people, size: 14, color: Colors.white),
+                child: const Icon(IconlyLight.user2, size: 14, color: Colors.white),
               ),
               const SizedBox(width: 10),
               Text(
@@ -827,10 +829,10 @@ class _FriendsPageState extends State<FriendsPage>
     IconData sourceIcon;
     if (source.contains('contact')) {
       sourceLabel = 'Dans vos contacts';
-      sourceIcon = IconlyLight.people;
+      sourceIcon = IconlyLight.user2;
     } else if (mutualCount > 0) {
       sourceLabel = '$mutualCount ami${mutualCount > 1 ? 's' : ''} en commun';
-      sourceIcon = IconlyLight.people;
+      sourceIcon = IconlyLight.user2;
     } else {
       sourceLabel = 'Suggestion';
       sourceIcon = IconlyLight.star;
@@ -1176,7 +1178,7 @@ class _FriendsPageState extends State<FriendsPage>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(IconlyLight.people, size: 16, color: _green),
+                const Icon(IconlyLight.user2, size: 16, color: _green),
                 const SizedBox(width: 6),
                 Text('Amis â€” Voir le profil', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: _green)),
                 const SizedBox(width: 4),

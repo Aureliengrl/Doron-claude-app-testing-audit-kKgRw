@@ -394,7 +394,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                           Text(isToday ? '🎂' : '🎁', style: const TextStyle(fontSize: 14)),
                           const SizedBox(width: 4),
                           Text(
-                            isToday ? 'C'est son anniversaire aujourd'hui !' : 'Anniv: $day ${months[month]}',
+                            isToday ? "C'est son anniversaire aujourd'hui !" : 'Anniv: $day ${months[month]}',
                             style: GoogleFonts.outfit(
                               fontSize: 12,
                               color: isToday ? const Color(0xFFEC4899) : Colors.white54,
@@ -474,7 +474,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
       FriendshipStatus.none: (label: context.tr('Ajouter en ami', 'Add as friend'), icon: IconlyLight.addUser, color: _violet),
       FriendshipStatus.pendingSent: (label: 'En attenteâ€¦', icon: Icons.hourglass_top_rounded, color: Colors.grey.shade600),
       FriendshipStatus.pendingReceived: (label: 'Accepter', icon: Icons.check_circle_rounded, color: _green),
-      FriendshipStatus.friends: (label: 'Amis âœ“', icon: IconlyLight.people, color: const Color(0xFF6366F1)),
+      FriendshipStatus.friends: (label: 'Amis âœ“', icon: IconlyLight.user2, color: const Color(0xFF6366F1)),
     };
     final cfg = configs[_friendshipStatus]!;
 
@@ -534,7 +534,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                 children: [
                   const Icon(IconlyLight.document),
                   const SizedBox(width: 8),
-                  const Text(context.tr('Wishlists', 'Wishlists')),
+                  Text(context.tr('Wishlists', 'Wishlists')),
                 ],
               ),
             ),

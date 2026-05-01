@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
@@ -307,7 +307,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             child: (isGroup || photoUrl.isEmpty)
                 ? Center(
                     child: Icon(
-                      isGroup ? IconlyBold.people : IconlyLight.profile,
+                      isGroup ? IconlyBold.user2 : IconlyLight.profile,
                       color: Colors.white,
                       size: 20,
                     ),
@@ -353,7 +353,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       final currentUid = FirebaseAuth.instance.currentUser?.uid;
                       final otherUid = participants.firstWhere((id) => id != currentUid, orElse: () => '');
                       if (otherUid.isEmpty) return const Stream.empty();
-                      return FirebaseFirestore.instance.collection('users').doc(otherUid).snapshots();
+                      return FirebaseFirestore.instance.collection('users').doc(otherUid).snapshots() as Stream<DocumentSnapshot>;
                     })(),
                     builder: (ctx, snap) {
                       if (!snap.hasData || !snap.data!.exists) return const SizedBox.shrink();

@@ -201,7 +201,7 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
               child: _isGroup ? CustomTextField(
                 controller: _groupNameController,
                 hint: 'Nom du groupe (Optionnel)',
-                icon: IconlyLight.people,
+                icon: IconlyLight.user2,
               ) : const SizedBox.shrink(),
             ),
           ),

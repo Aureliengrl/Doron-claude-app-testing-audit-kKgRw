@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -387,7 +387,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(IconlyLight.people, size: 56, color: Colors.white24),
+            const Icon(IconlyLight.user2, size: 56, color: Colors.white24),
             const SizedBox(height: 12),
             Text('Aucun ami pour l\'instant', style: GoogleFonts.poppins(color: Colors.white54, fontSize: 15)),
             const SizedBox(height: 8),

@@ -539,7 +539,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(IconlyLight.people, color: Colors.white, size: 16),
+                                const Icon(IconlyLight.user2, color: Colors.white, size: 16),
                                 const SizedBox(width: 6),
                                 Text(
                                   'Amis',
@@ -1723,7 +1723,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   const SizedBox(height: 16),
                   Text('Pseudo', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 6),
-                  _buildEditField(handleCtrl, 'votre_pseudo', IconlyLight.user1, prefix: '@'),
+                  _buildEditField(handleCtrl, 'votre_pseudo', IconlyLight.profile, prefix: '@'),
                   const SizedBox(height: 16),
                   Text('Bio', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 6),

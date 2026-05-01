@@ -1,4 +1,4 @@
-import '/utils/app_logger.dart';
+﻿import '/utils/app_logger.dart';
 import '/services/product_validator_service.dart';
 import 'dart:async';
 import 'dart:ui';
@@ -110,7 +110,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           description: 'Dans ton profil, crée des listes de souhaits et partage-les avec tes amis.',
         ),
         TutorialStep(
-          icon: IconlyLight.people,
+          icon: IconlyLight.user2,
           title: 'Ajoute des amis',
           description: 'Recherche tes amis par @pseudo, envoie-leur une demande et vois leurs wishlists publiques.',
         ),
@@ -221,7 +221,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           query = FirebaseFirestore.instance
               .collection('gifts')
               .where('active', isEqualTo: true)
-              .where('categories', arrayContains: categoryId)
+              .where('categories', arrayContains: categoryLower)
               .orderBy('popularity', descending: true)
               .limit(100); // Augmenté de 50 à 100 pour plus de contenu
         } else {
@@ -244,7 +244,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           fallbackQuery = FirebaseFirestore.instance
               .collection('gifts')
               .where('active', isEqualTo: true)
-              .where('categories', arrayContains: categoryId)
+              .where('categories', arrayContains: categoryLower)
               .limit(100); // Augmenté de 50 à 100 pour plus de contenu
         } else {
           fallbackQuery = FirebaseFirestore.instance

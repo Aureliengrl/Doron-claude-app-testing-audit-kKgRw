@@ -1,4 +1,4 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -239,7 +239,8 @@ class _SecretSantaWishlistPageState extends State<SecretSantaWishlistPage> {
                         final item = _wishlistItems[i];
                         return SharedProductCard(
                           product: item,
-                          onTap: () {},
+                          index: i,
+                          showWishlistButton: false,
                         ).animate().fadeIn(delay: Duration(milliseconds: 60 * i)).slideY(begin: 0.1, end: 0);
                       },
                     ),

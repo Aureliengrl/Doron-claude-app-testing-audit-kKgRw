@@ -105,7 +105,7 @@ class ConnectionRequiredDialog extends StatelessWidget {
             const SizedBox(height: 12),
             _buildBenefit(IconlyLight.heart, 'Garde tes favoris synchronisés'),
             const SizedBox(height: 12),
-            _buildBenefit(IconlyLight.people, 'Crée des listes pour plusieurs personnes'),
+            _buildBenefit(IconlyLight.user2, 'Crée des listes pour plusieurs personnes'),
 
             const SizedBox(height: 28),
 

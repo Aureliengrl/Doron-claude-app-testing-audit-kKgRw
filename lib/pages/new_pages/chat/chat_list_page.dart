@@ -178,7 +178,7 @@ class _ChatListPageState extends State<ChatListPage> {
         if (diff >= 0 && diff <= 30) {
           suggestions.insert(0, {
             'emoji': '🎂',
-            'title': 'Anniv de ${friend['name']} dans ${diff == 0 ? 'aujourd'hui' : '$diff j'}',
+            'title': 'Anniv de ${friend['name']} dans ${diff == 0 ? "aujourd'hui" : '$diff j'}',
             'type': 'birthday',
             'friendName': friend['name'],
           });
@@ -391,7 +391,7 @@ class _ChatListPageState extends State<ChatListPage> {
                             ),
                             child: (isGroup || photoUrl.isEmpty) ? Center(
                               child: Icon(
-                                isGroup ? IconlyBold.people : IconlyLight.profile,
+                                isGroup ? IconlyBold.user2 : IconlyLight.profile,
                                 color: Colors.white,
                                 size: 28,
                               ),

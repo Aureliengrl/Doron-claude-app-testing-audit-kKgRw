@@ -125,7 +125,7 @@ class _OccasionQuestionPageState extends State<OccasionQuestionPage> {
                             builder: (_) => MomentTypePage(occasion: _selected),
                           ));
                         },
-                  child: const Text(context.tr('Continuer', 'Continue'),
+                  child: Text(context.tr('Continuer', 'Continue'),
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),

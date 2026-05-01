@@ -13,6 +13,7 @@ import '/services/gift_events_service.dart';
 import '/components/cached_image.dart';
 import '/components/connection_required_dialog.dart';
 import '/utils/app_logger.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 
 class GlobalProductDetailModal {
