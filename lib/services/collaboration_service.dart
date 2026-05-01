@@ -159,6 +159,37 @@ class CollaborationService {
         'pendingInvites': FieldValue.arrayUnion([toUid]),
       });
 
+      // ── Notification in-app : écrite dans 'notifications/{toUid}/items' ──
+      // Déclenche aussi une Cloud Function FCM si configurée sur cette collection
+      try {
+        // Récupérer le nom de l'inviteur
+        final senderDoc = await _db.collection('users').doc(myUid).get();
+        final senderData = senderDoc.data() ?? {};
+        final senderName = senderData['first_name'] as String? ??
+            senderData['display_name'] as String? ??
+            'Quelqu\'un';
+
+        await _db
+            .collection('notifications')
+            .doc(toUid)
+            .collection('items')
+            .add({
+          'type': 'collab_invite',
+          'inviteId': inviteRef.id,
+          'collabId': collabId,
+          'fromUid': myUid,
+          'fromName': senderName,
+          'profileName': profileName,
+          'title': '🎁 Invitation à collaborer',
+          'body': '$senderName t\'invite à participer aux cadeaux pour $profileName',
+          'read': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+        AppLogger.debug('✅ Notification collab envoyée à $toUid', 'Collab');
+      } catch (e) {
+        AppLogger.debug('⚠️ Notification collab failed (non-critical): $e', 'Collab');
+      }
+
       AppLogger.debug('✅ Invitation envoyée: ${inviteRef.id}', 'Collab');
       return inviteRef.id;
     } catch (e) {

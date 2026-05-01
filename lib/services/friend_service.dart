@@ -147,6 +147,30 @@ class FriendService {
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
+
+      // ── Notification in-app ──────────────────────────────────────────────
+      try {
+        final senderDoc = await _db.collection('users').doc(myUid).get();
+        final senderData = senderDoc.data() ?? {};
+        final senderName = senderData['first_name'] as String? ??
+            senderData['display_name'] as String? ??
+            'Quelqu\'un';
+        await _db
+            .collection('notifications')
+            .doc(toUid)
+            .collection('items')
+            .add({
+          'type': 'friend_request',
+          'requestId': ref.id,
+          'fromUid': myUid,
+          'fromName': senderName,
+          'title': '👋 Nouvelle demande d\'ami',
+          'body': '$senderName veut être ton ami !',
+          'read': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      } catch (_) {}
+
       AppLogger.debug('✅ FriendService.sendRequest → ${ref.id}', 'Social');
       return ref.id;
     } catch (e) {
