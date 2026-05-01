@@ -14,7 +14,7 @@ import '/components/liquid_glass_loader.dart';
 import '/components/shared_product_card.dart';
 import '/components/block_report_sheet.dart';
 
-/// Page de profil public â€” mÃªme layout que user_profile_widget.dart
+/// Page de profil public â€” même layout que user_profile_widget.dart
 /// Route : /public-profile/:uid
 class PublicProfilePage extends StatefulWidget {
   final String uid;
@@ -38,7 +38,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   Map<String, dynamic>? _profile;
   List<Map<String, dynamic>> _wishlists = [];
   List<Map<String, dynamic>> _likedProducts = [];
-  bool _likedProductsArePrivate = false; // true si l'onglet "Produits likÃ©s" n'est pas accessible
+  bool _likedProductsArePrivate = false; // true si l'onglet "Produits likés" n'est pas accessible
   FriendshipStatus _friendshipStatus = FriendshipStatus.none;
   String? _requestId;
   bool _isLoading = true;
@@ -107,7 +107,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 
   Future<void> _loadLikedProducts() async {
-    // Les produits likÃ©s sont privÃ©s : on ne charge jamais ceux d'un autre utilisateur
+    // Les produits likés sont privés : on ne charge jamais ceux d'un autre utilisateur
     if (!_isMyProfile) {
       _likedProductsArePrivate = true;
       return;
@@ -152,7 +152,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
             _friendshipStatus = FriendshipStatus.pendingSent;
             _requestId = id;
           });
-          _showSnack('âœ… Demande envoyÃ©e !', _green);
+          _showSnack('âœ… Demande envoyée !', _green);
         } else {
           _showSnack('âŒ Erreur lors de l\'envoi', Colors.red);
         }
@@ -165,7 +165,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
               _friendshipStatus = FriendshipStatus.none;
               _requestId = null;
             });
-            _showSnack('Demande annulÃ©e', Colors.grey);
+            _showSnack('Demande annulée', Colors.grey);
           }
         }
         break;
@@ -178,7 +178,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
               _requestId = null;
               _friendsCount++;
             });
-            _showSnack('ðŸ‘¥ Vous Ãªtes maintenant amis !', _green);
+            _showSnack('👥 Vous êtes maintenant amis !', _green);
           }
         }
         break;
@@ -189,7 +189,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
             _friendshipStatus = FriendshipStatus.none;
             _friendsCount = (_friendsCount - 1).clamp(0, 999);
           });
-          _showSnack('RetirÃ© de vos amis', Colors.grey);
+          _showSnack('Retiré de vos amis', Colors.grey);
         }
         break;
     }
@@ -544,7 +544,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                 children: [
                   const Icon(IconlyBold.heart),
                   const SizedBox(width: 8),
-                  const Text('Produits likÃ©s'),
+                  const Text('Produits likés'),
                 ],
               ),
             ),
@@ -604,7 +604,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
 
   Widget _buildWishlistCard(Map<String, dynamic> wishlist) {
     final name = wishlist['name'] as String? ?? 'Wishlist';
-    final emoji = wishlist['emoji'] as String? ?? 'ðŸŽ';
+    final emoji = wishlist['emoji'] as String? ?? '🎁';
     final productCount = (wishlist['productCount'] as int?) ?? 0;
     final coverUrl = wishlist['coverPhoto'] as String?;
 
@@ -678,7 +678,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 
   Widget _buildLikedProducts() {
-    // Produits likÃ©s d'un autre utilisateur â€” toujours privÃ©s
+    // Produits likés d'un autre utilisateur â€” toujours privés
     if (_likedProductsArePrivate) {
       return Center(
         child: Column(
@@ -696,7 +696,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
             ),
             const SizedBox(height: 20),
             Text(
-              'Produits likÃ©s privÃ©s',
+              'Produits likés privés',
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -705,7 +705,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
             ),
             const SizedBox(height: 8),
             Text(
-              'Les produits likÃ©s de cet utilisateur\nsont privÃ©s et non visibles.',
+              'Les produits likés de cet utilisateur\nsont privés et non visibles.',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(fontSize: 14, color: Colors.white30),
             ),
@@ -721,11 +721,11 @@ class _PublicProfilePageState extends State<PublicProfilePage>
           children: [
             Icon(IconlyLight.heart, size: 80, color: Colors.white.withOpacity(0.35)),
             const SizedBox(height: 16),
-            Text('Aucun produit likÃ©',
+            Text('Aucun produit liké',
                 style: GoogleFonts.poppins(
                     fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
             const SizedBox(height: 8),
-            Text('Les produits likÃ©s de cet utilisateur apparaÃ®tront ici',
+            Text('Les produits likés de cet utilisateur apparaîtront ici',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
           ],
@@ -767,7 +767,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 }
 
-// â”€â”€â”€ DÃ©lÃ©guÃ© Tab Bar sticky â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€â”€ Délégué Tab Bar sticky â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;

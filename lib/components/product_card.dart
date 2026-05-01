@@ -85,47 +85,7 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
 
-                  // Badge match (haut droite)
-                  if (match > 0)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [_violet, _pink],
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: _violet.withOpacity(0.4),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.auto_awesome,
-                                size: 14, color: Colors.white),
-                            const SizedBox(width: 4),
-                            Text(
-                              '$match%',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                  // Badge like (haut gauche)
+                  // Badge like (haut gauche) — seul overlay conservé
                   if (isLiked)
                     const Positioned(
                       top: 8,
@@ -135,22 +95,10 @@ class ProductCard extends StatelessWidget {
                 ],
               ),
 
-              // Nom du produit (optionnel — masqué pour effet Pinterest pur)
-              if (name.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-                  child: Text(
-                    name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF111827),
-                      height: 1.3,
-                    ),
-                  ),
-                ),
+              // Titre masqué — rendu Pinterest pur (image seule)
+              // Décommentez pour réafficher le titre sous l'image
+              // if (name.isNotEmpty)
+              //   Padding(...),
             ],
           ),
         ),

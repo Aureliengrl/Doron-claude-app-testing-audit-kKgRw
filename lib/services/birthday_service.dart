@@ -90,31 +90,20 @@ class BirthdayService {
 
     return [
       _holiday(year, 1, 1,  'Jour de l\'An', '🎊'),
+      _holiday(year, 1, 6,  'Épiphanie', '👑'),       // Galette des Rois
       _holiday(year, 2, 14, 'Saint-Valentin', '❤️'),
-      // Mardi Gras = 47 jours avant Pâques
-      {'date': DateTime.fromMillisecondsSinceEpoch(easterMs - 47 * 86400000), 'title': 'Mardi Gras', 'emoji': '🎭', 'type': 'holiday'},
-      // Pâques (dimanche)
+      // Pâques (dimanche) — gardé car échange de chocolats/cadeaux
       {'date': easter, 'title': 'Pâques', 'emoji': '🐣', 'type': 'holiday'},
-      // Lundi de Pâques
-      {'date': DateTime.fromMillisecondsSinceEpoch(easterMs + 86400000), 'title': 'Lundi de Pâques', 'emoji': '🐣', 'type': 'holiday'},
-      _holiday(year, 5, 1,  'Fête du Travail', '💼'),
-      _holiday(year, 5, 8,  'Victoire 1945', '🕊️'),
-      // Ascension = 39 jours après Pâques
-      {'date': DateTime.fromMillisecondsSinceEpoch(easterMs + 39 * 86400000), 'title': 'Ascension', 'emoji': '✨', 'type': 'holiday'},
       // Fête des Mères = 2e dimanche de mai (ou 1er dimanche de juin si Pentecôte)
-      {'date': _mothersDayFrance(year), 'title': 'Fête des Mères', 'emoji': '👩', 'type': 'holiday'},
-      // Pentecôte = 49 jours après Pâques
-      {'date': DateTime.fromMillisecondsSinceEpoch(easterMs + 49 * 86400000), 'title': 'Pentecôte', 'emoji': '☁️', 'type': 'holiday'},
-      // Lundi de Pentecôte
-      {'date': DateTime.fromMillisecondsSinceEpoch(easterMs + 50 * 86400000), 'title': 'Lundi de Pentecôte', 'emoji': '☁️', 'type': 'holiday'},
+      {'date': _mothersDayFrance(year), 'title': 'Fête des Mères', 'emoji': '💐', 'type': 'holiday'},
       _holiday(year, 6, 21, 'Fête de la Musique', '🎵'),
       // Fête des Pères = 3e dimanche de juin
-      {'date': _fathersDayFrance(year), 'title': 'Fête des Pères', 'emoji': '👨', 'type': 'holiday'},
+      {'date': _fathersDayFrance(year), 'title': 'Fête des Pères', 'emoji': '🎁', 'type': 'holiday'},
       _holiday(year, 7, 14, 'Fête Nationale', '🇫🇷'),
       _holiday(year, 10, 31,'Halloween', '🎃'),
       _holiday(year, 11, 1, 'Toussaint', '🕯️'),
-      _holiday(year, 11, 11,'Armistice', '🕊️'),
       _holiday(year, 12, 25,'Noël', '🎄'),
+      _holiday(year, 12, 26,'Lendemain de Noël', '🎁'),
       _holiday(year, 12, 31,'Réveillon', '🥂'),
     ];
   }

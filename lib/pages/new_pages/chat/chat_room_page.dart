@@ -255,7 +255,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   Widget _buildHeader(String title, bool isGroup) {
-    // Pour un chat 1-to-1, utiliser les infos de l'interlocuteur chargÃ©
+    // Pour un chat 1-to-1, utiliser les infos de l'interlocuteur chargé
     final displayName = !isGroup && _otherUserData != null
         ? ((_otherUserData!['first_name'] as String?) ??
            (_otherUserData!['display_name'] as String?) ??
@@ -286,7 +286,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
             onPressed: () => context.pop(),
           ),
-          // Avatar : vrai photo pour 1-to-1, icÃ´ne groupe sinon
+          // Avatar : vrai photo pour 1-to-1, icône groupe sinon
           Container(
             width: 40,
             height: 40,
@@ -997,7 +997,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       'price': price,
       'image': imageUrl,
       'url':   url,
-      ...product, // conserve les champs supplÃ©mentaires
+      ...product, // conserve les champs supplémentaires
     };
 
     return GestureDetector(

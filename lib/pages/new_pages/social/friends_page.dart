@@ -17,8 +17,8 @@ import '/components/block_report_sheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-/// Page Amis â€” 3 onglets : Mes amis / Rechercher / Demandes reÃ§ues
-/// â”€ Chaque rÃ©sultat de recherche affiche le statut exact (none/pending/friend)
+/// Page Amis â€” 3 onglets : Mes amis / Rechercher / Demandes reçues
+/// â”€ Chaque résultat de recherche affiche le statut exact (none/pending/friend)
 /// â”€ Clic sur profil â†’ /public-profile/:uid (PublicProfilePage)
 class FriendsPage extends StatefulWidget {
   const FriendsPage({super.key});
@@ -43,7 +43,7 @@ class _FriendsPageState extends State<FriendsPage>
   List<Map<String, dynamic>> _searchResults = [];
   bool _isSearching = false;
   String _lastQuery = '';
-  // Cache des statuts d'amitiÃ© pour les rÃ©sultats de recherche
+  // Cache des statuts d'amitié pour les résultats de recherche
   final Map<String, ({FriendshipStatus status, String? requestId})> _statusCache = {};
   final Set<String> _loadingStatuses = {};
 
@@ -51,12 +51,12 @@ class _FriendsPageState extends State<FriendsPage>
   List<String> _searchHistory = [];
   static const String _historyKey = 'friends_search_history';
 
-  // Onglet Demandes â€” stream temps rÃ©el
+  // Onglet Demandes â€” stream temps réel
   Stream<List<Map<String, dynamic>>>? _requestsStream;
   List<Map<String, dynamic>> _pendingRequests = [];
   final Set<String> _processingRequestIds = {};
 
-  // Invitations de collaboration reÃ§ues
+  // Invitations de collaboration reçues
   Stream<List<Map<String, dynamic>>>? _collabInvitesStream;
   List<Map<String, dynamic>> _pendingCollabInvites = [];
   final Set<String> _processingCollabIds = {};
@@ -71,13 +71,13 @@ class _FriendsPageState extends State<FriendsPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    // Stream temps rÃ©el des demandes d'amis reÃ§ues
+    // Stream temps réel des demandes d'amis reçues
     _requestsStream = FriendService.getPendingRequestsStream();
-    // Stream des invitations de collaboration reÃ§ues
+    // Stream des invitations de collaboration reçues
     _collabInvitesStream = CollaborationService.getMyPendingCollabInvitesStream();
     // Charger l'historique de recherche
     _loadSearchHistory();
-    // PrÃ©charger les suggestions en arriÃ¨re-plan
+    // Précharger les suggestions en arrière-plan
     _loadSuggestions();
   }
 
@@ -103,8 +103,8 @@ class _FriendsPageState extends State<FriendsPage>
     try {
       final prefs = await SharedPreferences.getInstance();
       final history = List<String>.from(_searchHistory);
-      history.remove(query.trim()); // Ã©viter doublon
-      history.insert(0, query.trim()); // plus rÃ©cent en premier
+      history.remove(query.trim()); // éviter doublon
+      history.insert(0, query.trim()); // plus récent en premier
       if (history.length > 10) history.removeLast();
       await prefs.setStringList(_historyKey, history);
       if (mounted) setState(() => _searchHistory = history);
@@ -141,7 +141,7 @@ class _FriendsPageState extends State<FriendsPage>
           _suggestionsLoading = false;
           _suggestionsLoaded = true;
         });
-        // Charger les statuts d'amitiÃ© pour les suggestions
+        // Charger les statuts d'amitié pour les suggestions
         for (final s in suggestions) {
           final uid = s['uid'] as String? ?? '';
           if (uid.isNotEmpty && !_statusCache.containsKey(uid)) {
@@ -172,9 +172,9 @@ class _FriendsPageState extends State<FriendsPage>
       final results = await UserSearchService.searchUsers(query.trim());
       if (mounted) {
         setState(() { _searchResults = results; _isSearching = false; });
-        // Sauvegarder dans l'historique si des rÃ©sultats
+        // Sauvegarder dans l'historique si des résultats
         if (results.isNotEmpty) _saveToHistory(query.trim());
-        // Charger les statuts en arriÃ¨re-plan
+        // Charger les statuts en arrière-plan
         for (final r in results) {
           final uid = r['uid'] as String? ?? '';
           if (uid.isNotEmpty && !_statusCache.containsKey(uid)) {
@@ -188,8 +188,8 @@ class _FriendsPageState extends State<FriendsPage>
     }
   }
 
-  // BUG 12 FIX: _loadingStatuses est maintenant modifiÃ© dans setState()
-  // pour dÃ©clencher correctement les rebuilds (affichage/masquage des spinners).
+  // BUG 12 FIX: _loadingStatuses est maintenant modifié dans setState()
+  // pour déclencher correctement les rebuilds (affichage/masquage des spinners).
   Future<void> _loadFriendshipStatus(String uid) async {
     if (mounted) setState(() => _loadingStatuses.add(uid));
     try {
@@ -211,7 +211,7 @@ class _FriendsPageState extends State<FriendsPage>
   }
 
   // â”€â”€â”€ Demandes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Les demandes sont gÃ©rÃ©es via _requestsStream (StreamBuilder) â€” pas de chargement manuel.
+  // Les demandes sont gérées via _requestsStream (StreamBuilder) â€” pas de chargement manuel.
 
   Future<void> _acceptRequest(String requestId, String fromUid) async {
     setState(() => _processingRequestIds.add(requestId));
@@ -222,7 +222,7 @@ class _FriendsPageState extends State<FriendsPage>
         _processingRequestIds.remove(requestId);
         if (ok) _pendingRequests.removeWhere((r) => r['requestId'] == requestId);
       });
-      _showSnack(ok ? 'ðŸ‘¥ Vous Ãªtes maintenant amis !' : 'âŒ Erreur', ok ? _green : Colors.red);
+      _showSnack(ok ? '👥 Vous êtes maintenant amis !' : 'âŒ Erreur', ok ? _green : Colors.red);
       if (ok) {
         // Invalider le cache pour cet uid
         _statusCache.remove(fromUid);
@@ -253,7 +253,7 @@ class _FriendsPageState extends State<FriendsPage>
           _processingCollabIds.remove(inviteId);
           _pendingCollabInvites.removeWhere((i) => i['inviteId'] == inviteId);
         });
-        _showSnack('ðŸŽ Tu as rejoint la liste !', _green);
+        _showSnack('🎁 Tu as rejoint la liste !', _green);
         final chatId = result['chatId'] as String?;
         final profileName = result['profileName'] as String? ?? 'la liste';
         if (chatId != null) {
@@ -294,7 +294,7 @@ class _FriendsPageState extends State<FriendsPage>
           _statusCache[uid] = (status: FriendshipStatus.pendingSent, requestId: requestId);
         }
       });
-      if (requestId != null) _showSnack('âœ… Demande envoyÃ©e !', _green);
+      if (requestId != null) _showSnack('âœ… Demande envoyée !', _green);
     }
   }
 
@@ -307,7 +307,7 @@ class _FriendsPageState extends State<FriendsPage>
         _loadingStatuses.remove(uid);
         if (ok) _statusCache[uid] = (status: FriendshipStatus.none, requestId: null);
       });
-      if (ok) _showSnack('Demande annulÃ©e', Colors.grey);
+      if (ok) _showSnack('Demande annulée', Colors.grey);
     }
   }
 
@@ -321,7 +321,7 @@ class _FriendsPageState extends State<FriendsPage>
         if (ok) _statusCache[uid] = (status: FriendshipStatus.friends, requestId: null);
       });
       if (ok) {
-        _showSnack('ðŸ‘¥ Vous Ãªtes maintenant amis !', _green);
+        _showSnack('👥 Vous êtes maintenant amis !', _green);
       }
     }
   }
@@ -423,7 +423,7 @@ class _FriendsPageState extends State<FriendsPage>
                     },
                     style: GoogleFonts.poppins(color: Colors.white, fontSize: 15),
                     decoration: InputDecoration(
-                      hintText: 'Rechercher par @pseudo ou prÃ©nomâ€¦',
+                      hintText: 'Rechercher par @pseudo ou prénomâ€¦',
                       hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 14),
                       border: InputBorder.none,
                     ),
@@ -449,7 +449,7 @@ class _FriendsPageState extends State<FriendsPage>
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: _requestsStream,
       builder: (context, snap) {
-        // Mettre Ã  jour la liste locale avec les donnÃ©es du stream
+        // Mettre à jour la liste locale avec les données du stream
         if (snap.hasData && mounted) _pendingRequests = snap.data!;
         final pendingCount = _pendingRequests.length;
         return Padding(
@@ -469,13 +469,13 @@ class _FriendsPageState extends State<FriendsPage>
             labelStyle: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
             unselectedLabelStyle: GoogleFonts.poppins(fontSize: 13),
             tabs: [
-              const Tab(text: 'ðŸ‘¥ Amis'),
-              const Tab(text: 'ðŸ” Rechercher'),
+              const Tab(text: '👥 Amis'),
+              const Tab(text: '🔍 Rechercher'),
               Tab(
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    Text('ðŸ“¬ Demandes', style: GoogleFonts.poppins(fontSize: 13)),
+                    Text('📬 Demandes', style: GoogleFonts.poppins(fontSize: 13)),
                     if (pendingCount > 0)
                       Positioned(
                         top: -6,
@@ -723,7 +723,7 @@ class _FriendsPageState extends State<FriendsPage>
           children: [
             const Icon(IconlyLight.profile, size: 64, color: Colors.white24),
             const SizedBox(height: 16),
-            Text('Aucun utilisateur trouvÃ©', style: GoogleFonts.poppins(fontSize: 16, color: Colors.white38)),
+            Text('Aucun utilisateur trouvé', style: GoogleFonts.poppins(fontSize: 16, color: Colors.white38)),
           ],
         ),
       );
@@ -784,7 +784,7 @@ class _FriendsPageState extends State<FriendsPage>
                   children: [
                     const Icon(IconlyLight.search, size: 48, color: Colors.white24),
                     const SizedBox(height: 12),
-                    Text('Cherche par @pseudo ou prÃ©nom',
+                    Text('Cherche par @pseudo ou prénom',
                         style: GoogleFonts.poppins(fontSize: 14, color: Colors.white38)),
                   ],
                 ),
@@ -967,7 +967,7 @@ class _FriendsPageState extends State<FriendsPage>
         children: [
           const Icon(IconlyLight.timeCircle, size: 18, color: Colors.white54),
           const SizedBox(width: 8),
-          Text('Recherches rÃ©centes',
+          Text('Recherches récentes',
               style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white54)),
           const Spacer(),
           GestureDetector(
@@ -1029,7 +1029,7 @@ class _FriendsPageState extends State<FriendsPage>
     );
   }
 
-  // BUG 7 FIX: mÃ©thode morte supprimÃ©e (_buildSearchHistoryList n'Ã©tait jamais appelÃ©e).
+  // BUG 7 FIX: méthode morte supprimée (_buildSearchHistoryList n'était jamais appelée).
 
   Widget _buildSearchResultTile(Map<String, dynamic> profile) {
     final photoUrl = profile['photoUrl'] as String? ?? '';
@@ -1224,7 +1224,7 @@ class _FriendsPageState extends State<FriendsPage>
   Widget _buildPendingRequests() {
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: _requestsStream,
-      initialData: const [], // â† FIX: Ã©vite le spinner infini
+      initialData: const [], // â† FIX: évite le spinner infini
       builder: (context, friendSnap) {
         // Erreur sur le stream
         if (friendSnap.hasError) {
@@ -1250,13 +1250,13 @@ class _FriendsPageState extends State<FriendsPage>
                     _requestsStream = FriendService.getPendingRequestsStream();
                     _collabInvitesStream = CollaborationService.getMyPendingCollabInvitesStream();
                   }),
-                  child: Text('RÃ©essayer', style: GoogleFonts.poppins(color: _violet)),
+                  child: Text('Réessayer', style: GoogleFonts.poppins(color: _violet)),
                 ),
               ],
             ),
           );
         }
-        // Stream collab sÃ©parÃ© â€” ne bloque PAS l'affichage des demandes d'amis
+        // Stream collab séparé â€” ne bloque PAS l'affichage des demandes d'amis
         return StreamBuilder<List<Map<String, dynamic>>>(
           stream: _collabInvitesStream,
           initialData: const [], // Valeur initiale vide pour ne pas bloquer
@@ -1265,7 +1265,7 @@ class _FriendsPageState extends State<FriendsPage>
             final friendRequests = friendSnap.data ?? [];
             final collabInvites = collabSnap.data ?? [];
 
-            // Mettre Ã  jour les listes locales
+            // Mettre à jour les listes locales
             _pendingRequests = friendRequests;
             _pendingCollabInvites = collabInvites;
 
@@ -1278,7 +1278,7 @@ class _FriendsPageState extends State<FriendsPage>
                     const SizedBox(height: 20),
                     Text('Aucune demande en attente', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white54)),
                     const SizedBox(height: 8),
-                    Text('Les demandes d\'amis et collaborations apparaÃ®tront ici', style: GoogleFonts.poppins(fontSize: 14, color: Colors.white30)),
+                    Text('Les demandes d\'amis et collaborations apparaîtront ici', style: GoogleFonts.poppins(fontSize: 14, color: Colors.white30)),
                   ],
                 ),
               );
@@ -1463,7 +1463,7 @@ class _FriendsPageState extends State<FriendsPage>
                 children: [
                   Text(fromName, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
                   const SizedBox(height: 2),
-                  Text('t\'invite Ã  collaborer sur', style: GoogleFonts.poppins(fontSize: 11, color: Colors.white54)),
+                  Text('t\'invite à collaborer sur', style: GoogleFonts.poppins(fontSize: 11, color: Colors.white54)),
                   const SizedBox(height: 2),
                   Row(
                     children: [

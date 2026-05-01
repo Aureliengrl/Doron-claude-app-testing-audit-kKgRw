@@ -55,20 +55,20 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     _model = UserProfileModel();
     _tabController = TabController(length: 2, vsync: this);
 
-    // VÃ©rifier le mode anonyme
+    // Vérifier le mode anonyme
     _checkAnonymousMode();
     // Charger les wishlists initiales + nb amis
     _loadWishlists();
     _loadFriendsCount();
 
-    // Charger les favoris et le profil aprÃ¨s le premier frame
+    // Charger les favoris et le profil après le premier frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && !_isAnonymous) {
         _model.loadFavourites();
       }
     });
 
-    // Ã©couter les changements du model
+    // écouter les changements du model
     _model.addListener(_onModelChanged);
   }
 
@@ -95,14 +95,14 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
   // â”€â”€â”€ Changement de photo de profil â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  /// Chemin local affichÃ© immÃ©diatement avant que l'upload termine.
+  /// Chemin local affiché immédiatement avant que l'upload termine.
   File? _localProfilePhoto;
 
-  /// URL CDN mÃ©morisÃ©e aprÃ¨s upload â€” affichÃ©e mÃªme si AuthUserStream
-  /// n'est pas encore rafraÃ®chi (Ã©vite le dÃ©lai de latence).
+  /// URL CDN mémorisée après upload â€” affichée même si AuthUserStream
+  /// n'est pas encore rafraîchi (évite le délai de latence).
   String? _uploadedPhotoUrl;
 
-  /// Fallback avatar (initiales / icÃ´ne)
+  /// Fallback avatar (initiales / icône)
   Widget _buildAvatarFallback() => Container(
     color: violetColor.withOpacity(0.3),
     child: Icon(IconlyLight.profile, size: 40, color: Colors.white),
@@ -135,7 +135,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         try {
           // â”€â”€ Ã‰criture ATOMIQUE : photo_url + photoUrl en un seul update â”€â”€
           // Synchronise les deux champs â†’ tous les lecteurs voient la photo
-          // immÃ©diatement (public_profile_page, friend_service, etc.)
+          // immédiatement (public_profile_page, friend_service, etc.)
           await FirebaseFirestore.instance
               .collection('users')
               .doc(uid)
@@ -151,10 +151,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         if (mounted) {
           setState(() {
             _localProfilePhoto = null;
-            _uploadedPhotoUrl  = downloadUrl; // mÃ©morisÃ© â†’ affichÃ© immÃ©diatement
+            _uploadedPhotoUrl  = downloadUrl; // mémorisé â†’ affiché immédiatement
           });
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Photo de profil mise Ã  jour âœ“', style: GoogleFonts.outfit()),
+            content: Text('Photo de profil mise à jour âœ“', style: GoogleFonts.outfit()),
             backgroundColor: const Color(0xFF8A2BE2),
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 2),
@@ -184,8 +184,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       backgroundColor: LiquidGlassTokens.pageDark,
       body: CustomScrollView(
         slivers: [
-          // App Bar avec photo de profil et bouton paramÃªtres
-          _buildAppBar(),          // Tabs (Produits likÃ©s / Wishlists)
+          // App Bar avec photo de profil et bouton paramêtres
+          _buildAppBar(),          // Tabs (Produits likés / Wishlists)
           _buildTabBar(),
 
           // Contenu des tabs
@@ -200,7 +200,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       backgroundColor: LiquidGlassTokens.pageDark,
       body: Stack(
         children: [
-          // Contenu floutÃ©
+          // Contenu flouté
           CustomScrollView(
             slivers: [
               _buildAppBar(),
@@ -209,7 +209,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             ],
           ),
 
-          // Overlay floutÃ©
+          // Overlay flouté
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
@@ -258,7 +258,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'CrÃ©e ton compte pour accÃ©der Ã  ton profil, tes produits likÃ©s et tes wishlists',
+                    'Crée ton compte pour accéder à ton profil, tes produits likés et tes wishlists',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
                       fontSize: 15,
@@ -677,7 +677,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             ),
             const SizedBox(height: 16),
             Text(
-              'Aucun produit likÃ©',
+              'Aucun produit liké',
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -686,7 +686,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             ),
             const SizedBox(height: 8),
             Text(
-              'Explore l\'accueil et like tes produits prÃ©fÃ©rÃ©s !',
+              'Explore l\'accueil et like tes produits préférés !',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 14,
@@ -772,7 +772,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 const SizedBox(height: 16),
                 Text('Aucune wishlist', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
                 const SizedBox(height: 8),
-                Text('CrÃ©e des wishlists pour organiser tes cadeaux', textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
+                Text('Crée des wishlists pour organiser tes cadeaux', textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
               ],
             ),
           );
@@ -796,7 +796,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 return GestureDetector(
                   onTap: () async {
                     await _showWishlistDetail(wishlist);
-                    // Recharger la liste pour mettre Ã  jour le compteur sur la pochette
+                    // Recharger la liste pour mettre à jour le compteur sur la pochette
                     _loadWishlists();
                   },
                   child: Container(
@@ -898,7 +898,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 );
               },
             ),
-            // â€” Bouton CrÃ©er un album â€”
+            // â€” Bouton Créer un album â€”
             Positioned(
               bottom: 90,
               left: 24,
@@ -938,10 +938,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         );
   }
 
-  /// Dialog de crÃ©ation d'un nouvel album (wishlist)
+  /// Dialog de création d'un nouvel album (wishlist)
   Future<bool?> _showCreateAlbumDialog() async {
     final nameController = TextEditingController();
-    final emojiController = TextEditingController(text: 'ðŸŽ');
+    final emojiController = TextEditingController(text: '🎁');
     bool isCreating = false;
 
     return showDialog<bool>(
@@ -999,13 +999,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   : () {
                       final name = nameController.text.trim();
                       if (name.isEmpty) return;
-                      final emoji = emojiController.text.trim().isEmpty ? 'ðŸŽ' : emojiController.text.trim();
+                      final emoji = emojiController.text.trim().isEmpty ? '🎁' : emojiController.text.trim();
 
                       // â”€â”€ OPTIMISTIC UI :
-                      // 1. Fermer le dialog immÃ©diatement
+                      // 1. Fermer le dialog immédiatement
                       Navigator.pop(ctx, true);
 
-                      // 2. Ajouter localement pour affichage instantanÃ©
+                      // 2. Ajouter localement pour affichage instantané
                       final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
                       final optimisticWishlist = {
                         'id': tempId,
@@ -1017,7 +1017,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                       };
                       setState(() => _wishlists.insert(0, optimisticWishlist));
 
-                      // 3. CrÃ©er en arriÃ¨re-plan dans Firestore
+                      // 3. Créer en arrière-plan dans Firestore
                       FirebaseDataService.createWishlist(name: name, emoji: emoji).then((realId) {
                         if (realId != null && mounted) {
                           setState(() {
@@ -1089,10 +1089,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('âœ… Couverture mise Ã  jour !')),
+        const SnackBar(content: Text('âœ… Couverture mise à jour !')),
       );
 
-      // Mettre Ã  jour immÃ©diatement en mÃ©moire + vider le cache image
+      // Mettre à jour immédiatement en mémoire + vider le cache image
       setState(() {
         final idx = _wishlists.indexWhere((w) => w['id'] == wishlistId);
         if (idx != -1) {
@@ -1114,10 +1114,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
     if (!mounted) return;
 
-    // Normaliser les clÃ©s pour SharedProductCard (conserver le type pour routing photo/product)
+    // Normaliser les clés pour SharedProductCard (conserver le type pour routing photo/product)
     final normalizedProducts = products.map((p) => {
       'id': p['id'] ?? '',
-      'type': p['type'] ?? 'product',  // phÃ©nomÃ¨ne clÃ© pour le routing PhotoItemCard
+      'type': p['type'] ?? 'product',  // phénomène clé pour le routing PhotoItemCard
       'name': p['title'] ?? p['name'] ?? p['product_title'] ?? 'Produit',
       'brand': p['brand'] ?? p['platform'] ?? p['source'] ?? '',
       'price': (p['price'] ?? p['product_price'] ?? '').toString(),
@@ -1142,13 +1142,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           ),
           child: Column(
             children: [
-              // PoignÃ©e
+              // Poignée
               Container(
                 margin: const EdgeInsets.only(top: 12),
                 width: 40, height: 4,
                 decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
               ),
-              // En-tÃªte
+              // En-tête
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 12, 12, 0),
               child: Row(
@@ -1293,11 +1293,11 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   }
 
   /// Ouvre un picker pour ajouter une photo dans un album wishlist.
-  /// â”€ Upload OPTIMISTE : la photo s'affiche immÃ©diatement en local,
-  ///   l'upload Firebase se fait en arriÃ¨re-plan.
+  /// â”€ Upload OPTIMISTE : la photo s'affiche immédiatement en local,
+  ///   l'upload Firebase se fait en arrière-plan.
   Future<Map<String, dynamic>?> _addPhotoToAlbum(
     String wishlistId, {
-    /// Callback appelÃ© quand l'URL Firebase est disponible (mise Ã  jour en arriÃ¨re-plan)
+    /// Callback appelé quand l'URL Firebase est disponible (mise à jour en arrière-plan)
     void Function(String photoId, String firebaseUrl, String price)? onUploaded,
   }) async {
     // â”€â”€ 1. Choix de la source â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1333,7 +1333,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     );
     if (source == null || !mounted) return null;
 
-    // â”€â”€ 2. SÃ©lection de la photo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â”€â”€ 2. Sélection de la photo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     final picked = source == ImageSource.gallery
         ? await PhotoPermissionService.pickFromGallery(context, imageQuality: 80)
         : await PhotoPermissionService.pickFromCamera(context, imageQuality: 80);
@@ -1353,7 +1353,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           children: [
             const Icon(IconlyLight.editSquare, color: Color(0xFF00D4FF), size: 22),
             const SizedBox(width: 8),
-            Text('DÃ©tails (optionnel)', style: GoogleFonts.poppins(
+            Text('Détails (optionnel)', style: GoogleFonts.poppins(
               color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
           ],
         ),
@@ -1414,20 +1414,20 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     priceCtrl.dispose();
     if (!mounted) return null;
 
-    // â”€â”€ 4. Affichage OPTIMISTE immÃ©diat (fichier local) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â”€â”€ 4. Affichage OPTIMISTE immédiat (fichier local) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
     final localPath = picked.path;
     final optimisticEntry = {
       'id': tempId,
       'type': 'photo',
-      'image': localPath,      // chemin fichier local â€” PhotoItemCard le gÃ¨re
+      'image': localPath,      // chemin fichier local â€” PhotoItemCard le gère
       'caption': caption,
       'price': price,
       'url': '',
       '_isUploading': true,    // flag pour indicateur discret
     };
 
-    // â”€â”€ 5. Upload en arriÃ¨re-plan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â”€â”€ 5. Upload en arrière-plan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     FirebaseDataService.addPhotoToWishlist(
       wishlistId,
       localPath,
@@ -1438,7 +1438,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       if (!ok || !mounted) return;
       // Snack discret de confirmation
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('ðŸ“· Photo ajoutÃ©e !', style: GoogleFonts.poppins(
+        content: Text('📷 Photo ajoutée !', style: GoogleFonts.poppins(
             color: Colors.white, fontWeight: FontWeight.w600)),
         backgroundColor: const Color(0xFF10B981),
         behavior: SnackBarBehavior.floating,
@@ -1447,11 +1447,11 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       ));
     });
 
-    // Retourner l'entrÃ©e optimiste â€” la grille l'affiche immÃ©diatement
+    // Retourner l'entrée optimiste â€” la grille l'affiche immédiatement
     return optimisticEntry;
   }
   // â”€â”€â”€ Gamification & Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Removed "Ton activitÃ©" and "Badges" per user request.
+  // Removed "Ton activité" and "Badges" per user request.
 
   // â”€â”€â”€ Actions & Modals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _shareProfile() async {
@@ -1471,7 +1471,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Lien copiÃ© ! $url', style: GoogleFonts.outfit()),
+          content: Text('Lien copié ! $url', style: GoogleFonts.outfit()),
           backgroundColor: const Color(0xFF8A2BE2),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -1481,7 +1481,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     }
   }
 
-  // â”€â”€â”€ ParamÃ¨tres â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€â”€ Paramètres â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   void _showSettingsBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -1500,14 +1500,14 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             children: [
               Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
               const SizedBox(height: 24),
-              Text('ParamÃ¨tres', style: GoogleFonts.outfit(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Paramètres', style: GoogleFonts.outfit(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 24),
               LiquidGlassSurface(
                 child: Column(
                   children: [
                     ListTile(
                       leading: const Icon(IconlyLight.filter, color: Colors.white),
-                      title: Text('Modifier mes prÃ©fÃ©rences (IA)', style: GoogleFonts.outfit(color: Colors.white)),
+                      title: Text('Modifier mes préférences (IA)', style: GoogleFonts.outfit(color: Colors.white)),
                       trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
                       onTap: () {
                         Navigator.pop(ctx);
@@ -1604,7 +1604,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     children: [
                       const Icon(IconlyLight.logout, color: Colors.white, size: 20),
                       const SizedBox(width: 12),
-                      Text('Se dÃ©connecter', style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text('Se déconnecter', style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -1626,7 +1626,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('Supprimer le compte', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
         content: Text(
-          'Cette action est irrÃ©versible. Votre compte sera dÃ©finitivement supprimÃ©.',
+          'Cette action est irréversible. Votre compte sera définitivement supprimé.',
           style: GoogleFonts.poppins(color: Colors.white70),
         ),
         actions: [
@@ -1643,7 +1643,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         backgroundColor: const Color(0xFF1E1E1E),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('Confirmation finale', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.bold)),
-        content: Text('ÃŠtes-vous ABSOLUMENT sÃ»r ? Vous ne pourrez plus rÃ©cupÃ©rer votre compte.', style: GoogleFonts.poppins(color: Colors.white70)),
+        content: Text('ÃŠtes-vous ABSOLUMENT sûr ? Vous ne pourrez plus récupérer votre compte.', style: GoogleFonts.poppins(color: Colors.white70)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Non, garder mon compte', style: GoogleFonts.poppins(color: Colors.white))),
           TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('Oui, supprimer', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.w600))),
@@ -1687,7 +1687,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     }
   }
 
-  // BUG 8 FIX: Ã‰dition complÃ¨te du profil (nom, pseudo, bio)
+  // BUG 8 FIX: Ã‰dition complète du profil (nom, pseudo, bio)
   void _showEditProfileSheet(BuildContext context) {
     final nameCtrl = TextEditingController(text: _model.userProfile?['first_name'] as String? ?? '');
     final handleCtrl = TextEditingController(text: _model.userProfile?['handle'] as String? ?? '');
@@ -1717,9 +1717,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   const SizedBox(height: 20),
                   Text(context.tr('Modifier le profil', 'Edit profile'), style: GoogleFonts.outfit(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 24),
-                  Text('PrÃ©nom', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
+                  Text('Prénom', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 6),
-                  _buildEditField(nameCtrl, 'Votre prÃ©nom', IconlyLight.profile),
+                  _buildEditField(nameCtrl, 'Votre prénom', IconlyLight.profile),
                   const SizedBox(height: 16),
                   Text('Pseudo', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 6),
@@ -1825,7 +1825,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   }
 }
 
-// DÃ©lÃ©guÃ© pour la tab bar sticky
+// Délégué pour la tab bar sticky
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;
   final Color backgroundColor;
