@@ -90,6 +90,23 @@ class ProductValidatorService {
 
   /// Retourne la meilleure URL produit.
   static String _normalizeUrl(Map<String, dynamic> p) {
+    // 1. buyLinks[] en priorité (vraie URL directe)
+    final rawLinks = p['buyLinks'];
+    if (rawLinks is List) {
+      for (final link in rawLinks) {
+        String? u;
+        if (link is Map) {
+          u = link['url'] as String?;
+        } else if (link is String && link.startsWith('http')) {
+          u = link;
+        }
+        if (u != null && u.isNotEmpty && u != '#' && u.startsWith('http')) {
+          return u.trim();
+        }
+      }
+    }
+
+    // 2. Champs url / product_url / link
     final candidates = [
       p['url'],
       p['product_url'],
@@ -102,7 +119,7 @@ class ProductValidatorService {
       }
     }
 
-    // Générer une URL de recherche
+    // 3. Génération URL de recherche (fallback)
     final name = _normalizeName(p);
     final brand = _normalizeBrand(p);
     final query = Uri.encodeComponent('$brand $name'.trim());

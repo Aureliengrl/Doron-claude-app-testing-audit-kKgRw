@@ -391,6 +391,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           'url': (validated['url'] as String).isNotEmpty
               ? validated['url']
               : ProductUrlService.generateProductUrl(product),
+          'buyLinks': product['buyLinks'], // conserver pour le modal comparateur
           'source': product['source'] ?? 'Amazon',
           'categories': product['categories'] ?? [],
           // FIX F5: Score normalisé sur base 400 (150 bonus + ~250 max bonus)
@@ -513,6 +514,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           'price': product['price'] ?? 0,
           'image': validated['image'],
           'url': (validated['url'] as String).isNotEmpty ? validated['url'] : ProductUrlService.generateProductUrl(product),
+          'buyLinks': product['buyLinks'], // conserver pour le modal comparateur
           'source': product['source'] ?? 'Amazon',
           'categories': product['categories'] ?? [],
           // FIX F5: Score normalisé /400 (base = 150 + ~250 bonus max)

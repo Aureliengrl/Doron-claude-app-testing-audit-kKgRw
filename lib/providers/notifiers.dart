@@ -330,6 +330,7 @@ class PeopleNotifier extends StateNotifier<PeopleState> {
         'price': product['price'] ?? 0,
         'image': product['image'] ?? product['imageUrl'] ?? '',
         'url': ProductUrlService.generateProductUrl(product),
+        'buyLinks': product['buyLinks'], // conserver pour le modal comparateur
         'source': product['source'] ?? '',
         'categories': product['categories'] ?? [],
         'match': match,

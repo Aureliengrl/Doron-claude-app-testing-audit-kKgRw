@@ -254,7 +254,9 @@ class _OnboardingGiftsResultWidgetState
           'brand': product['brand'] ?? 'Amazon',
           'price': product['price'] ?? 0,
           'image': imageUrl,
+          // FIX-URL: ProductUrlService cherche buyLinks[0].url en priorité (vraie URL directe)
           'url': ProductUrlService.generateProductUrl(product),
+          'buyLinks': product['buyLinks'], // conserver pour le modal comparateur
           'categories': product['categories'] ?? [],
           'match': matchScoreInt.clamp(0, 100),
           'fromWishlist': false,

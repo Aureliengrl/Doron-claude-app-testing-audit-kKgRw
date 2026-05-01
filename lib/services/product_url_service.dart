@@ -1,20 +1,41 @@
-/// Service pour générer des URLs de produits intelligentes
-/// Crée des liens de recherche vers les sites marchands avec haute précision (≥95%)
+/// Service pour extraire et générer des URLs de produits
+/// Priorité : buyLinks[0] → url → product_url → URL de recherche générée
 class ProductUrlService {
-  /// Génère une URL de recherche pour un produit basée sur son nom, sa marque et sa source
+  /// Retourne la meilleure URL disponible pour un produit.
+  /// Ordre de priorité :
+  ///   1. Premier buyLink valide (vraie URL directe produit)
+  ///   2. Champ `url` ou `product_url` du document
+  ///   3. Génération d'une URL de recherche (fallback)
   static String generateProductUrl(Map<String, dynamic> product) {
-    final name = product['name'] as String? ?? '';
-    final brand = product['brand'] as String? ?? '';
-    final source = product['source'] as String? ?? 'Amazon';
-    final price = product['price']?.toString() ?? '';
-
-    // Si une URL réelle existe déjà (et n'est pas "#"), l'utiliser
-    final existingUrl = product['url'] as String? ?? '';
-    if (existingUrl.isNotEmpty && existingUrl != '#' && existingUrl.startsWith('http')) {
-      return existingUrl;
+    // ── 1. buyLinks : tableau d'objets {url, site, price} ──────────────────
+    final rawLinks = product['buyLinks'];
+    if (rawLinks is List && rawLinks.isNotEmpty) {
+      for (final link in rawLinks) {
+        String? linkUrl;
+        if (link is Map) {
+          linkUrl = link['url'] as String?;
+        } else if (link is String && link.startsWith('http')) {
+          linkUrl = link; // format legacy : tableau de strings
+        }
+        if (linkUrl != null && linkUrl.isNotEmpty && linkUrl.startsWith('http')) {
+          return linkUrl;
+        }
+      }
     }
 
-    // Sinon, générer une URL de recherche intelligente
+    // ── 2. Champs url / product_url ─────────────────────────────────────────
+    for (final key in ['url', 'product_url', 'productUrl', 'buyUrl']) {
+      final v = product[key] as String?;
+      if (v != null && v.isNotEmpty && v != '#' && v.startsWith('http')) {
+        return v;
+      }
+    }
+
+    // ── 3. Génération d'une URL de recherche intelligente (fallback) ─────────
+    final name   = product['name']   as String? ?? '';
+    final brand  = product['brand']  as String? ?? '';
+    final source = product['source'] as String? ?? 'Amazon';
+    final price  = product['price']?.toString() ?? '';
     return _generateSearchUrl(name: name, brand: brand, source: source, price: price);
   }
 

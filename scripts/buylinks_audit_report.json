@@ -1,0 +1,1310 @@
+{
+  "timestamp": "2026-04-30T18:47:08.944Z",
+  "total": 581,
+  "withLinks": 580,
+  "noLinks": 1,
+  "fullyBroken": 59,
+  "partiallyBroken": 12,
+  "topDomains": [
+    [
+      "amazon.fr",
+      220
+    ],
+    [
+      "fnac.com",
+      85
+    ],
+    [
+      "lavantgardiste.com",
+      56
+    ],
+    [
+      "sephora.fr",
+      42
+    ],
+    [
+      "zara.com",
+      39
+    ],
+    [
+      "zagbijoux.fr",
+      37
+    ],
+    [
+      "darty.com",
+      34
+    ],
+    [
+      "goldengoose.com",
+      30
+    ],
+    [
+      "scuffers.com",
+      26
+    ],
+    [
+      "aloyoga.com",
+      21
+    ],
+    [
+      "amazon.com",
+      18
+    ],
+    [
+      "lookfantastic.com",
+      17
+    ],
+    [
+      "photo.fnac.com",
+      15
+    ],
+    [
+      "idealo.fr",
+      11
+    ],
+    [
+      "eu.moonnude.com",
+      10
+    ]
+  ],
+  "fullyBrokenProducts": [
+    {
+      "id": "0nQ2aFErMEi3l9MnZa9O",
+      "name": "Gorjana Pacific Ring Silver",
+      "brand": "Gorjana",
+      "links": [
+        {
+          "url": "https://gorjana.com/products/pacific-pave-ring",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "2Z0paa7qHBZsFnEgFsQo",
+      "name": "PANTALON DE CHARPENTIER À IMPRIMÉ ABSTRAIT",
+      "brand": "Zara",
+      "links": [
+        {
+          "url": "https://www.zara.com/fr/fr/pantalon-de-charpentier-a-imprime-abstrait-p05862301.html",
+          "status": "GONE",
+          "code": 410
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "5KFZyxoXiZVfTF37oNcn",
+      "name": "SWEAT EFFET NÉOPRÈNE PLIS CAPUCHE",
+      "brand": "Zara",
+      "links": [
+        {
+          "url": "https://www.zara.com/fr/fr/sweat-effet-neoprene-plis-capuche-p06318309.html",
+          "status": "GONE",
+          "code": 410
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "6hChwagLS1MuFxfzY6Yu",
+      "name": "BLOUSON EN CUIR AVEC CEINTURE ÉDITION LIMITÉE",
+      "brand": "Zara",
+      "links": [
+        {
+          "url": "https://www.zara.com/fr/fr/blouson-en-cuir-edition-limitee-p05388420.html",
+          "status": "GONE",
+          "code": 410
+        },
+        {
+          "url": "https://www.zara.com/fr/fr/blouson-en-cuir-avec-ceinture-edition-limitee-p05479703.html",
+          "status": "GONE",
+          "code": 410
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "BhYBhaKXyM40OngbU6wE",
+      "name": "Taschen KAWS Monograph Livre",
+      "brand": "Taschen",
+      "links": [
+        {
+          "url": "https://www.taschen.com/fr/books/art/kaws.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "C43fjtfo6B3ms2a69LaX",
+      "name": "Diffuseur d'Huiles Essentielles Stoneware",
+      "brand": "Muji",
+      "links": [
+        {
+          "url": "https://www.muji.eu/fr/diffuseur-darome.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "CEV7XzCIoWDT0jfTks2u",
+      "name": "Bracelet Vintage Alhambra Or Jaune Nacre",
+      "brand": "Van Cleef & Arpels",
+      "links": [
+        {
+          "url": "https://www.vancleefarpels.com/fr/fr/collections/jewelry/alhambra/vcarp46x00---bracelet-vintage-alhambra-5-motifs.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "E8JGyLMm5fo2RzK1OYxw",
+      "name": "Livre d'Art 'Peter Lindbergh. On Fashion Photography'",
+      "brand": "TASCHEN",
+      "links": [
+        {
+          "url": "https://www.taschen.com/fr/books/photography/44615/peter-lindbergh-on-fashion-photography/",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "Ig7OX5nk6VlLkwgOdwFR",
+      "name": "Coffret Sommelier 5 Pièces Bois",
+      "brand": "L'Atelier du Vin",
+      "links": [
+        {
+          "url": "https://www.atelierduvin.com/produit/coffret-oenologie",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "JJ381NndaHxG2l7fJCQs",
+      "name": "Ceinture en cuir marron avec cabochons floraux dorés et empiècements en ambre",
+      "brand": "Golden Goose",
+      "links": [
+        {
+          "url": "https://www.goldengoose.com/fr/fr/ceinture-en-cuir-marron-avec-cabochons-floraux-dor-s-et-empi-cements-en-ambre-cod-GWA00779.A000774.55312.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "JdlkskF2RNU1pShT6atY",
+      "name": "T-shirt pour homme avec imprimé sur la poitrine et dans le dos à l’effet usé",
+      "brand": "Golden Goose",
+      "links": [
+        {
+          "url": "https://www.goldengoose.com/fr/fr/t-shirt-pour-homme-avec-imprim--sur-la-poitrine-et-dans-le-dos-l%E2%80%99effet-us--cod-GMP01220.P002140.82432.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "JhSRY77ZPDAGO1zlKPEU",
+      "name": "Lululemon Scuba Hoodie Crème",
+      "brand": "Lululemon",
+      "links": [
+        {
+          "url": "https://www.lululemon.fr/fr-fr/p/scuba-oversized-fleece-half-zip-hoodie/116578610.html",
+          "status": "GONE",
+          "code": 410
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "MTB7EOs23FNTEMoM8RGb",
+      "name": "Jacquemus La Chemise Simon Oversize",
+      "brand": "Jacquemus",
+      "links": [
+        {
+          "url": "https://www.jacquemus.com/fr/chemises/la-chemise-simon",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "Md8XHUZ0ZJhvWEqirWO9",
+      "name": "T-SHIRT GOSSIP GIRL™ MANCHES COURTES",
+      "brand": "Zara",
+      "links": [
+        {
+          "url": "https://www.zara.com/fr/fr/t-shirt-gossip-girl--manches-courtes-p06050047.html",
+          "status": "GONE",
+          "code": 410
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "MovR216gprL89onWMMOQ",
+      "name": "Sac Isotherme Lunch Bag Noir",
+      "brand": "Monbento",
+      "links": [
+        {
+          "url": "https://www.monbento.com/mb-cocoon-noir-onyx-sac-isotherme.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "RVnR6RJ7SrfWmdJKHn2Q",
+      "name": "Bouteille Gin Citadelle 70cl",
+      "brand": "Citadelle",
+      "links": [
+        {
+          "url": "https://www.nicolas.com/fr/Gin/Citadelle-Gin/p/455648.html",
+          "status": "SERVER_ERROR",
+          "code": 500
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "RW1EHDCrO3dyouUduV9o",
+      "name": "Café en Grains Signature 1kg",
+      "brand": "Terres de Café",
+      "links": [
+        {
+          "url": "https://www.terresdecafe.com/fr/cafe-grains",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "S9Y9NBVM5jfz2VY7h8kU",
+      "name": "APC JW Anderson Sweatshirt Bleu Marine",
+      "brand": "A.P.C. x JW Anderson",
+      "links": [
+        {
+          "url": "https://www.apc.fr/fr/homme/vetements/sweatshirts",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "Sy6RGGU8Qh5ErS85MuV9",
+      "name": "VEJA Campo Chromefree White Natural",
+      "brand": "VEJA",
+      "links": [
+        {
+          "url": "https://www.veja-store.com/fr/produit/campo-chromefree-white-natural-cf0301719a.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "T1OPj2Rwr5HuL1RoCDeZ",
+      "name": "Super-Star LTD en daim vert militaire avec étoile sérigraphiée",
+      "brand": "Golden Goose",
+      "links": [
+        {
+          "url": "https://www.goldengoose.com/fr/fr/super-star-ltd-en-daim-vert-militaire-avec--toile-s-rigraphi-e-cod-GMF00399.F003422.35800.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "TEkqTiDpOtRHRqLyAl48",
+      "name": "PULL EN MAILLE INTERLOCK À PINCES",
+      "brand": "Zara",
+      "links": [
+        {
+          "url": "https://www.zara.com/fr/fr/pull-en-maille-interlock-a-pinces-p03641872.html",
+          "status": "GONE",
+          "code": 410
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "VCc4kBOSwauGdXbXkS07",
+      "name": "Super-Star LTD pour femme à paillettes cerise avec étoile en cuir velours cerise",
+      "brand": "Golden Goose",
+      "links": [
+        {
+          "url": "https://www.goldengoose.com/fr/fr/super-star-ltd-pour-femme-paillettes-cerise-avec--toile-en-cuir-velours-cerise-cod-GWF00101.F007930.40519.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "Vk9PTuyL28TCgD9rKro2",
+      "name": "Bouteille de Champagne Brut Impérial 75cl",
+      "brand": "Moët & Chandon",
+      "links": [
+        {
+          "url": "https://www.nicolas.com/fr/Champagne/Moet-Chandon-Brut-Imperial/p/455648.html",
+          "status": "SERVER_ERROR",
+          "code": 500
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "Vn7S9Z09RUVd3bWFbwqt",
+      "name": "Hay Mags Soft Canapé Modulable",
+      "brand": "Hay",
+      "links": [
+        {
+          "url": "https://www.hay.com/fr-fr/furniture/sofas/mags-soft/",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "YzItZQ1GU11r06A2Cgwx",
+      "name": "VESTE BOUCLÉ CONTRASTE",
+      "brand": "Zara",
+      "links": [
+        {
+          "url": "https://www.zara.com/fr/fr/veste-boucle-contraste-p02298457.html",
+          "status": "GONE",
+          "code": 410
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "ZUG62XAJ4JW5JAfibmtT",
+      "name": "Versace Méduse Boucles d'Oreilles Gold",
+      "brand": "Versace",
+      "links": [
+        {
+          "url": "https://www.versace.com/fr/fr/boucles-d-oreilles",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "ZeQWum2jFFXlnIE8xbtB",
+      "name": "Kit Initiation au Tricot Écharpe",
+      "brand": "We Are Knitters",
+      "links": [
+        {
+          "url": "https://www.weareknitters.fr/kits-tricot/niveau-debutant/echarpe-siena",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "ZoLyBwN2MwqB6x7KhgD4",
+      "name": "Veste Bomber Effet Cuir Noir",
+      "brand": "Zara",
+      "links": [
+        {
+          "url": "https://www.zara.com/fr/fr/veste-bomber-effet-cuir-p01221199.html",
+          "status": "GONE",
+          "code": 410
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "aY5FCaxhnt2dq4b4RnNK",
+      "name": "Coffret Le Relais Bernard Loiseau (2 Pers)",
+      "brand": "Relais & Châteaux",
+      "links": [
+        {
+          "url": "https://www.relaischateaux.com/fr/gift-boxes/",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "cArKQ0Tkg8lBgmXW5cmj",
+      "name": "Jacquemus Le Chiquito Bambino Blanc",
+      "brand": "Jacquemus",
+      "links": [
+        {
+          "url": "https://www.jacquemus.com/fr/sacs/le-chiquito-bambino-blanc",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "cSfqbXIcvQjVVfbFuevQ",
+      "name": "Dinh Van Menottes R6 Bracelet Or Jaune",
+      "brand": "Dinh Van",
+      "links": [
+        {
+          "url": "https://www.dinhvan.com/fr/menottes-r6.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "d76weCEX6ipNfbjmVhtu",
+      "name": "Plaid en Laine Mohair Bleu Nuit",
+      "brand": "Brun de Vian-Tiran",
+      "links": [
+        {
+          "url": "https://www.brundeviantiran.com/plaids/plaid-mohair-bleu-nuit",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "diEZEoi4pkzFNvV6o27u",
+      "name": "Théière en Fonte Japonaise Arare",
+      "brand": "Iwachu",
+      "links": [
+        {
+          "url": "https://www.palaisdesthes.com/fr/theiere-en-fonte-arare-noire-0-6-l.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "dm5WrNfs6uIwal7FsHh4",
+      "name": "Assouline Baby Beach Club Livre Collector",
+      "brand": "Assouline",
+      "links": [
+        {
+          "url": "https://www.assouline.com/collections/baby-beach-club",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "dymuYcDitttsb6nDlVND",
+      "name": "Coffret Dégustation 24 Macarons",
+      "brand": "Pierre Hermé",
+      "links": [
+        {
+          "url": "https://www.pierreherme.com/assortiment-de-24-macarons.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "gZ3Kgh83jY5ayQEqjLRm",
+      "name": "Coffret Initiation Caviar Français",
+      "brand": "Petrossian",
+      "links": [
+        {
+          "url": "https://www.petrossian.fr/fr_fr/coffret-initiation-caviar",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "gb8SLBod9PkFwnTWjLjr",
+      "name": "APC Half Moon Bag Beige",
+      "brand": "A.P.C.",
+      "links": [
+        {
+          "url": "https://www.apc.fr/fr/femme/sacs/sac-half-moon-beige",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "hTQLVEi0u7lE8WHDVbeI",
+      "name": "Miel de Lavande IGP Provence",
+      "brand": "Hédène",
+      "links": [
+        {
+          "url": "https://www.hedene.fr/fr/miel-lavande-provence",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "hywHFRS9b2Tu8vQfp1lt",
+      "name": "the oversized rhode kit",
+      "brand": "Rhode",
+      "links": [
+        {
+          "url": "https://www.rhodeskin.com/products/the-oversized-rhode-kit",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "iSgmV6VvkTxMXEitn5AG",
+      "name": "Hay Loop Stand Lampe LED Noire",
+      "brand": "Hay",
+      "links": [
+        {
+          "url": "https://www.hay.com/fr-fr/accessories/table-lamps/loop-stand-table-lamp",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "jIM7XC0rSiTmxbHCb5im",
+      "name": "Eau Sauvage Parfum 100ml",
+      "brand": "Dior",
+      "links": [
+        {
+          "url": "https://www.dior.com/fr_fr/beauty/products/eau-sauvage-parfum",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "keMcEUWo7AADl3VSV77w",
+      "name": "Casquette 9FORTY New York Yankees Noir",
+      "brand": "New Era",
+      "links": [
+        {
+          "url": "https://www.neweracap.eu/fr-fr/p/new-york-yankees-league-essential-black-9forty-cap-11409224/",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "lHTXdvsLRI5Ht8SpDHbc",
+      "name": "Siège Auto Pallas G i-Size",
+      "brand": "Cybex",
+      "links": [
+        {
+          "url": "https://www.cybex-online.com/fr-fr/pallas-g-i-size",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "mLI1oocipWUWxHTUW9iC",
+      "name": "Bague Trinity 3 Ors Classique",
+      "brand": "Cartier",
+      "links": [
+        {
+          "url": "https://www.cartier.com/fr-fr/bague-trinity_cod44733502651435017.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "ncOg5cD3yvBZUVUqfjLh",
+      "name": "Calendrier de l’Avent photo et chocolats Lindt®",
+      "brand": "Fnac",
+      "links": [
+        {
+          "url": "https://photo.fnac.com/calendrier-avent-chocolat-lindt-personnalise",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "oGrtf0Ibv5h5dHjk69OS",
+      "name": "the scented peptide lip tint set",
+      "brand": "Rhode",
+      "links": [
+        {
+          "url": "https://www.rhodeskin.com/products/the-scented-peptide-lip-tint-set",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "orZO7851xbbUGrbYuNpZ",
+      "name": "Muuto Unfold Lampe de Table Noire",
+      "brand": "Muuto",
+      "links": [
+        {
+          "url": "https://www.muuto.com/lighting/unfold-table-lamp",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "pefzrQ137DDt122V17O4",
+      "name": "BLOUSON COUPE BOXY EFFET NÉOPRÈNE",
+      "brand": "Zara",
+      "links": [
+        {
+          "url": "https://www.zara.com/fr/fr/blouson-coupe-boxy-effet-neoprene-p06318335.html",
+          "status": "GONE",
+          "code": 410
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "phPWdXrFqUm7wepeFTig",
+      "name": "Ceinture Réversible en Cuir Lisse/Grainé",
+      "brand": "Boss",
+      "links": [
+        {
+          "url": "https://www.hugoboss.com/fr/ceinture-reversible-en-cuir-lisse-et-cuir-graine/hbeu50410214_001.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "qQ3I8ENKJgPbnDyufdaI",
+      "name": "Atelier Création de Parfum",
+      "brand": "Wecandoo",
+      "links": [
+        {
+          "url": "https://wecandoo.fr/atelier/paris-creation-parfum",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "sX60Lyy7ngqIiadkyLBt",
+      "name": "Running Sole en nylon bleu avec étoile imprimée blanche",
+      "brand": "Golden Goose",
+      "links": [
+        {
+          "url": "https://www.goldengoose.com/fr/fr/running-sole-en-nylon-bleu-avec--toile-imprim-e-blanche-cod-GMF00215.F004035.50749.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "srnZiEPRWYWJSl4gBYAp",
+      "name": "Pendentif Cœur Return to Tiffany Argent",
+      "brand": "Tiffany & Co.",
+      "links": [
+        {
+          "url": "https://www.tiffany.fr/jewelry/necklaces-pendants/return-to-tiffany-heart-tag-pendant-60014069/",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "uPjDxGwCUSJy4JTZ4ZXH",
+      "name": "Montre Connectée Forerunner 265",
+      "brand": "Garmin",
+      "links": [
+        {
+          "url": "https://www.garmin.com/fr-FR/p/886785",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "x09qhAgQfKEXbU3s1xli",
+      "name": "Eau de Beauté 100ml",
+      "brand": "Caudalie",
+      "links": [
+        {
+          "url": "https://fr.caudalie.com/p/eau-de-beaute-101.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "xOnRXVmY3XmfrUxCKgjZ",
+      "name": "Casquette de baseball en coton gris à l’effet usé",
+      "brand": "Golden Goose",
+      "links": [
+        {
+          "url": "https://www.goldengoose.com/fr/fr/casquette-de-baseball-en-coton-gris-l%E2%80%99effet-us--cod-GUP01038.P002198.60100.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "xkHp7ilUMG6LTUmpHU6S",
+      "name": "ferm LIVING Verso Vase Terracotta",
+      "brand": "ferm LIVING",
+      "links": [
+        {
+          "url": "https://www.fermliving.com/products/verso-vase",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "yV8NCdAUqv5QivpxnegE",
+      "name": "LÅNESPELAREBras de microphone, montage avec vis/anthracite",
+      "brand": "Ikea",
+      "links": [
+        {
+          "url": "https://www.ikea.com/fr/fr/p/lanespelare-bras-de-microphone-montage-avec-vis-anthracite-90571397/",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "ygQvpwGHvAOKHTBcySot",
+      "name": "Isabel Marant Nowles Sneakers",
+      "brand": "Isabel Marant",
+      "links": [
+        {
+          "url": "https://www.isabelmarant.com/fr/chaussures/nowles-sneakers",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    },
+    {
+      "id": "ykuG5mibBiuJ5KIOOd52",
+      "name": "VESTE EN CUIR À POCHES",
+      "brand": "Zara",
+      "links": [
+        {
+          "url": "https://www.zara.com/fr/fr/veste-en-cuir-a-poches-p05388205.html",
+          "status": "GONE",
+          "code": 410
+        }
+      ],
+      "someBroken": true,
+      "allBroken": true
+    }
+  ],
+  "partiallyBrokenProducts": [
+    {
+      "id": "01H7hzPoHVW9j1uYVpRx",
+      "name": "Catan Stratégie Édition Deluxe",
+      "brand": "Asmodee",
+      "links": [
+        {
+          "url": "https://www.amazon.fr/Kosmos-Asmodee-strat%C3%A9gie-d%C3%A9veloppement-fran%C3%A7aise/dp/B0CHSGYYWQ?tag=doron072004-21",
+          "status": "SKIP_BOT_PROTECTED",
+          "code": null
+        },
+        {
+          "url": "https://www.fnac.com/Jeu-de-strategie-Asmodee-Catan-3D-Edition-Deluxe/a16579151/w-4",
+          "status": "FORBIDDEN",
+          "code": 403
+        },
+        {
+          "url": "https://www.cultura.com/p-catan-3d-edition-deluxe-3558380089728.html",
+          "status": "FORBIDDEN",
+          "code": 403
+        },
+        {
+          "url": "https://www.starplayer.fr/106408-catan-3d-edition-deluxe.html",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://www.play-in.com/en/series-de-jeux-de-societe/82/catan",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://shop.asmodee.fr/catan-5-3d-edition-deluxe-koscat3d01fr",
+          "status": "NOT_FOUND",
+          "code": 404
+        },
+        {
+          "url": "https://www.fnac.com/Catan-Edition-Deluxe/a18900001",
+          "status": "FORBIDDEN",
+          "code": 403
+        }
+      ],
+      "someBroken": true,
+      "allBroken": false
+    },
+    {
+      "id": "1lVM7tNCXdh7P7eMGGVt",
+      "name": "Blazer Croisé Zara",
+      "brand": "Zara",
+      "links": [
+        {
+          "url": "https://www.zara.com/fr/fr/blazer-croise-p01564305.html",
+          "status": "GONE",
+          "code": 410
+        },
+        {
+          "url": "https://www.zara.com/fr/",
+          "status": "OK",
+          "code": 200
+        }
+      ],
+      "someBroken": true,
+      "allBroken": false
+    },
+    {
+      "id": "1uwXHH3onNybwT3B9ZH7",
+      "name": "Lululemon Align Legging 28\" Femme",
+      "brand": "Lululemon",
+      "links": [
+        {
+          "url": "https://www.amazon.com/dp/B0943VVTG6?tag=doron072004-21",
+          "status": "SKIP_BOT_PROTECTED",
+          "code": null
+        },
+        {
+          "url": "https://www.amazon.com/dp/B0CMZJ3B16?tag=doron072004-21",
+          "status": "SKIP_BOT_PROTECTED",
+          "code": null
+        },
+        {
+          "url": "https://shop.lululemon.com/p/womens-leggings/Align-Pant-Full-Length-28/_/prod8780551",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://www.lululemon.fr/en-fr/p/lululemon-align%E2%84%A2-high-rise-pant-28inch/prod8780551.html",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://www.net-a-porter.com/en-us/shop/product/lululemon/sport/leggings/align-high-rise-leggings-28/1647597317404092",
+          "status": "NOT_FOUND",
+          "code": 404
+        },
+        {
+          "url": "https://www.lululemon.fr/fr-fr/products/align-legging-112827730",
+          "status": "FORBIDDEN",
+          "code": 403
+        }
+      ],
+      "someBroken": true,
+      "allBroken": false
+    },
+    {
+      "id": "2CtFzvUGTwaJQBtKNmEQ",
+      "name": "Stanley Quencher H2.0 40oz Rose",
+      "brand": "Stanley",
+      "links": [
+        {
+          "url": "https://www.amazon.fr/STANLEY-Quencher-FlowState-Gobelet-quartz/dp/B0BD6XRYK8?tag=doron072004-21",
+          "status": "SKIP_BOT_PROTECTED",
+          "code": null
+        },
+        {
+          "url": "https://www.amazon.com/Quencher-H2-0-FlowStateTM-Tumbler-Quartz/dp/B0BD6XRYK8?tag=doron072004-21",
+          "status": "SKIP_BOT_PROTECTED",
+          "code": null
+        },
+        {
+          "url": "https://www.stanley1913.com/products/adventure-quencher-travel-tumbler-40-oz",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://www.walmart.com/ip/Stanley-Quencher-H2-0-FlowState-Stainless-Steel-Vacuum-Insulated-Tumbler-40-oz-Rose-Quartz/6385511264",
+          "status": "NOT_FOUND",
+          "code": 404
+        },
+        {
+          "url": "https://www.amazon.fr/s?k=stanley+quencher&tag=doron072004-21",
+          "status": "SKIP_BOT_PROTECTED",
+          "code": null
+        }
+      ],
+      "someBroken": true,
+      "allBroken": false
+    },
+    {
+      "id": "3R4yddd431m6vqVKhXk4",
+      "name": "Instax Mini 12 Pastel Blue",
+      "brand": "Fujifilm",
+      "links": [
+        {
+          "url": "https://www.amazon.fr/dp/B0BV37WZJL?tag=doron072004-21",
+          "status": "SKIP_BOT_PROTECTED",
+          "code": null
+        },
+        {
+          "url": "https://www.darty.com/nav/achat/photo_camescope/appareil_photo_compact/appareil_photo_instantane/fujifilm_instax_mini_12_bleu.html",
+          "status": "FORBIDDEN",
+          "code": 403
+        },
+        {
+          "url": "https://www.fnac.com/Appareil-photo-instantane-Fujifilm-Instax-Mini-12-Bleu/a17814323/w-4",
+          "status": "FORBIDDEN",
+          "code": 403
+        },
+        {
+          "url": "https://www.fujifilm.com/fr/fr/consumer/instax/cameras/mini12",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": false
+    },
+    {
+      "id": "3cGprtx9eYIiPNR3FnwY",
+      "name": "Messika Move Uno Bracelet Or Blanc Diamants",
+      "brand": "Messika",
+      "links": [
+        {
+          "url": "https://www.messika.com/us_en/move-uno-diamond-bracelet-white-gold-14644-wg",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://alain-joaillier.fr/messika/1743-bracelet-move-uno-or-blanc-diamants.html",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://www.miller.fr/products/bracelet-messika-move-uno-or-blanc-et-diamants",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://www.messika.com/fr/bracelets/move-uno/",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": false
+    },
+    {
+      "id": "4HMicLzoT1kT83HU0uHE",
+      "name": "Converse Chuck Taylor All Star Femme",
+      "brand": "Converse",
+      "links": [
+        {
+          "url": "https://www.amazon.fr/Converse-Taylor-Seasonal-Patins-roulettes/dp/B08DLFCVQ3?tag=doron072004-21",
+          "status": "SKIP_BOT_PROTECTED",
+          "code": null
+        },
+        {
+          "url": "https://www.footlocker.fr/fr/category/femme/converse/chuck-taylor-all-star.html",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://www.laredoute.fr/lndng/ctlg.aspx?artcl=all-star-femme",
+          "status": "FORBIDDEN",
+          "code": 403
+        },
+        {
+          "url": "https://www.converse.com/fr/products/femme/collections-femmes/classic-chuck-pour-femme",
+          "status": "SERVER_ERROR",
+          "code": 503
+        },
+        {
+          "url": "https://www.courir.com/fr/c/femme/marque/converse/chuck-taylor-all-star/",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://www.amazon.fr/dp/B000X26FTW?tag=doron072004-21",
+          "status": "SKIP_BOT_PROTECTED",
+          "code": null
+        }
+      ],
+      "someBroken": true,
+      "allBroken": false
+    },
+    {
+      "id": "5RK81XoKT4oV8ks0uOzY",
+      "name": "New Balance 990v6 Made in USA Gris",
+      "brand": "New Balance",
+      "links": [
+        {
+          "url": "https://www.idealo.fr/prix/202817272/new-balance-made-in-usa-990v6.html",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://www.footpatrol.fr/product/gris-new-balance-990v6-made-in-usa/498921_footpatrolfr/",
+          "status": "NOT_FOUND",
+          "code": 404
+        },
+        {
+          "url": "https://www.newbalance.fr/fr/pd/made-in-usa-990v6/M990V6-43094-PMG-EMEA.html",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://www.newbalance.fr/fr/990v6/PC990GL6.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": false
+    },
+    {
+      "id": "5ZSZrQy2XVTWHig2P0Lh",
+      "name": "Jacques Genin Coffret Chocolats 36 Pièces",
+      "brand": "Jacques Génin",
+      "links": [
+        {
+          "url": "https://jacquesgenin.fr/product/ecrin-ganaches-pralines-36",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://jacquesgenin.fr/fr/chocolats/boites-de-chocolats.html",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": false
+    },
+    {
+      "id": "6IKRlNuCVG8SPLceYQN0",
+      "name": "Jordan 1 Retro High OG Blanc/Royal",
+      "brand": "Nike / Jordan",
+      "links": [
+        {
+          "url": "https://www.amazon.com/AIR-JORDAN-Retro-High-Royal/dp/B089DX3KDG?tag=doron072004-21",
+          "status": "SKIP_BOT_PROTECTED",
+          "code": null
+        },
+        {
+          "url": "https://www.amazon.com/JORDAN-RETRO-WHITE-BLACK-NEUTRAL-GREY-DEEP/dp/B0F4NY4X6K?tag=doron072004-21",
+          "status": "SKIP_BOT_PROTECTED",
+          "code": null
+        },
+        {
+          "url": "https://www.footlocker.com/category/collection/jordan/retro-1/high/royal.html",
+          "status": "FORBIDDEN",
+          "code": 403
+        },
+        {
+          "url": "https://stockx.com/air-jordan-1-retro-high-og-royal-reimagined",
+          "status": "FORBIDDEN",
+          "code": 403
+        },
+        {
+          "url": "https://www.flightclub.com/air-jordan-1-retro-high-og-royal-reimagined-dz5485-042",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://www.goat.com/sneakers/air-jordan-1-retro-high-og-royal-reimagined-dz5485-042",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://www.nike.com/fr/t/chaussure-air-jordan-1-retro-high-og-pour-homme-GSmCDD/555088-403",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": false
+    },
+    {
+      "id": "7IurqOnNWg5Of6aP4zjy",
+      "name": "Sneakers Ultraboost 22 Homme",
+      "brand": "Adidas",
+      "links": [
+        {
+          "url": "https://www.amazon.fr/adidas-Homme-Ultraboost-22-Sneaker/dp/B09NJS9JQJ?tag=doron072004-21",
+          "status": "SKIP_BOT_PROTECTED",
+          "code": null
+        },
+        {
+          "url": "https://www.idealo.fr/prix/201764497/adidas-ultraboost-22.html",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://www.zalando.fr/adidas-performance-ultraboost-22-w-chaussures-de-running-sur-route-grey-ad541a20a-c11.html",
+          "status": "SERVER_ERROR",
+          "code": 503
+        },
+        {
+          "url": "https://direct-running.fr/chaussures-homme/adidas/ultraboost",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://www.adidas.fr/chaussure-ultraboost-22/GX5573.html",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://www.amazon.fr/dp/B09X9V34JG?tag=doron072004-21",
+          "status": "SKIP_BOT_PROTECTED",
+          "code": null
+        }
+      ],
+      "someBroken": true,
+      "allBroken": false
+    },
+    {
+      "id": "BX8PMszCbL1wbau2GPnh",
+      "name": "Ami de Cœur Crewneck Sweatshirt Bleu",
+      "brand": "AMI Paris",
+      "links": [
+        {
+          "url": "https://www.amiparis.com/en-us/collections/men-ami-de-coeur-sweatshirts-and-hoodies",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://www.24s.com/en-us/ami-de-coeur-crewneck-sweater-ami-paris_AMIUBDX4",
+          "status": "FORBIDDEN",
+          "code": 403
+        },
+        {
+          "url": "https://www.lyst.com/shop/mens-ami-sweatshirts/",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://www.serie-noire.com/en/1357-ami-paris-men",
+          "status": "OK",
+          "code": 200
+        },
+        {
+          "url": "https://www.amiparis.com/fr/sweatshirts/ami-de-coeur-crewneck-sweatshirt",
+          "status": "NOT_FOUND",
+          "code": 404
+        }
+      ],
+      "someBroken": true,
+      "allBroken": false
+    }
+  ],
+  "noLinksProducts": [
+    {
+      "id": "lego_porsche_911_10295_lego_icons_boutique_lego_officielle_fr",
+      "name": "",
+      "brand": "LEGO®"
+    }
+  ]
+}

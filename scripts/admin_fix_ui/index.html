@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doron — Image Fix Admin</title>
+<style>
+  :root {
+    --bg: #0a0a12; --card: #13131f; --border: #1e1e30;
+    --violet: #8a2be2; --pink: #ec4899; --green: #10b981;
+    --red: #ef4444; --yellow: #f59e0b; --text: #e2e8f0; --sub: #94a3b8;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif; height:100vh; display:flex; flex-direction:column; }
+
+  /* Header */
+  header { background:var(--card); border-bottom:1px solid var(--border); padding:14px 24px; display:flex; align-items:center; gap:16px; flex-shrink:0; }
+  header h1 { font-size:18px; font-weight:700; background:linear-gradient(135deg,var(--violet),var(--pink)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .stats { display:flex; gap:12px; margin-left:auto; }
+  .stat { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:6px 14px; font-size:13px; text-align:center; }
+  .stat span { display:block; font-size:18px; font-weight:700; }
+  .stat.red span { color:var(--red); } .stat.green span { color:var(--green); } .stat.yellow span { color:var(--yellow); }
+
+  /* Toolbar */
+  .toolbar { background:var(--card); border-bottom:1px solid var(--border); padding:10px 24px; display:flex; gap:10px; align-items:center; flex-shrink:0; flex-wrap:wrap; }
+  .toolbar input { background:var(--bg); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:8px 14px; font-size:14px; width:260px; outline:none; }
+  .toolbar input:focus { border-color:var(--violet); }
+  .filters { display:flex; gap:6px; }
+  .btn-filter { background:var(--bg); border:1px solid var(--border); color:var(--sub); border-radius:8px; padding:7px 14px; font-size:13px; cursor:pointer; transition:.15s; }
+  .btn-filter.active, .btn-filter:hover { border-color:var(--violet); color:var(--text); }
+  .btn-filter.active { background:rgba(138,43,226,.15); }
+  .progress-bar { height:4px; background:var(--border); border-radius:2px; flex:1; min-width:120px; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,var(--violet),var(--pink)); border-radius:2px; transition:width .4s; }
+  .count-label { font-size:13px; color:var(--sub); white-space:nowrap; }
+
+  /* Main layout */
+  .main { display:flex; flex:1; overflow:hidden; }
+
+  /* List */
+  .list { width:380px; flex-shrink:0; overflow-y:auto; border-right:1px solid var(--border); }
+  .list::-webkit-scrollbar { width:4px; } .list::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+  .product-item { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border); cursor:pointer; transition:.1s; }
+  .product-item:hover { background:rgba(138,43,226,.06); }
+  .product-item.selected { background:rgba(138,43,226,.12); border-left:3px solid var(--violet); padding-left:13px; }
+  .thumb { width:52px; height:52px; border-radius:8px; object-fit:cover; background:var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:20px; }
+  .thumb img { width:52px; height:52px; border-radius:8px; object-fit:cover; }
+  .product-info { flex:1; min-width:0; }
+  .product-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .product-brand { font-size:11px; color:var(--sub); margin-top:2px; }
+  .product-meta { display:flex; gap:6px; margin-top:4px; align-items:center; }
+  .badge { font-size:10px; padding:2px 7px; border-radius:10px; font-weight:600; }
+  .badge.dead    { background:rgba(239,68,68,.15); color:var(--red); border:1px solid rgba(239,68,68,.3); }
+  .badge.empty   { background:rgba(245,158,11,.15); color:var(--yellow); border:1px solid rgba(245,158,11,.3); }
+  .badge.blocked { background:rgba(236,72,153,.15); color:var(--pink); border:1px solid rgba(236,72,153,.3); }
+  .badge.ok      { background:rgba(16,185,129,.15); color:var(--green); border:1px solid rgba(16,185,129,.3); }
+  .badge.links   { background:rgba(138,43,226,.15); color:#a78bfa; border:1px solid rgba(138,43,226,.3); }
+
+  /* Detail panel */
+  .detail { flex:1; overflow-y:auto; padding:24px; display:flex; flex-direction:column; gap:20px; }
+  .detail::-webkit-scrollbar { width:4px; } .detail::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+  .empty-state { flex:1; display:flex; align-items:center; justify-content:center; color:var(--sub); font-size:15px; }
+
+  /* Image preview */
+  .img-section { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; }
+  .img-section h3 { font-size:14px; font-weight:600; color:var(--sub); margin-bottom:14px; text-transform:uppercase; letter-spacing:.05em; }
+  .img-preview-area { display:flex; gap:20px; align-items:flex-start; }
+  .img-preview { width:180px; height:180px; border-radius:10px; background:var(--border); flex-shrink:0; object-fit:cover; border:2px solid var(--border); }
+  .img-preview.ok { border-color:var(--green); }
+  .img-preview.error { border-color:var(--red); display:flex; align-items:center; justify-content:center; font-size:32px; }
+  .url-input-area { flex:1; display:flex; flex-direction:column; gap:10px; }
+  .url-input-area label { font-size:12px; color:var(--sub); font-weight:600; }
+  .url-input { background:var(--bg); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:10px 14px; font-size:13px; width:100%; outline:none; font-family:monospace; }
+  .url-input:focus { border-color:var(--violet); }
+  .url-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .btn { padding:9px 18px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:none; transition:.15s; }
+  .btn-save { background:linear-gradient(135deg,var(--violet),var(--pink)); color:#fff; }
+  .btn-save:hover { opacity:.9; } .btn-save:disabled { opacity:.4; cursor:not-allowed; }
+  .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--sub); }
+  .btn-ghost:hover { border-color:var(--violet); color:var(--text); }
+  .btn-green { background:rgba(16,185,129,.2); border:1px solid rgba(16,185,129,.4); color:var(--green); }
+  .preview-btn { background:rgba(138,43,226,.2); border:1px solid rgba(138,43,226,.4); color:#a78bfa; }
+
+  /* Product info */
+  .info-section { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; }
+  .info-section h3 { font-size:14px; font-weight:600; color:var(--sub); margin-bottom:14px; text-transform:uppercase; letter-spacing:.05em; }
+  .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .info-field label { font-size:11px; color:var(--sub); display:block; margin-bottom:3px; }
+  .info-field p { font-size:14px; font-weight:500; }
+
+  /* BuyLinks */
+  .buylinks-section { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; }
+  .buylinks-section h3 { font-size:14px; font-weight:600; color:var(--sub); margin-bottom:14px; text-transform:uppercase; letter-spacing:.05em; display:flex; justify-content:space-between; }
+  .link-row { display:flex; align-items:center; gap:10px; padding:10px; background:var(--bg); border-radius:8px; border:1px solid var(--border); margin-bottom:8px; }
+  .link-site { font-size:13px; font-weight:600; width:130px; flex-shrink:0; }
+  .link-price { font-size:14px; font-weight:700; color:var(--yellow); width:70px; flex-shrink:0; }
+  .link-aff { font-size:10px; padding:2px 6px; border-radius:6px; background:rgba(16,185,129,.15); color:var(--green); border:1px solid rgba(16,185,129,.3); }
+  .link-url { font-size:11px; color:var(--sub); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .link-open { font-size:11px; color:#a78bfa; text-decoration:none; flex-shrink:0; }
+  .link-open:hover { color:var(--violet); }
+  .no-links { color:var(--sub); font-size:13px; font-style:italic; }
+
+  /* Keyboard hint */
+  .kbd-hint { position:fixed; bottom:16px; right:16px; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:12px; color:var(--sub); }
+  .kbd-hint kbd { background:var(--border); border-radius:4px; padding:2px 6px; color:var(--text); font-family:monospace; }
+
+  /* Toast */
+  .toast { position:fixed; top:20px; right:20px; padding:12px 20px; border-radius:10px; font-size:14px; font-weight:600; z-index:999; opacity:0; transform:translateY(-10px); transition:.3s; pointer-events:none; }
+  .toast.show { opacity:1; transform:translateY(0); }
+  .toast.success { background:rgba(16,185,129,.2); border:1px solid var(--green); color:var(--green); }
+  .toast.error   { background:rgba(239,68,68,.2);  border:1px solid var(--red);   color:var(--red); }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header>
+  <h1>🖼️ Doron Image Fix Admin</h1>
+  <div class="stats">
+    <div class="stat red"><span id="s-broken">—</span>À corriger</div>
+    <div class="stat yellow"><span id="s-empty">—</span>Vides</div>
+    <div class="stat green"><span id="s-ok">—</span>OK</div>
+    <div class="stat"><span id="s-total">—</span>Total</div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <input type="text" id="search" placeholder="🔍  Rechercher par nom ou marque..." oninput="applyFilter()">
+  <div class="filters">
+    <button class="btn-filter active" data-f="broken" onclick="setFilter('broken',this)">❌ Cassés (304)</button>
+    <button class="btn-filter" data-f="all" onclick="setFilter('all',this)">Tous</button>
+    <button class="btn-filter" data-f="dead" onclick="setFilter('dead',this)">💀 Dead</button>
+    <button class="btn-filter" data-f="empty" onclick="setFilter('empty',this)">⚠️ Vides</button>
+    <button class="btn-filter" data-f="ok" onclick="setFilter('ok',this)">✅ OK</button>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+  <span class="count-label" id="count-label">—</span>
+</div>
+
+<div class="main">
+  <div class="list" id="list"></div>
+  <div class="detail" id="detail"><div class="empty-state">← Sélectionne un produit</div></div>
+</div>
+
+<div class="kbd-hint">
+  <kbd>↑↓</kbd> Naviguer &nbsp; <kbd>Enter</kbd> Coller &amp; Prévisualiser &nbsp; <kbd>S</kbd> Sauvegarder &nbsp; <kbd>G</kbd> Recherche Google Images
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let products = [];
+let selected = null;
+let currentFilter = 'broken';
+let searchVal = '';
+let saving = false;
+
+// ── Fetch stats ───────────────────────────────────────────────────────────────
+async function loadStats() {
+  const s = await fetch('/api/stats').then(r => r.json());
+  document.getElementById('s-total').textContent  = s.total;
+  document.getElementById('s-ok').textContent     = s.OK || 0;
+  document.getElementById('s-broken').textContent = (s.DEAD||0)+(s.EMPTY||0)+(s.BLOCKED||0)+(s.BAD_URL||0);
+  document.getElementById('s-empty').textContent  = s.EMPTY || 0;
+  const fixed = s.fixed || 0;
+  const total = s.total || 1;
+  document.getElementById('progress').style.width = Math.round(fixed/total*100) + '%';
+  document.getElementById('count-label').textContent = `${fixed}/${total} corrigés`;
+  // Mettre à jour les boutons filter avec les comptes
+  document.querySelector('[data-f="broken"]').textContent =
+    `❌ Cassés (${(s.DEAD||0)+(s.EMPTY||0)+(s.BLOCKED||0)+(s.BAD_URL||0)})`;
+}
+
+// ── Fetch products ────────────────────────────────────────────────────────────
+async function loadProducts() {
+  const params = new URLSearchParams({ filter: currentFilter, q: searchVal });
+  const data = await fetch('/api/products?' + params).then(r => r.json());
+  products = data.products;
+  renderList();
+}
+
+function applyFilter() {
+  searchVal = document.getElementById('search').value;
+  loadProducts();
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadProducts();
+}
+
+// ── Render list ───────────────────────────────────────────────────────────────
+function renderList() {
+  const list = document.getElementById('list');
+  list.innerHTML = products.map((p, i) => `
+    <div class="product-item ${selected?.id === p.id ? 'selected' : ''}" onclick="selectProduct(${i})" data-i="${i}">
+      <div class="thumb">
+        ${p.image ? `<img src="${p.image}" onerror="this.style.display='none';this.nextSibling.style.display='flex'" loading="lazy"><span style="display:none;width:52px;height:52px;align-items:center;justify-content:center;font-size:20px">🎁</span>` : '<span style="font-size:20px">🎁</span>'}
+      </div>
+      <div class="product-info">
+        <div class="product-name">${p.name}</div>
+        <div class="product-brand">${p.brand}</div>
+        <div class="product-meta">
+          <span class="badge ${p.status.toLowerCase()}">${p.status}</span>
+          ${p.buyLinksCount ? `<span class="badge links">🔗 ${p.buyLinksCount} liens</span>` : ''}
+          ${p.price ? `<span style="font-size:11px;color:#94a3b8">${p.price}€</span>` : ''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Select product ────────────────────────────────────────────────────────────
+async function selectProduct(i) {
+  selected = products[i];
+  // Highlight
+  document.querySelectorAll('.product-item').forEach((el, j) => el.classList.toggle('selected', j === i));
+  renderDetail();
+}
+
+function renderDetail() {
+  if (!selected) return;
+  const p = selected;
+
+  // Google Images URL
+  const googleUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(p.brand + ' ' + p.name)}`;
+  const brandUrl  = p.brand ? `https://www.google.com/search?q=${encodeURIComponent(p.brand + ' ' + p.name + ' site officiel image')}` : '';
+
+  document.getElementById('detail').innerHTML = `
+    <!-- Image section -->
+    <div class="img-section">
+      <h3>🖼️ Image du produit</h3>
+      <div class="img-preview-area">
+        <div id="preview-container">
+          ${p.image
+            ? `<img id="preview-img" class="img-preview" src="${p.image}" onerror="imgError()" onload="imgOk()">`
+            : `<div class="img-preview error" id="preview-img" style="width:180px;height:180px">🎁</div>`}
+        </div>
+        <div class="url-input-area">
+          <label>URL de l'image</label>
+          <input id="img-url" class="url-input" type="text" value="${p.image || ''}" placeholder="https://example.com/image.jpg" onkeydown="urlKeydown(event)">
+          <div class="url-actions">
+            <button class="btn btn-save" id="save-btn" onclick="save()">💾 Sauvegarder (S)</button>
+            <button class="btn preview-btn" onclick="previewUrl()">👁️ Prévisualiser</button>
+            <a class="btn btn-ghost" href="${googleUrl}" target="_blank" onclick="void(0)" id="google-btn">🔍 Google Images (G)</a>
+          </div>
+          <div style="font-size:12px;color:var(--sub);margin-top:4px">
+            Status actuel : <span class="badge ${p.status.toLowerCase()}">${p.status}</span>
+            ${p.fixed ? ' &nbsp; <span class="badge ok">✅ Corrigé</span>' : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info produit -->
+    <div class="info-section">
+      <h3>📦 Infos produit</h3>
+      <div class="info-grid">
+        <div class="info-field"><label>Nom</label><p>${p.name}</p></div>
+        <div class="info-field"><label>Marque</label><p>${p.brand || '—'}</p></div>
+        <div class="info-field"><label>Prix</label><p>${p.price ? p.price + '€' : '—'}</p></div>
+        <div class="info-field"><label>Genre</label><p>${p.gender || '—'}</p></div>
+        <div class="info-field"><label>Catégories</label><p>${p.categories.join(', ') || '—'}</p></div>
+        <div class="info-field"><label>ID Firestore</label><p style="font-size:11px;font-family:monospace;color:var(--sub)">${p.id}</p></div>
+      </div>
+    </div>
+
+    <!-- BuyLinks -->
+    <div class="buylinks-section">
+      <h3>🔗 Liens d'achat <span style="font-weight:400;color:var(--sub);font-size:13px">${p.buyLinksCount} lien(s)</span></h3>
+      <div id="buylinks-container">Chargement...</div>
+    </div>
+  `;
+
+  loadBuyLinks(p.id);
+  document.getElementById('img-url').focus();
+}
+
+async function loadBuyLinks(id) {
+  // On re-fetch pour avoir les buyLinks complets
+  const data = await fetch(`/api/products?filter=all&q=`).then(r=>r.json());
+  const full = data.products.find(p => p.id === id);
+  // On fait un fetch direct du doc
+  const resp = await fetch(`/api/product/${id}`).catch(() => null);
+  if (!resp) {
+    document.getElementById('buylinks-container').innerHTML = '<p class="no-links">Impossible de charger les liens</p>';
+    return;
+  }
+  const doc = await resp.json();
+  renderBuyLinks(doc.buyLinks || []);
+}
+
+function renderBuyLinks(links) {
+  const el = document.getElementById('buylinks-container');
+  if (!el) return;
+  if (!links.length) { el.innerHTML = '<p class="no-links">Aucun lien d\'achat enregistré</p>'; return; }
+  el.innerHTML = links.map(l => `
+    <div class="link-row">
+      <span class="link-site">${l.site || '?'}</span>
+      <span class="link-price">${l.price ? l.price + '€' : '—'}</span>
+      ${l.affiliated ? '<span class="link-aff">💰 Affilié</span>' : '<span style="width:55px"></span>'}
+      <span class="link-url">${l.url || ''}</span>
+      <a class="link-open" href="${l.url}" target="_blank">↗ Ouvrir</a>
+    </div>
+  `).join('');
+}
+
+function previewUrl() {
+  const url = document.getElementById('img-url').value.trim();
+  const img = document.getElementById('preview-img');
+  if (!img || !url) return;
+  img.src = url;
+  img.className = 'img-preview';
+  img.style.display = 'block';
+}
+
+function imgOk()   { const i = document.getElementById('preview-img'); if(i){ i.className='img-preview ok'; } }
+function imgError(){ const i = document.getElementById('preview-img'); if(i){ i.className='img-preview error'; i.alt='❌'; } }
+
+function urlKeydown(e) {
+  if (e.key === 'Enter') previewUrl();
+}
+
+async function save() {
+  if (saving || !selected) return;
+  const url = document.getElementById('img-url').value.trim();
+  if (!url) return showToast('URL vide !', 'error');
+  saving = true;
+  document.getElementById('save-btn').disabled = true;
+  document.getElementById('save-btn').textContent = '⏳ Saving...';
+
+  const r = await fetch(`/api/products/${selected.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ image: url })
+  }).then(r => r.json());
+
+  saving = false;
+  if (r.ok) {
+    showToast('✅ Image sauvegardée !', 'success');
+    // Mettre à jour localement
+    selected.image = url;
+    selected.status = 'OK';
+    selected.fixed = true;
+    const i = products.indexOf(selected);
+    renderList();
+    loadStats();
+    // Auto-select next broken
+    const next = products.find((p, j) => j > i && p.status !== 'OK');
+    if (next) selectProduct(products.indexOf(next));
+  } else {
+    showToast('❌ Erreur: ' + r.error, 'error');
+  }
+  const btn = document.getElementById('save-btn');
+  if (btn) { btn.disabled = false; btn.textContent = '💾 Sauvegarder (S)'; }
+}
+
+// ── Keyboard shortcuts ────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  const tag = document.activeElement.tagName;
+  if (tag === 'INPUT') return; // pas de raccourcis dans les inputs sauf...
+
+  if (e.key === 's' || e.key === 'S') { e.preventDefault(); save(); }
+  if (e.key === 'g' || e.key === 'G') {
+    if (selected) {
+      window.open(`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(selected.brand+' '+selected.name)}`, '_blank');
+    }
+  }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    const i = products.indexOf(selected);
+    if (i < products.length - 1) selectProduct(i + 1);
+  }
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    const i = products.indexOf(selected);
+    if (i > 0) selectProduct(i - 1);
+  }
+});
+
+// Focus url input → Enter = preview, S = save
+document.addEventListener('keydown', e => {
+  if (document.activeElement.id === 'img-url') {
+    if (e.key === 's' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); save(); }
+  }
+});
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadStats();
+loadProducts();
+</script>
+</body>
+</html>
