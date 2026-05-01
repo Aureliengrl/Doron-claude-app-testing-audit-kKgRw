@@ -1,4 +1,4 @@
-﻿import 'dart:ui';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
@@ -297,7 +297,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 shimmerColor: Colors.white,
                 duration: const Duration(milliseconds: 3000),
                 child: Text(
-                  'Recherche',
+                  context.tr('Recherche', 'Search'),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     color: Colors.white,
@@ -755,7 +755,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    context.tr('Cadeaux pour ', 'Gifts for ') + ${profile['name']}',
+                    '${context.tr('Cadeaux pour ', 'Gifts for ')}${profile['name']}',
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -777,10 +777,10 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                     children: [
                       _buildProfileActionButton(
                         icon: IconlyBold.send,
-                        label: 'Partager',
+                        label: context.tr('Partager', 'Share'),
                         onTap: () async {
                           HapticFeedback.lightImpact();
-                          _showSnackBar('Génération du PDF en cours...', isError: false);
+                          _showSnackBar(context.tr('Génération du PDF en cours...', 'Generating PDF...'), isError: false);
                           
                           // On récupère les cadeaux sauvegardés pour cette personne
                           final products = _model.getFilteredProducts(); 
@@ -797,7 +797,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       ),
                       _buildProfileActionButton(
                         icon: IconlyLight.edit,
-                        label: 'Modifier',
+                        label: context.tr('Modifier', 'Edit'),
                         onTap: () {
                           // Retourner au quizz avec l'ID du profil
                           context.go('/onboarding-advanced?skipUserQuestions=true&editProfileId=${profile['id']}&returnTo=/search-page');
@@ -805,7 +805,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       ),
                       _buildProfileActionButton(
                         icon: IconlyLight.addUser,
-                        label: 'Collaborer',
+                        label: context.tr('Collaborer', 'Collaborate'),
                         onTap: () {
                            // #FIX-9: ne pas ouvrir si aucun cadeau ajouté
                            final profileId = profile['id']?.toString() ?? profile['personId']?.toString() ?? '';
@@ -849,14 +849,14 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                           onTap: () {
                              context.push('/chat-room/${profile['chatId']}', extra: {
                                'id': profile['chatId'],
-                               'name': context.tr('Cadeaux pour ', 'Gifts for ') + ${profile['name']}',
+                               'name': '${context.tr('Cadeaux pour ', 'Gifts for ')}${profile['name']}',
                                'isGroup': true,
                              });
                           }
                         ),
                       _buildProfileActionButton(
                         icon: IconlyBold.camera,
-                        label: 'Photo',
+                        label: context.tr('Photo', 'Photo'),
                         onTap: () => _addPhotoForPerson(profile),
                       ),
                     ],

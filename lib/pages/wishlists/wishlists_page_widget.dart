@@ -211,8 +211,13 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
             for (int i = 0; i < _wishlists.length; i++) {
               final id = _wishlists[i]['id'] as String?;
               if (id != null) {
+                // FIX-BUG3: utiliser users/{uid}/wishlists — collection racine /wishlists inexistante
                 batch.update(
-                  FirebaseFirestore.instance.collection('wishlists').doc(id),
+                  FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(uid)
+                      .collection('wishlists')
+                      .doc(id),
                   {'order': i},
                 );
               }

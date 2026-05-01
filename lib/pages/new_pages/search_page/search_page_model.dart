@@ -72,6 +72,7 @@ class SearchPageModel {
                 'price': product['price'] ?? 0,
                 'image': product['image'] ?? product['imageUrl'] ?? '',
                 'url': ProductUrlService.generateProductUrl(product),
+                'buyLinks': product['buyLinks'], // FIX-BUG2: conserver pour le modal
                 'source': product['source'] ?? 'Amazon',
                 'categories': product['categories'] ?? [],
                 'match': (() {
@@ -389,6 +390,7 @@ class SearchPageModel {
           'price': product['price'] ?? 0,
           'image': product['image'] ?? product['imageUrl'] ?? '',
           'url': ProductUrlService.generateProductUrl(product),
+          'buyLinks': product['buyLinks'], // FIX-BUG6: conserver pour le modal
           'source': product['source'] ?? 'Amazon',
           'categories': product['categories'] ?? [],
           'match': (product['_matchScore'] is int

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -635,7 +635,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 children: [
                   const Icon(IconlyBold.heart),
                   const SizedBox(width: 8),
-                  Text('Produits likÃ©s'),
+                  Text(context.tr('Produits lik\u00e9s', 'Liked products')),
                 ],
               ),
             ),
@@ -1851,5 +1851,6 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
     return false;
   }
 }
+
 
 

@@ -401,8 +401,10 @@ class _GroupCard extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 4),
-                      Text('Budget : ${group.budget['min']}€ – ${group.budget['max']}€',
-                          style: GoogleFonts.poppins(color: Colors.white38, fontSize: 12)),
+                      // FIX-ISSUE4: null-safety sur budget (min/max peuvent être null)
+                      if (group.budget.isNotEmpty && (group.budget['min'] != null || group.budget['max'] != null))
+                        Text('Budget : ${group.budget['min'] ?? '?'}€ – ${group.budget['max'] ?? '?'}€',
+                            style: GoogleFonts.poppins(color: Colors.white38, fontSize: 12)),
                     ],
                   ),
                 ),
