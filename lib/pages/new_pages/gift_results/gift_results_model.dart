@@ -1,4 +1,4 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import '/services/openai_onboarding_service.dart';
 import '/services/firebase_data_service.dart';
@@ -350,21 +350,38 @@ class GiftResultsModel {
 
       AppLogger.debug('✅ Person created: $personId', 'Debug');
 
-      // 2. Sauvegarder la liste de cadeaux pour cette personne
+      // 2. Sauvegarder UNIQUEMENT les cadeaux sélectionnés (likés ❤️)
+      //    Si aucun sélectionné → sauvegarder tous (comportement de repli)
+      final giftsToSave = likedGifts.isNotEmpty
+          ? giftResults
+              .where((g) {
+                final idRaw = g['id'];
+                final giftId = idRaw is int
+                    ? idRaw
+                    : (int.tryParse(idRaw.toString()) ?? -1);
+                return likedGifts.contains(giftId);
+              })
+              .toList()
+          : giftResults; // fallback si rien sélectionné
+
+      AppLogger.debug(
+          '💾 Saving ${giftsToSave.length} gift(s) (selected: ${likedGifts.length})',
+          'GiftResults');
+
       final listId = await FirebaseDataService.saveGiftListForPerson(
         personId: personId,
-        gifts: giftResults,
+        gifts: giftsToSave,
         listName: 'Suggestions pour $displayName',
       );
 
       if (listId != null) {
-        AppLogger.debug('✅ Gift list saved: $listId', 'Debug');
+        AppLogger.debug('✅ Gift list saved: $listId (${giftsToSave.length} cadeaux)', 'Debug');
       }
 
       // 3. Définir cette personne comme contexte actuel
       await FirebaseDataService.setCurrentPersonContext(personId);
 
-      AppLogger.debug('✅ Profile "$displayName" saved successfully with ${giftResults.length} gifts', 'Debug');
+      AppLogger.debug('✅ Profile "$displayName" saved: ${giftsToSave.length}/${giftResults.length} gifts selected', 'Debug');
     } catch (e) {
       AppLogger.debug('❌ Error saving profile: $e', 'Debug');
       rethrow; // Propager l'erreur pour debugging
