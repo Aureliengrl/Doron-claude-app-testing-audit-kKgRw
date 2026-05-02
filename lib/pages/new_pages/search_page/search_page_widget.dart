@@ -1,4 +1,4 @@
-﻿import 'dart:ui';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
@@ -804,8 +804,13 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         },
                       ),
                       _buildProfileActionButton(
-                        icon: IconlyLight.addUser,
-                        label: context.tr('Collaborer', 'Collaborate'),
+                        // FIX C8: label change si collab déjà active
+                        icon: (profile['isShared'] == true || profile['chatId'] != null)
+                            ? IconlyBold.addUser
+                            : IconlyLight.addUser,
+                        label: (profile['isShared'] == true || profile['chatId'] != null)
+                            ? context.tr('Ma collab', 'My collab')
+                            : context.tr('Collaborer', 'Collaborate'),
                         onTap: () {
                            // #FIX-9: ne pas ouvrir si aucun cadeau ajouté
                            final profileId = profile['id']?.toString() ?? profile['personId']?.toString() ?? '';
@@ -834,15 +839,24 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                              ),
                            ).then((chatId) {
                              if (chatId != null && mounted) {
+                               final personId = profile['id']?.toString() ?? '';
                                setState(() {
                                  profile['chatId'] = chatId;
                                  profile['isShared'] = true;
                                });
+                               // FIX C6: Persister dans Firebase pour survivre au redémarrage
+                               if (personId.isNotEmpty) {
+                                 FirebaseDataService.updatePersonMeta(personId, {
+                                   'chatId': chatId,
+                                   'isShared': true,
+                                 });
+                               }
                              }
                            });
                         }
                       ),
-                      if (profile['chatId'] != null)
+                      // FIX C1: afficher si chatId présent OU isShared=true
+                      if (profile['chatId'] != null || profile['isShared'] == true)
                         _buildProfileActionButton(
                           icon: IconlyLight.chat,
                           label: 'Chat',
@@ -1016,50 +1030,59 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       topRight: Radius.circular(20),
                     ),
                   ),
-                  // Match score badge (si >0)
+                  // Match score badge (si >0) — FIX C16: tooltip explicatif
                   if (matchScore > 0)
                     Positioned(
                       top: 8,
                       left: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
+                      child: Tooltip(
+                        message: 'Compatibilité basée sur les centres d\'intérêt de la personne',
+                        preferBelow: false,
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [
-                              Color(0xFF8A2BE2),
-                              Color(0xFFEC4899),
+                          color: const Color(0xFF1A1A2E),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        textStyle: GoogleFonts.poppins(fontSize: 11, color: Colors.white),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFF8A2BE2),
+                                Color(0xFFEC4899),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF8A2BE2).withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
                             ],
                           ),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF8A2BE2).withOpacity(0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              IconlyBold.star,
-                              color: Colors.white,
-                              size: 14,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '$matchScore%',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                IconlyBold.star,
                                 color: Colors.white,
+                                size: 14,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 4),
+                              Text(
+                                '$matchScore%',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

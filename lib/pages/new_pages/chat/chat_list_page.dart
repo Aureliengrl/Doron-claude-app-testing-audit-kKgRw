@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -367,15 +367,23 @@ class _ChatListPageState extends State<ChatListPage> {
                       ),
                       child: Row(
                         children: [
-                          // Avatar
+                          // Avatar — FIX C5: initiale affichée si pas de photo
                           Container(
                             width: 56,
                             height: 56,
                             decoration: BoxDecoration(
-                              gradient: isGroup ? const RadialGradient(
-                                colors: [Color(0xFF8A2BE2), Color(0xFF4A148C)]
-                              ) : null,
-                              color: isGroup ? null : Colors.grey[800],
+                              gradient: isGroup
+                                ? const RadialGradient(
+                                    colors: [Color(0xFF8A2BE2), Color(0xFF4A148C)])
+                                : photoUrl.isEmpty
+                                  ? LinearGradient(
+                                      colors: [
+                                        HSLColor.fromAHSL(1, (chatName.hashCode % 360).toDouble().abs(), 0.55, 0.45).toColor(),
+                                        HSLColor.fromAHSL(1, ((chatName.hashCode + 60) % 360).toDouble().abs(), 0.55, 0.35).toColor(),
+                                      ],
+                                    )
+                                  : null,
+                              color: (!isGroup && photoUrl.isNotEmpty) ? null : null,
                               image: (!isGroup && photoUrl.isNotEmpty) ? DecorationImage(
                                 image: CachedNetworkImageProvider(photoUrl),
                                 fit: BoxFit.cover,
@@ -389,13 +397,20 @@ class _ChatListPageState extends State<ChatListPage> {
                                 ),
                               ],
                             ),
-                            child: (isGroup || photoUrl.isEmpty) ? Center(
-                              child: Icon(
-                                isGroup ? IconlyBold.user2 : IconlyLight.profile,
-                                color: Colors.white,
-                                size: 28,
-                              ),
-                            ) : null,
+                            child: (!isGroup && photoUrl.isNotEmpty)
+                              ? null
+                              : Center(
+                                  child: isGroup
+                                    ? const Icon(IconlyBold.user2, color: Colors.white, size: 26)
+                                    : Text(
+                                        chatName.isNotEmpty ? chatName[0].toUpperCase() : '?',
+                                        style: GoogleFonts.poppins(
+                                          color: Colors.white,
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                ),
                           ),
                           const SizedBox(width: 16),
                           // Infos

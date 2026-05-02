@@ -1574,41 +1574,46 @@ class FirebaseDataService {
     String personId,
     bool isPending,
   ) async {
-    // Mise à jour locale
+    await updatePersonMeta(personId, {'isPendingFirstGen': isPending});
+  }
+
+  /// Met à jour des champs arbitraires dans le meta d'une personne.
+  /// Utilisé pour persister chatId, isShared, collabId, etc.
+  /// [fields] : Map de clés/valeurs à fusionner dans meta (merge).
+  static Future<void> updatePersonMeta(
+    String personId,
+    Map<String, dynamic> fields,
+  ) async {
+    // Mise à jour locale SharedPreferences
     try {
       final prefs = await SharedPreferences.getInstance();
       final peopleJson = prefs.getString(_key('people')) ?? '[]';
       final people = (json.decode(peopleJson) as List).cast<Map<String, dynamic>>();
-
       final index = people.indexWhere((p) => p['id'] == personId);
       if (index != -1) {
-        people[index]['meta'] = {
-          ...people[index]['meta'] ?? {},
-          'isPendingFirstGen': isPending,
-        };
+        final currentMeta = Map<String, dynamic>.from(people[index]['meta'] ?? {});
+        currentMeta.addAll(fields);
+        people[index]['meta'] = currentMeta;
         await prefs.setString(_key('people'), json.encode(people));
-        AppLogger.success('Person pending flag updated locally', 'Firebase');
+        AppLogger.success('Person meta updated locally: $fields', 'Firebase');
       }
     } catch (e) {
-      AppLogger.error('Error updating person pending flag locally', 'Firebase', e);
+      AppLogger.error('Error updating person meta locally', 'Firebase', e);
     }
 
     // Mise à jour Firebase si connecté
     if (!isLoggedIn) return;
-
     try {
+      final metaFields = fields.map((k, v) => MapEntry('meta.$k', v));
       await _firestore
           .collection('users')
           .doc(currentUserId)
           .collection('people')
           .doc(personId)
-          .update({
-        'meta.isPendingFirstGen': isPending,
-      });
-
-      AppLogger.firebase('Person pending flag updated in Firebase');
+          .update(metaFields);
+      AppLogger.firebase('Person meta updated in Firebase: $fields');
     } catch (e) {
-      AppLogger.error('Error updating person pending flag in Firebase', 'Firebase', e);
+      AppLogger.error('Error updating person meta in Firebase', 'Firebase', e);
     }
   }
 

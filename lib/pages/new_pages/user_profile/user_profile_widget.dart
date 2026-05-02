@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -338,6 +338,46 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
+                        // 🔔 Bouton notifications avec badge
+                        StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseAuth.instance.currentUser != null
+                            ? FirebaseFirestore.instance
+                                .collection('notifications')
+                                .doc(FirebaseAuth.instance.currentUser!.uid)
+                                .collection('items')
+                                .where('read', isEqualTo: false)
+                                .snapshots()
+                            : null,
+                          builder: (context, snap) {
+                            final unreadCount = snap.data?.docs.length ?? 0;
+                            return Stack(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(IconlyLight.notification, color: Colors.white, size: 28),
+                                  onPressed: () => context.push('/notifications'),
+                                  tooltip: context.tr('Notifications', 'Notifications'),
+                                ),
+                                if (unreadCount > 0)
+                                  Positioned(
+                                    top: 6, right: 6,
+                                    child: Container(
+                                      width: 18, height: 18,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFEC4899),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          unreadCount > 9 ? '9+' : '$unreadCount',
+                                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
                         // F3: Bouton calendrier anniversaires (remplace le ticket)
                         IconButton(
                           icon: const Icon(
@@ -625,7 +665,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 children: [
                   const Icon(IconlyLight.document),
                   const SizedBox(width: 8),
-                  Text(context.tr('Wishlists', 'Wishlists')),
+                  // FIX C14: nom plus clair pour les wishlists partagées
+                  Text(context.tr('🎁 Listes cadeaux', '🎁 Gift lists')),
                 ],
               ),
             ),
@@ -635,7 +676,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 children: [
                   const Icon(IconlyBold.heart),
                   const SizedBox(width: 8),
-                  Text(context.tr('Produits lik\u00e9s', 'Liked products')),
+                  // FIX C14: nom plus clair pour les coups de cœur privés
+                  Text(context.tr('❤️ Coups de cœur', '❤️ Favourites')),
                 ],
               ),
             ),

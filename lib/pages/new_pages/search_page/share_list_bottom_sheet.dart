@@ -150,7 +150,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
               .doc(uid)
               .collection('items')
               .add({
-            'type': 'collab_joined',
+            'type': 'collab_invite',
             'fromUid': myUid,
             'collabId': _collabId,
             'profileName': profileName,
@@ -171,6 +171,51 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
     }
   }
 
+  /// FIX C9 - Quitter la collaboration
+  Future<void> _leaveCollab() async {
+    if (_collabId == null) return;
+    HapticFeedback.mediumImpact();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A2E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Quitter la collaboration ?',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: Colors.white)),
+        content: Text('Tu ne pourras plus voir la liste ni le chat de ce groupe.',
+            style: GoogleFonts.poppins(color: Colors.white60, fontSize: 13)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Annuler', style: GoogleFonts.poppins(color: Colors.white54)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Quitter', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null && _collabId != null) {
+        await FirebaseFirestore.instance
+            .collection('collaborations')
+            .doc(_collabId)
+            .update({'members': FieldValue.arrayRemove([uid])});
+        if (_chatId != null) {
+          await FirebaseFirestore.instance
+              .collection('chats')
+              .doc(_chatId)
+              .update({'participants': FieldValue.arrayRemove([uid])});
+        }
+      }
+      if (mounted) Navigator.pop(context, null);
+    } catch (e) {
+      if (mounted) _showSnack('Erreur lors de la sortie', Colors.red);
+    }
+  }
   void _copyLink() {
     if (_inviteLink == null) {
       _showSnack('Lien en cours de génération...', Colors.orange);
@@ -289,6 +334,20 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
                           Text('Chat', style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
                         ],
                       ),
+                    ),
+                  ),
+                  // FIX C9: Bouton quitter la collaboration
+                  const SizedBox(width: 6),
+                  GestureDetector(
+                    onTap: _leaveCollab,
+                    child: Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.red.withOpacity(0.4)),
+                      ),
+                      child: const Icon(IconlyLight.logout, color: Colors.red, size: 16),
                     ),
                   ),
               ],

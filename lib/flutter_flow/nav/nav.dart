@@ -41,6 +41,7 @@ import '/pages/new_pages/secret_santa/secret_santa_create_page.dart';
 import '/pages/new_pages/secret_santa/secret_santa_lobby_page.dart';
 import '/pages/new_pages/secret_santa/secret_santa_reveal_page.dart';
 import '/pages/new_pages/secret_santa/secret_santa_wishlist_page.dart';
+import '/pages/new_pages/notifications/notifications_page.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -432,6 +433,13 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => SecretSantaWishlistPage(
             groupId: params.getParam<String>('groupId', ParamType.String) ?? '',
           ),
+        ),
+        // ── Notifications ─────────────────────────────────────────────────
+        FFRoute(
+          name: NotificationsPage.routeName,
+          path: NotificationsPage.routePath,
+          requireAuth: true,
+          builder: (context, params) => const NotificationsPage(),
         ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );

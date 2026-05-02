@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
@@ -386,6 +386,23 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               ),
             ),
           ),
+          // FIX C7: bouton pour accéder aux cadeaux liés (groupes collab)
+          if (isGroup)
+            Builder(builder: (ctx) {
+              final linkedProfileId = _effectiveChatData?['linkedProfileId'] as String?;
+              return IconButton(
+                icon: const Text('🎁', style: TextStyle(fontSize: 20)),
+                tooltip: 'Voir les cadeaux',
+                onPressed: () {
+                  // Naviguer vers la page de recherche avec le profil lié
+                  if (linkedProfileId != null && linkedProfileId.isNotEmpty) {
+                    context.go('/search-page');
+                  } else {
+                    context.go('/search-page');
+                  }
+                },
+              );
+            }),
           IconButton(
             icon: const Icon(IconlyLight.infoSquare, color: Colors.white),
             onPressed: () { context.push('/chat-info/' + widget.chatId, extra: _effectiveChatData); },

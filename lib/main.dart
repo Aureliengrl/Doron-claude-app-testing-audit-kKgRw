@@ -410,10 +410,12 @@ class _NavBarPageState extends State<NavBarPage> {
   // Badge counts
   int _friendRequestBadge = 0;
   int _unreadChatBadge = 0;
+  int _notificationBadge = 0; // Notifications in-app non lues
 
   // Streams for badge counts
   StreamSubscription? _friendRequestSub;
   StreamSubscription? _chatUnreadSub;
+  StreamSubscription? _notificationSub;
 
   // Track previous friend request count for in-app notification
   int _previousFriendRequestCount = -1; // -1 = not yet initialized
@@ -520,6 +522,25 @@ class _NavBarPageState extends State<NavBarPage> {
         AppLogger.debug('Badge chat unread stream error: $e', 'NavBar');
       },
     );
+
+    // Écouter les notifications in-app non lues
+    _notificationSub = FirebaseFirestore.instance
+        .collection('notifications')
+        .doc(uid)
+        .collection('items')
+        .where('read', isEqualTo: false)
+        .snapshots()
+        .listen(
+      (snapshot) {
+        if (!mounted) return;
+        safeSetState(() {
+          _notificationBadge = snapshot.docs.length;
+        });
+      },
+      onError: (e) {
+        AppLogger.debug('Badge notification stream error: $e', 'NavBar');
+      },
+    );
   }
 
   void _showFriendRequestBanner(String senderName) {
@@ -574,6 +595,7 @@ class _NavBarPageState extends State<NavBarPage> {
     _authSub?.cancel();
     _friendRequestSub?.cancel();
     _chatUnreadSub?.cancel();
+    _notificationSub?.cancel();
     super.dispose();
   }
 
@@ -629,7 +651,7 @@ class _NavBarPageState extends State<NavBarPage> {
                   activeIcon: IconlyBold.home,
                   label: context.tr('Accueil', 'Home'),
                   iconSize: 24.0,
-                  badgeCount: _unreadChatBadge,
+                  // FIX: badge chat sur Accueil retiré — le chat est accessible depuis les profils
                 ),
                 NavBarItem(
                   icon: IconlyLight.search,
@@ -648,7 +670,8 @@ class _NavBarPageState extends State<NavBarPage> {
                   activeIcon: IconlyBold.profile,
                   label: context.tr('Profil', 'Profile'),
                   iconSize: 24.0,
-                  badgeCount: _friendRequestBadge,
+                  // Badge combiné : demandes d'amis + notifications non lues
+                  badgeCount: _friendRequestBadge + _notificationBadge,
                 ),
               ],
               primaryColor: const Color(0xFF8A2BE2),

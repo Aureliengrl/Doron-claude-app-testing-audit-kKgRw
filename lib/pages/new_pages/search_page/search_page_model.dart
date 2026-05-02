@@ -123,6 +123,11 @@ class SearchPageModel {
             'occasion': occasion,
             'tags': tags,
             'meta': meta,
+            // FIX C1+C6: persistance du chatId entre les sessions
+            // chatId peut être dans meta (collab) ou dans tags (compatibilité)
+            'chatId': meta['chatId'] as String? ?? tags['chatId'] as String?,
+            'isShared': meta['isShared'] == true || tags['isShared'] == true,
+            'collabId': meta['collabId'] as String? ?? tags['collabId'] as String?,
           },
           'personId': personId,
           'gifts': gifts,
