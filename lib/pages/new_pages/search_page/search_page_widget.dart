@@ -1,4 +1,4 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/services.dart';
@@ -1799,7 +1799,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     // ── 2. Sélection de la photo ──────────────────────────────────
     final picker = ImagePicker();
     final picked = await picker.pickImage(
-      source: source!, imageQuality: 80, requestFullMetadata: false);
+      source: source!, imageQuality: 60, maxWidth: 1200, maxHeight: 1200, requestFullMetadata: false); // FIX P1-C: qualit\u00e9 r\u00e9duite + contrainte taille → 3x plus rapide
     if (picked == null || !mounted) return;
 
     // ── 3. Dialog Nom + Prix ────────────────────────────────────

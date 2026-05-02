@@ -1658,47 +1658,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     ),
                   ),
 
-                  // Badge de match en haut  droite
-                  if (product['match'] != null && product['match'] > 0)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [violetColor, const Color(0xFFEC4899)],
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: violetColor.withOpacity(0.4),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.auto_awesome,
-                              size: 14,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${product['match']}%',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                  // FIX P3-A: Badge % supprim\u00e9 \u2014 design \u00e9pur\u00e9 sans texte sur l'image
+),
 
 
                   // Badge like/favoris en haut  gauche

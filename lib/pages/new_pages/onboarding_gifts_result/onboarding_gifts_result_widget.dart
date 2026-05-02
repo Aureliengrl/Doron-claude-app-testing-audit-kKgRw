@@ -1,4 +1,4 @@
-import '/utils/app_logger.dart';
+﻿import '/utils/app_logger.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
@@ -288,17 +288,19 @@ class _OnboardingGiftsResultWidgetState
         await prefs.setStringList('seen_gift_product_ids', newSeenIds);
       }
 
-      AppLogger.debug('✅ ${wishlistGifts.length} wishlists + ${aiGifts.length} IA = ${gifts.length} cadeaux total', 'Debug');
+      AppLogger.debug('?? gifts total: {gifts.length}', 'Debug');
 
       if (mounted) {
         setState(() {
           _model.setGifts(gifts);
+          // FIX P2-C: clear s\u00e9lection pour \u00e9viter les saves non voulus
+          _model.selectedGiftIds.clear();
           _model.setLoading(false);
           _model.clearError();
         });
       }
 
-      // 🎯 AUTO-SAUVEGARDE si première génération
+      // ?? AUTO-SAUVEGARDE si premi\u00e8re g\u00e9n\u00e9ration
       if (_model.personId != null && gifts.isNotEmpty) {
         try {
           final people = await FirebaseDataService.loadPeople();

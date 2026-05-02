@@ -68,9 +68,12 @@ class PhotoItemCard extends StatelessWidget {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(17),
+            // FIX P2-E: StackFit.loose preserves image ratio (no stretching)
             child: Stack(
-              fit: StackFit.expand,
+              fit: StackFit.loose,
               children: [
+                // Fond sombre pour les espaces vides (images au format portrait/paysage)
+                Positioned.fill(child: Container(color: _darkBg)),
                 // ── Image (locale ou réseau) ──
                 _buildImage(),
 
@@ -167,13 +170,16 @@ class PhotoItemCard extends StatelessWidget {
     }
 
     // Chemin local (optimiste)
+    // FIX P2-E: BoxFit.contain pour respecter le ratio de la photo
     if (_isLocalPath) {
-      return Image.file(
-        File(_imageUrl),
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Container(
-          color: _darkBg,
-          child: const Icon(IconlyLight.image, color: Colors.white24, size: 40),
+      return Center(
+        child: Image.file(
+          File(_imageUrl),
+          fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) => Container(
+            color: _darkBg,
+            child: const Icon(IconlyLight.image, color: Colors.white24, size: 40),
+          ),
         ),
       );
     }
@@ -181,7 +187,7 @@ class PhotoItemCard extends StatelessWidget {
     // URL réseau
     return CachedNetworkImage(
       imageUrl: _imageUrl,
-      fit: BoxFit.cover,
+      fit: BoxFit.contain,
       placeholder: (context, url) => Container(
         color: _darkBg,
         child: const Center(
