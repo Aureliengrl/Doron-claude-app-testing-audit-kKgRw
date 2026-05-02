@@ -1257,7 +1257,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
               Stack(
                 children: [
                   ProductImage(
-                    imageUrl: product['image'] as String? ?? '',
+                    imageUrl: (product['image'] as String? ?? '').isNotEmpty ? product['image'] as String : (product['imageUrl'] as String? ?? ''),
                     height: 160,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(20),
@@ -1650,7 +1650,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     child: AspectRatio(
                       aspectRatio: [0.8, 1.25, 0.9, 1.1, 1.4, 0.75][index % 6],
                       child: ProductImage(
-                        imageUrl: product['image'] as String? ?? '',
+                        imageUrl: (product['image'] as String? ?? '').isNotEmpty ? product['image'] as String : (product['imageUrl'] as String? ?? ''),
                         height: null,
                         fit: BoxFit.cover,
                         borderRadius: BorderRadius.zero,
@@ -1808,7 +1808,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                   Stack(
                     children: [
                       ProductImage(
-                        imageUrl: product['image'] as String? ?? '',
+                        imageUrl: (product['image'] as String? ?? '').isNotEmpty ? product['image'] as String : (product['imageUrl'] as String? ?? ''),
                         height: 350,
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(24),

@@ -1,4 +1,4 @@
-import '/utils/app_logger.dart';
+﻿import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
@@ -402,6 +402,11 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
           onPageChanged: (index) {
             _model.setCurrentIndex(index);
             HapticFeedback.selectionClick();
+            // FIX P1-A: preload des 3 prochaines images
+            _preloadNextImages(index);
+            if (index >= _model.products.length - 3) {
+              _model.loadMoreProducts();
+            }
           },
           itemBuilder: (context, index) {
             final product = _model.getProductAt(index);
@@ -517,8 +522,20 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
     // Extraire les données de façon sécurisée
     final String name = product['name']?.toString() ?? 'Produit';
     final String brand = product['brand']?.toString() ?? '';
-    final String image = product['image']?.toString() ?? '';
-    final String url = product['url']?.toString() ?? '';
+    // FIX P0-B: normaliser champ image (imageUrl ou image selon source)
+    final String image = (product['image']?.toString().isNotEmpty == true
+        ? product['image'].toString()
+        : product['imageUrl']?.toString() ?? '');
+    final String url = (() {
+      final direct = product['url']?.toString() ?? '';
+      if (direct.isNotEmpty) return direct;
+      final links = product['buyLinks'] as List?;
+      if (links != null && links.isNotEmpty) {
+        final first = links.first;
+        return first is Map ? (first['url']?.toString() ?? '') : first.toString();
+      }
+      return '';
+    })();
     final int price = product['price'] is int ? product['price'] : 0;
     final int match = product['match'] is int ? product['match'] : 85;
 
@@ -709,6 +726,21 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
         ),
       ],
     );
+  }
+
+  /// FIX P1-A: Preload les 3 prochaines images pour un swipe fluide
+void _preloadNextImages(int currentIndex) {
+    for (int i = currentIndex + 1; i <= currentIndex + 3; i++) {
+      final product = _model.getProductAt(i);
+      if (product != null) {
+        final url = product['image']?.toString().isNotEmpty == true
+            ? product['image'].toString()
+            : product['imageUrl']?.toString() ?? '';
+        if (url.isNotEmpty && url.startsWith('http')) {
+          precacheImage(CachedNetworkImageProvider(url), context);
+        }
+      }
+    }
   }
 
   Widget _buildProductImage(String imageUrl) {
