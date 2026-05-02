@@ -1,9 +1,11 @@
 /**
  * Doron Cloud Functions
- * 
- * S1: sendChatNotification  — notifie les destinataires lors d'un nouveau message
- * S2: sendFriendRequestNotification — notifie l'utilisateur cible lors d'une demande d'ami
- * 
+ *
+ * S1: sendChatNotification          — nouveau message dans un chat
+ * S2: sendFriendRequestNotification — demande d'ami reçue
+ * S3: sendCollabInviteNotification  — invitation à collaborer sur une liste cadeaux
+ * S4: sendCollabMemberAddNotification — ajout direct comme membre d'une collaboration
+ *
  * Deploy: firebase deploy --only functions
  */
 
@@ -195,3 +197,163 @@ exports.sendFriendRequestNotification = onDocumentCreated(
     }
   },
 );
+
+// ─────────────────────────────────────────────────────────────────────────────
+// S3: Push notification pour les invitations à collaborer
+// Trigger: nouveau document dans collab_invites/{inviteId}
+// (créé par CollaborationService.inviteUser quand l'ami n'est pas encore membre)
+// ─────────────────────────────────────────────────────────────────────────────
+exports.sendCollabInviteNotification = onDocumentCreated(
+  'collab_invites/{inviteId}',
+  async (event) => {
+    const data = event.data?.data();
+    if (!data) return;
+
+    const fromUid    = data.fromUid;
+    const toUid      = data.toUid;
+    const collabId   = data.collabId;
+    const profileName = data.profileName || 'quelqu\'un';
+    if (!fromUid || !toUid) return;
+
+    // Nom de l'expéditeur
+    let senderName = 'Quelqu\'un';
+    try {
+      const snap = await db.collection('users').doc(fromUid).get();
+      if (snap.exists) {
+        const d = snap.data();
+        senderName = d.first_name || d.display_name || d.name || 'Quelqu\'un';
+      }
+    } catch (_) {}
+
+    // Token FCM du destinataire
+    let fcmToken = null;
+    try {
+      const snap = await db.collection('users').doc(toUid).get();
+      if (snap.exists) fcmToken = snap.data().fcmToken;
+    } catch (_) {}
+
+    if (!fcmToken) return;
+
+    // Récupérer le chatId lié à cette collaboration
+    let chatId = '';
+    try {
+      const collabSnap = await db.collection('collaborations').doc(collabId).get();
+      if (collabSnap.exists) chatId = collabSnap.data().chatId || '';
+    } catch (_) {}
+
+    try {
+      await getMessaging().send({
+        token: fcmToken,
+        notification: {
+          title: '🎁 Nouvelle collaboration !',
+          body: `${senderName} t'invite à collaborer sur la liste de cadeaux pour ${profileName}`,
+        },
+        data: {
+          type: 'collab_invite',
+          fromUid,
+          collabId,
+          chatId,
+          profileName,
+        },
+        android: {
+          priority: 'high',
+          notification: {
+            channelId: 'social',
+            priority: 'high',
+            defaultSound: true,
+          },
+        },
+        apns: {
+          payload: {
+            aps: { sound: 'default', badge: 1 },
+          },
+        },
+      });
+      console.log(`sendCollabInviteNotification: notified ${toUid} from ${senderName} for collab ${collabId}`);
+    } catch (err) {
+      console.error('sendCollabInviteNotification error:', err);
+    }
+  },
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// S4: Push notification pour l'ajout direct comme membre d'une collaboration
+// Trigger: nouveau document dans notifications/{uid}/items/{itemId}
+//          où type == 'collab_invite' (écrit par _addFriendToCollab dans Flutter)
+// ─────────────────────────────────────────────────────────────────────────────
+exports.sendCollabMemberAddNotification = onDocumentCreated(
+  'notifications/{uid}/items/{itemId}',
+  async (event) => {
+    const data = event.data?.data();
+    if (!data || data.type !== 'collab_invite') return;
+
+    const toUid      = event.params.uid;
+    const fromUid    = data.fromUid;
+    const collabId   = data.collabId;
+    const profileName = data.profileName || 'quelqu\'un';
+    const message    = data.message || '';
+    if (!fromUid || !toUid) return;
+
+    // Nom de l'expéditeur
+    let senderName = 'Quelqu\'un';
+    try {
+      const snap = await db.collection('users').doc(fromUid).get();
+      if (snap.exists) {
+        const d = snap.data();
+        senderName = d.first_name || d.display_name || d.name || 'Quelqu\'un';
+      }
+    } catch (_) {}
+
+    // Token FCM du destinataire
+    let fcmToken = null;
+    try {
+      const snap = await db.collection('users').doc(toUid).get();
+      if (snap.exists) fcmToken = snap.data().fcmToken;
+    } catch (_) {}
+
+    if (!fcmToken) return;
+
+    // Récupérer le chatId de la collaboration
+    let chatId = '';
+    try {
+      if (collabId) {
+        const collabSnap = await db.collection('collaborations').doc(collabId).get();
+        if (collabSnap.exists) chatId = collabSnap.data().chatId || '';
+      }
+    } catch (_) {}
+
+    try {
+      await getMessaging().send({
+        token: fcmToken,
+        notification: {
+          title: '🎁 Ajouté à une liste de cadeaux !',
+          body: message || `${senderName} t'a ajouté à la liste pour ${profileName}`,
+        },
+        data: {
+          type: 'collab_invite',
+          fromUid,
+          collabId: collabId || '',
+          chatId,
+          profileName,
+        },
+        android: {
+          priority: 'high',
+          notification: {
+            channelId: 'social',
+            priority: 'high',
+            defaultSound: true,
+          },
+        },
+        apns: {
+          payload: {
+            aps: { sound: 'default', badge: 1 },
+          },
+        },
+      });
+      console.log(`sendCollabMemberAddNotification: notified ${toUid} added to collab by ${senderName}`);
+    } catch (err) {
+      console.error('sendCollabMemberAddNotification error:', err);
+    }
+  },
+);
+

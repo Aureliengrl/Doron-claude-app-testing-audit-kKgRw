@@ -95,12 +95,47 @@ class PushNotificationsService {
 
   /// Handle routing if a notification contains deep linking data
   static void _handleNotificationInteraction(RemoteMessage message) {
-    // Ex: Navigate to a chat room if the payload contains `chatId`
-    if (message.data.containsKey('chatId')) {
-      final chatId = message.data['chatId'];
+    final type = message.data['type'] ?? '';
+    final chatId = message.data['chatId'] ?? '';
+
+    // Chat message → naviguer vers le chat
+    if (type == 'chat_message' && chatId.isNotEmpty) {
       pendingChatRoute = chatId;
-      onNotificationClick.add(chatId);
-      AppLogger.debug('Should navigate to chat: $chatId', 'PushNotificationsService');
+      onNotificationClick.add('chat:$chatId');
+      AppLogger.debug('Notification: navigate to chat $chatId', 'PushNotificationsService');
+      return;
+    }
+
+    // Collab invite → naviguer vers le chat si chatId disponible
+    // FIX: S3/S4 incluent chatId dans le payload pour navigation directe
+    if (type == 'collab_invite') {
+      if (chatId.isNotEmpty) {
+        pendingChatRoute = chatId;
+        onNotificationClick.add('chat:$chatId');
+        AppLogger.debug('Notification collab_invite: navigate to chat $chatId', 'PushNotificationsService');
+      } else {
+        // Fallback: informer l'app d'une nouvelle invitation (sans chatId encore)
+        final collabId = message.data['collabId'] ?? '';
+        if (collabId.isNotEmpty) {
+          onNotificationClick.add('collab:$collabId');
+          AppLogger.debug('Notification collab_invite: collabId=$collabId (no chatId yet)', 'PushNotificationsService');
+        }
+      }
+      return;
+    }
+
+    // Demande d'ami → naviguer vers la page amis
+    if (type == 'friend_request') {
+      onNotificationClick.add('friends');
+      AppLogger.debug('Notification: navigate to friends page', 'PushNotificationsService');
+      return;
+    }
+
+    // Fallback générique avec chatId
+    if (chatId.isNotEmpty) {
+      pendingChatRoute = chatId;
+      onNotificationClick.add('chat:$chatId');
+      AppLogger.debug('Notification (generic): navigate to chat $chatId', 'PushNotificationsService');
     }
   }
 }

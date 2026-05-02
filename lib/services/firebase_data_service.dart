@@ -1395,13 +1395,38 @@ class FirebaseDataService {
     // Merge avec Firebase si disponible, sinon retourner local uniquement
     if (localPeople.isNotEmpty) {
       if (firebasePeople != null && firebasePeople.isNotEmpty) {
-        // Les deux ont des données: merger (local en priorité)
+        // Les deux ont des données: merger (local en priorité SAUF champs collab)
         AppLogger.info('🔄 MERGE: local ${localPeople.length} + firebase ${firebasePeople.length}', 'Firebase');
-        final localIds = localPeople.map((p) => p['id']).toSet();
-        final merged = [...localPeople];
 
-        for (var fbPerson in firebasePeople) {
-          if (!localIds.contains(fbPerson['id'])) {
+        // Construire un index Firebase par ID pour merger les champs de collaboration
+        final fbById = <String, Map<String, dynamic>>{};
+        for (final fb in firebasePeople) {
+          final id = fb['id']?.toString() ?? '';
+          if (id.isNotEmpty) fbById[id] = fb;
+        }
+
+        // Pour chaque personne locale, enrichir avec les champs collab Firebase
+        // (chatId, collabId, isShared sont écrits par CollaborationService APRÈS le save local)
+        final localIds = <String>{};
+        final merged = localPeople.map((local) {
+          final id = local['id']?.toString() ?? '';
+          if (id.isNotEmpty) localIds.add(id);
+          final fb = fbById[id];
+          if (fb == null) return local;
+          // FIX Chat persistence: merger uniquement les champs collab de Firebase
+          // (ils sont absents du cache local car écrits APRÈS la sauvegarde locale)
+          final collabFields = <String, dynamic>{};
+          for (final key in ['chatId', 'collabId', 'isShared', 'inviteToken']) {
+            if (fb[key] != null && local[key] == null) {
+              collabFields[key] = fb[key];
+            }
+          }
+          return collabFields.isEmpty ? local : {...local, ...collabFields};
+        }).toList();
+
+        // Ajouter les personnes Firebase non présentes en local
+        for (final fbPerson in firebasePeople) {
+          if (!localIds.contains(fbPerson['id']?.toString() ?? '')) {
             merged.add(fbPerson);
           }
         }
