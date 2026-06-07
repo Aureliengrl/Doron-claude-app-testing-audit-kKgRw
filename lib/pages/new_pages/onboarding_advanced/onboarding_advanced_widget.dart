@@ -1,8 +1,9 @@
-﻿import '/utils/app_logger.dart';
+﻿import '/services/firebase_data_service.dart';
+import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
+import '/utils/iconly_compat.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -37,6 +38,41 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
   bool _isLoadingMode = true;
 
   @override
+  bool _profileLoaded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_profileLoaded) {
+      final editProfileId = GoRouterState.of(context).uri.queryParameters['editProfileId'];
+      if (editProfileId != null && editProfileId.isNotEmpty) {
+        _model.editProfileId = editProfileId;
+        _loadExistingProfile(editProfileId);
+      }
+      _profileLoaded = true;
+    }
+  }
+
+  Future<void> _loadExistingProfile(String personId) async {
+    setState(() { _isLoadingMode = true; });
+    final profile = await FirebaseDataService.loadPersonById(personId);
+    if (profile != null && mounted) {
+      setState(() {
+        _model.answers['personName'] = profile['name'] ?? '';
+        _model.answers['personIdentifier'] = profile['identifier'] ?? profile['personIdentifier'] ?? '';
+        _model.answers['location'] = profile['location'] ?? '';
+        _model.answers['giftTypes'] = List<String>.from(profile['giftTypes'] ?? []);
+        _model.answers['personGender'] = profile['gender'] ?? '';
+        _model.answers['personAge'] = profile['age'] ?? '';
+        _model.answers['occasion'] = profile['occasion'] ?? '';
+        _model.answers['recipientPersonality'] = List<String>.from(profile['recipientPersonality'] ?? []);
+        _model.answers['budgetTier'] = profile['budgetTier'] ?? profile['budget'] ?? '';
+        _isLoadingMode = false;
+      });
+    }
+  }
+
+  @override
   void initState() {
     super.initState();
     _model = OnboardingAdvancedModel();
@@ -52,9 +88,9 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
         _onboardingMode = mode;
         _isLoadingMode = false;
       });
-      AppLogger.debug('🎯 Mode onboarding chargé: $_onboardingMode', 'Debug');
+      AppLogger.debug('?? Mode onboarding chargé: $_onboardingMode', 'Debug');
     } catch (e) {
-      AppLogger.debug('⚠️ Erreur chargement mode: $e', 'Debug');
+      AppLogger.debug('?? Erreur chargement mode: $e', 'Debug');
       setState(() {
         _isLoadingMode = false;
       });
@@ -162,7 +198,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Analyse des millions de combinaisons\ngrace à notre ✨ Scan IA',
+                        'Analyse des millions de combinaisons\ngrace à notre ? Scan IA',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           color: Colors.white70,
@@ -933,7 +969,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '✅ Compte Doron trouvé — ses wishlists seront incluses !',
+                        '? Compte Doron trouvé — ses wishlists seront incluses !',
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           color: const Color(0xFF10B981),
@@ -956,6 +992,62 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
           ],
         );
       },
+    );
+  }
+
+  Widget _buildOptionCard(String option, bool isSelected, String field, String type, Map<String, dynamic> stepData, {bool isWrap = false, bool isGrid = false}) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            setState(() {
+              _model.handleSelect(
+                field,
+                option,
+                type == 'multiple',
+                maxSelections: stepData['maxSelections'] as int?,
+              );
+            });
+          },
+          borderRadius: BorderRadius.circular(isWrap || isGrid ? 20 : 32),
+          child: Container(
+            width: isWrap || isGrid ? null : double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: isWrap ? 20 : 20, vertical: isWrap ? 14 : (isGrid ? 0 : 20)),
+            alignment: isGrid ? Alignment.center : null,
+            decoration: BoxDecoration(
+              gradient: isSelected
+                  ? LinearGradient(
+                      colors: [
+                        violetColor,
+                        violetColor.withValues(alpha: 0.8),
+                      ],
+                    )
+                  : LinearGradient(
+                      colors: [
+                        Colors.white.withValues(alpha: 0.13),
+                        Colors.white.withValues(alpha: 0.07),
+                      ],
+                    ),
+              borderRadius: BorderRadius.circular(isWrap || isGrid ? 20 : 32),
+              border: Border.all(
+                color: isSelected ? Colors.white.withValues(alpha: 0.35) : Colors.white.withValues(alpha: 0.18),
+                width: isSelected ? 1.5 : 1,
+              ),
+            ),
+            child: Text(
+              option,
+              textAlign: isGrid ? TextAlign.center : TextAlign.left,
+              style: GoogleFonts.poppins(
+                fontSize: isWrap ? 15 : (isGrid ? 14 : 17),
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.9),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -1082,7 +1174,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
           Padding(
             padding: const EdgeInsets.only(top: 16),
             child: Text(
-              '✨ Tu peux sélectionner plusieurs réponses',
+              '? Tu peux sélectionner plusieurs réponses',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 13,
@@ -1357,3 +1449,5 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
     );
   }
 }
+
+

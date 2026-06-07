@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '/components/premium_3d_icon.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -170,7 +171,9 @@ class _SecretSantaHubPageState extends State<SecretSantaHubPage> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('🎅 Secret Santa',
+                          const Premium3DIcon(assetName: 'santa_3d.png', size: 64),
+                          const SizedBox(height: 8),
+                          Text('Secret Santa',
                               style: GoogleFonts.poppins(
                                 fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white,
                                 shadows: [Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 8)],

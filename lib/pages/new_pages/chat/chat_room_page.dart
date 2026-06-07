@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
+import '/utils/iconly_compat.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +10,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '/components/liquid_glass.dart';
 import '/components/liquid_glass_loader.dart';
 import '/components/product_detail_modal.dart';
@@ -42,6 +45,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   // Pour les chats 1-to-1 : profil de l'interlocuteur
   Map<String, dynamic>? _otherUserData;
+
+  // Swipe-to-reply state
+  Map<String, dynamic>? _replyingToMessage;
 
   // Pagination des messages
   int _messageLimit = 50;
@@ -194,6 +200,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) return;
     
+    final replyData = _replyingToMessage;
+    setState(() => _replyingToMessage = null);
+
     try {
       final messageRef = FirebaseFirestore.instance
           .collection('chats')
@@ -207,11 +216,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         'text': text,
         'timestamp': FieldValue.serverTimestamp(),
         'type': 'text',
+        if (replyData != null) 'replyToMessageId': replyData['id'],
+        if (replyData != null) 'replyToText': replyData['text'],
+        if (replyData != null) 'replyToSenderId': replyData['senderId'],
       };
       
       await messageRef.set(messageData);
 
-      // BUG 2 FIX: increment unreadCount for all other participants
       final chatData = _effectiveChatData;
       final participants = List<String>.from(chatData?['participants'] ?? []);
       final Map<String, dynamic> unreadUpdate = {
@@ -226,6 +237,70 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       await FirebaseFirestore.instance.collection('chats').doc(widget.chatId).update(unreadUpdate);
     } catch (e) {
       debugPrint('Erreur d\'envoi: $e');
+    }
+  }
+
+  Future<void> _pickAndSendImage(ImageSource source) async {
+    final picker = ImagePicker();
+    try {
+      final pickedFile = await picker.pickImage(source: source, imageQuality: 70);
+      if (pickedFile == null) return;
+
+      final file = File(pickedFile.path);
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) return;
+
+      // Optimistic message placeholder
+      final messageRef = FirebaseFirestore.instance
+          .collection('chats')
+          .doc(widget.chatId)
+          .collection('messages')
+          .doc();
+
+      final messageData = {
+        'id': messageRef.id,
+        'senderId': currentUser.uid,
+        'text': '📸 Image envoyée',
+        'timestamp': FieldValue.serverTimestamp(),
+        'type': 'image',
+        'imageUrl': '', // will be updated
+        'isUploading': true,
+      };
+
+      await messageRef.set(messageData);
+
+      // Upload to Firebase Storage
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('chat_images')
+          .child(widget.chatId)
+          .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
+
+      final uploadTask = await storageRef.putFile(file);
+      final downloadUrl = await uploadTask.ref.getDownloadURL();
+
+      // Update message with actual URL
+      await messageRef.update({
+        'imageUrl': downloadUrl,
+        'isUploading': FieldValue.delete(),
+      });
+
+      // Update chat last message
+      final chatData = _effectiveChatData;
+      final participants = List<String>.from(chatData?['participants'] ?? []);
+      final Map<String, dynamic> unreadUpdate = {
+        'lastMessage': '📸 Photo',
+        'lastMessageTime': FieldValue.serverTimestamp(),
+      };
+      for (final pid in participants) {
+        if (pid != currentUser.uid) {
+          unreadUpdate['unreadCount.$pid'] = FieldValue.increment(1);
+        }
+      }
+      await FirebaseFirestore.instance.collection('chats').doc(widget.chatId).update(unreadUpdate);
+
+    } catch (e) {
+      debugPrint('Erreur d\'envoi d\'image: $e');
     }
   }
 
@@ -548,140 +623,16 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         );
                       },
                     ),
-                  // S4 FIX: long-press pour copier ou supprimer le message
-                  GestureDetector(
-                    onLongPress: () {
-                      HapticFeedback.heavyImpact();
-                      final msgId = messages[index].id;
-                      showModalBottomSheet(
-                        context: context,
-                        backgroundColor: Colors.transparent,
-                        builder: (_) => Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1A0030),
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                            border: Border.all(color: Colors.white.withOpacity(0.1)),
-                          ),
-                          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
-                              const SizedBox(height: 16),
-                              ListTile(
-                                leading: const Icon(Icons.copy_rounded, color: Colors.white),
-                                title: Text(context.tr('Copier', 'Copy'), style: GoogleFonts.poppins(color: Colors.white)),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  Clipboard.setData(ClipboardData(text: text));
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                    content: Text('Message copie', style: GoogleFonts.poppins()),
-                                    backgroundColor: const Color(0xFF8A2BE2),
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    duration: const Duration(seconds: 2),
-                                  ));
-                                },
-                              ),
-                              if (isMe) ListTile(
-                                leading: const Icon(Icons.delete_rounded, color: Colors.red),
-                                title: Text(context.tr('Supprimer', 'Delete'), style: GoogleFonts.poppins(color: Colors.red)),
-                                onTap: () async {
-                                  Navigator.pop(context);
-                                  await FirebaseFirestore.instance
-                                      .collection('chats')
-                                      .doc(widget.chatId)
-                                      .collection('messages')
-                                      .doc(msgId)
-                                      .delete();
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                    child: Row(
-                    mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      if (messageData['type'] == 'product_card')
-                        _buildProductCardMessage(text, isMe)
-                      else if (messageData['type'] == 'wishlist_card')
-                        _buildWishlistCardMessage(text, isMe)
-                      else
-                        Container(
-                          constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * 0.75,
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: isMe ? violetColor : Colors.white.withOpacity(0.12),
-                            borderRadius: BorderRadius.only(
-                              topLeft: const Radius.circular(20),
-                              topRight: const Radius.circular(20),
-                              bottomLeft: Radius.circular(isMe ? 20 : 4),
-                              bottomRight: Radius.circular(isMe ? 4 : 20),
-                            ),
-                            border: isMe ? null : Border.all(
-                              color: Colors.white.withOpacity(0.1),
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            text,
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                    ],
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(
-                      top: 4,
-                      left: isMe ? 0 : 12,
-                      right: isMe ? 12 : 0,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          timeStr,
-                          style: GoogleFonts.poppins(
-                            fontSize: 10,
-                            color: Colors.white.withOpacity(0.4),
-                          ),
-                        ),
-                        if (isMe) ...[
-                          const SizedBox(width: 4),
-                          Icon(
-                            isReadByOthers ? IconlyBold.shieldDone : Icons.check,
-                            size: 14,
-                            color: isReadByOthers ? const Color(0xFF34D399) : Colors.white.withOpacity(0.4),
-                          ),
-                          // S8 FIX: "Vu par" dans les groupes
-                          if (isGroup && isReadByOthers) ...[
-                            const SizedBox(width: 4),
-                            Builder(builder: (ctx) {
-                              final readStatuses = _chatDocData['readStatus'] as Map<String, dynamic>? ?? {};
-                              final readBy = readStatuses.keys.where((k) {
-                                if (k == currentUser.uid) return false;
-                                final t = readStatuses[k] as Timestamp?;
-                                return t != null && timestamp != null && t.compareTo(timestamp) >= 0;
-                              }).length;
-                              if (readBy == 0) return const SizedBox.shrink();
-                              return Text(
-                                'Vu $readBy',
-                                style: GoogleFonts.poppins(fontSize: 9, color: const Color(0xFF34D399)),
-                              );
-                            }),
-                          ],
-                        ],
-                      ],
-                    ),
+                  // Swipe to Reply & Reactions wrapper
+                  _buildMessageItem(
+                    messageData: messageData,
+                    text: text,
+                    isMe: isMe,
+                    timeStr: timeStr,
+                    isReadByOthers: isReadByOthers,
+                    isGroup: isGroup,
+                    senderId: senderId,
+                    timestamp: timestamp,
                   ),
                 ],
               ).animate().fadeIn().slideY(begin: 0.1, end: 0),
@@ -689,6 +640,324 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           },
         );
       },
+    );
+  }
+
+  Widget _buildMessageItem({
+    required Map<String, dynamic> messageData,
+    required String text,
+    required bool isMe,
+    required String timeStr,
+    required bool isReadByOthers,
+    required bool isGroup,
+    required String? senderId,
+    required Timestamp? timestamp,
+  }) {
+    final msgId = messageData['id'] as String? ?? '';
+    final replyToText = messageData['replyToText'] as String?;
+    final reactions = messageData['reactions'] as Map<String, dynamic>? ?? {};
+
+    return Dismissible(
+      key: ValueKey(msgId),
+      direction: DismissDirection.startToEnd,
+      confirmDismiss: (direction) async {
+        HapticFeedback.lightImpact();
+        setState(() {
+          _replyingToMessage = messageData;
+        });
+        return false; // Don't actually dismiss
+      },
+      background: Container(
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 16),
+        child: const Icon(Icons.reply_rounded, color: Colors.white54),
+      ),
+      child: GestureDetector(
+        onLongPress: () => _showReactionAndOptions(msgId, text, isMe),
+        child: Column(
+          crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            // Quoted message preview
+            if (replyToText != null)
+              Container(
+                margin: EdgeInsets.only(bottom: 4, left: isMe ? 0 : 16, right: isMe ? 16 : 0),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border(left: BorderSide(color: violetColor, width: 3)),
+                ),
+                child: Text(
+                  replyToText,
+                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.white70, fontStyle: FontStyle.italic),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+
+            // Message Body
+            Row(
+              mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (messageData['type'] == 'product_card')
+                  _buildProductCardMessage(text, isMe)
+                else if (messageData['type'] == 'wishlist_card')
+                  _buildWishlistCardMessage(text, isMe)
+                else if (messageData['type'] == 'image')
+                  _buildImageMessage(messageData, isMe)
+                else
+                  Container(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.75,
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: isMe ? violetColor : Colors.white.withOpacity(0.12),
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(20),
+                        topRight: const Radius.circular(20),
+                        bottomLeft: Radius.circular(isMe ? 20 : 4),
+                        bottomRight: Radius.circular(isMe ? 4 : 20),
+                      ),
+                      border: isMe ? null : Border.all(
+                        color: Colors.white.withOpacity(0.1),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      text,
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+
+            // Reactions Display
+            if (reactions.isNotEmpty)
+              Container(
+                margin: EdgeInsets.only(top: 4, left: isMe ? 0 : 12, right: isMe ? 12 : 0),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A0030),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ...reactions.values.toSet().map((emoji) {
+                      final count = reactions.values.where((e) => e == emoji).length;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        child: Text('$emoji ${count > 1 ? count : ""}'.trim(), style: const TextStyle(fontSize: 12)),
+                      );
+                    }).toList(),
+                  ],
+                ),
+              ),
+
+            // Timestamps & Read Receipts
+            Padding(
+              padding: EdgeInsets.only(
+                top: 4,
+                left: isMe ? 0 : 12,
+                right: isMe ? 12 : 0,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    timeStr,
+                    style: GoogleFonts.poppins(
+                      fontSize: 10,
+                      color: Colors.white.withOpacity(0.4),
+                    ),
+                  ),
+                  if (isMe) ...[
+                    const SizedBox(width: 4),
+                    Icon(
+                      isReadByOthers ? IconlyBold.shieldDone : Icons.check,
+                      size: 14,
+                      color: isReadByOthers ? const Color(0xFF34D399) : Colors.white.withOpacity(0.4),
+                    ),
+                    if (isReadByOthers) ...[
+                      const SizedBox(width: 4),
+                      Builder(builder: (ctx) {
+                        final readStatuses = _chatDocData['readStatus'] as Map<String, dynamic>? ?? {};
+                        final currentUser = FirebaseAuth.instance.currentUser;
+                        final readByUids = readStatuses.keys.where((k) {
+                          if (currentUser != null && k == currentUser.uid) return false;
+                          final t = readStatuses[k] as Timestamp?;
+                          return t != null && timestamp != null && t.compareTo(timestamp) >= 0;
+                        }).toList();
+                        
+                        if (readByUids.isEmpty) return const SizedBox.shrink();
+                        
+                        return Row(
+                          children: readByUids.take(3).map((uid) => FutureBuilder<DocumentSnapshot>(
+                            future: FirebaseFirestore.instance.collection('users').doc(uid).get(),
+                            builder: (c, s) {
+                              if (!s.hasData || !s.data!.exists) return const SizedBox();
+                              final data = s.data!.data() as Map<String, dynamic>;
+                              final pUrl = data['photo_url'] as String? ?? '';
+                              return Container(
+                                margin: const EdgeInsets.only(left: 2),
+                                width: 12,
+                                height: 12,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: LiquidGlassTokens.pageDark, width: 1),
+                                  image: pUrl.isNotEmpty ? DecorationImage(image: CachedNetworkImageProvider(pUrl), fit: BoxFit.cover) : null,
+                                  color: pUrl.isEmpty ? violetColor : null,
+                                ),
+                              );
+                            },
+                          )).toList(),
+                        );
+                      }),
+                    ],
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showReactionAndOptions(String msgId, String text, bool isMe) {
+    HapticFeedback.heavyImpact();
+    final emojis = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A0030),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 24),
+            // Emoji Picker
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: emojis.map((emoji) => GestureDetector(
+                onTap: () async {
+                  Navigator.pop(context);
+                  HapticFeedback.lightImpact();
+                  final uid = FirebaseAuth.instance.currentUser?.uid;
+                  if (uid == null) return;
+                  await FirebaseFirestore.instance
+                      .collection('chats')
+                      .doc(widget.chatId)
+                      .collection('messages')
+                      .doc(msgId)
+                      .set({
+                        'reactions': { uid: emoji }
+                      }, SetOptions(merge: true));
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.08),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                ),
+              )).toList(),
+            ),
+            const SizedBox(height: 24),
+            ListTile(
+              leading: const Icon(Icons.reply_rounded, color: Colors.white),
+              title: Text('Répondre', style: GoogleFonts.poppins(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                setState(() {
+                  _replyingToMessage = {'id': msgId, 'text': text};
+                });
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.copy_rounded, color: Colors.white),
+              title: Text('Copier', style: GoogleFonts.poppins(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                Clipboard.setData(ClipboardData(text: text));
+              },
+            ),
+            if (isMe) ListTile(
+              leading: const Icon(Icons.delete_rounded, color: Colors.red),
+              title: Text('Supprimer', style: GoogleFonts.poppins(color: Colors.red)),
+              onTap: () async {
+                Navigator.pop(context);
+                await FirebaseFirestore.instance
+                    .collection('chats')
+                    .doc(widget.chatId)
+                    .collection('messages')
+                    .doc(msgId)
+                    .delete();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageMessage(Map<String, dynamic> messageData, bool isMe) {
+    final imageUrl = messageData['imageUrl'] as String?;
+    final isUploading = messageData['isUploading'] == true;
+
+    return GestureDetector(
+      onTap: () {
+        if (imageUrl != null && imageUrl.isNotEmpty) {
+          // Todo: Navigate to full screen image viewer
+          // context.push('/image-viewer', extra: imageUrl);
+        }
+      },
+      child: Container(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.70,
+          maxHeight: 250,
+        ),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              if (imageUrl != null && imageUrl.isNotEmpty)
+                CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  placeholder: (context, url) => Container(color: Colors.white10),
+                  errorWidget: (context, url, error) => const Icon(Icons.error, color: Colors.red),
+                )
+              else
+                Container(color: Colors.white10, width: double.infinity, height: double.infinity),
+                
+              if (isUploading)
+                const LiquidGlassLoader(size: 30),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -701,61 +970,102 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           top: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
         ),
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline, color: Colors.white, size: 28),
-            onPressed: () => _showShareSheet(),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+          if (_replyingToMessage != null)
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                ),
+                color: Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: violetColor.withOpacity(0.5), width: 1),
               ),
-              child: TextField(
-                controller: _messageController,
-                style: GoogleFonts.poppins(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: context.tr('Écrire un message...', 'Write a message...'),
-                  hintStyle: GoogleFonts.poppins(color: Colors.white.withOpacity(0.4)),
-                  border: InputBorder.none,
-                ),
-                onChanged: _onTextChanged,
-                onSubmitted: (_) => _sendMessage(),
+              child: Row(
+                children: [
+                  const Icon(Icons.reply_rounded, color: violetColor, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Répondre à un message', style: GoogleFonts.poppins(fontSize: 12, color: violetColor, fontWeight: FontWeight.bold)),
+                        Text(
+                          _replyingToMessage!['text'] as String? ?? 'Image',
+                          style: GoogleFonts.poppins(fontSize: 12, color: Colors.white70),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white54, size: 20),
+                    onPressed: () => setState(() => _replyingToMessage = null),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
               ),
             ),
-          ),
-          const SizedBox(width: 8),
-          ValueListenableBuilder<TextEditingValue>(
-            valueListenable: _messageController,
-            builder: (context, value, _) {
-              final hasText = value.text.trim().isNotEmpty;
-              return Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: hasText
-                      ? const LinearGradient(
-                          colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
-                        )
-                      : null,
-                  color: hasText ? null : Colors.white12,
-                ),
-                child: IconButton(
-                  icon: Icon(
-                    IconlyLight.send,
-                    color: hasText ? Colors.white : Colors.white30,
-                    size: 20,
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.add_circle_outline, color: Colors.white, size: 28),
+                onPressed: () => _showShareSheet(),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.2),
+                    ),
                   ),
-                  onPressed: hasText ? _sendMessage : null,
+                  child: TextField(
+                    controller: _messageController,
+                    style: GoogleFonts.poppins(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: context.tr('Écrire un message...', 'Write a message...'),
+                      hintStyle: GoogleFonts.poppins(color: Colors.white.withOpacity(0.4)),
+                      border: InputBorder.none,
+                    ),
+                    onChanged: _onTextChanged,
+                    onSubmitted: (_) => _sendMessage(),
+                  ),
                 ),
-              );
-            },
+              ),
+              const SizedBox(width: 8),
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: _messageController,
+                builder: (context, value, _) {
+                  final hasText = value.text.trim().isNotEmpty;
+                  return Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: hasText
+                          ? const LinearGradient(
+                              colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
+                            )
+                          : null,
+                      color: hasText ? null : Colors.white12,
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        IconlyLight.send,
+                        color: hasText ? Colors.white : Colors.white30,
+                        size: 20,
+                      ),
+                      onPressed: hasText ? _sendMessage : null,
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
         ],
       ),
@@ -1238,6 +1548,28 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 style: GoogleFonts.poppins(
                     color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
             const SizedBox(height: 16),
+            _buildShareOption(
+              icon: Icons.camera_alt_rounded,
+              color: const Color(0xFF10B981),
+              label: 'Prendre une photo',
+              sublabel: 'Ouvrir l\'appareil photo',
+              onTap: () {
+                Navigator.pop(context);
+                _pickAndSendImage(ImageSource.camera);
+              },
+            ),
+            const SizedBox(height: 12),
+            _buildShareOption(
+              icon: Icons.image_rounded,
+              color: const Color(0xFF3B82F6),
+              label: 'Choisir depuis la galerie',
+              sublabel: 'Envoyer une image',
+              onTap: () {
+                Navigator.pop(context);
+                _pickAndSendImage(ImageSource.gallery);
+              },
+            ),
+            const SizedBox(height: 12),
             _buildShareOption(
               icon: Icons.card_giftcard_rounded,
               color: const Color(0xFF8A2BE2),

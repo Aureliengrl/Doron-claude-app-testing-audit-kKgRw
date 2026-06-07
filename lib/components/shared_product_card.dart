@@ -151,6 +151,26 @@ class SharedProductCard extends StatelessWidget {
                           ),
                         ),
                       ),
+                    if (product['is_perfect_match'] == true)
+                      Positioned(
+                        bottom: 6,
+                        left: 6,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(colors: [_violet, _pink]),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [BoxShadow(color: _violet.withOpacity(0.5), blurRadius: 4)],
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(IconlyBold.star, color: Colors.white, size: 12),
+                              const SizedBox(width: 4),
+                              Text('Perfect Match', style: GoogleFonts.outfit(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                      ),
                     if (isReordering)
                       Positioned(
                         top: 6,

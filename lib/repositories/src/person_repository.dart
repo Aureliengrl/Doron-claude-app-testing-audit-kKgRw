@@ -32,7 +32,7 @@ class PersonRepository {
 
   /// Marque un destinataire comme ayant reçu sa première génération.
   Future<void> clearPendingFlag(String personId) =>
-      FirebaseDataService.updatePersonPendingFlag(personId, isPending: false);
+      FirebaseDataService.updatePersonPendingFlag(personId, false);
 
   /// Retourne la première personne dont la génération est en attente.
   Future<Map<String, dynamic>?> getFirstPending() =>
@@ -52,9 +52,9 @@ class PersonRepository {
 
   /// Charge toutes les listes de cadeaux d'un destinataire.
   Future<List<Map<String, dynamic>>> loadGiftLists(String personId) =>
-      FirebaseDataService.loadGiftListsForPerson(personId: personId);
+      FirebaseDataService.loadGiftListsForPerson(personId);
 
   /// Charge la dernière liste de cadeaux d'un destinataire.
   Future<Map<String, dynamic>?> loadLatestGiftList(String personId) =>
-      FirebaseDataService.loadLatestGiftListForPerson(personId: personId);
+      FirebaseDataService.loadLatestGiftListForPerson(personId);
 }

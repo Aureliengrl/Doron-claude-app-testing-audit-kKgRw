@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
+import '/utils/iconly_compat.dart';
 import '/components/liquid_glass.dart';
 import '/utils/app_tr.dart';
 
@@ -253,7 +253,7 @@ class _NotificationTile extends StatelessWidget {
         iconColor = _violet;
         break;
       case 'friend_request':
-        icon = IconlyBold.user1;
+        icon = Icons.person_rounded;
         iconColor = _pink;
         break;
       case 'message':

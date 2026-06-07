@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
+import '/components/premium_3d_icon.dart';
+import '/utils/iconly_compat.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart';
@@ -522,13 +523,20 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     // Nom et Bio
                     const SizedBox(height: 12),
                     AuthUserStreamWidget(
-                      builder: (context) => Text(
-                        currentUserDisplayName,
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                      builder: (context) => Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            currentUserDisplayName,
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Premium3DIcon(assetName: 'medal_3d.png', size: 28),
+                        ],
                       ),
                     ),
                     if (_model.userProfile?['handle'] != null)
@@ -1759,13 +1767,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   const SizedBox(height: 20),
                   Text(context.tr('Modifier le profil', 'Edit profile'), style: GoogleFonts.outfit(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 24),
-                  Text('Prénom', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 6),
-                  _buildEditField(nameCtrl, 'Votre prénom', IconlyLight.profile),
-                  const SizedBox(height: 16),
                   Text('Pseudo', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 6),
-                  _buildEditField(handleCtrl, 'votre_pseudo', IconlyLight.profile, prefix: '@'),
+                  _buildEditField(nameCtrl, 'Ton pseudo', IconlyLight.profile),
+                  const SizedBox(height: 16),
+                  Text('Nom d\'utilisateur', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 6),
+                  _buildEditField(handleCtrl, 'nom_utilisateur', IconlyLight.profile, prefix: '@'),
                   const SizedBox(height: 16),
                   Text('Bio', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 6),

@@ -156,7 +156,7 @@ class StoreFinderService {
 
       if (response.statusCode != 200) return [];
 
-      final data = json.decode(response.body) as Map<String, dynamic>;
+      final data = json.decode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
       final places = (data['results'] as List?) ?? [];
 
       return places.map<Map<String, dynamic>>((place) {

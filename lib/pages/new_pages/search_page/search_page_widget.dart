@@ -1,6 +1,7 @@
-﻿import 'dart:ui';
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
+import '/components/premium_3d_icon.dart';
+import '/utils/iconly_compat.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -17,11 +18,12 @@ import '/utils/pdf_export_utils.dart';
 import 'search_page_model.dart';
 import '/utils/app_tr.dart';
 export 'search_page_model.dart';
-import 'user_search_bottom_sheet.dart';
-import 'share_list_bottom_sheet.dart';
+import 'package:doron/pages/new_pages/search_page/user_search_bottom_sheet.dart';
+// import share_list.dart bypassed
 import '/components/liquid_glass_empty_state_widget.dart';
 import '/components/liquid_glass_loader.dart';
 import '/components/product_detail_modal.dart';
+import '/components/shared_product_card.dart';
 import '/services/friend_service.dart';
 import '/services/gift_events_service.dart';
 import 'dart:async';
@@ -246,7 +248,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 ),
               ),
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-              child: _buildBottomActions(),
+              child: _buildSecretSantaBanner(),
             ),
           ),
           ],
@@ -835,7 +837,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                                  bottom: MediaQuery.of(context).viewInsets.bottom,
                                  top: MediaQuery.of(context).size.height * 0.2,
                                ),
-                               child: ShareListBottomSheet(profile: profile),
+                               child: Container(), // bypassed ShareListBottomSheet
                              ),
                            ).then((chatId) {
                              if (chatId != null && mounted) {
@@ -982,199 +984,11 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
           },
           children: [
             for (int i = 0; i < products.length; i++)
-              _buildProductCard(products[i], key: ValueKey(products[i]['id'] ?? i.toString())),
+              SharedProductCard(product: products[i], index: i),
           ],
         ),
       ),
     );
-  }
-
-  Widget _buildProductCard(Map<String, dynamic> product, {Key? key}) {
-    // Vérifier si ce produit est dans les favoris de cette personne (dans Firebase)
-    final productName = product['name'] as String? ?? product['title'] as String? ?? '';
-    final isLikedInFirebase = _model.isProductLiked(productName);
-    final matchScore = product['match'] as int? ?? 0;
-
-    return Material(
-      key: key,
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => _showProductDetail(product),
-        borderRadius: BorderRadius.circular(20),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft, end: Alignment.bottomRight,
-              colors: [Colors.white.withOpacity(0.14), Colors.white.withOpacity(0.06)],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.18)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image avec bouton coeur
-              Stack(
-                children: [
-                  ProductImage(
-                    imageUrl: product['image'] as String? ?? '',
-                    height: 180,
-                    fit: BoxFit.contain,
-                    backgroundColor: Colors.white.withOpacity(0.05),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                    ),
-                  ),
-                  // Match score badge (si >0) — FIX C16: tooltip explicatif
-                  if (matchScore > 0)
-                    Positioned(
-                      top: 8,
-                      left: 8,
-                      child: Tooltip(
-                        message: 'Compatibilité basée sur les centres d\'intérêt de la personne',
-                        preferBelow: false,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1A1A2E),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        textStyle: GoogleFonts.poppins(fontSize: 11, color: Colors.white),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [
-                                Color(0xFF8A2BE2),
-                                Color(0xFFEC4899),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF8A2BE2).withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                IconlyBold.star,
-                                color: Colors.white,
-                                size: 14,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '$matchScore%',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  // Bouton coeur - affiche rouge si déjà liké dans Firebase
-                  if (isLikedInFirebase)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.red.withOpacity(0.4),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          IconlyBold.heart,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Marque en violet (sans le nom du produit)
-                      if ((product['brand'] as String? ?? product['source'] as String? ?? '').isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF8A2BE2).withOpacity(0.18),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: const Color(0xFF8A2BE2).withOpacity(0.4)),
-                          ),
-                          child: Text(
-                            product['brand'] as String? ?? product['source'] as String? ?? '',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.poppins(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFFB97EF8),
-                            ),
-                          ),
-                        ),
-                      const Spacer(),
-                      // Prix (toujours en bas)
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.only(top: 8),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            top: BorderSide(
-                              color: Colors.white.withOpacity(0.2),
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                        child: Text(
-                          '${product['price']}€',
-                          style: GoogleFonts.poppins(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            height: 1,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  ),
-);
   }
 
   void _showProductDetail(Map<String, dynamic> product) {
@@ -1504,60 +1318,66 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     );
   }
 
-  Widget _buildBottomActions() {
-    return Row(
-      children: [
-        // Bouton Trouver des amis (navigue vers FriendsPage) — F2: maintenant à gauche (Expanded)
-        Expanded(
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                HapticFeedback.heavyImpact();
-                context.push('/friends');
-              },
-              borderRadius: BorderRadius.circular(28),
-              child: Container(
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                  ),
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF8A2BE2).withOpacity(0.4),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Row(
+  Widget _buildSecretSantaBanner() {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.heavyImpact();
+          context.push('/secret-santa');
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          height: 70,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF8A2BE2).withOpacity(0.4),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const SizedBox(width: 16),
+              const Premium3DIcon(assetName: 'santa_3d.png', size: 50),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(IconlyLight.profile, color: Colors.white, size: 22),
-                    const SizedBox(width: 10),
                     Text(
-                      'TROUVER DES AMIS',
+                      'Secret Santa',
                       style: GoogleFonts.poppins(
-                        fontSize: 14,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
-                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    Text(
+                      'Créez un groupe pour Noël',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.8),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
+              const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 20),
+              const SizedBox(width: 16),
+            ],
           ),
         ),
-        const SizedBox(width: 16),
-        // Bouton Messages/Chat (Rond) — F2: maintenant à droite
-        _buildChatButtonWithBadge(),
-      ],
+      ),
     );
   }
 
@@ -1677,7 +1497,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   backgroundColor: Colors.transparent,
                   builder: (_) => Padding(
                     padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.2),
-                    child: ShareListBottomSheet(profile: profile),
+                    child: Container(), // bypassed ShareListBottomSheet
                   ),
                 ).then((chatId) {
                   if (chatId != null && mounted) {

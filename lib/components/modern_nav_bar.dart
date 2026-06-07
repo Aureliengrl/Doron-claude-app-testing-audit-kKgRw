@@ -1,9 +1,10 @@
 import 'dart:math' as math;
-import 'dart:ui';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:lottie/lottie.dart';
 import '/components/liquid_glass.dart';
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -170,23 +171,24 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
   @override
   Widget build(BuildContext context) {
     final primary = widget.primaryColor ?? LiquidGlassTokens.primary;
-    final leftItems = widget.items.length > 1
-        ? widget.items.sublist(0, widget.items.length - 1)
-        : widget.items;
-    final rightItem = widget.items.length > 1 ? widget.items.last : null;
-    final rightIndex = widget.items.length - 1;
+    final allItems = widget.items;
 
     return Padding(
-      padding: widget.margin,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // ── Pilule principale avec gesture scrubbing ───────────────────
-          Expanded(
-            child: _GlassPill(
+      padding: EdgeInsets.zero, // Full width iOS style
+      child: Container(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom), // safe area
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: Colors.white.withOpacity(0.1), width: 1)),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 30, offset: const Offset(0, -5)),
+          ],
+        ),
+        child: ClipRRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
+            child: Container(
               height: widget.height,
-              borderRadius: widget.borderRadius,
-              primary: primary,
+              color: Colors.black.withOpacity(0.55), // Translucent dark glass
               child: LayoutBuilder(builder: (ctx, constraints) {
                 final pillW = constraints.maxWidth;
                 final geo = _computeIndicator(pillW);
@@ -213,12 +215,12 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
                       // ── Items ────────────────────────────────────────
                       Row(
                         children: List.generate(
-                          leftItems.length,
+                          allItems.length,
                           (i) {
                             final dist = (_scrubProgress - i).abs();
                             final isActive = dist < 0.45;
                             return _NavItem(
-                              item: leftItems[i],
+                              item: allItems[i],
                               isSelected: isActive,
                               primary: primary,
                               height: widget.height,
@@ -237,19 +239,7 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
               }),
             ),
           ),
-
-          // ── Bouton circulaire profil ──────────────────────────────────
-          if (rightItem != null) ...[
-            const SizedBox(width: 12),
-            _CircleNavItem(
-              item: rightItem,
-              isSelected: widget.currentIndex == rightIndex,
-              primary: primary,
-              size: widget.height,
-              onTap: () => widget.onTap(rightIndex),
-            ),
-          ],
-        ],
+        ),
       )
           .animate()
           .fadeIn(duration: 400.ms)
@@ -471,15 +461,23 @@ class _NavItemState extends State<_NavItem> {
                           scale: anim,
                           child: FadeTransition(opacity: anim, child: child),
                         ),
-                        child: Icon(
-                          widget.isSelected ? widget.item.activeIcon : widget.item.icon,
-                          key: ValueKey(widget.isSelected),
-                          color: widget.isSelected ? Colors.white : Colors.white.withOpacity(0.52),
-                          size: widget.item.iconSize,
-                          shadows: widget.isSelected
-                              ? [Shadow(color: widget.primary.withOpacity(0.75), blurRadius: 12)]
-                              : [Shadow(color: Colors.black.withOpacity(0.4), blurRadius: 4, offset: const Offset(0, 1))],
-                        ),
+                        child: widget.item.lottieAsset != null
+                            ? Lottie.asset(
+                                widget.item.lottieAsset!,
+                                width: widget.item.iconSize + 8,
+                                height: widget.item.iconSize + 8,
+                                animate: widget.isSelected,
+                                repeat: false,
+                              )
+                            : Icon(
+                                widget.isSelected ? widget.item.activeIcon : widget.item.icon,
+                                key: ValueKey(widget.isSelected),
+                                color: widget.isSelected ? Colors.white : Colors.white.withOpacity(0.52),
+                                size: widget.item.iconSize,
+                                shadows: widget.isSelected
+                                    ? [Shadow(color: widget.primary.withOpacity(0.75), blurRadius: 12)]
+                                    : [Shadow(color: Colors.black.withOpacity(0.4), blurRadius: 4, offset: const Offset(0, 1))],
+                              ),
                       ),
                       if (widget.item.badgeCount > 0)
                         Positioned(
@@ -586,15 +584,23 @@ class _CircleNavItemState extends State<_CircleNavItem> {
                   Stack(clipBehavior: Clip.none, children: [
                     AnimatedSwitcher(
                       duration: 160.ms,
-                      child: Icon(
-                        widget.isSelected ? widget.item.activeIcon : widget.item.icon,
-                        key: ValueKey(widget.isSelected),
-                        color: widget.isSelected ? Colors.white : Colors.white.withOpacity(0.52),
-                        size: widget.item.iconSize,
-                        shadows: widget.isSelected
-                            ? [Shadow(color: widget.primary.withOpacity(0.8), blurRadius: 12)]
-                            : [],
-                      ),
+                      child: widget.item.lottieAsset != null
+                          ? Lottie.asset(
+                              widget.item.lottieAsset!,
+                              width: widget.item.iconSize + 8,
+                              height: widget.item.iconSize + 8,
+                              animate: widget.isSelected,
+                              repeat: false,
+                            )
+                          : Icon(
+                              widget.isSelected ? widget.item.activeIcon : widget.item.icon,
+                              key: ValueKey(widget.isSelected),
+                              color: widget.isSelected ? Colors.white : Colors.white.withOpacity(0.52),
+                              size: widget.item.iconSize,
+                              shadows: widget.isSelected
+                                  ? [Shadow(color: widget.primary.withOpacity(0.8), blurRadius: 12)]
+                                  : [],
+                            ),
                     ),
                     if (widget.item.badgeCount > 0)
                       Positioned(right: -9, top: -7, child: _Badge(count: widget.item.badgeCount)),
@@ -660,6 +666,7 @@ class NavBarItem {
   final String label;
   final double iconSize;
   final int badgeCount;
+  final String? lottieAsset;
 
   const NavBarItem({
     required this.icon,
@@ -667,6 +674,7 @@ class NavBarItem {
     required this.label,
     this.iconSize = 22.0,
     this.badgeCount = 0,
+    this.lottieAsset,
   });
 
   NavBarItem copyWith({int? badgeCount}) => NavBarItem(

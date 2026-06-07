@@ -6,6 +6,7 @@ import '/utils/app_logger.dart';
 import '/services/tags_definitions.dart';
 import '/domain/matching/tag_converter.dart';
 import '/domain/matching/matching_engine.dart';
+import '/services/claude_api_service.dart';
 
 /// Service de matching de produits basé sur les tags.
 /// 
@@ -542,11 +543,32 @@ class ProductMatchingService {
 
       AppLogger.success('🖼️ Images extraites: $imagesFound URLs valides, $imagesPlaceholder placeholders', 'Matching');
 
-      AppLogger.success('${selectedProducts.length} produits matchés et retournés', 'Matching');
+      // 🔥 NOUVEAU: Reranking "Perfect Match 200%" avec l'IA Claude
+      // On le fait uniquement si le mode n\'est pas "discovery" pour garder le fun
+      // et pour limiter les coûts d\'API sur les recherches très vagues.
+      List<Map<String, dynamic>> finalProducts = selectedProducts;
+      if (filteringMode != "discovery" && finalProducts.length > 5) {
+        // We only take the top 50 to rerank (Claude input limit/token optimization)
+        final top50ToRerank = finalProducts.take(50).toList();
+        
+        // Appeler ClaudeApiService (il faut l\'importer si pas déjà fait)
+        // Note: l\'import sera ajouté au début du fichier
+        try {
+           finalProducts = await ClaudeApiService.rerankProducts(top50ToRerank, userTags);
+           // Re-append the rest if any
+           if (selectedProducts.length > 50) {
+             finalProducts.addAll(selectedProducts.skip(50));
+           }
+        } catch (e) {
+           AppLogger.error('Erreur lors du reranking IA, fallback aux résultats classiques', 'Matching');
+        }
+      }
+
+      AppLogger.success('${finalProducts.length} produits matchés et retournés', 'Matching');
       AppLogger.info('📊 Diversité des marques: ${brandCounts.length} marques différentes', 'Matching');
-      AppLogger.debug('📊 Répartition marques: ${brandCounts.entries.map((e) => '${e.key}: ${e.value}').take(10).join(", ")}', 'Matching');
-      AppLogger.debug('📊 Répartition catégories: ${categoryCounts.entries.map((e) => '${e.key}: ${e.value}').join(", ")}', 'Matching');
-      return selectedProducts;
+      AppLogger.debug('📊 Répartition marques: ${brandCounts.entries.map((e) => \'${e.key}: ${e.value}\').take(10).join(", ")}', 'Matching');
+      AppLogger.debug('📊 Répartition catégories: ${categoryCounts.entries.map((e) => \'${e.key}: ${e.value}\').join(", ")}', 'Matching');
+      return finalProducts;
     } catch (e, stackTrace) {
       // ⚠️ ERREUR LORS DU CHARGEMENT - Logger détails complets
       AppLogger.error('❌ ERREUR lors du matching produits', 'Matching', e);

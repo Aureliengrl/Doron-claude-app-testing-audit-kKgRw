@@ -1,7 +1,8 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
+import '/components/premium_3d_icon.dart';
+import '/utils/iconly_compat.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +13,8 @@ import 'package:confetti/confetti.dart';
 import '/services/product_matching_service.dart';
 import '/services/firebase_data_service.dart';
 import '/services/product_url_service.dart';
+import '/services/claude_api_service.dart';
+import '/services/amazon_affiliation_service.dart';
 import '/components/bounce_button.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -60,22 +63,22 @@ class _OnboardingGiftsResultWidgetState
     final personId = goRouterState.uri.queryParameters['personId'];
     _returnTo = goRouterState.uri.queryParameters['returnTo'];
 
-    // 🎤 NOUVEAU: Récupérer les données passées via extra (assistant vocal)
+    // ?? NOUVEAU: Récupérer les données passées via extra (assistant vocal)
     final extraData = goRouterState.extra;
-    AppLogger.debug('🎯 Extra data détecté: ${extraData != null ? "OUI" : "NON"}', 'Debug');
+    AppLogger.debug('?? Extra data détecté: ${extraData != null ? "OUI" : "NON"}', 'Debug');
 
     if (extraData != null && extraData is Map<String, dynamic>) {
-      AppLogger.debug('✅ Profil vocal reçu via extra: ${extraData.keys.join(", ")}', 'Debug');
+      AppLogger.debug('? Profil vocal reçu via extra: ${extraData.keys.join(", ")}', 'Debug');
       _model.setVoiceProfile(extraData);
     }
 
     if (personId != null) {
       _model.setPersonId(personId);
-      AppLogger.debug('✅ PersonId détecté: $personId', 'Debug');
+      AppLogger.debug('? PersonId détecté: $personId', 'Debug');
     }
 
     if (_returnTo != null) {
-      AppLogger.debug('✅ ReturnTo détecté: $_returnTo', 'Debug');
+      AppLogger.debug('? ReturnTo détecté: $_returnTo', 'Debug');
     }
 
     _loadGifts();
@@ -93,20 +96,20 @@ class _OnboardingGiftsResultWidgetState
     try {
       Map<String, dynamic>? profileForGeneration;
 
-      // 🎤 PRIORITÉ 1: Si profil vocal existe (assistant vocal), l'utiliser
+      // ?? PRIORITÉ 1: Si profil vocal existe (assistant vocal), l'utiliser
       if (_model.voiceProfile != null) {
-        AppLogger.debug('🎤 Utilisation du profil vocal pour génération', 'Debug');
+        AppLogger.debug('?? Utilisation du profil vocal pour génération', 'Debug');
         profileForGeneration = _model.voiceProfile;
-        AppLogger.debug('✅ Profil vocal: ${profileForGeneration!.keys.join(", ")}', 'Debug');
+        AppLogger.debug('? Profil vocal: ${profileForGeneration!.keys.join(", ")}', 'Debug');
       }
-      // 🎯 PRIORITÉ 2: Si un personId est spécifié, charger les tags de la personne
+      // ?? PRIORITÉ 2: Si un personId est spécifié, charger les tags de la personne
       else if (_model.personId != null) {
-        AppLogger.debug('🔍 Chargement direct par ID: ${_model.personId}', 'Debug');
+        AppLogger.debug('?? Chargement direct par ID: ${_model.personId}', 'Debug');
 
         final person = await FirebaseDataService.loadPersonById(_model.personId!);
 
         if (person == null) {
-          AppLogger.debug('❌ Person not found! Looking for ID: ${_model.personId}', 'Debug');
+          AppLogger.debug('? Person not found! Looking for ID: ${_model.personId}', 'Debug');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -141,29 +144,29 @@ class _OnboardingGiftsResultWidgetState
 
         _model.setPersonTags(personTags);
         profileForGeneration = personTags;
-        AppLogger.debug('✅ Tags de personne chargés: ${personTags.keys.join(", ")}', 'Debug');
+        AppLogger.debug('? Tags de personne chargés: ${personTags.keys.join(", ")}', 'Debug');
       }
-      // 📝 PRIORITÉ 3: Ancienne méthode (compatibilité)
+      // ?? PRIORITÉ 3: Ancienne méthode (compatibilité)
       else {
-        AppLogger.debug('🔍 Chargement du profil onboarding (mode compatibilité)', 'Debug');
+        AppLogger.debug('?? Chargement du profil onboarding (mode compatibilité)', 'Debug');
         final userProfile = await FirebaseDataService.loadOnboardingAnswers();
         _model.setUserProfile(userProfile);
         profileForGeneration = userProfile;
       }
 
       if (profileForGeneration == null || profileForGeneration.isEmpty) {
-        AppLogger.debug('⚠️ Aucun profil trouvé pour la génération - utilisation du mode découverte', 'Debug');
+        AppLogger.debug('?? Aucun profil trouvé pour la génération - utilisation du mode découverte', 'Debug');
         profileForGeneration = {};
       }
 
-      // ════════════════════════════════════════════════════════════════
-      // 🎁 NOUVELLE LOGIQUE : Charger les wishlists Doron si handle connu
-      // ════════════════════════════════════════════════════════════════
+      // ----------------------------------------------------------------
+      // ?? NOUVELLE LOGIQUE : Charger les wishlists Doron si handle connu
+      // ----------------------------------------------------------------
       List<Map<String, dynamic>> wishlistGifts = [];
       final personHandle = (profileForGeneration['username'] ?? profileForGeneration['personIdentifier'] ?? '').toString().replaceAll('@', '').trim().toLowerCase();
 
       if (personHandle.isNotEmpty) {
-        AppLogger.debug('🔗 Recherche compte Doron pour handle: @$personHandle', 'Debug');
+        AppLogger.debug('?? Recherche compte Doron pour handle: @$personHandle', 'Debug');
         try {
           // Trouver l'UID par le handle
           final userQuery = await FirebaseFirestore.instance
@@ -174,7 +177,7 @@ class _OnboardingGiftsResultWidgetState
 
           if (userQuery.docs.isNotEmpty) {
             final targetUid = userQuery.docs.first.id;
-            AppLogger.debug('✅ Compte Doron trouvé: $targetUid', 'Debug');
+            AppLogger.debug('? Compte Doron trouvé: $targetUid', 'Debug');
 
             // Charger ses wishlists
             final wishlistsSnap = await FirebaseFirestore.instance
@@ -213,22 +216,22 @@ class _OnboardingGiftsResultWidgetState
                 }
               }
             }
-            AppLogger.debug('✅ ${wishlistGifts.length} produits récupérés depuis les wishlists Doron de @$personHandle', 'Debug');
+            AppLogger.debug('? ${wishlistGifts.length} produits récupérés depuis les wishlists Doron de @$personHandle', 'Debug');
           } else {
-            AppLogger.debug('ℹ️ Aucun compte Doron trouvé pour @$personHandle — fallback classique', 'Debug');
+            AppLogger.debug('?? Aucun compte Doron trouvé pour @$personHandle  fallback classique', 'Debug');
           }
         } catch (e) {
-          AppLogger.debug('⚠️ Erreur récupération wishlists Doron (non bloquant): $e', 'Debug');
+          AppLogger.debug('?? Erreur récupération wishlists Doron (non bloquant): $e', 'Debug');
         }
       }
-      // ════════════════════════════════════════════════════════════════
+      // ----------------------------------------------------------------
 
       // Charger les IDs des produits déjà vus pour refresh intelligent
       final prefs = await SharedPreferences.getInstance();
       final seenProductIds = prefs.getStringList('seen_gift_product_ids')
           ?.map((s) => int.tryParse(s) ?? 0).toList() ?? [];
 
-      // 🎯 Générer les cadeaux via ProductMatchingService
+      // ?? Générer les cadeaux via ProductMatchingService
       final rawGifts = await ProductMatchingService.getPersonalizedProducts(
         userTags: profileForGeneration ?? {},
         count: 50,
@@ -266,12 +269,12 @@ class _OnboardingGiftsResultWidgetState
         final hasImage = product['image'] != null &&
                          product['image'].toString().isNotEmpty &&
                          product['image'].toString().startsWith('http');
-        if (!hasImage) AppLogger.debug('⚠️ Produit "${product['name']}" filtré: pas d\'image valide', 'Debug');
+        if (!hasImage) AppLogger.debug('?? Produit "${product['name']}" filtré: pas d\'image valide', 'Debug');
         return hasImage;
       })
       .toList();
 
-      // 🎁 Fusionner : wishlists Doron en PREMIER, puis IA
+      // ?? Fusionner : wishlists Doron en PREMIER, puis IA
       final gifts = [...wishlistGifts, ...aiGifts];
 
       // Mettre à jour le cache des produits vus
@@ -310,33 +313,33 @@ class _OnboardingGiftsResultWidgetState
           );
           final isPendingFirstGen = person['meta']?['isPendingFirstGen'] == true;
           if (isPendingFirstGen && !forceRefresh) {
-            AppLogger.debug('💾 Auto-sauvegarde: première génération détectée', 'Debug');
+            AppLogger.debug('?? Auto-sauvegarde: première génération détectée', 'Debug');
             final listName = 'Liste ${DateTime.now().day}/${DateTime.now().month}';
             final listId = await FirebaseDataService.saveGiftListForPerson(
               personId: _model.personId!,
               gifts: gifts,
               listName: listName,
             );
-            AppLogger.debug('✅ ${gifts.length} cadeaux auto-sauvegardés (liste: $listId)', 'Debug');
+            AppLogger.debug('? ${gifts.length} cadeaux auto-sauvegardés (liste: $listId)', 'Debug');
             await FirebaseDataService.updatePersonPendingFlag(_model.personId!, false);
             await FirebaseDataService.setCurrentPersonContext(_model.personId!);
           }
         } catch (e) {
-          AppLogger.debug('⚠️ Erreur auto-sauvegarde (non-bloquant): $e', 'Debug');
+          AppLogger.debug('?? Erreur auto-sauvegarde (non-bloquant): $e', 'Debug');
         }
       }
     } catch (e) {
-      AppLogger.debug('❌ Erreur chargement cadeaux: $e', 'Debug');
+      AppLogger.debug('? Erreur chargement cadeaux: $e', 'Debug');
       String errorMessage = 'Erreur de génération des cadeaux';
       String errorDetails = e.toString();
       if (errorDetails.contains('SocketException') || errorDetails.contains('Network')) {
-        errorMessage = '📡 Pas de connexion internet';
+        errorMessage = '?? Pas de connexion internet';
         errorDetails = 'Vérifie ta connexion internet et réessaye.';
       } else if (errorDetails.contains('firebase')) {
-        errorMessage = '🔥 Erreur Firebase';
+        errorMessage = '?? Erreur Firebase';
         errorDetails = 'Impossible de charger les produits. Réessaye plus tard.';
       } else {
-        errorMessage = '⚠️ Erreur de chargement';
+        errorMessage = '?? Erreur de chargement';
         errorDetails = 'Une erreur est survenue. Réessaye.';
       }
       if (mounted) {
@@ -356,7 +359,7 @@ class _OnboardingGiftsResultWidgetState
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       }
     } catch (e) {
-      AppLogger.debug('❌ Erreur ouverture URL: $e', 'Debug');
+      AppLogger.debug('? Erreur ouverture URL: $e', 'Debug');
     }
   }
 
@@ -453,7 +456,7 @@ class _OnboardingGiftsResultWidgetState
                 onPressed: () {
                   if (!mounted) return;
                   if (_returnTo != null && _returnTo!.isNotEmpty) {
-                    AppLogger.debug('🔙 Retour vers: $_returnTo', 'Debug');
+                    AppLogger.debug('?? Retour vers: $_returnTo', 'Debug');
                     context.go(_returnTo!);
                   } else {
                     context.go('/search-page');
@@ -483,7 +486,7 @@ class _OnboardingGiftsResultWidgetState
                     ),
                     Text(
                       hasWishlistGifts && personHandle.isNotEmpty
-                          ? '🎯 Incl. wishlist @$personHandle'
+                          ? '?? Incl. wishlist @$personHandle'
                           : 'Basés sur tes réponses',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
@@ -506,18 +509,13 @@ class _OnboardingGiftsResultWidgetState
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            color: violetColor,
-            strokeWidth: 3,
-          ),
-          const SizedBox(height: 20),
+          const Premium3DIcon(assetName: 'gift_3d.png', size: 160),
+          const SizedBox(height: 32),
           Text(
-            '✨ Génération de tes cadeaux personnalisés...',
+            "L'IA prépare vos cadeaux...",
             style: GoogleFonts.poppins(
-              color: Colors.grey[700],
+              color: Colors.black87,
               fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
@@ -868,7 +866,7 @@ class _OnboardingGiftsResultWidgetState
                             children: [
                               // Prix
                               Text(
-                                '${gift['price']}€',
+                                '${gift['price']}',
                                 style: GoogleFonts.poppins(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
@@ -1032,8 +1030,8 @@ class _OnboardingGiftsResultWidgetState
 
                         // Nouvelle architecture: sauvegarder la liste de cadeaux pour une personne
                         if (_model.personId != null) {
-                          AppLogger.debug('💾 Sauvegarde via nouvelle architecture (personId: ${_model.personId})', 'Debug');
-                          AppLogger.debug('🎁 ${selectedGifts.length} cadeaux sélectionnés sur ${_model.gifts.length}', 'Debug');
+                          AppLogger.debug('?? Sauvegarde via nouvelle architecture (personId: ${_model.personId})', 'Debug');
+                          AppLogger.debug('?? ${selectedGifts.length} cadeaux sélectionnés sur ${_model.gifts.length}', 'Debug');
 
                           // Sauvegarder la liste de cadeaux SÉLECTIONNÉS
                           final listName = 'Liste ${DateTime.now().day}/${DateTime.now().month}';
@@ -1042,18 +1040,18 @@ class _OnboardingGiftsResultWidgetState
                             gifts: selectedGifts,
                             listName: listName,
                           );
-                          AppLogger.debug('✅ ${selectedGifts.length} cadeaux sauvegardés (liste: $listId)', 'Debug');
+                          AppLogger.debug('? ${selectedGifts.length} cadeaux sauvegardés (liste: $listId)', 'Debug');
 
                           // Retirer le flag isPendingFirstGen
                           await FirebaseDataService.updatePersonPendingFlag(_model.personId!, false);
-                          AppLogger.debug('✅ Flag isPendingFirstGen retiré', 'Debug');
+                          AppLogger.debug('? Flag isPendingFirstGen retiré', 'Debug');
 
                           // Définir le contexte pour que les futurs favoris soient liés à cette personne
                           await FirebaseDataService.setCurrentPersonContext(_model.personId!);
-                          AppLogger.debug('✅ Contexte de personne défini: ${_model.personId}', 'Debug');
+                          AppLogger.debug('? Contexte de personne défini: ${_model.personId}', 'Debug');
                         } else {
                           // Ancienne méthode (compatibilité)
-                          AppLogger.debug('💾 Sauvegarde via ancienne architecture', 'Debug');
+                          AppLogger.debug('?? Sauvegarde via ancienne architecture', 'Debug');
                           if (_model.userProfile != null) {
                             final profileWithGifts = {
                               ..._model.userProfile!,
@@ -1061,16 +1059,16 @@ class _OnboardingGiftsResultWidgetState
                               'savedAt': DateTime.now().toIso8601String(),
                             };
                             final profileId = await FirebaseDataService.saveGiftProfile(profileWithGifts);
-                            AppLogger.debug('✅ Profil et ${selectedGifts.length} cadeaux sauvegardés', 'Debug');
+                            AppLogger.debug('? Profil et ${selectedGifts.length} cadeaux sauvegardés', 'Debug');
 
                             if (profileId != null) {
                               await FirebaseDataService.setCurrentPersonContext(profileId);
-                              AppLogger.debug('✅ Contexte de personne défini: $profileId', 'Debug');
+                              AppLogger.debug('? Contexte de personne défini: $profileId', 'Debug');
                             }
                           }
                         }
 
-                        // 🎉 CONFETTIS + HAPTIC lors de la sauvegarde réussie !
+                        // ?? CONFETTIS + HAPTIC lors de la sauvegarde réussie !
                         if (mounted) {
                           HapticFeedback.heavyImpact();
                           _confettiController.play();
@@ -1084,7 +1082,7 @@ class _OnboardingGiftsResultWidgetState
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
-                                      '🎉 ${selectedGifts.length} cadeau${selectedGifts.length > 1 ? 'x' : ''} enregistré${selectedGifts.length > 1 ? 's' : ''} !',
+                                      '?? ${selectedGifts.length} cadeau${selectedGifts.length > 1 ? 'x' : ''} enregistré${selectedGifts.length > 1 ? 's' : ''} !',
                                       style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                                     ),
                                   ),
@@ -1102,18 +1100,18 @@ class _OnboardingGiftsResultWidgetState
                         final prefs = await SharedPreferences.getInstance();
                         await prefs.setBool('onboarding_completed', true);
                         await prefs.setString('not_first_time', 'true');
-                        AppLogger.debug('✅ Onboarding marqué comme complété', 'Debug');
+                        AppLogger.debug('? Onboarding marqué comme complété', 'Debug');
 
                         // Naviguer vers la page appropriée
                         if (mounted) {
                           // Vérifier si l'utilisateur est déjà authentifié
                           if (FirebaseAuth.instance.currentUser != null) {
                             // Si déjà connecté, aller directement à l'accueil
-                            AppLogger.debug('✅ Utilisateur déjà connecté, navigation vers home', 'Debug');
+                            AppLogger.debug('? Utilisateur déjà connecté, navigation vers home', 'Debug');
                             context.go('/search-page');
                           } else {
                             // Sinon, aller à l'authentification
-                            AppLogger.debug('🔐 Pas encore connecté, navigation vers auth', 'Debug');
+                            AppLogger.debug('?? Pas encore connecté, navigation vers auth', 'Debug');
                             context.go('/authentification');
                           }
                         }

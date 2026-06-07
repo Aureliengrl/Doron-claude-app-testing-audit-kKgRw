@@ -1,6 +1,6 @@
 import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
+import '/utils/iconly_compat.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 // PERF AXE 3: Widget shimmer pour placeholder d'image — 4× plus fluide que CircularProgressIndicator

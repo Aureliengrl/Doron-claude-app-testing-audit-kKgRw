@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
+import '/utils/iconly_compat.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/utils/app_tr.dart';
+import '/components/premium_3d_icon.dart';
 
 /// Page affichée une seule fois après la première connexion,
 /// uniquement si l'utilisateur n'a pas encore de handle.
@@ -27,26 +28,11 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
   bool _isLoading = false;
   String? _errorMessage;
 
-  // Anniversaire (optionnel — jour + mois uniquement)
-  int? _birthdayDay;
-  int? _birthdayMonth;
-  bool _birthdayExpanded = false;
+  // Date de naissance (obligatoire)
+  DateTime? _dateOfBirth;
 
-  // ── Mois dynamiques (dépendent de la langue) ─────────────────────────────
-  List<String> _months(BuildContext ctx) => [
-    ctx.tr('Janvier', 'January'),
-    ctx.tr('Février', 'February'),
-    ctx.tr('Mars', 'March'),
-    ctx.tr('Avril', 'April'),
-    ctx.tr('Mai', 'May'),
-    ctx.tr('Juin', 'June'),
-    ctx.tr('Juillet', 'July'),
-    ctx.tr('Août', 'August'),
-    ctx.tr('Septembre', 'September'),
-    ctx.tr('Octobre', 'October'),
-    ctx.tr('Novembre', 'November'),
-    ctx.tr('Décembre', 'December'),
-  ];
+  // Langue choisie
+  String _selectedLanguage = 'fr';
 
   @override
   void initState() {
@@ -56,6 +42,12 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
     if (providerName.isNotEmpty) {
       _nameController.text = providerName;
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _selectedLanguage = context.isEn ? 'en' : 'fr';
   }
 
   @override
@@ -131,13 +123,19 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
-      // 3. Ajouter l'anniversaire si renseigné
-      if (_birthdayDay != null && _birthdayMonth != null) {
-        profileData['birthday'] = {
-          'day': _birthdayDay,
-          'month': _birthdayMonth,
-        };
+      // 3. Ajouter date de naissance et langue
+      if (_dateOfBirth == null) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = context.tr(
+            'Veuillez renseigner votre date de naissance',
+            'Please provide your date of birth',
+          );
+        });
+        return;
       }
+      profileData['dob'] = _dateOfBirth!.toIso8601String();
+      profileData['language'] = _selectedLanguage;
 
       await FirebaseFirestore.instance
           .collection('users')
@@ -219,17 +217,8 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
 
                     const SizedBox(height: 32),
 
-                    // Icon
-                    Container(
-                      width: 64, height: 64,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
-                        ),
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: const Icon(IconlyLight.message, color: Colors.white, size: 32),
-                    ),
+                    // Avatar 3D
+                    const Premium3DIcon(assetName: 'avatar_man_3d.png', size: 140),
 
                     const SizedBox(height: 24),
 
@@ -257,8 +246,8 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
 
                     const SizedBox(height: 32),
 
-                    // ── ANNIVERSAIRE (optionnel) ──────────────────────────
-                    _buildBirthdaySection(),
+                    // ── DATE DE NAISSANCE (obligatoire) ──────────────────────────
+                    _buildDateOfBirthSection(),
 
                     const SizedBox(height: 28),
 
@@ -301,7 +290,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                               ),
                               decoration: InputDecoration(
                                 border: InputBorder.none,
-                                hintText: 'ton_pseudo',
+                                hintText: 'nom_utilisateur',
                                 hintStyle: GoogleFonts.poppins(
                                   fontSize: 18,
                                   color: Colors.white.withOpacity(0.25),
@@ -340,9 +329,9 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
 
                     const SizedBox(height: 28),
 
-                    // ── PRÉNOM ───────────────────────────────────────────
+                    // ── PSEUDO ───────────────────────────────────────────
                     Text(
-                      context.tr('Ton prénom', 'Your first name'),
+                      context.tr('Ton pseudo', 'Your pseudo'),
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -352,8 +341,8 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                     const SizedBox(height: 6),
                     Text(
                       context.tr(
-                        'C\'est le nom que tes amis verront.',
-                        'This is the name your friends will see.',
+                        'C\'est le nom affiché sur ton profil.',
+                        'This is the name displayed on your profile.',
                       ),
                       style: GoogleFonts.poppins(
                         fontSize: 13,
@@ -453,8 +442,6 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
   // ── Sélecteur de langue ───────────────────────────────────────────────────
 
   Widget _buildLanguageSelector() {
-    final isEn = context.isEn;
-
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
@@ -468,21 +455,21 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
           // 🇫🇷 Français
           _buildLangButton(
             label: '🇫🇷  Français',
-            isSelected: !isEn,
+            isSelected: _selectedLanguage == 'fr',
             onTap: () {
               setAppLanguage(context, 'fr');
               // Rebuild cette page pour mettre à jour toutes les strings
-              if (mounted) setState(() {});
+              if (mounted) setState(() { _selectedLanguage = 'fr'; });
             },
           ),
           const SizedBox(width: 6),
           // 🇬🇧 English
           _buildLangButton(
             label: '🇬🇧  English',
-            isSelected: isEn,
+            isSelected: _selectedLanguage == 'en',
             onTap: () {
               setAppLanguage(context, 'en');
-              if (mounted) setState(() {});
+              if (mounted) setState(() { _selectedLanguage = 'en'; });
             },
           ),
         ],
@@ -536,27 +523,51 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
     );
   }
 
-  // ── Section anniversaire ──────────────────────────────────────────────────
+  // ── Section Date de naissance ──────────────────────────────────────────────────
 
-  Widget _buildBirthdaySection() {
-    final hasBirthday = _birthdayDay != null && _birthdayMonth != null;
-    final months = _months(context);
+  Widget _buildDateOfBirthSection() {
+    final hasDob = _dateOfBirth != null;
+    final displayDate = hasDob 
+        ? '${_dateOfBirth!.day.toString().padLeft(2, '0')}/${_dateOfBirth!.month.toString().padLeft(2, '0')}/${_dateOfBirth!.year}' 
+        : context.tr('Sélectionner une date', 'Select a date');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // En-tête cliquable
         GestureDetector(
-          onTap: () => setState(() => _birthdayExpanded = !_birthdayExpanded),
+          onTap: () async {
+            final picked = await showDatePicker(
+              context: context,
+              initialDate: _dateOfBirth ?? DateTime(2000),
+              firstDate: DateTime(1900),
+              lastDate: DateTime.now(),
+              builder: (context, child) {
+                return Theme(
+                  data: ThemeData.dark().copyWith(
+                    colorScheme: const ColorScheme.dark(
+                      primary: Color(0xFF8A2BE2),
+                      onPrimary: Colors.white,
+                      surface: Color(0xFF1A0030),
+                      onSurface: Colors.white,
+                    ),
+                  ),
+                  child: child!,
+                );
+              },
+            );
+            if (picked != null) {
+              setState(() => _dateOfBirth = picked);
+            }
+          },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
             decoration: BoxDecoration(
-              color: hasBirthday
+              color: hasDob
                   ? const Color(0xFF8A2BE2).withOpacity(0.15)
                   : Colors.white.withOpacity(0.06),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: hasBirthday
+                color: hasDob
                     ? const Color(0xFF8A2BE2).withOpacity(0.5)
                     : Colors.white.withOpacity(0.15),
               ),
@@ -570,7 +581,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        context.tr('Ton anniversaire', 'Your birthday'),
+                        context.tr('Date de naissance', 'Date of birth'),
                         style: GoogleFonts.poppins(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -578,15 +589,10 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                         ),
                       ),
                       Text(
-                        hasBirthday
-                            ? '$_birthdayDay ${months[_birthdayMonth! - 1]}'
-                            : context.tr(
-                                'Optionnel — apparaît dans le calendrier de tes amis',
-                                'Optional — appears in your friends\' calendar',
-                              ),
+                        displayDate,
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          color: hasBirthday
+                          color: hasDob
                               ? const Color(0xFFEC4899)
                               : Colors.white.withOpacity(0.4),
                         ),
@@ -594,102 +600,15 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                     ],
                   ),
                 ),
-                Icon(
-                  _birthdayExpanded
-                      ? Icons.keyboard_arrow_up_rounded
-                      : Icons.keyboard_arrow_down_rounded,
+                const Icon(
+                  Icons.calendar_today_rounded,
                   color: Colors.white54,
+                  size: 20,
                 ),
               ],
             ),
           ),
         ),
-
-        // Sélecteurs déroulants
-        if (_birthdayExpanded) ...[
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              // Jour
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(context.tr('Jour', 'Day'),
-                        style: GoogleFonts.poppins(color: Colors.white54, fontSize: 12)),
-                    const SizedBox(height: 6),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white.withOpacity(0.15)),
-                      ),
-                      child: DropdownButton<int>(
-                        value: _birthdayDay,
-                        hint: Text(context.tr('Jour', 'Day'),
-                            style: GoogleFonts.poppins(color: Colors.white38, fontSize: 14)),
-                        dropdownColor: const Color(0xFF1A0030),
-                        underline: const SizedBox(),
-                        isExpanded: true,
-                        style: GoogleFonts.poppins(color: Colors.white, fontSize: 15),
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        items: List.generate(31, (i) => i + 1).map((d) => DropdownMenuItem(
-                          value: d,
-                          child: Text('$d'),
-                        )).toList(),
-                        onChanged: (v) => setState(() => _birthdayDay = v),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Mois
-              Expanded(
-                flex: 2,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(context.tr('Mois', 'Month'),
-                        style: GoogleFonts.poppins(color: Colors.white54, fontSize: 12)),
-                    const SizedBox(height: 6),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white.withOpacity(0.15)),
-                      ),
-                      child: DropdownButton<int>(
-                        value: _birthdayMonth,
-                        hint: Text(context.tr('Mois', 'Month'),
-                            style: GoogleFonts.poppins(color: Colors.white38, fontSize: 14)),
-                        dropdownColor: const Color(0xFF1A0030),
-                        underline: const SizedBox(),
-                        isExpanded: true,
-                        style: GoogleFonts.poppins(color: Colors.white, fontSize: 15),
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        items: List.generate(12, (i) => i + 1).map((m) => DropdownMenuItem(
-                          value: m,
-                          child: Text(months[m - 1]),
-                        )).toList(),
-                        onChanged: (v) => setState(() => _birthdayMonth = v),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          // Note RGPD
-          const SizedBox(height: 8),
-          Text(
-            context.tr(
-              '🔒 Seuls le jour et le mois sont enregistrés (pas l\'année)',
-              '🔒 Only day and month are saved (not the year)',
-            ),
-            style: GoogleFonts.poppins(fontSize: 11, color: Colors.white30),
-          ),
-        ],
       ],
     );
   }

@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
@@ -14,7 +14,7 @@ import '/components/cached_image.dart';
 import '/components/connection_required_dialog.dart';
 import '/utils/app_logger.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-
+import '/services/api/multi_market_service.dart';
 
 class GlobalProductDetailModal {
   static final Color violetColor = const Color(0xFF8A2BE2);
@@ -22,6 +22,16 @@ class GlobalProductDetailModal {
   /// Affiche le modal de détails du produit de manière unifiée
   static void show(BuildContext context, Map<String, dynamic> product, {bool initialIsLiked = false, Function()? onLikeToggled}) {
     bool isLiked = initialIsLiked;
+
+    // Synchronisation "lazy" silencieuse du prix (si c'est un produit issu de Rakuten)
+    if (product['source'] != null) {
+      MultiMarketService().refreshProductPrice(product).then((freshData) {
+        if (freshData != null && freshData['price'] != product['price']) {
+          AppLogger.debug('💰 Prix mis à jour silencieusement (Background): ${freshData['price']}', 'PriceSync');
+          product['price'] = freshData['price']; // Met à jour l'objet en mémoire
+        }
+      });
+    }
 
     showDialog(
       context: context,

@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
+import '/utils/iconly_compat.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
@@ -96,7 +96,7 @@ class _UserSearchBottomSheetState extends State<UserSearchBottomSheet> {
               onChanged: _onSearchChanged,
               style: GoogleFonts.poppins(color: Colors.black),
               decoration: InputDecoration(
-                hintText: 'Pseudo ou prénom...',
+                hintText: 'Rechercher un @nom_utilisateur ou un pseudo...',
                 hintStyle: GoogleFonts.poppins(color: Colors.black54),
                 prefixIcon: const Icon(IconlyLight.search, color: Colors.black54),
                 filled: true,

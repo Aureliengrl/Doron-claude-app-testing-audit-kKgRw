@@ -1,7 +1,7 @@
-Ôªøimport 'dart:ui';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
+import '/utils/iconly_compat.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
@@ -10,7 +10,7 @@ import '/services/store_finder_service.dart';
 import '/utils/app_logger.dart';
 
 /// Bottom sheet montrant les magasins physiques proches
-/// pour un produit donn√© (selon sa marque).
+/// pour un produit donnÈ (selon sa marque).
 class StoreFinderBottomSheet extends StatefulWidget {
   final String productName;
   final String brand;
@@ -24,7 +24,7 @@ class StoreFinderBottomSheet extends StatefulWidget {
   @override
   State<StoreFinderBottomSheet> createState() => _StoreFinderBottomSheetState();
 
-  /// Ouvre le bottom sheet depuis n'importe o√π.
+  /// Ouvre le bottom sheet depuis n'importe o˘.
   static Future<void> show(
     BuildContext context, {
     required String productName,
@@ -50,7 +50,7 @@ class _StoreFinderBottomSheetState extends State<StoreFinderBottomSheet> {
   bool _isLoading = true;
   String? _error;
   List<Map<String, dynamic>> _stores = [];
-  String _statusText = 'Localisation en cours‚Ä¶';
+  String _statusText = 'Localisation en coursÖ';
 
   @override
   void initState() {
@@ -60,20 +60,20 @@ class _StoreFinderBottomSheetState extends State<StoreFinderBottomSheet> {
 
   Future<void> _loadStores() async {
     try {
-      // 1. V√©rif permissions GPS
+      // 1. VÈrif permissions GPS
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
       if (permission == LocationPermission.deniedForever) {
         setState(() {
-          _error = 'Localisation d√©sactiv√©e dans les param√®tres.';
+          _error = 'Localisation dÈsactivÈe dans les paramËtres.';
           _isLoading = false;
         });
         return;
       }
 
-      setState(() => _statusText = 'Recherche autour de vous‚Ä¶');
+      setState(() => _statusText = 'Recherche autour de vousÖ');
 
       // 2. Position GPS
       final pos = await Geolocator.getCurrentPosition(
@@ -93,7 +93,7 @@ class _StoreFinderBottomSheetState extends State<StoreFinderBottomSheet> {
         _isLoading = false;
       });
     } catch (e) {
-      AppLogger.debug('‚ùå StoreFinderBottomSheet: $e', 'Stores');
+      AppLogger.debug('? StoreFinderBottomSheet: $e', 'Stores');
       setState(() {
         _error = 'Impossible de trouver votre position.';
         _isLoading = false;
@@ -249,7 +249,7 @@ class _StoreFinderBottomSheetState extends State<StoreFinderBottomSheet> {
                 size: 56, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
-              'Aucun magasin trouv√© pr√®s de vous.',
+              'Aucun magasin trouvÈ prËs de vous.',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                   fontSize: 15, color: const Color(0xFF6B7280)),
@@ -351,7 +351,7 @@ class _StoreFinderBottomSheetState extends State<StoreFinderBottomSheet> {
                               isOpen == true
                                   ? 'Ouvert'
                                   : isOpen == false
-                                      ? 'Ferm√©'
+                                      ? 'FermÈ'
                                       : 'Horaires inconnus',
                               style: GoogleFonts.poppins(
                                 fontSize: 11,

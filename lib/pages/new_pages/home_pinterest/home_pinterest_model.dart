@@ -3,7 +3,7 @@ import '/utils/app_logger.dart';
 class HomePinterestModel {
   String activeCategory = 'Pour toi'; // Label d'affichage (traduit dynamiquement dans le widget)
   String activeCategoryId = 'all';    // ID logique — utilisé pour Firestore & comparaisons
-  String activePriceFilter = 'all';
+  String activeEventFilter = 'all';
   String activeBrand = 'all'; // Filtre par marque/retailer
   Set<int> likedProducts = {};
   Set<String> likedProductTitles = {}; // Pour FlutterFlow system (par titre)
@@ -45,13 +45,25 @@ class HomePinterestModel {
     {'id': 'food', 'name': 'Food', 'emoji': '🍷'},
   ];
 
-  final List<Map<String, dynamic>> priceFilters = [
-    {'id': 'all', 'name': 'Tous les prix', 'min': 0, 'max': 999999},
-    {'id': 'low', 'name': '< 50€', 'min': 0, 'max': 50},
-    {'id': 'medium', 'name': '50-100€', 'min': 50, 'max': 100},
-    {'id': 'high', 'name': '100-200€', 'min': 100, 'max': 200},
-    {'id': 'premium', 'name': '> 200€', 'min': 200, 'max': 999999},
+  // Filtres par événements (Remplacent les prix)
+  final List<Map<String, String>> defaultEvents = [
+    {'id': 'all', 'name': 'Tous les événements'},
+    {'id': 'noel', 'name': '🎄 Noël'},
+    {'id': 'anniversaire', 'name': '🎂 Anniversaire'},
+    {'id': 'st_valentin', 'name': '❤️ St Valentin'},
+    {'id': 'fete_meres', 'name': '💐 Fête des Mères'},
+    {'id': 'fete_peres', 'name': '👔 Fête des Pères'},
   ];
+
+  List<Map<String, String>> get currentEvents {
+    if (personalizedEvents.isNotEmpty) {
+      return [
+        {'id': 'all', 'name': 'Tous les événements'},
+        ...personalizedEvents.map((e) => {'id': e.toLowerCase().replaceAll(' ', '_'), 'name': e})
+      ];
+    }
+    return defaultEvents;
+  }
 
   void toggleLike(int productId, String productTitle) {
     // Mettre à jour LES DEUX listes de favoris
@@ -168,20 +180,18 @@ class HomePinterestModel {
       }).toList();
     }
 
-    // Filtre par prix
-    if (activePriceFilter != 'all') {
-      final filter = priceFilters.firstWhere(
-        (f) => f['id'] == activePriceFilter,
-        orElse: () => priceFilters.first,
-      );
-
-      final minPrice = filter['min'] as int;
-      final maxPrice = filter['max'] as int;
-
+    // Filtre par événement
+    if (activeEventFilter != 'all') {
+      final eventFilter = activeEventFilter.replaceAll('_', ' ').toLowerCase();
       filtered = filtered.where((product) {
-        final price = product['price'];
-        final priceValue = price is int ? price : (price is double ? price.toInt() : 0);
-        return priceValue >= minPrice && priceValue < maxPrice;
+        final name = (product['name'] as String? ?? '').toLowerCase();
+        final description = (product['description'] as String? ?? '').toLowerCase();
+        final keywordsList = product['keywords'] as List<dynamic>? ?? [];
+        final keywordsStr = keywordsList.join(' ').toLowerCase();
+        
+        return name.contains(eventFilter) || 
+               description.contains(eventFilter) || 
+               keywordsStr.contains(eventFilter);
       }).toList();
     }
 

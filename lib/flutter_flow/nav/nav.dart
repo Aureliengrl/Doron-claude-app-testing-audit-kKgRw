@@ -127,17 +127,20 @@ Future<String> _determineInitialRoute() async {
 
       // Vérifier que l'utilisateur a bien un @handle (nom d'utilisateur)
       // Sans handle, on ne peut jamais accéder à l'app principale
-      try {
-        final doc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(currentUser.uid)
-            .get();
-        final handle = doc.data()?['handle'] as String?;
-        if (handle == null || handle.trim().isEmpty) {
-          AppLogger.debug('⚠️ Compte sans handle — redirection setup-profile', 'Nav');
-          return '/setup-profile';
-        }
-      } on FirebaseException catch (e) {
+        try {
+          final doc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(currentUser.uid)
+              .get();
+          final data = doc.data();
+          final handle = data?['handle'] as String?;
+          final dob = data?['dob'] as String?;
+          
+          if (handle == null || handle.trim().isEmpty || dob == null) {
+            AppLogger.debug('⚠️  Compte incomplet (handle ou dob manquant) — redirection setup-profile', 'Nav');
+            return '/setup-profile';
+          }
+        } on FirebaseException catch (e) {
         // permission-denied = token non prêt ou règles Firestore — utilisateur
         // existant, on le laisse passer à l'accueil plutôt que de bloquer
         AppLogger.debug('⚠️ Firestore erreur vérif handle: ${e.code} — fallback home', 'Nav');

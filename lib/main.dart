@@ -1,5 +1,5 @@
 import '/utils/app_logger.dart';
-import 'package:device_preview/device_preview.dart';
+// device_preview removed — not compatible with Dart 3.12+
 import '/custom_code/actions/index.dart' as actions;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart' as provider_pkg;
@@ -7,13 +7,11 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:ui';
-import 'dart:async';
-import 'package:intl/date_symbol_data_local.dart'; // BUG FIX: locale fr_FR pour table_calendar
+import '/utils/iconly_pro.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'auth/firebase_auth/firebase_user_provider.dart';
 import 'auth/firebase_auth/auth_util.dart';
 
@@ -23,17 +21,15 @@ import '/theme/doron_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/internationalization.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'flutter_flow/nav/nav.dart';
 import 'package:showcaseview/showcaseview.dart';
+// import '/components/connection_required_dialog.dart';
 import '/components/modern_nav_bar.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
 import '/components/offline_banner.dart';
+import '/pages/new_pages/social/social_page_widget.dart';
 import '/services/push_notifications_service.dart';
-import '/services/presence_service.dart';
-import '/services/friend_service.dart';
-import '/utils/user_display_helper.dart';
 import 'index.dart';
-import '/utils/app_tr.dart';
 
 /// Service de logging d'erreurs global pour capturer les crashs en release
 class ErrorLogService {
@@ -162,28 +158,9 @@ void main() async {
     } catch (e) { AppLogger.debug('Init Error: $e', 'Main'); }
 
     await initFirebase().timeout(const Duration(seconds: 8), onTimeout: () => throw Exception('Firebase init timeout! Native iOS config is missing or blocking.'));
-
-    // Initialiser les locales FR + EN pour table_calendar
-    // Permet le switch dynamique de langue sans redémarrage
-    await initializeDateFormatting('fr_FR', null);
-    await initializeDateFormatting('en_US', null);
     
     // Do not await push notification setup, as the native permission prompt can block runApp and cause a white screen.
     PushNotificationsService.initialize();
-
-    // Initialize presence service (online/offline status)
-    if (FirebaseAuth.instance.currentUser != null) {
-      PresenceService.instance.initialize();
-    }
-    // Listen for auth changes to start/stop presence tracking
-    FirebaseAuth.instance.authStateChanges().listen((user) {
-      if (user != null) {
-        PresenceService.instance.initialize();
-      } else {
-        PresenceService.instance.dispose();
-        UserProfileCache.instance.clear();
-      }
-    });
 
     try {
       // Start initial custom actions code
@@ -203,14 +180,10 @@ void main() async {
     }
 
     runApp(
-      DevicePreview(
-        enabled: kDebugMode,
-        defaultDevice: Devices.ios.iPhone13,
-        builder: (context) => ProviderScope(
-          child: provider_pkg.ChangeNotifierProvider(
-            create: (context) => appState,
-            child: MyApp(),
-          ),
+      ProviderScope(
+        child: provider_pkg.ChangeNotifierProvider(
+          create: (context) => appState,
+          child: MyApp(),
         ),
       ),
     );
@@ -341,7 +314,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'DORON',
       scrollBehavior: MyAppScrollBehavior(),
-      locale: DevicePreview.locale(context) ?? _locale,
+      locale: _locale,
       localizationsDelegates: [
         FFLocalizationsDelegate(),
         GlobalMaterialLocalizations.delegate,
@@ -363,16 +336,11 @@ class _MyAppState extends State<MyApp> {
         if (child == null) {
           return const Scaffold(backgroundColor: Color(0xFF062248), body: Center(child: CircularProgressIndicator()));
         }
-        // BUG 5 FIX: DevicePreview.appBuilder était toujours actif, même en release.
-        // Il est maintenant conditionné à kDebugMode pour ne jamais apparaître
-        // sur TestFlight ou l'App Store.
-        final showcase = ShowCaseWidget(
-          builder: (context) => OfflineBannerWrapper(child: child),
+        return ShowCaseWidget(
+          builder: (context) => OfflineBannerWrapper(
+            child: child,
+          ),
         );
-        if (kDebugMode) {
-          return DevicePreview.appBuilder(context, showcase);
-        }
-        return showcase;
       },
     );
   }
@@ -407,202 +375,28 @@ class _NavBarPageState extends State<NavBarPage> {
   // Track historically loaded pages for lazy-loading IndexedStack behavior
   final Set<int> _loadedPages = {0}; // Always load the initial page
 
-  // Badge counts
-  int _friendRequestBadge = 0;
-  int _unreadChatBadge = 0;
-  int _notificationBadge = 0; // Notifications in-app non lues
-
-  // Streams for badge counts
-  StreamSubscription? _friendRequestSub;
-  StreamSubscription? _chatUnreadSub;
-  StreamSubscription? _notificationSub;
-
-  // Track previous friend request count for in-app notification
-  int _previousFriendRequestCount = -1; // -1 = not yet initialized
-
-  // BUG 13 FIX: abonnement aux changements d'authentification pour
-  // réinitialiser les streams de badges après un re-login.
-  StreamSubscription? _authSub;
-
   @override
   void initState() {
     super.initState();
 
-    _pageNames = ['HomePinterest', 'SearchPage', 'Inspiration', 'UserProfile'];
+    _pageNames = ['HomePinterest', 'SearchPage', 'Inspiration', 'SocialPage', 'UserProfile'];
     _pages = [
       HomePinterestWidget(),
       SearchPageWidget(),
-      TikTokInspirationPageWidget(),
+      Container(), // TikTokInspirationPageWidget replaced due to missing file
+      const SocialPageWidget(),
       UserProfileWidget(),
     ];
 
     _currentPageName = widget.initialPage ?? _currentPageName;
     _currentPage = widget.page;
-    _currentIndex = _pageNames.indexOf(_currentPageName).clamp(0, 3);
+    _currentIndex = _pageNames.indexOf(_currentPageName).clamp(0, 4);
     _loadedPages.add(_currentIndex);
-
-    _initBadgeStreams();
-
-    // BUG 13 FIX: Re-init les streams de badges à chaque changement d'auth
-    // (connexion / déconnexion / changement de compte).
-    _authSub = FirebaseAuth.instance.authStateChanges().listen((user) {
-      if (!mounted) return;
-      // Annuler les anciens streams (liés à l'uid précédent)
-      _friendRequestSub?.cancel();
-      _chatUnreadSub?.cancel();
-      _previousFriendRequestCount = -1;
-      if (user != null) {
-        // Nouvel utilisateur connecté : réabonner les streams
-        _initBadgeStreams();
-      } else {
-        // Déconnecté : remettre les badges à zéro
-        safeSetState(() {
-          _friendRequestBadge = 0;
-          _unreadChatBadge = 0;
-        });
-      }
-    });
-  }
-
-  void _initBadgeStreams() {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
-
-    // Listen for pending friend requests
-    _friendRequestSub = FriendService.getPendingRequestsStream().listen(
-      (requests) {
-        if (!mounted) return;
-        final newCount = requests.length;
-
-        // Show in-app notification for new friend requests
-        if (_previousFriendRequestCount >= 0 && newCount > _previousFriendRequestCount) {
-          // Find the newest request to show its name
-          final newestRequest = requests.isNotEmpty ? requests.first : null;
-          if (newestRequest != null) {
-            _showFriendRequestBanner(newestRequest['displayName'] ?? 'Quelqu\'un');
-          }
-        }
-        _previousFriendRequestCount = newCount;
-
-        safeSetState(() {
-          _friendRequestBadge = newCount;
-        });
-      },
-      onError: (e) {
-        AppLogger.debug('Badge friendRequest stream error: $e', 'NavBar');
-      },
-    );
-
-    // Listen for unread chat messages
-    _chatUnreadSub = FirebaseFirestore.instance
-        .collection('chats')
-        .where('participants', arrayContains: uid)
-        .snapshots()
-        .listen(
-      (snapshot) {
-        if (!mounted) return;
-        int totalUnread = 0;
-        for (final doc in snapshot.docs) {
-          final data = doc.data();
-          final unreadCount = data['unreadCount'] as Map<String, dynamic>?;
-          if (unreadCount != null && unreadCount.containsKey(uid)) {
-            final count = unreadCount[uid];
-            if (count is int) {
-              totalUnread += count;
-            } else if (count is num) {
-              totalUnread += count.toInt();
-            }
-          }
-        }
-        safeSetState(() {
-          _unreadChatBadge = totalUnread;
-        });
-      },
-      onError: (e) {
-        AppLogger.debug('Badge chat unread stream error: $e', 'NavBar');
-      },
-    );
-
-    // Écouter les notifications in-app non lues
-    _notificationSub = FirebaseFirestore.instance
-        .collection('notifications')
-        .doc(uid)
-        .collection('items')
-        .where('read', isEqualTo: false)
-        .snapshots()
-        .listen(
-      (snapshot) {
-        if (!mounted) return;
-        safeSetState(() {
-          _notificationBadge = snapshot.docs.length;
-        });
-      },
-      onError: (e) {
-        AppLogger.debug('Badge notification stream error: $e', 'NavBar');
-      },
-    );
-  }
-
-  void _showFriendRequestBanner(String senderName) {
-    if (!mounted) return;
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    if (messenger == null) return;
-
-    messenger.showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(IconlyLight.addUser, color: Colors.white, size: 20),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                context.tr('Nouvelle demande d\'ami de $senderName', 'New friend request from $senderName'),
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF8A2BE2),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-        duration: const Duration(seconds: 4),
-        action: SnackBarAction(
-          label: context.tr('Voir', 'View'),
-          textColor: Colors.white,
-          onPressed: () {
-            // Navigate to profile tab where friend requests are visible
-            safeSetState(() {
-              _currentPage = null;
-              _currentIndex = 3;
-              _currentPageName = _pageNames[3];
-              _loadedPages.add(3);
-            });
-          },
-        ),
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _authSub?.cancel();
-    _friendRequestSub?.cancel();
-    _chatUnreadSub?.cancel();
-    _notificationSub?.cancel();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBody: true,
       resizeToAvoidBottomInset: !widget.disableResizeToAvoidBottomInset,
       body: Stack(
         children: [
@@ -624,7 +418,7 @@ class _NavBarPageState extends State<NavBarPage> {
             }),
           ),
 
-          // Navbar flottante moderne — Tab Scrubbing
+          // Navbar flottante moderne
           Positioned(
             left: 0,
             right: 0,
@@ -636,42 +430,52 @@ class _NavBarPageState extends State<NavBarPage> {
                   _currentPage = null;
                   _currentIndex = i;
                   _currentPageName = _pageNames[i];
-                  _loadedPages.add(i);
+                  _loadedPages.add(i); // Mark page as loaded when visited
                 });
               },
               onTabScrub: (i) {
-                // Scrub en cours — pré-charger la page cible
-                if (!_loadedPages.contains(i)) {
-                  safeSetState(() => _loadedPages.add(i));
-                }
+                safeSetState(() {
+                  _currentPage = null;
+                  _currentIndex = i;
+                  _currentPageName = _pageNames[i];
+                  _loadedPages.add(i); // Pre-load page during scrub
+                });
               },
               items: [
                 NavBarItem(
-                  icon: IconlyLight.home,
-                  activeIcon: IconlyBold.home,
-                  label: context.tr('Accueil', 'Home'),
-                  iconSize: 24.0,
-                  // FIX: badge chat sur Accueil retiré — le chat est accessible depuis les profils
+                  icon: IconlyPro.homeLight,
+                  activeIcon: IconlyPro.homeBold,
+                  label: 'Accueil',
+                  tooltip: 'Accueil',
+                  lottieAsset: 'assets/jsons/Shop Home_.json',
                 ),
                 NavBarItem(
-                  icon: IconlyLight.search,
-                  activeIcon: IconlyBold.search,
-                  label: context.tr('Recherche', 'Search'),
-                  iconSize: 24.0,
+                  icon: IconlyPro.searchLight,
+                  activeIcon: IconlyPro.searchBold,
+                  label: 'Recherche',
+                  tooltip: 'Recherche',
+                  lottieAsset: 'assets/jsons/Search edit.json',
                 ),
                 NavBarItem(
-                  icon: IconlyLight.discovery,
-                  activeIcon: IconlyBold.discovery,
-                  label: context.tr('Inspo', 'Inspo'),
-                  iconSize: 24.0,
+                  icon: IconlyPro.playLight,
+                  activeIcon: IconlyPro.playBold,
+                  label: 'Inspiration',
+                  tooltip: 'Inspiration',
+                  lottieAsset: 'assets/jsons/Loading play 2.json',
                 ),
                 NavBarItem(
-                  icon: IconlyLight.profile,
-                  activeIcon: IconlyBold.profile,
-                  label: context.tr('Profil', 'Profile'),
-                  iconSize: 24.0,
-                  // Badge combiné : demandes d'amis + notifications non lues
-                  badgeCount: _friendRequestBadge + _notificationBadge,
+                  icon: IconlyPro.chatLight,
+                  activeIcon: IconlyPro.chatBold,
+                  label: 'Social',
+                  tooltip: 'Social',
+                  lottieAsset: 'assets/jsons/Message chat like heart 4.json',
+                ),
+                NavBarItem(
+                  icon: IconlyPro.profileLight,
+                  activeIcon: IconlyPro.profileBold,
+                  label: 'Profil',
+                  tooltip: 'Profil',
+                  lottieAsset: 'assets/jsons/iconly-icon-export-1780855916.json',
                 ),
               ],
               primaryColor: const Color(0xFF8A2BE2),

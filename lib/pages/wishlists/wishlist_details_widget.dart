@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
+import '/utils/iconly_compat.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '/services/firebase_data_service.dart';
@@ -12,6 +12,7 @@ import '/services/event_reminder_service.dart';
 import '/components/liquid_glass.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '/components/product_detail_modal.dart';
+import '/components/shared_product_card.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:share_plus/share_plus.dart';
@@ -522,7 +523,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
     if (!_isOwner) {
       return GridView.count(
         crossAxisCount: 2,
-        childAspectRatio: 0.60,
+        childAspectRatio: 0.70,
         crossAxisSpacing: 14,
         mainAxisSpacing: 14,
         padding: const EdgeInsets.fromLTRB(14, 8, 14, 100),
@@ -538,7 +539,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
             'price': nested['product_price'] ?? docData['price']?.toString() ?? '',
             'url': nested['product_url'] ?? docData['product_url'] ?? docData['url'] ?? '',
           };
-          return _WishlistProductCard(
+          return SharedProductCard(
             product: normalizedProduct,
             index: index,
             onRemove: null,
@@ -549,7 +550,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
 
     return ReorderableGridView.count(
       crossAxisCount: 2,
-      childAspectRatio: 0.60,
+      childAspectRatio: 0.70,
       crossAxisSpacing: 14,
       mainAxisSpacing: 14,
       padding: const EdgeInsets.fromLTRB(14, 8, 14, 100),
@@ -575,7 +576,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
         };
         return SizedBox(
           key: ValueKey(productId.isNotEmpty ? productId : 'prod_$index'),
-          child: _WishlistProductCard(
+          child: SharedProductCard(
             product: normalizedProduct,
             index: index,
             onRemove: productId.isNotEmpty ? () => _removeProduct(productId) : null,
@@ -589,236 +590,3 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
 // ══════════════════════════════════════════════════════════════════
 // Carte produit premium — exclusivement pour la page album wishlist
 // ══════════════════════════════════════════════════════════════════
-class _WishlistProductCard extends StatelessWidget {
-  final Map<String, dynamic> product;
-  final int index;
-  final VoidCallback? onRemove;
-
-  static const _violet = Color(0xFF8A2BE2);
-  static const _pink   = Color(0xFFEC4899);
-  static const _gold   = Color(0xFFF59E0B);
-
-  const _WishlistProductCard({
-    required this.product,
-    required this.index,
-    this.onRemove,
-  });
-
-  String get _name  => product['name']  as String? ?? 'Produit';
-  String get _brand => product['brand'] as String? ?? '';
-  String get _price => product['price']?.toString() ?? '';
-  String get _image => product['image'] as String? ?? '';
-
-  Map<String, dynamic> get _normalized => {
-    ...product,
-    'name': _name, 'brand': _brand, 'price': _price, 'image': _image,
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => GlobalProductDetailModal.show(context, _normalized),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.07),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.13)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── Image avec overlay gradient ──
-                Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(20),
-                        topRight: Radius.circular(20),
-                      ),
-                      child: SizedBox(
-                        height: 178,
-                        width: double.infinity,
-                        child: _image.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: _image,
-                                fit: BoxFit.contain,
-                                color: Colors.white.withOpacity(0.06),
-                                colorBlendMode: BlendMode.overlay,
-                                placeholder: (_, __) => Container(
-                                  color: Colors.white.withOpacity(0.04),
-                                  child: Center(
-                                    child: SizedBox(
-                                      width: 24, height: 24,
-                                      child: CircularProgressIndicator(
-                                        color: _violet, strokeWidth: 2,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                errorWidget: (_, __, ___) => Container(
-                                  color: Colors.white.withOpacity(0.04),
-                                  child: const Icon(
-                                    Icons.card_giftcard_rounded,
-                                    color: Colors.white24, size: 48,
-                                  ),
-                                ),
-                              )
-                            : Container(
-                                color: Colors.white.withOpacity(0.04),
-                                child: const Icon(
-                                  Icons.card_giftcard_rounded,
-                                  color: Colors.white24, size: 48,
-                                ),
-                              ),
-                      ),
-                    ),
-                    // Gradient bas → transition fluide vers la zone texte
-                    Positioned(
-                      bottom: 0, left: 0, right: 0, height: 48,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(0),
-                            bottomRight: Radius.circular(0),
-                          ),
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withOpacity(0.18),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Bouton supprimer (haut gauche)
-                    if (onRemove != null)
-                      Positioned(
-                        top: 8, left: 8,
-                        child: GestureDetector(
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            onRemove!();
-                          },
-                          child: Container(
-                            width: 28, height: 28,
-                            decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.80),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.close_rounded, color: Colors.white, size: 14),
-                          ),
-                        ),
-                      ),
-                    // Bouton actions ⋮ (haut droite)
-                    Positioned(
-                      top: 8, right: 8,
-                      child: GestureDetector(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          GlobalProductDetailModal.show(context, _normalized);
-                        },
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(14),
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                            child: Container(
-                              width: 28, height: 28,
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.40),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: const Icon(IconlyLight.moreCircle, color: Colors.white, size: 15),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                // ── Zone texte ──
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(11, 9, 11, 11),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Badge marque
-                        if (_brand.isNotEmpty)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: _violet.withOpacity(0.18),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: _violet.withOpacity(0.35)),
-                            ),
-                            child: Text(
-                              _brand.toUpperCase(),
-                              style: GoogleFonts.poppins(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFFB97EF8),
-                                letterSpacing: 0.6,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        const SizedBox(height: 5),
-                        // Nom du produit
-                        Expanded(
-                          child: Text(
-                            _name,
-                            style: GoogleFonts.poppins(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white.withOpacity(0.92),
-                              height: 1.3,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        // Prix
-                        if (_price.isNotEmpty && _price != '0')
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  _gold.withOpacity(0.22),
-                                  _pink.withOpacity(0.16),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: _gold.withOpacity(0.25)),
-                            ),
-                            child: Text(
-                              _price.contains('€') ? _price : '$_price €',
-                              style: GoogleFonts.poppins(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                                color: _gold,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-

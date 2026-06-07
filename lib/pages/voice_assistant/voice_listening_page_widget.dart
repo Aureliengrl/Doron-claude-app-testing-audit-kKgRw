@@ -1,6 +1,6 @@
-Ôªøimport '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
+import '/utils/iconly_compat.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'voice_listening_page_model.dart';
@@ -21,10 +21,10 @@ class _VoiceListeningPageWidgetState extends State<VoiceListeningPageWidget> {
     super.initState();
     _model = VoiceListeningPageModel();
 
-    // ‚úÖ IMPORTANT: Ajouter un listener pour forcer le rebuild quand le mod√®le change
+    // ? IMPORTANT: Ajouter un listener pour forcer le rebuild quand le modËle change
     _model.addListener(_onModelChanged);
 
-    // Initialiser apr√®s le premier frame pour garantir que le widget est mont√©
+    // Initialiser aprËs le premier frame pour garantir que le widget est montÈ
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _model.initialize();
@@ -32,11 +32,11 @@ class _VoiceListeningPageWidgetState extends State<VoiceListeningPageWidget> {
     });
   }
 
-  /// Callback appel√© quand le mod√®le change - force le rebuild
+  /// Callback appelÈ quand le modËle change - force le rebuild
   void _onModelChanged() {
     if (mounted) {
       setState(() {
-        // Force rebuild avec les nouvelles donn√©es du mod√®le
+        // Force rebuild avec les nouvelles donnÈes du modËle
       });
     }
   }
@@ -65,7 +65,7 @@ class _VoiceListeningPageWidgetState extends State<VoiceListeningPageWidget> {
             },
           ),
           title: const Text(
-            'Assistant Vocal (B√™ta)',
+            'Assistant Vocal (BÍta)',
             style: TextStyle(
               fontFamily: 'Outfit',
               color: Colors.white,
@@ -79,8 +79,8 @@ class _VoiceListeningPageWidgetState extends State<VoiceListeningPageWidget> {
         body: SafeArea(
           child: Consumer<VoiceListeningPageModel>(
             builder: (context, model, _) {
-              // üîç LOGS D√âTAILL√âS pour diagnostic
-              AppLogger.debug('üé§ [VOICE LISTENING BUILD] √âtat du mod√®le:', 'Debug');
+              // ?? LOGS D…TAILL…S pour diagnostic
+              AppLogger.debug('?? [VOICE LISTENING BUILD] …tat du modËle:', 'Debug');
               AppLogger.debug('   - isListening: ${model.isListening}', 'Debug');
               AppLogger.debug('   - hasError: ${model.hasError}', 'Debug');
               AppLogger.debug('   - transcript.length: ${model.transcript.length}', 'Debug');
@@ -95,7 +95,7 @@ class _VoiceListeningPageWidgetState extends State<VoiceListeningPageWidget> {
                   Padding(
                     padding: const EdgeInsets.all(24),
                     child: Text(
-                      'D√©crivez la personne pour qui vous cherchez un cadeau',
+                      'DÈcrivez la personne pour qui vous cherchez un cadeau',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: 'Outfit',
@@ -128,12 +128,12 @@ class _VoiceListeningPageWidgetState extends State<VoiceListeningPageWidget> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          _buildSuggestionItem('‚Ä¢ Qui est cette personne (maman, ami, etc.)'),
-                          _buildSuggestionItem('‚Ä¢ Son √¢ge ou tranche d\'√¢ge'),
-                          _buildSuggestionItem('‚Ä¢ Votre budget'),
-                          _buildSuggestionItem('‚Ä¢ Ses hobbies et centres d\'int√©r√™t'),
-                          _buildSuggestionItem('‚Ä¢ L\'occasion (anniversaire, No√´l, etc.)'),
-                          _buildSuggestionItem('‚Ä¢ Son style (moderne, classique, etc.)'),
+                          _buildSuggestionItem('ï Qui est cette personne (maman, ami, etc.)'),
+                          _buildSuggestionItem('ï Son ‚ge ou tranche d\'‚ge'),
+                          _buildSuggestionItem('ï Votre budget'),
+                          _buildSuggestionItem('ï Ses hobbies et centres d\'intÈrÍt'),
+                          _buildSuggestionItem('ï L\'occasion (anniversaire, NoÎl, etc.)'),
+                          _buildSuggestionItem('ï Son style (moderne, classique, etc.)'),
                         ],
                       ),
                     ),
@@ -141,7 +141,7 @@ class _VoiceListeningPageWidgetState extends State<VoiceListeningPageWidget> {
 
                   const Spacer(),
 
-                  // Microphone anim√© - FIX: Animation simple sans repeat
+                  // Microphone animÈ - FIX: Animation simple sans repeat
                   GestureDetector(
                     onTap: () {
                       if (model.isListening) {
@@ -191,7 +191,7 @@ class _VoiceListeningPageWidgetState extends State<VoiceListeningPageWidget> {
 
                   // Status text
                   Text(
-                    model.isListening ? 'En √©coute...' : 'Appuyez pour parler',
+                    model.isListening ? 'En Ècoute...' : 'Appuyez pour parler',
                     style: TextStyle(
                       fontFamily: 'Outfit',
                       color: Colors.white.withOpacity(0.8),
@@ -270,7 +270,7 @@ class _VoiceListeningPageWidgetState extends State<VoiceListeningPageWidget> {
                           child: ElevatedButton(
                             onPressed: model.canProceed()
                                 ? () async {
-                                    // Arr√™ter l'√©coute si en cours
+                                    // ArrÍter l'Ècoute si en cours
                                     if (model.isListening) {
                                       await _model.stopListening();
                                     }

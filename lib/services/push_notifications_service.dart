@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 import '/utils/app_logger.dart';
 
@@ -20,6 +21,7 @@ class PushNotificationsService {
 
   /// Initialize Firebase Messaging
   static Future<void> initialize() async {
+    if (kIsWeb) return; // Prevent hanging on Web Simulator
     try {
       // 1. Request permissions for iOS and Android 13+
       NotificationSettings settings = await _firebaseMessaging.requestPermission(

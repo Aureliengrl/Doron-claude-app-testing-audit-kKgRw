@@ -1,4 +1,4 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import '/services/product_validator_service.dart';
 import 'dart:async';
 import 'dart:ui';
@@ -22,6 +22,7 @@ import '/backend/schema/structs/index.dart';
 import '/components/cached_image.dart';
 import '/components/product_card.dart'; // PERF AXE 2: ProductCard StatelessWidget
 import '/components/skeleton_loader.dart';
+import '/components/product_detail_modal.dart';
 import '/components/connection_required_dialog.dart';
 import '/components/tutorial_overlay.dart';
 import '/components/brand_filters.dart';
@@ -829,8 +830,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
               // Espace uniforme (16px)
               const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
-              // Filtres par prix
-              SliverToBoxAdapter(child: _buildPriceFilters()),
+              // Filtres par événements
+              SliverToBoxAdapter(child: _buildEventFilters()),
 
               // Sections thématiques désactivées - Pinterest uniquement
               // if (_model.sections.isNotEmpty) ...[
@@ -1073,7 +1074,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     );
   }
 
-  Widget _buildPriceFilters() {
+  Widget _buildEventFilters() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1082,10 +1083,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             scrollDirection: Axis.horizontal,
-            itemCount: _model.priceFilters.length,
+            itemCount: _model.currentEvents.length,
             itemBuilder: (context, index) {
-              final filter = _model.priceFilters[index];
-              final isActive = _model.activePriceFilter == filter['id'];
+              final filter = _model.currentEvents[index];
+              final isActive = _model.activeEventFilter == filter['id'];
 
               return Padding(
                 padding: const EdgeInsets.only(right: 16),
@@ -1094,7 +1095,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                   child: InkWell(
                     onTap: () {
                       setState(() {
-                        _model.activePriceFilter = filter['id'] as String;
+                        _model.activeEventFilter = filter['id'] as String;
+                        // Forcer le rafraîchissement
                       });
                     },
                     borderRadius: BorderRadius.circular(50),
@@ -1106,7 +1108,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       ),
                       decoration: BoxDecoration(
                         color: isActive
-                            ? const Color(0xFFEC4899) // Rose pour différencier
+                            ? const Color(0xFFEC4899) // Rose
                             : const Color(0xFFEC4899).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(50),
                         boxShadow: isActive
@@ -1507,7 +1509,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 const SizedBox(height: 12),
                 Text(
                   filteredProducts.isEmpty && _model.products.isNotEmpty
-                      ? 'Essaie de changer de filtre de prix ou de catgorie'
+                      ? 'Essaie de changer de filtre d\\'événement ou de catégorie'
                       : 'Essaie de changer de catgorie ou tire pour rafrachir',
                   style: GoogleFonts.poppins(
                     color: const Color(0xFF6B7280),
@@ -1603,14 +1605,12 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     return Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
-            // Haptic feedback
-            HapticFeedback.lightImpact();
-            setState(() {
+            onTap: () {
+              // Haptic feedback
+              HapticFeedback.lightImpact();
               _model.selectedProduct = product;
-            });
-            _showProductDetail(product);
-          },
+              _showProductDetail(product);
+            },
           borderRadius: BorderRadius.circular(12),
           splashColor: violetColor.withOpacity(0.1),
           highlightColor: violetColor.withOpacity(0.05),
@@ -1739,278 +1739,11 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     // Track product view in anonymous mode (produits uniques seulement)
     _trackProductView(product);
 
-    showDialog(
-      context: context,
-      barrierColor: Colors.black.withOpacity(0.7),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          final isLiked = _model.likedProductTitles.contains(product['name'] ?? '');
+    final isLiked = _model.likedProductTitles.contains(product['id']?.toString() ?? '');
 
-          return Dialog(
-            backgroundColor: Colors.transparent,
-            insetPadding: const EdgeInsets.all(16),
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 500),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 60,
-                    offset: const Offset(0, 20),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Image avec boutons
-                  Stack(
-                    children: [
-                      ProductImage(
-                        imageUrl: (product['image'] as String? ?? '').isNotEmpty ? product['image'] as String : (product['imageUrl'] as String? ?? ''),
-                        height: 350,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(24),
-                          topRight: Radius.circular(24),
-                        ),
-                      ),
-                      // Bouton fermer
-                      Positioned(
-                        top: 12,
-                        left: 12,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () => Navigator.pop(context),
-                            borderRadius: BorderRadius.circular(50),
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.95),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.close,
-                                color: Color(0xFF111827),
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      // Bouton wishlist
-                      Positioned(
-                        top: 12,
-                        right: 64,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              Navigator.pop(context);
-                              _showWishlistModal(product);
-                            },
-                            borderRadius: BorderRadius.circular(50),
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.95),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                IconlyLight.bookmark,
-                                color: violetColor,
-                                size: 18,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      // Bouton coeur - Appel simplifi de _toggleFavorite
-                      Positioned(
-                        top: 12,
-                        right: 12,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () async {
-                              AppLogger.debug('?? Dialog: Clic sur cœur pour "${product['name']}"', 'Debug');
-
-                              // Appeler la fonction centralisée
-                              await _toggleFavorite(product);
-
-                              // Rafraéchir l'UI du dialog
-                              setDialogState(() {
-                                AppLogger.debug('?? Dialog: Rafraéchissement UI après toggle', 'Debug');
-                              });
-                            },
-                            borderRadius: BorderRadius.circular(50),
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: isLiked
-                                    ? Colors.red
-                                    : Colors.white.withOpacity(0.95),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                isLiked ? IconlyBold.heart : IconlyLight.heart,
-                                color: isLiked ? Colors.white : const Color(0xFF111827),
-                                size: 18,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-              // Détails du produit
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: violetColor.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        product['brand'] as String? ?? product['source'] as String? ?? 'Amazon',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: violetColor,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      product['name'] as String? ?? 'Produit',
-                      style: GoogleFonts.poppins(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF111827),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      '${product['price'] ?? 0}€',
-                      style: GoogleFonts.poppins(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: violetColor,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    if (product['description'] != null && (product['description'] as String).isNotEmpty)
-                      Text(
-                        product['description'] as String,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: const Color(0xFF6B7280),
-                          height: 1.6,
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      )
-                    else
-                      Text(
-                        'Cadeau parfait par ${product['brand'] as String? ?? 'une marque de qualité'}',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: const Color(0xFF6B7280),
-                          height: 1.6,
-                        ),
-                      ),
-                    const SizedBox(height: 20),
-                    // Bouton Voir sur...
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          // Générer une URL de produit intelligente (=95% précision)
-                          final url = ProductUrlService.generateProductUrl(product);
-                          if (url.isNotEmpty) {
-                            try {
-                              final uri = Uri.parse(url);
-                              await launchUrl(uri, mode: LaunchMode.externalApplication);
-                            } catch (e) {
-                              AppLogger.debug('? Erreur ouverture URL: $e', 'Debug');
-                            }
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: violetColor,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 4,
-                          shadowColor: violetColor.withOpacity(0.4),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Voir sur ${product['brand'] ?? product['source'] ?? 'Amazon'}',
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            const Icon(
-                              Icons.open_in_new,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-          );
-        },
-      ),
-    );
+    GlobalProductDetailModal.show(context, product, initialIsLiked: isLiked, onLikeToggled: () {
+      _toggleFavorite(product);
+    });
   }
 
   /// Affiche le modal de sélection de wishlist

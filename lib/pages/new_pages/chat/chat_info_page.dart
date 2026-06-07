@@ -1,6 +1,6 @@
-ï»¿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
+import '/utils/iconly_compat.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -10,7 +10,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '/components/liquid_glass.dart';
 import '/utils/user_display_helper.dart';
 
-/// Page d'information d'un chat â€” membres, actions, mÃ©dias.
+/// Page d'information d'un chat — membres, actions, médias.
 class ChatInfoPage extends StatefulWidget {
   final String chatId;
   final Map<String, dynamic> chatData;
@@ -81,7 +81,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Groupe renommÃ©', style: GoogleFonts.poppins()),
+            content: Text('Groupe renommé', style: GoogleFonts.poppins()),
             backgroundColor: _violet,
           ),
         );

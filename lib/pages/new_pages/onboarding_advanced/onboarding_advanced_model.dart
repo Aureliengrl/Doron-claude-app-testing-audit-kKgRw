@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 class OnboardingAdvancedModel {
   int currentStep = 0;
+  String? editProfileId;
   // FIX Bug 2: Variable pour empêcher les doubles clics
   bool isNavigating = false;
   Map<String, dynamic> answers = {
@@ -450,3 +451,5 @@ class OnboardingAdvancedModel {
     }
   }
 }
+
+

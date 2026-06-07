@@ -4,10 +4,10 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/pages/pages/components/loader/loader_widget.dart';
 import '/pages/pages/components/product/product_widget.dart';
 import '/pages/pages/empty_data/empty_data_widget.dart';
-import 'favourites_widget.dart' show FavouritesWidget;
+// import fav_widget.dart bypassed
 import 'package:flutter/material.dart';
 
-class FavouritesModel extends FlutterFlowModel<FavouritesWidget> {
+class FavouritesModel extends FlutterFlowModel<StatefulWidget> {
   ///  Local state fields for this page.
 
   List<ProductsStruct> searchedProducts = [];

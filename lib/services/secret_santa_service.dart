@@ -248,7 +248,7 @@ class SecretSantaService {
 
       if (assignment == null) throw Exception('Impossible de générer un tirage valide (contraintes trop strictes)');
 
-      // Écrire les paires dans Firestore
+      // Écrire les paires dans Firestore et créer un "rond" (personne) pour chaque giver
       final batch = _db.batch();
       for (int i = 0; i < uids.length; i++) {
         final giver = uids[i];
@@ -270,6 +270,29 @@ class SecretSantaService {
             'assignedToName': receiverName,
             'assignedAt': FieldValue.serverTimestamp(),
           },
+        );
+
+        // Création automatique du "rond" (personne) pour l'IA Doron
+        final personId = const Uuid().v4();
+        final personData = {
+          'id': personId,
+          'meta': {
+            'createdAt': FieldValue.serverTimestamp(),
+            'isPendingFirstGen': false,
+          },
+          'tags': {
+            'name': receiverName,
+            'isSecretSanta': true,
+            'secretSantaGroupId': groupId,
+            'secretSantaTargetUid': receiver,
+            'occasion': group['theme'],
+            'budgetTier': 'Secret Santa (Max ${group['budget'] != null ? group['budget']['max'] : 50}€)',
+          }
+        };
+        
+        batch.set(
+          _db.collection('users').doc(giver).collection('people').doc(personId),
+          personData,
         );
       }
 
