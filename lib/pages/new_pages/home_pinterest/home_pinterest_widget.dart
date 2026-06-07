@@ -1509,8 +1509,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 const SizedBox(height: 12),
                 Text(
                   filteredProducts.isEmpty && _model.products.isNotEmpty
-                      ? 'Essaie de changer de filtre d\\'événement ou de catégorie'
-                      : 'Essaie de changer de catgorie ou tire pour rafrachir',
+                      ? "Essaie de changer de filtre d'événement ou de catégorie"
+                      : "Essaie de changer de catégorie ou tire pour rafraichir",
                   style: GoogleFonts.poppins(
                     color: const Color(0xFF6B7280),
                     fontSize: 15,
@@ -1658,8 +1658,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     ),
                   ),
 
-                  // FIX P3-A: Badge % supprim\u00e9 \u2014 design \u00e9pur\u00e9 sans texte sur l'image
-),
+                  // FIX P3-A: Badge % supprimé — design épuré sans texte sur l'image
 
 
                   // Badge like/favoris en haut  gauche

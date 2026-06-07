@@ -566,8 +566,8 @@ class ProductMatchingService {
 
       AppLogger.success('${finalProducts.length} produits matchés et retournés', 'Matching');
       AppLogger.info('📊 Diversité des marques: ${brandCounts.length} marques différentes', 'Matching');
-      AppLogger.debug('📊 Répartition marques: ${brandCounts.entries.map((e) => \'${e.key}: ${e.value}\').take(10).join(", ")}', 'Matching');
-      AppLogger.debug('📊 Répartition catégories: ${categoryCounts.entries.map((e) => \'${e.key}: ${e.value}\').join(", ")}', 'Matching');
+      AppLogger.debug('📊 Répartition marques: ${brandCounts.entries.map((e) => "${e.key}: ${e.value}").take(10).join(", ")}', 'Matching');
+      AppLogger.debug('📊 Répartition catégories: ${categoryCounts.entries.map((e) => "${e.key}: ${e.value}").join(", ")}', 'Matching');
       return finalProducts;
     } catch (e, stackTrace) {
       // ⚠️ ERREUR LORS DU CHARGEMENT - Logger détails complets

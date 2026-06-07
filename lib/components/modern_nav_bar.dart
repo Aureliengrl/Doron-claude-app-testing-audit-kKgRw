@@ -664,6 +664,7 @@ class NavBarItem {
   final IconData icon;
   final IconData activeIcon;
   final String label;
+  final String? tooltip;
   final double iconSize;
   final int badgeCount;
   final String? lottieAsset;
@@ -672,13 +673,14 @@ class NavBarItem {
     required this.icon,
     required this.activeIcon,
     required this.label,
+    this.tooltip,
     this.iconSize = 22.0,
     this.badgeCount = 0,
     this.lottieAsset,
   });
 
   NavBarItem copyWith({int? badgeCount}) => NavBarItem(
-        icon: icon, activeIcon: activeIcon, label: label,
+        icon: icon, activeIcon: activeIcon, label: label, tooltip: tooltip,
         iconSize: iconSize, badgeCount: badgeCount ?? this.badgeCount,
       );
 }

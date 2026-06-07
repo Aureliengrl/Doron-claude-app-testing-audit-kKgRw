@@ -516,6 +516,7 @@ class _OnboardingGiftsResultWidgetState
             style: GoogleFonts.poppins(
               color: Colors.black87,
               fontSize: 16,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
