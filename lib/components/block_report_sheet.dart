@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';

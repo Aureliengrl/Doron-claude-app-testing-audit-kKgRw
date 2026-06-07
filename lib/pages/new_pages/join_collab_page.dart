@@ -1,14 +1,14 @@
-Ôªøimport 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '/components/liquid_glass.dart';
 import '/services/collaboration_service.dart';
 
-/// Page affich√©e quand l'utilisateur ouvre un lien d'invitation
+/// Page affichÈe quand l'utilisateur ouvre un lien d'invitation
 /// (deep link : doron.app/join/{token}).
-/// Si non connect√© ‚Üí redirig√© vers le login (g√©r√© par le routeur).
-/// Si connect√© ‚Üí rejoint la collaboration directement.
+/// Si non connectÈ ? redirigÈ vers le login (gÈrÈ par le routeur).
+/// Si connectÈ ? rejoint la collaboration directement.
 class JoinCollabPage extends StatefulWidget {
   final String token;
 
@@ -42,7 +42,7 @@ class _JoinCollabPageState extends State<JoinCollabPage> {
         setState(() {
           _result = result;
           _isLoading = false;
-          if (result == null) _error = 'Lien invalide ou expir√©.';
+          if (result == null) _error = 'Lien invalide ou expirÈ.';
         });
 
         if (result != null) {
@@ -51,10 +51,10 @@ class _JoinCollabPageState extends State<JoinCollabPage> {
           final alreadyMember = result['alreadyMember'] as bool? ?? false;
 
           if (!alreadyMember) {
-            _showSnackBar('üéÅ Tu as rejoint "$profileName" !');
+            _showSnackBar('?? Tu as rejoint "$profileName" !');
           }
 
-          // Naviguer vers le chat de groupe apr√®s 1s
+          // Naviguer vers le chat de groupe aprËs 1s
           if (chatId != null) {
             Future.delayed(const Duration(milliseconds: 800), () {
               if (mounted) {
@@ -70,7 +70,7 @@ class _JoinCollabPageState extends State<JoinCollabPage> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Impossible de rejoindre la liste. R√©essaie.';
+          _error = 'Impossible de rejoindre la liste. RÈessaie.';
           _isLoading = false;
         });
       }
@@ -96,7 +96,7 @@ class _JoinCollabPageState extends State<JoinCollabPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo / ic√¥ne
+              // Logo / icÙne
               Container(
                 width: 100,
                 height: 100,
@@ -118,10 +118,10 @@ class _JoinCollabPageState extends State<JoinCollabPage> {
               if (_isLoading) ...[
                 const CircularProgressIndicator(color: _violet, strokeWidth: 2),
                 const SizedBox(height: 16),
-                Text('Rejoindre la liste‚Ä¶',
+                Text('Rejoindre la listeÖ',
                     style: GoogleFonts.poppins(fontSize: 16, color: Colors.white70, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 8),
-                Text('Connexion √† la collaboration en cours',
+                Text('Connexion ‡ la collaboration en cours',
                     style: GoogleFonts.poppins(fontSize: 13, color: Colors.white38)),
               ] else if (_error != null) ...[
                 const Icon(Icons.link_off_rounded, color: Colors.red, size: 48),
@@ -138,7 +138,7 @@ class _JoinCollabPageState extends State<JoinCollabPage> {
                       gradient: const LinearGradient(colors: [_violet, _pink]),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Text('Retour √† l\'accueil',
+                    child: Text('Retour ‡ l\'accueil',
                         style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
                   ),
                 ),
@@ -146,12 +146,12 @@ class _JoinCollabPageState extends State<JoinCollabPage> {
                 const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 56),
                 const SizedBox(height: 16),
                 Text(
-                  _result?['alreadyMember'] == true ? 'Tu es d√©j√† membre !' : 'üéâ Bienvenue !',
+                  _result?['alreadyMember'] == true ? 'Tu es dÈj‡ membre !' : '?? Bienvenue !',
                   style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Ouverture du chat de groupe‚Ä¶',
+                  'Ouverture du chat de groupeÖ',
                   style: GoogleFonts.poppins(fontSize: 14, color: Colors.white54),
                 ),
               ],

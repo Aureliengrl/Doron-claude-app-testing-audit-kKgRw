@@ -1,8 +1,8 @@
-ï»¿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
+import '/utils/iconly_compat.dart';
 import 'package:flutter/services.dart';
 import '/components/liquid_glass.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -66,7 +66,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                   CircularProgressIndicator(color: violetColor),
                   const SizedBox(height: 24),
                   Text(
-                    '?? GÃ©nÃ©ration des cadeaux...',
+                    '?? Génération des cadeaux...',
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       color: violetColor,
@@ -78,16 +78,16 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
             )
           : CustomScrollView(
               slivers: [
-                // Header violet arrondi avec rÃ©sumÃ©
+                // Header violet arrondi avec résumé
                 SliverToBoxAdapter(child: _buildHeader()),
 
-                // Message IA personnalisÃ©
+                // Message IA personnalisé
                 SliverToBoxAdapter(child: _buildAIMessage()),
 
-                // Filtres de catÃ©gories
+                // Filtres de catégories
                 SliverToBoxAdapter(child: _buildFilters()),
 
-                // Liste des rÃ©sultats
+                // Liste des résultats
                 _buildResultsList(),
 
                 // Boutons Enregistrer / Refaire (dans le scroll, pas fixes)
@@ -152,7 +152,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
               // Titre
               Expanded(
                 child: Text(
-                  'RÃ©sultats IA',
+                  'Résultats IA',
                   style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 20,
@@ -236,7 +236,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '12 cadeaux parfaits trouvÃ©s !',
+                  '12 cadeaux parfaits trouvés !',
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -245,7 +245,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'SÃ©lectionnÃ©s selon ses passions et ton budget',
+                  'Sélectionnés selon ses passions et ton budget',
                   style: GoogleFonts.poppins(
                     fontSize: 13,
                     color: Colors.white.withOpacity(0.55),
@@ -327,7 +327,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
 
   Widget _buildResultsList() {
     if (_isReordering) {
-      // Mode rÃ©organisation : liste rÃ©ordonnable
+      // Mode réorganisation : liste réordonnable
       return SliverToBoxAdapter(
         child: ReorderableListView.builder(
           shrinkWrap: true,
@@ -466,7 +466,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('${gift['price']}â‚¬', style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: violetColor)),
+                          Text('${gift['price']}€', style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: violetColor)),
                           const SizedBox(height: 8),
                           Row(children: [
                             Material(color: Colors.transparent, child: InkWell(
@@ -518,7 +518,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
 
   void _showGiftDetail(Map<String, dynamic> gift) {
     final isLiked = _model.likedGifts.contains(gift['id']);
-    // FIX: Cast sÃ©curisÃ© pour Ã©viter crash
+    // FIX: Cast sécurisé pour éviter crash
     final matchRaw = gift['match'];
     final matchPercent = matchRaw is int ? matchRaw : (matchRaw is double ? matchRaw.toInt() : 85);
 
@@ -647,7 +647,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '${gift['price']}Ã¢â€šÂ¬',
+                      '${gift['price']}â‚¬',
                       style: GoogleFonts.poppins(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -701,7 +701,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                             onPressed: () {
                               if (mounted) {
                                 setState(() {
-                                  // FIX: Cast sÃ©curisÃ©
+                                  // FIX: Cast sécurisé
                                   final idRaw = gift['id'];
                                   final giftId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0);
                                   _model.toggleLike(giftId);
@@ -731,7 +731,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                           flex: 3,
                           child: ElevatedButton(
                             onPressed: () async {
-                              // GÃ©nÃ©rer une URL de produit intelligente (=95% prÃ©cision)
+                              // Générer une URL de produit intelligente (=95% précision)
                               final url = ProductUrlService.generateProductUrl(gift);
                               if (url.isNotEmpty) {
                                 final uri = Uri.parse(url);
@@ -793,7 +793,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
           Expanded(
             child: ElevatedButton.icon(
               onPressed: () {
-                // Retour Ã  l'onboarding (skip questions sur soi)
+                // Retour à l'onboarding (skip questions sur soi)
                 context.go('/onboarding-advanced?skipUserQuestions=true');
               },
               icon: const Icon(Icons.refresh, size: 20),

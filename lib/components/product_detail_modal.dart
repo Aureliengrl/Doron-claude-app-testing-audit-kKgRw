@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
+import '/utils/iconly_compat.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';

@@ -1,4 +1,4 @@
-ï»¿import '/services/firebase_data_service.dart';
+import '/services/firebase_data_service.dart';
 import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -88,7 +88,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
         _onboardingMode = mode;
         _isLoadingMode = false;
       });
-      AppLogger.debug('?? Mode onboarding chargÃ©: $_onboardingMode', 'Debug');
+      AppLogger.debug('?? Mode onboarding chargé: $_onboardingMode', 'Debug');
     } catch (e) {
       AppLogger.debug('?? Erreur chargement mode: $e', 'Debug');
       setState(() {
@@ -118,19 +118,19 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
       );
     }
 
-    // Lire les paramÃ¨tres de query
+    // Lire les paramètres de query
     final skipUserQuestions = GoRouterState.of(context).uri.queryParameters['skipUserQuestions'] == 'true';
     final onlyUserQuestions = GoRouterState.of(context).uri.queryParameters['onlyUserQuestions'] == 'true';
     final returnTo = GoRouterState.of(context).uri.queryParameters['returnTo'];
-    // Mode express activÃ© par dÃ©faut (seulement 7 questions essentielles)
-    // Pour revenir au mode complet, passer expressMode=false en paramÃ¨tre
+    // Mode express activé par défaut (seulement 7 questions essentielles)
+    // Pour revenir au mode complet, passer expressMode=false en paramètre
     final expressMode = GoRouterState.of(context).uri.queryParameters['expressMode'] != 'false';
 
     final steps = _model.getSteps(
       skipUserQuestions: skipUserQuestions,
       onlyUserQuestions: onlyUserQuestions,
       expressMode: expressMode,
-      onboardingMode: _onboardingMode, // Passer le mode chargÃ©
+      onboardingMode: _onboardingMode, // Passer le mode chargé
     );
     final currentStepData = steps[_model.currentStep];
     final progress = (_model.currentStep + 1) / steps.length;
@@ -198,7 +198,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Analyse des millions de combinaisons\ngrace Ã  notre ? Scan IA',
+                        'Analyse des millions de combinaisons\ngrace à notre ? Scan IA',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           color: Colors.white70,
@@ -381,7 +381,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
               scale: value,
               child: useLogo
                   ? Image.asset(
-                      'assets/images/doron_logo.png', // Logo DORÃ•N (vague)
+                      'assets/images/doron_logo.png', // Logo DORÕN (vague)
                       width: 150,
                       height: 150,
                       errorBuilder: (context, error, stackTrace) {
@@ -492,9 +492,9 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
     // quand le clavier s'ouvre
     final scrollController = ScrollController();
 
-    // DÃ©clencher le scroll automatique aprÃ¨s le build pour montrer le champ
+    // Déclencher le scroll automatique après le build pour montrer le champ
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Petit dÃ©lai pour laisser le clavier s'ouvrir
+      // Petit délai pour laisser le clavier s'ouvrir
       Future.delayed(const Duration(milliseconds: 300), () {
         if (scrollController.hasClients) {
           scrollController.animateTo(
@@ -508,7 +508,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
 
     return SingleChildScrollView(
       controller: scrollController,
-      // Padding rÃ©duit en haut, plus de padding en bas pour le clavier
+      // Padding réduit en haut, plus de padding en bas pour le clavier
       padding: EdgeInsets.only(
         top: 16,
         bottom: MediaQuery.of(context).viewInsets.bottom + 60,
@@ -516,18 +516,18 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          // Espace rÃ©duit en haut (au lieu de 15% de l'Ã©cran)
+          // Espace réduit en haut (au lieu de 15% de l'écran)
           const SizedBox(height: 20),
           Text(
             stepData['icon'] as String,
-            style: const TextStyle(fontSize: 60), // Taille rÃ©duite pour gagner de l'espace
+            style: const TextStyle(fontSize: 60), // Taille réduite pour gagner de l'espace
           ),
           const SizedBox(height: 20),
           Text(
             stepData['question'] as String,
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              fontSize: 24, // Taille rÃ©duite pour s'adapter au clavier
+              fontSize: 24, // Taille réduite pour s'adapter au clavier
               fontWeight: FontWeight.bold,
               color: violetColor,
             ),
@@ -593,7 +593,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
             ),
           ),
         ),
-        // Espace supplÃ©mentaire en bas pour s'assurer que le champ reste visible
+        // Espace supplémentaire en bas pour s'assurer que le champ reste visible
         const SizedBox(height: 60),
         ],
       ),
@@ -746,7 +746,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
     );
   }
 
-  // Cache pour l'utilisateur Doron trouvÃ©
+  // Cache pour l'utilisateur Doron trouvé
   Map<String, dynamic>? _foundDoronUser;
   String _lastSearchedHandle = '';
   List<Map<String, dynamic>> _handleSuggestions = [];
@@ -805,7 +805,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
               onChanged: (raw) async {
                 final value = raw.replaceAll('@', '').trim().toLowerCase();
                 _model.answers[field] = value;
-                // RÃ©initialiser l'utilisateur trouvÃ© si handle change
+                // Réinitialiser l'utilisateur trouvé si handle change
                 if (value != _lastSearchedHandle) {
                   setLocal(() {
                     _foundDoronUser = null;
@@ -953,7 +953,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 ),
               ),
             ],
-            // Badge de confirmation du compte trouvÃ©
+            // Badge de confirmation du compte trouvé
             if (_foundDoronUser != null) ...[
               const SizedBox(height: 8),
               Container(
@@ -969,7 +969,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '? Compte Doron trouvÃ© â€” ses wishlists seront incluses !',
+                        '? Compte Doron trouvé — ses wishlists seront incluses !',
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           color: const Color(0xFF10B981),
@@ -1174,7 +1174,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
           Padding(
             padding: const EdgeInsets.only(top: 16),
             child: Text(
-              '? Tu peux sÃ©lectionner plusieurs rÃ©ponses',
+              '? Tu peux sélectionner plusieurs réponses',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 13,
@@ -1246,7 +1246,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                       ],
                     ).createShader(bounds),
                     child: Text(
-                      '${value.toInt()}â‚¬',
+                      '${value.toInt()}€',
                       style: GoogleFonts.poppins(
                         fontSize: 56,
                         fontWeight: FontWeight.bold,
@@ -1296,14 +1296,14 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${min.toInt()}â‚¬',
+                    '${min.toInt()}€',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: const Color(0xFFF5F5F7),
                     ),
                   ),
                   Text(
-                    '${max.toInt()}â‚¬',
+                    '${max.toInt()}€',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: const Color(0xFFF5F5F7),
@@ -1318,7 +1318,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 child: InkWell(
                   onTap: () {
                     setState(() {
-                      // Valeur raisonnable : 80â‚¬ (mix accessible + premium)
+                      // Valeur raisonnable : 80€ (mix accessible + premium)
                       _model.answers[field] = 80.0;
                     });
                   },
@@ -1395,12 +1395,12 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
           ),
         ),
         child: ElevatedButton(
-          // FIX Bug 2: DÃ©sactiver le bouton si navigation en cours
+          // FIX Bug 2: Désactiver le bouton si navigation en cours
           onPressed: (canProceed && !_model.isNavigating)
               ? () async {
                   // Attendre correctement handleNext (async)
                   await _model.handleNext(steps, context, skipUserQuestions: skipUserQuestions, returnTo: returnTo, onlyUserQuestions: onlyUserQuestions);
-                  // RafraÃ®chir l'UI aprÃ¨s la navigation
+                  // Rafraîchir l'UI après la navigation
                   if (mounted) {
                     setState(() {});
                   }
@@ -1424,7 +1424,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 const SizedBox(width: 8),
               ],
               Text(
-                isLastStep ? 'DÃ©couvrir mes cadeaux' : context.tr('Continuer', 'Continue'),
+                isLastStep ? 'Découvrir mes cadeaux' : context.tr('Continuer', 'Continue'),
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,

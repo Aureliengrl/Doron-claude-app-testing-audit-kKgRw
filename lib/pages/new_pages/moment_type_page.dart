@@ -1,9 +1,9 @@
-Ôªøimport 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
 
-/// Page onboarding ‚Äî Quel type de cadeau cherchez-vous ?
-/// 3 options principales : objet physique, exp√©rience, bon cadeau.
-/// Cette information enrichit le profil avec des types de cadeaux pr√©f√©r√©s.
+/// Page onboarding ó Quel type de cadeau cherchez-vous ?
+/// 3 options principales : objet physique, expÈrience, bon cadeau.
+/// Cette information enrichit le profil avec des types de cadeaux prÈfÈrÈs.
 class MomentTypePage extends StatefulWidget {
   const MomentTypePage({super.key, this.onComplete, this.occasion});
   static const routeName = '/moment-type';
@@ -20,23 +20,23 @@ class _MomentTypePageState extends State<MomentTypePage> {
 
   static const _options = <Map<String, Object>>[
     {
-      'icon': 'üéÅ',
-      'title': 'Un objet √† offrir',
-      'subtitle': 'Quelque chose de concret, emball√©, livr√©.',
+      'icon': '??',
+      'title': 'Un objet ‡ offrir',
+      'subtitle': 'Quelque chose de concret, emballÈ, livrÈ.',
       'value': 'product',
       'types': ['type_mode_accessoires', 'type_high_tech', 'type_beaute_soins', 'type_maison_deco'],
     },
     {
-      'icon': '‚ú®',
-      'title': 'Une exp√©rience',
-      'subtitle': 'Spa, cours, sortie, aventure, d√©gustation.',
+      'icon': '?',
+      'title': 'Une expÈrience',
+      'subtitle': 'Spa, cours, sortie, aventure, dÈgustation.',
       'value': 'experience',
       'types': ['type_voyage_aventure', 'type_bien_etre', 'type_gastronomie', 'type_culture'],
     },
     {
-      'icon': 'üÉè',
+      'icon': '??',
       'title': 'Un bon cadeau',
-      'subtitle': 'Flexible, carte, abonnement, cr√©dit.',
+      'subtitle': 'Flexible, carte, abonnement, crÈdit.',
       'value': 'voucher',
       'types': ['type_culture', 'type_musique_audio', 'type_livres_bd'],
     },
@@ -172,7 +172,7 @@ class _MomentTypePageState extends State<MomentTypePage> {
                             'occasion': widget.occasion,
                           });
                         },
-                  child: const Text('Voir les id√©es ‚ú®',
+                  child: const Text('Voir les idÈes ?',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),

@@ -1,4 +1,4 @@
-Ôªøimport '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
@@ -31,7 +31,7 @@ class AuthentificationModel extends FlutterFlowModel<AuthentificationWidget> {
 
     if (val.length < 3) {
       return FFLocalizations.of(context).getText(
-        'w8fxlbwz' /* Au moins 3 caract√®res */,
+        'w8fxlbwz' /* Au moins 3 caractËres */,
       );
     }
 
@@ -52,20 +52,20 @@ class AuthentificationModel extends FlutterFlowModel<AuthentificationWidget> {
     }
 
     if (val.length < 3) {
-      return 'Au moins 3 caract√®res';
+      return 'Au moins 3 caractËres';
     }
 
-    // V√©rifier que le username ne contient que des lettres, chiffres, - et _
+    // VÈrifier que le username ne contient que des lettres, chiffres, - et _
     if (!RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(val)) {
       return 'Uniquement lettres, chiffres, - et _';
     }
 
-    // √âviter le "@" s'il a √©t√© tap√©
+    // …viter le "@" s'il a ÈtÈ tapÈ
     if (val.startsWith('@')) {
       return 'Ne pas inclure le @';
     }
 
-    // L'erreur d'unicit√© sera g√©r√©e s√©par√©ment
+    // L'erreur d'unicitÈ sera gÈrÈe sÈparÈment
     if (usernameError != null) {
       return usernameError;
     }
@@ -163,13 +163,13 @@ class AuthentificationModel extends FlutterFlowModel<AuthentificationWidget> {
     return null;
   }
 
-  /// V√©rifie si le username est unique dans Firestore
+  /// VÈrifie si le username est unique dans Firestore
   Future<bool> checkUsernameAvailability(String username) async {
     try {
       isCheckingUsername = true;
       usernameError = null;
 
-      // Rechercher dans la collection users si le handle existe d√©j√†
+      // Rechercher dans la collection users si le handle existe dÈj‡
       final querySnapshot = await FirebaseFirestore.instance
           .collection('users')
           .where('searchName', isEqualTo: username.toLowerCase().replaceAll('@', ''))
@@ -179,23 +179,23 @@ class AuthentificationModel extends FlutterFlowModel<AuthentificationWidget> {
       isCheckingUsername = false;
 
       if (querySnapshot.docs.isNotEmpty) {
-        usernameError = 'Ce nom d\'utilisateur existe d√©j√†';
+        usernameError = 'Ce nom d\'utilisateur existe dÈj‡';
         return false;
       }
 
       return true;
     } catch (e) {
-      AppLogger.debug('‚ùå Erreur v√©rification username: $e', 'Debug');
+      AppLogger.debug('? Erreur vÈrification username: $e', 'Debug');
       isCheckingUsername = false;
       
-      // FIX IGNITION: Firestore bloque l'acc√®s non-authentifi√© √† Users. 
-      // Si c'est un permission-denied g√©n√©r√© avant la cr√©ation du compte e-mail,
-      // on bypass l'erreur au lieu de bloquer faussement le formulaire en "D√©j√† pris".
+      // FIX IGNITION: Firestore bloque l'accËs non-authentifiÈ ‡ Users. 
+      // Si c'est un permission-denied gÈnÈrÈ avant la crÈation du compte e-mail,
+      // on bypass l'erreur au lieu de bloquer faussement le formulaire en "DÈj‡ pris".
       if (e.toString().contains('permission-denied')) {
         return true; 
       }
       
-      usernameError = 'Erreur de v√©rification';
+      usernameError = 'Erreur de vÈrification';
       return false;
     }
   }

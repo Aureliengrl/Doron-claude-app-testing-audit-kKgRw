@@ -1,4 +1,4 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 

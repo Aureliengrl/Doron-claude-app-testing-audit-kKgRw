@@ -1,16 +1,16 @@
-ï»¿import '/environment_values.dart';
+import '/environment_values.dart';
 import 'http_service.dart';
 
-/// FaÃ§ade OpenAI â€” fournit la clÃ© API et les constantes partagÃ©es.
+/// Façade OpenAI — fournit la clé API et les constantes partagées.
 ///
 /// Les deux modes d'utilisation actifs sont :
-///  - [OpenAIVoiceAnalysisService] : analyse vocale (appels GPT-4o rÃ©els)
+///  - [OpenAIVoiceAnalysisService] : analyse vocale (appels GPT-4o réels)
 ///  - [ProductMatchingService] : matching Firebase (aucun appel OpenAI)
 ///
-/// Note: toute la logique de gÃ©nÃ©ration de prompts, brands listes, et
-/// fallback products a Ã©tÃ© supprimÃ©e â€” c'Ã©tait du code mort.
+/// Note: toute la logique de génération de prompts, brands listes, et
+/// fallback products a été supprimée — c'était du code mort.
 class OpenAIService {
-  /// ClÃ© API OpenAI â€” lue depuis les variables d'environnement (assets).
+  /// Clé API OpenAI — lue depuis les variables d'environnement (assets).
   static String get apiKey {
     final key = FFDevEnvironmentValues().openAiApiKey;
     if (key.isEmpty) {
@@ -22,6 +22,6 @@ class OpenAIService {
   /// URL de base de l'API OpenAI
   static const String baseUrl = 'https://api.openai.com/v1';
 
-  /// Service HTTP partagÃ© (retry, timeout)
+  /// Service HTTP partagé (retry, timeout)
   static HttpService get httpService => HttpService();
 }

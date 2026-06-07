@@ -1,10 +1,10 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
 import 'moment_type_page.dart';
 
-/// Page onboarding — Quelle est l'occasion ?
+/// Page onboarding � Quelle est l'occasion ?
 /// Permet de capturer le contexte de la recherche de cadeau.
-/// Les chips sélectionnées sont enregistrées dans le profil utilisateur
+/// Les chips s�lectionn�es sont enregistr�es dans le profil utilisateur
 /// et converties en tags `occasion_*` par TagConverter.
 class OccasionQuestionPage extends StatefulWidget {
   const OccasionQuestionPage({super.key, this.onComplete});
@@ -19,15 +19,15 @@ class _OccasionQuestionPageState extends State<OccasionQuestionPage> {
   String? _selected;
 
   static const _occasions = [
-    {'label': '🎂 Anniversaire',       'value': 'anniversaire'},
-    {'label': '🎄 Noël',               'value': 'noel'},
-    {'label': '💝 Saint-Valentin',     'value': 'saint-valentin'},
-    {'label': '💍 Mariage',            'value': 'mariage'},
-    {'label': '🥳 Fête',              'value': 'fete'},
-    {'label': '🙏 Remerciement',       'value': 'remerciement'},
-    {'label': '👶 Naissance',          'value': 'naissance'},
-    {'label': '🎓 Diplôme',           'value': 'diplome'},
-    {'label': '🎁 Sans occasion',      'value': 'surprise'},
+    {'label': '?? Anniversaire',       'value': 'anniversaire'},
+    {'label': '?? No�l',               'value': 'noel'},
+    {'label': '?? Saint-Valentin',     'value': 'saint-valentin'},
+    {'label': '?? Mariage',            'value': 'mariage'},
+    {'label': '?? F�te',              'value': 'fete'},
+    {'label': '?? Remerciement',       'value': 'remerciement'},
+    {'label': '?? Naissance',          'value': 'naissance'},
+    {'label': '?? Dipl�me',           'value': 'diplome'},
+    {'label': '?? Sans occasion',      'value': 'surprise'},
   ];
 
   @override
@@ -61,7 +61,7 @@ class _OccasionQuestionPageState extends State<OccasionQuestionPage> {
                       .headlineMedium
                       ?.copyWith(color: cs.onBackground, height: 1.2)),
               const SizedBox(height: 8),
-              Text('Cela permet de personnaliser les idées de cadeaux.',
+              Text('Cela permet de personnaliser les id�es de cadeaux.',
                   style: Theme.of(context)
                       .textTheme
                       .bodyMedium
@@ -139,7 +139,7 @@ class _OccasionQuestionPageState extends State<OccasionQuestionPage> {
                       builder: (_) => const MomentTypePage(occasion: 'surprise'),
                     ));
                   },
-                  child: Text('Passer cette étape',
+                  child: Text('Passer cette �tape',
                       style: TextStyle(color: cs.outline, fontSize: 14)),
                 ),
               ),

@@ -1,25 +1,25 @@
-Ôªøimport '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:doron/services/voice_assistant_service.dart';
 import 'package:go_router/go_router.dart';
 
-/// Model pour l'onboarding vocal guid√©
-/// Syst√®me de questions guid√©es avec transcription automatique
+/// Model pour l'onboarding vocal guidÈ
+/// SystËme de questions guidÈes avec transcription automatique
 class VoiceGuidedOnboardingModel extends ChangeNotifier {
   final VoiceAssistantService _voiceService = VoiceAssistantService();
 
-  // √âtat du syst√®me de questions
+  // …tat du systËme de questions
   int _currentQuestionIndex = 0;
   final List<VoiceQuestion> _questions = [
     VoiceQuestion(
       id: 'recipient',
       text: 'Pour qui est le cadeau ?',
-      hint: 'Ex: Pour ma m√®re, mon ami, ma copine...',
+      hint: 'Ex: Pour ma mËre, mon ami, ma copine...',
       tagKey: 'recipient',
     ),
     VoiceQuestion(
       id: 'age',
-      text: 'Quel √¢ge a cette personne ?',
+      text: 'Quel ‚ge a cette personne ?',
       hint: 'Ex: 25 ans, environ 30 ans, la quarantaine...',
       tagKey: 'recipientAge',
     ),
@@ -37,14 +37,14 @@ class VoiceGuidedOnboardingModel extends ChangeNotifier {
     ),
     VoiceQuestion(
       id: 'style',
-      text: 'Comment d√©crirais-tu son style ?',
-      hint: 'Ex: Moderne, classique, sportif, √©l√©gant...',
+      text: 'Comment dÈcrirais-tu son style ?',
+      hint: 'Ex: Moderne, classique, sportif, ÈlÈgant...',
       tagKey: 'style',
     ),
     VoiceQuestion(
       id: 'occasion',
       text: 'Quelle est l\'occasion ?',
-      hint: 'Ex: Anniversaire, No√´l, f√™te des m√®res...',
+      hint: 'Ex: Anniversaire, NoÎl, fÍte des mËres...',
       tagKey: 'occasion',
     ),
     VoiceQuestion(
@@ -55,10 +55,10 @@ class VoiceGuidedOnboardingModel extends ChangeNotifier {
     ),
   ];
 
-  // R√©ponses collect√©es
+  // RÈponses collectÈes
   final Map<String, String> _answers = {};
 
-  // √âtat de la transcription
+  // …tat de la transcription
   String _currentTranscript = '';
   bool _isListening = false;
   bool _hasError = false;
@@ -81,7 +81,7 @@ class VoiceGuidedOnboardingModel extends ChangeNotifier {
 
   /// Initialise le service vocal
   Future<void> initialize() async {
-    AppLogger.debug('üé§ Initializing voice guided onboarding...', 'Debug');
+    AppLogger.debug('?? Initializing voice guided onboarding...', 'Debug');
 
     // Setup callbacks
     _voiceService.onTranscriptUpdate = (text) {
@@ -90,14 +90,14 @@ class VoiceGuidedOnboardingModel extends ChangeNotifier {
     };
 
     _voiceService.onFinalTranscript = (text) {
-      AppLogger.debug('‚úÖ Final transcript received: $text', 'Debug');
+      AppLogger.debug('? Final transcript received: $text', 'Debug');
       _currentTranscript = text;
       _isListening = false;
       notifyListeners();
     };
 
     _voiceService.onError = (error) {
-      AppLogger.debug('‚ùå Voice error: $error', 'Debug');
+      AppLogger.debug('? Voice error: $error', 'Debug');
       _hasError = true;
       _errorMessage = error;
       _isListening = false;
@@ -112,18 +112,18 @@ class VoiceGuidedOnboardingModel extends ChangeNotifier {
       notifyListeners();
     }
 
-    // Auto-start listening pour la premi√®re question
+    // Auto-start listening pour la premiËre question
     await Future.delayed(const Duration(milliseconds: 500));
     if (!_isListening) {
       startListening();
     }
   }
 
-  /// Commence l'√©coute pour la question actuelle
+  /// Commence l'Ècoute pour la question actuelle
   Future<void> startListening() async {
     if (_isListening) return;
 
-    AppLogger.debug('üé§ Starting listening for question ${_currentQuestionIndex + 1}...', 'Debug');
+    AppLogger.debug('?? Starting listening for question ${_currentQuestionIndex + 1}...', 'Debug');
     _hasError = false;
     _errorMessage = '';
     _currentTranscript = '';
@@ -133,34 +133,34 @@ class VoiceGuidedOnboardingModel extends ChangeNotifier {
     await _voiceService.startListening();
   }
 
-  /// Arr√™te l'√©coute
+  /// ArrÍte l'Ècoute
   Future<void> stopListening() async {
     if (!_isListening) return;
 
-    AppLogger.debug('üõë Stopping listening...', 'Debug');
+    AppLogger.debug('?? Stopping listening...', 'Debug');
     await _voiceService.stopListening();
     _isListening = false;
     notifyListeners();
   }
 
-  /// Valide la r√©ponse actuelle et passe √† la question suivante
+  /// Valide la rÈponse actuelle et passe ‡ la question suivante
   Future<void> validateAnswer(BuildContext context) async {
     if (_currentTranscript.trim().isEmpty) {
       _hasError = true;
-      _errorMessage = 'Veuillez donner une r√©ponse avant de continuer';
+      _errorMessage = 'Veuillez donner une rÈponse avant de continuer';
       notifyListeners();
       return;
     }
 
-    // Sauvegarder la r√©ponse
+    // Sauvegarder la rÈponse
     _answers[currentQuestion.tagKey] = _currentTranscript.trim();
-    AppLogger.debug('‚úÖ Answer saved: ${currentQuestion.tagKey} = ${_currentTranscript.trim()}', 'Debug');
+    AppLogger.debug('? Answer saved: ${currentQuestion.tagKey} = ${_currentTranscript.trim()}', 'Debug');
 
-    // Si c'√©tait la derni√®re question, traiter et rediriger
+    // Si c'Ètait la derniËre question, traiter et rediriger
     if (isLastQuestion) {
       await _processAnswersAndRedirect(context);
     } else {
-      // Passer √† la question suivante
+      // Passer ‡ la question suivante
       _currentQuestionIndex++;
       _currentTranscript = '';
       _hasError = false;
@@ -175,7 +175,7 @@ class VoiceGuidedOnboardingModel extends ChangeNotifier {
     }
   }
 
-  /// Revenir √† la question pr√©c√©dente
+  /// Revenir ‡ la question prÈcÈdente
   void previousQuestion() {
     if (_currentQuestionIndex > 0) {
       _currentQuestionIndex--;
@@ -205,15 +205,15 @@ class VoiceGuidedOnboardingModel extends ChangeNotifier {
     }
   }
 
-  /// Traite les r√©ponses et convertit en tags, puis redirige
+  /// Traite les rÈponses et convertit en tags, puis redirige
   Future<void> _processAnswersAndRedirect(BuildContext context) async {
     _isProcessing = true;
     notifyListeners();
 
-    AppLogger.debug('üîÑ Processing voice answers into tags...', 'Debug');
+    AppLogger.debug('?? Processing voice answers into tags...', 'Debug');
 
-    // Conversion basique des r√©ponses en tags
-    // (L'IA OpenAI pourrait am√©liorer √ßa dans le futur)
+    // Conversion basique des rÈponses en tags
+    // (L'IA OpenAI pourrait amÈliorer Áa dans le futur)
     final tags = <String, dynamic>{
       ...answers,
     };
@@ -223,13 +223,13 @@ class VoiceGuidedOnboardingModel extends ChangeNotifier {
     final genderAnswer = answers['recipientGender']?.toLowerCase() ?? '';
     if (genderAnswer.contains('femme') || genderAnswer.contains('fille')) {
       tags['gender'] = 'Femme';
-    } else if (genderAnswer.contains('homme') || genderAnswer.contains('gar√ßon')) {
+    } else if (genderAnswer.contains('homme') || genderAnswer.contains('garÁon')) {
       tags['gender'] = 'Homme';
     } else {
-      tags['gender'] = 'Non sp√©cifi√©';
+      tags['gender'] = 'Non spÈcifiÈ';
     }
 
-    // √Çge - extraire le nombre
+    // ¬ge - extraire le nombre
     final ageAnswer = answers['recipientAge'] ?? '';
     final ageMatch = RegExp(r'(\d+)').firstMatch(ageAnswer);
     if (ageMatch != null) {
@@ -247,24 +247,24 @@ class VoiceGuidedOnboardingModel extends ChangeNotifier {
       tags['budget'] = 100;
     }
 
-    AppLogger.debug('‚úÖ Tags generated: $tags', 'Debug');
+    AppLogger.debug('? Tags generated: $tags', 'Debug');
 
     _isProcessing = false;
     notifyListeners();
 
-    // Rediriger vers la page de g√©n√©ration de cadeaux
+    // Rediriger vers la page de gÈnÈration de cadeaux
     if (context.mounted) {
-      AppLogger.debug('üöÄ NAVIGATION vers /onboarding-gifts-result avec tags vocaux', 'Debug');
-      // On d√©pile la modale d'√©coute
+      AppLogger.debug('?? NAVIGATION vers /onboarding-gifts-result avec tags vocaux', 'Debug');
+      // On dÈpile la modale d'Ècoute
       context.pop();
-      // On pousse la page de r√©sultats
+      // On pousse la page de rÈsultats
       context.push('/onboarding-gifts-result', extra: {'tags': tags});
     }
   }
 
   /// Annule l'onboarding
   Future<void> cancel() async {
-    AppLogger.debug('‚ùå Cancelling voice onboarding...', 'Debug');
+    AppLogger.debug('? Cancelling voice onboarding...', 'Debug');
     await _voiceService.cancel();
     _isListening = false;
     notifyListeners();
@@ -277,7 +277,7 @@ class VoiceGuidedOnboardingModel extends ChangeNotifier {
   }
 }
 
-/// Classe pour repr√©senter une question vocale
+/// Classe pour reprÈsenter une question vocale
 class VoiceQuestion {
   final String id;
   final String text;

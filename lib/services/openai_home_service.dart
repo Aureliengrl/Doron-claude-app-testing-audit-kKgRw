@@ -1,29 +1,29 @@
-ï»¿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'product_matching_service.dart';
 
-/// Service de gÃ©nÃ©ration de produits pour le feed de la page d'accueil.
+/// Service de génération de produits pour le feed de la page d'accueil.
 ///
-/// Utilise [ProductMatchingService] pour rÃ©cupÃ©rer des produits Firebase
-/// correspondant Ã  la catÃ©gorie et au profil utilisateur.
+/// Utilise [ProductMatchingService] pour récupérer des produits Firebase
+/// correspondant à la catégorie et au profil utilisateur.
 ///
-/// CatÃ©gories supportÃ©es : 'Pour toi', 'Tendances', 'Tech', 'Mode', 'Maison', 'BeautÃ©', 'Food'
+/// Catégories supportées : 'Pour toi', 'Tendances', 'Tech', 'Mode', 'Maison', 'Beauté', 'Food'
 class OpenAIHomeService {
-  /// GÃ©nÃ¨re des produits pour la page d'accueil selon la catÃ©gorie sÃ©lectionnÃ©e.
+  /// Génère des produits pour la page d'accueil selon la catégorie sélectionnée.
   ///
-  /// [category] : filtre de catÃ©gorie (voir liste ci-dessus)
+  /// [category] : filtre de catégorie (voir liste ci-dessus)
   /// [userProfile] : profil utilisateur pour la personnalisation, peut contenir
-  ///   `_seen_product_ids` pour exclure les produits dÃ©jÃ  affichÃ©s
-  /// [count] : nombre de produits Ã  retourner (dÃ©faut 10)
+  ///   `_seen_product_ids` pour exclure les produits déjà affichés
+  /// [count] : nombre de produits à retourner (défaut 10)
   static Future<List<Map<String, dynamic>>> generateHomeProducts({
     required String category,
     Map<String, dynamic>? userProfile,
     int count = 10,
   }) async {
-    AppLogger.info('âš¡ Feed Home â€” catÃ©gorie: $category ($count produits)', 'Home');
+    AppLogger.info('? Feed Home — catégorie: $category ($count produits)', 'Home');
 
     final excludeIds = userProfile?['_seen_product_ids'] as List?;
     if (excludeIds != null && excludeIds.isNotEmpty) {
-      AppLogger.debug('ðŸ”„ Exclusion de ${excludeIds.length} produits dÃ©jÃ  vus', 'Home');
+      AppLogger.debug('?? Exclusion de ${excludeIds.length} produits déjà vus', 'Home');
     }
 
     try {
@@ -34,7 +34,7 @@ class OpenAIHomeService {
         excludeProductIds: excludeIds,
         filteringMode: 'home', // Strict sur le genre, souple sur le reste
       );
-      AppLogger.success('${products.length} produits matchÃ©s pour [$category]', 'Home');
+      AppLogger.success('${products.length} produits matchés pour [$category]', 'Home');
       return products;
     } catch (e) {
       AppLogger.error('Erreur matching feed home', 'Home', e);

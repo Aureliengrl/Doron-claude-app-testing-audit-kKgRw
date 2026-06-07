@@ -1,11 +1,11 @@
-Ôªøimport '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:doron/services/openai_voice_analysis_service.dart';
 import 'package:doron/services/firebase_data_service.dart';
 import 'package:doron/services/product_matching_service.dart';
 import 'package:doron/services/product_url_service.dart';
 
-/// Model pour la page de r√©sultats vocaux
+/// Model pour la page de rÈsultats vocaux
 class VoiceResultsPageModel extends ChangeNotifier {
   Map<String, dynamic>? _analysis;
   String _transcript = '';
@@ -22,7 +22,7 @@ class VoiceResultsPageModel extends ChangeNotifier {
   Map<String, dynamic>? get analysis => _analysis;
   String get summary => _generateSummary();
 
-  /// Initialise et g√©n√®re les produits
+  /// Initialise et gÈnËre les produits
   Future<void> initialize({
     required Map<String, dynamic> analysis,
     required String transcript,
@@ -30,35 +30,35 @@ class VoiceResultsPageModel extends ChangeNotifier {
     _analysis = analysis;
     _transcript = transcript;
 
-    AppLogger.debug('üéÅ Initializing voice results with analysis: $analysis', 'Debug');
+    AppLogger.debug('?? Initializing voice results with analysis: $analysis', 'Debug');
 
-    // G√©n√©rer les produits
+    // GÈnÈrer les produits
     await generateProducts();
   }
 
-  /// G√©n√®re les produits bas√©s sur l'analyse
-  /// FIX: Utiliser ProductMatchingService (Firebase) au lieu d'OpenAI pour avoir des images r√©elles
+  /// GÈnËre les produits basÈs sur l'analyse
+  /// FIX: Utiliser ProductMatchingService (Firebase) au lieu d'OpenAI pour avoir des images rÈelles
   Future<void> generateProducts() async {
     _isGeneratingProducts = true;
     _hasError = false;
     notifyListeners();
 
     try {
-      AppLogger.debug('üéÅ Generating products with ProductMatchingService (Firebase)...', 'Debug');
+      AppLogger.debug('?? Generating products with ProductMatchingService (Firebase)...', 'Debug');
 
       // Convertir l'analyse vocale en format userTags pour ProductMatchingService
       final userTags = _convertToOnboardingFormat();
 
-      // FIX: Utiliser ProductMatchingService pour avoir des produits avec images R√âELLES de Firebase
+      // FIX: Utiliser ProductMatchingService pour avoir des produits avec images R…ELLES de Firebase
       final rawProducts = await ProductMatchingService.getPersonalizedProducts(
         userTags: userTags,
         count: 20, // Charger plus pour filtrer ceux sans images
-        filteringMode: "person", // Mode personne pour cadeaux personnalis√©s
+        filteringMode: "person", // Mode personne pour cadeaux personnalisÈs
       );
 
       // FIX: Mapper les produits et filtrer ceux sans images valides
       final productsWithImages = rawProducts.map((product) {
-        // Extraire l'image depuis plusieurs cl√©s possibles
+        // Extraire l'image depuis plusieurs clÈs possibles
         String imageUrl = '';
         for (final key in ['image', 'imageUrl', 'photo', 'productPhoto', 'product_photo', 'img', 'thumbnail']) {
           if (product[key] != null && product[key].toString().isNotEmpty) {
@@ -67,7 +67,7 @@ class VoiceResultsPageModel extends ChangeNotifier {
           }
         }
 
-        // FIX CRASH: Conversion s√©curis√©e du score (peut √™tre int ou double)
+        // FIX CRASH: Conversion sÈcurisÈe du score (peut Ítre int ou double)
         final matchScore = product['_matchScore'];
         final matchScoreInt = matchScore is int
             ? matchScore
@@ -88,28 +88,28 @@ class VoiceResultsPageModel extends ChangeNotifier {
                          product['image'].toString().isNotEmpty &&
                          product['image'].toString().startsWith('http');
         if (!hasImage) {
-          AppLogger.debug('‚ö†Ô∏è Produit "${product['name']}" filtr√©: pas d\'image valide', 'Debug');
+          AppLogger.debug('?? Produit "${product['name']}" filtrÈ: pas d\'image valide', 'Debug');
         }
         return hasImage;
       })
-      .take(12) // Limiter √† 12 produits
+      .take(12) // Limiter ‡ 12 produits
       .toList();
 
       if (productsWithImages.isNotEmpty) {
-        AppLogger.debug('‚úÖ Generated ${productsWithImages.length} products with valid images from Firebase', 'Debug');
+        AppLogger.debug('? Generated ${productsWithImages.length} products with valid images from Firebase', 'Debug');
         _products = productsWithImages;
         _isGeneratingProducts = false;
         _hasError = false;
       } else {
-        AppLogger.debug('‚ùå No products with valid images found', 'Debug');
+        AppLogger.debug('? No products with valid images found', 'Debug');
         _hasError = true;
-        _errorMessage = 'Impossible de charger les suggestions. Veuillez r√©essayer.';
+        _errorMessage = 'Impossible de charger les suggestions. Veuillez rÈessayer.';
         _isGeneratingProducts = false;
       }
 
       notifyListeners();
     } catch (e) {
-      AppLogger.debug('‚ùå Error generating products: $e', 'Debug');
+      AppLogger.debug('? Error generating products: $e', 'Debug');
       _hasError = true;
       _errorMessage = 'Une erreur est survenue lors du chargement des cadeaux.';
       _isGeneratingProducts = false;
@@ -139,19 +139,19 @@ class VoiceResultsPageModel extends ChangeNotifier {
       'recipientAlreadyHas': _analysis!['avoidCategories'] ?? [],
       'recipientRelationDuration': '',
 
-      // Informations sur l'utilisateur (valeurs par d√©faut car non captur√©es par vocal)
+      // Informations sur l'utilisateur (valeurs par dÈfaut car non capturÈes par vocal)
       'age': '',
       'gender': _analysis!['gender'] ?? '',
       'interests': interests,
       'style': '',
       'giftTypes': [],
 
-      // Cat√©gories pr√©f√©r√©es
+      // CatÈgories prÈfÈrÈes
       'preferredCategories': _analysis!['preferredCategories'] ?? [],
     };
   }
 
-  /// G√©n√®re un r√©sum√© de l'analyse
+  /// GÈnËre un rÈsumÈ de l'analyse
   String _generateSummary() {
     if (_analysis == null) return '';
     return OpenAIVoiceAnalysisService.generateSummary(_analysis!);
@@ -162,7 +162,7 @@ class VoiceResultsPageModel extends ChangeNotifier {
     if (_analysis == null) return;
 
     try {
-      AppLogger.debug('üíæ Saving voice profile to Firebase...', 'Debug');
+      AppLogger.debug('?? Saving voice profile to Firebase...', 'Debug');
 
       // Convertir l'analyse en profil de cadeau
       final profile = OpenAIVoiceAnalysisService.convertToGiftProfile(_analysis!);
@@ -173,14 +173,14 @@ class VoiceResultsPageModel extends ChangeNotifier {
 
       if (profileId != null) {
         _savedProfileId = profileId;
-        AppLogger.debug('‚úÖ Profile saved with ID: $profileId', 'Debug');
+        AppLogger.debug('? Profile saved with ID: $profileId', 'Debug');
       }
     } catch (e) {
-      AppLogger.debug('‚ùå Error saving profile: $e', 'Debug');
+      AppLogger.debug('? Error saving profile: $e', 'Debug');
     }
   }
 
-  /// R√©essayer la g√©n√©ration de produits
+  /// RÈessayer la gÈnÈration de produits
   Future<void> retry() async {
     await generateProducts();
   }

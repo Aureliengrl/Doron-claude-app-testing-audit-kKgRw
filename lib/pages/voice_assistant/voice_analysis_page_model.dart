@@ -1,4 +1,4 @@
-Ôªøimport '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:doron/services/openai_voice_analysis_service.dart';
 
@@ -18,7 +18,7 @@ class VoiceAnalysisPageModel extends ChangeNotifier {
   /// Initialise et lance l'analyse
   Future<void> initialize(String transcript) async {
     _transcript = transcript;
-    AppLogger.debug('ü§ñ Initializing voice analysis with transcript: $transcript', 'Debug');
+    AppLogger.debug('?? Initializing voice analysis with transcript: $transcript', 'Debug');
 
     // Lancer l'analyse
     await analyzeTranscript();
@@ -26,8 +26,8 @@ class VoiceAnalysisPageModel extends ChangeNotifier {
 
   /// Analyse le transcript avec OpenAI
   Future<void> analyzeTranscript() async {
-    AppLogger.debug('ü§ñ [MODEL] ===== D√âBUT ANALYSE TRANSCRIPT =====', 'Debug');
-    AppLogger.debug('ü§ñ [MODEL] Transcript: "$_transcript"', 'Debug');
+    AppLogger.debug('?? [MODEL] ===== D…BUT ANALYSE TRANSCRIPT =====', 'Debug');
+    AppLogger.debug('?? [MODEL] Transcript: "$_transcript"', 'Debug');
 
     _isAnalyzing = true;
     _hasError = false;
@@ -35,63 +35,63 @@ class VoiceAnalysisPageModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // V√©rification 1: Transcript vide
+      // VÈrification 1: Transcript vide
       if (_transcript.trim().isEmpty) {
-        AppLogger.debug('‚ùå [MODEL] ERREUR: Transcript vide', 'Debug');
+        AppLogger.debug('? [MODEL] ERREUR: Transcript vide', 'Debug');
         _hasError = true;
-        _errorMessage = 'Aucune description d√©tect√©e. Veuillez r√©essayer et parler clairement.';
+        _errorMessage = 'Aucune description dÈtectÈe. Veuillez rÈessayer et parler clairement.';
         _isAnalyzing = false;
         notifyListeners();
         return;
       }
 
-      // V√©rification 2: Transcript trop court
+      // VÈrification 2: Transcript trop court
       if (_transcript.trim().length < 10) {
-        AppLogger.debug('‚ùå [MODEL] ERREUR: Transcript trop court (${_transcript.trim().length} chars)', 'Debug');
+        AppLogger.debug('? [MODEL] ERREUR: Transcript trop court (${_transcript.trim().length} chars)', 'Debug');
         _hasError = true;
-        _errorMessage = 'Description trop courte. Veuillez donner plus de d√©tails sur la personne.';
+        _errorMessage = 'Description trop courte. Veuillez donner plus de dÈtails sur la personne.';
         _isAnalyzing = false;
         notifyListeners();
         return;
       }
 
-      AppLogger.debug('ü§ñ [MODEL] Validations OK, lancement analyse OpenAI...', 'Debug');
+      AppLogger.debug('?? [MODEL] Validations OK, lancement analyse OpenAI...', 'Debug');
 
       // Appel OpenAI avec timeout de 60 secondes
       final result = await OpenAIVoiceAnalysisService.analyzeVoiceTranscript(_transcript)
           .timeout(
         const Duration(seconds: 60),
         onTimeout: () {
-          AppLogger.debug('‚è±Ô∏è [MODEL] TIMEOUT apr√®s 60 secondes', 'Debug');
+          AppLogger.debug('?? [MODEL] TIMEOUT aprËs 60 secondes', 'Debug');
           return null;
         },
       );
 
-      AppLogger.debug('ü§ñ [MODEL] R√©sultat re√ßu: ${result != null ? "SUCC√àS" : "NULL"}', 'Debug');
+      AppLogger.debug('?? [MODEL] RÈsultat reÁu: ${result != null ? "SUCC»S" : "NULL"}', 'Debug');
 
       if (result != null) {
-        AppLogger.debug('‚úÖ [MODEL] ===== ANALYSE R√âUSSIE =====', 'Debug');
-        AppLogger.debug('‚úÖ [MODEL] Cl√©s: ${result.keys.join(", ")}', 'Debug');
+        AppLogger.debug('? [MODEL] ===== ANALYSE R…USSIE =====', 'Debug');
+        AppLogger.debug('? [MODEL] ClÈs: ${result.keys.join(", ")}', 'Debug');
         _analysisResult = result;
         _isAnalyzing = false;
         _hasError = false;
       } else {
-        AppLogger.debug('‚ùå [MODEL] ===== ANALYSE √âCHOU√âE =====', 'Debug');
+        AppLogger.debug('? [MODEL] ===== ANALYSE …CHOU…E =====', 'Debug');
         _hasError = true;
-        // R√©cup√©rer la derni√®re erreur du service pour l'afficher √† l'utilisateur
+        // RÈcupÈrer la derniËre erreur du service pour l'afficher ‡ l'utilisateur
         final lastError = OpenAIVoiceAnalysisService.lastErrorMessage;
         _errorMessage = lastError.isNotEmpty
             ? 'Erreur: $lastError'
-            : 'L\'analyse a √©chou√©. V√©rifiez votre connexion internet.';
+            : 'L\'analyse a ÈchouÈ. VÈrifiez votre connexion internet.';
         _isAnalyzing = false;
       }
 
       notifyListeners();
     } catch (e, stack) {
-      AppLogger.debug('‚ùå [MODEL] ===== EXCEPTION =====', 'Debug');
-      AppLogger.debug('‚ùå [MODEL] Type: ${e.runtimeType}', 'Debug');
-      AppLogger.debug('‚ùå [MODEL] Message: $e', 'Debug');
-      AppLogger.debug('‚ùå [MODEL] Stack: ${stack.toString().split('\n').take(3).join('\n')}', 'Debug');
+      AppLogger.debug('? [MODEL] ===== EXCEPTION =====', 'Debug');
+      AppLogger.debug('? [MODEL] Type: ${e.runtimeType}', 'Debug');
+      AppLogger.debug('? [MODEL] Message: $e', 'Debug');
+      AppLogger.debug('? [MODEL] Stack: ${stack.toString().split('\n').take(3).join('\n')}', 'Debug');
       _hasError = true;
       _errorMessage = 'Erreur: ${e.toString().length > 80 ? e.toString().substring(0, 80) : e.toString()}';
       _isAnalyzing = false;
@@ -99,7 +99,7 @@ class VoiceAnalysisPageModel extends ChangeNotifier {
     }
   }
 
-  /// R√©essayer l'analyse
+  /// RÈessayer l'analyse
   Future<void> retry() async {
     await analyzeTranscript();
   }

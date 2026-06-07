@@ -1,4 +1,4 @@
-ï»¿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -199,7 +199,7 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
           const SizedBox(width: 16),
           _legendDot(_pink, 'Amis'),
           const SizedBox(width: 16),
-          _legendDot(_gold, 'FÃªtes'),
+          _legendDot(_gold, 'Fêtes'),
         ],
       ),
     );
@@ -238,7 +238,7 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
   }
 
   String _formatSelectedDate(DateTime d) {
-    const months = ['', 'jan', 'fÃ©v', 'mar', 'avr', 'mai', 'juin', 'juil', 'aoÃ»t', 'sep', 'oct', 'nov', 'dÃ©c'];
+    const months = ['', 'jan', 'fév', 'mar', 'avr', 'mai', 'juin', 'juil', 'août', 'sep', 'oct', 'nov', 'déc'];
     const days = ['', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
     return '${days[d.weekday]} ${d.day} ${months[d.month]} ${d.year}';
   }
@@ -303,7 +303,7 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
                   border: Border.all(color: _gold.withOpacity(0.4)),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('IdÃ©es',
+                child: Text('Idées',
                   style: GoogleFonts.poppins(color: _gold, fontSize: 12, fontWeight: FontWeight.w600)),
               ),
             ),
@@ -314,7 +314,7 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
   }
 
   Widget _buildUpcomingSection() {
-    // Prochains Ã©vÃ©nements dans les 30 jours
+    // Prochains événements dans les 30 jours
     final now = DateTime.now();
     final end = now.add(const Duration(days: 30));
     final upcoming = <MapEntry<DateTime, List<CalendarEvent>>>[];
@@ -333,11 +333,11 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Ã€ venir â€” 30 prochains jours',
+          Text('À venir — 30 prochains jours',
             style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           ...upcoming.expand((entry) {
-            const months = ['', 'jan', 'fÃ©v', 'mar', 'avr', 'mai', 'juin', 'juil', 'aoÃ»t', 'sep', 'oct', 'nov', 'dÃ©c'];
+            const months = ['', 'jan', 'fév', 'mar', 'avr', 'mai', 'juin', 'juil', 'août', 'sep', 'oct', 'nov', 'déc'];
             final diff = entry.key.difference(now).inDays;
             final label = diff == 0 ? 'Aujourd\'hui'
                 : diff == 1 ? 'Demain'
@@ -404,9 +404,9 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
             children: [
               Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
               const SizedBox(height: 20),
-              Text('Mon anniversaire ðŸŽ‚', style: GoogleFonts.outfit(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Mon anniversaire ??', style: GoogleFonts.outfit(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              Text('Seuls le jour et le mois sont enregistrÃ©s', style: GoogleFonts.poppins(color: Colors.white38, fontSize: 12)),
+              Text('Seuls le jour et le mois sont enregistrés', style: GoogleFonts.poppins(color: Colors.white38, fontSize: 12)),
               const SizedBox(height: 24),
               Row(
                 children: [
@@ -459,17 +459,17 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             items: const [
                               DropdownMenuItem(value: 1, child: Text('Janvier')),
-                              DropdownMenuItem(value: 2, child: Text('FÃ©vrier')),
+                              DropdownMenuItem(value: 2, child: Text('Février')),
                               DropdownMenuItem(value: 3, child: Text('Mars')),
                               DropdownMenuItem(value: 4, child: Text('Avril')),
                               DropdownMenuItem(value: 5, child: Text('Mai')),
                               DropdownMenuItem(value: 6, child: Text('Juin')),
                               DropdownMenuItem(value: 7, child: Text('Juillet')),
-                              DropdownMenuItem(value: 8, child: Text('AoÃ»t')),
+                              DropdownMenuItem(value: 8, child: Text('Août')),
                               DropdownMenuItem(value: 9, child: Text('Septembre')),
                               DropdownMenuItem(value: 10, child: Text('Octobre')),
                               DropdownMenuItem(value: 11, child: Text('Novembre')),
-                              DropdownMenuItem(value: 12, child: Text('DÃ©cembre')),
+                              DropdownMenuItem(value: 12, child: Text('Décembre')),
                             ],
                             onChanged: (v) => setSheetState(() => selectedMonth = v!),
                           ),
@@ -495,7 +495,7 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
                         Navigator.pop(context);
                         _loadEvents(); // Refresh
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Anniversaire enregistrÃ© ! ðŸŽ‚', style: GoogleFonts.poppins()),
+                          content: Text('Anniversaire enregistré ! ??', style: GoogleFonts.poppins()),
                           backgroundColor: const Color(0xFF8A2BE2),
                           behavior: SnackBarBehavior.floating,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
