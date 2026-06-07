@@ -9,6 +9,8 @@ class FavouritesWidget extends StatefulWidget {
   @override
   State<FavouritesWidget> createState() => _FavouritesWidgetState();
   static void show(BuildContext context, dynamic product) {}
+  static const String routeName = 'Favourites';
+  static const String routePath = '/favourites';
 }
 
 class _FavouritesWidgetState extends State<FavouritesWidget> {

@@ -984,7 +984,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.reply_rounded, color: violetColor, size: 20),
+                  Icon(Icons.reply_rounded, color: violetColor, size: 20),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(

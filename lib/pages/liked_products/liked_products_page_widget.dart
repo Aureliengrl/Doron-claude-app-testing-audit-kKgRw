@@ -9,6 +9,8 @@ class LikedProductsPageWidget extends StatefulWidget {
   @override
   State<LikedProductsPageWidget> createState() => _LikedProductsPageWidgetState();
   static void show(BuildContext context, dynamic product) {}
+  static const String routeName = 'LikedProductsPage';
+  static const String routePath = '/likedProductsPage';
 }
 
 class _LikedProductsPageWidgetState extends State<LikedProductsPageWidget> {

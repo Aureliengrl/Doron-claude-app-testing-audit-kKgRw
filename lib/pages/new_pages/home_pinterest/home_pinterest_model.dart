@@ -16,6 +16,7 @@ class HomePinterestModel {
   String searchQuery = '';
   String? errorMessage;
   String? errorDetails;
+  List<String> personalizedEvents = [];
 
   // Mode anonyme
   bool isAnonymousMode = false;

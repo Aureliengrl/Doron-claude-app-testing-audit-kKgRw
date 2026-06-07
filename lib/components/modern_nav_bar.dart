@@ -185,7 +185,7 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
         ),
         child: ClipRRect(
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
+            filter: ui.ImageFilter.blur(sigmaX: 50, sigmaY: 50),
             child: Container(
               height: widget.height,
               color: Colors.black.withOpacity(0.55), // Translucent dark glass
@@ -295,7 +295,7 @@ class _GlassPill extends StatelessWidget {
       child: ClipRRect(
         borderRadius: radius,
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
+          filter: ui.ImageFilter.blur(sigmaX: 60, sigmaY: 60),
           child: CustomPaint(
             painter: _GlassPainter(borderRadius: borderRadius, primary: primary),
             child: Container(
@@ -378,7 +378,7 @@ class _ActivePillIndicator extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(height / 2),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           width: width,
           height: height,
@@ -563,7 +563,7 @@ class _CircleNavItemState extends State<_CircleNavItem> {
           ),
           child: ClipOval(
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
+              filter: ui.ImageFilter.blur(sigmaX: 60, sigmaY: 60),
               child: AnimatedContainer(
                 duration: 300.ms,
                 decoration: BoxDecoration(

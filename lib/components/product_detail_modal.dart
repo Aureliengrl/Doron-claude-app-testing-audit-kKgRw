@@ -12,6 +12,7 @@ import '/services/product_url_service.dart';
 import '/services/gift_events_service.dart';
 import '/components/cached_image.dart';
 import '/components/connection_required_dialog.dart';
+import '/components/wishlist_picker_sheet.dart';
 import '/utils/app_logger.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '/services/api/multi_market_service.dart';
@@ -115,7 +116,7 @@ class GlobalProductDetailModal {
                           child: InkWell(
                             onTap: () {
                               HapticFeedback.lightImpact();
-                              _showProductActionsSheet(context, product);
+                              showProductActionsSheet(context, product);
                             },
                             borderRadius: BorderRadius.circular(50),
                             child: Container(
@@ -932,8 +933,12 @@ class GlobalProductDetailModal {
     _showPersonPickerSheet(context, product);
   }
 
+  static void showWishlistPicker(BuildContext context, Map<String, dynamic> product) {
+    WishlistPickerSheet.show(context, product);
+  }
+
   /// Affiche le bottom sheet avec les actions produit (envoyer par message, ajouter pour quelqu'un)
-  static void _showProductActionsSheet(BuildContext context, Map<String, dynamic> product) {
+  static void showProductActionsSheet(BuildContext context, Map<String, dynamic> product) {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       showConnectionRequiredDialog(
