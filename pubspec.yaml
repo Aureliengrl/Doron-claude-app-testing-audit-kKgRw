@@ -126,7 +126,7 @@ flutter:
 
   assets:
     - assets/fonts/
-    - assets/3d_icons/
+
     - assets/images/
     - assets/videos/
     - assets/audios/
@@ -135,12 +135,12 @@ flutter:
     - assets/jsons/
     - assets/environment_values/
 
-  fonts:
-    - family: IconlyPro
-      fonts:
-        - asset: assets/fonts/IconlyPro.ttf
-          weight: 400
-        - asset: assets/fonts/IconlyPro-Bold.ttf
-          weight: 700
+
+
+
+
+
+
+
 
 
