@@ -1,4 +1,4 @@
-﻿import 'dart:ui';
+import 'dart:ui';
 import '/components/aesthetic_bottom_sheet_notch.dart';
 import 'package:flutter/material.dart';
 import '/components/premium_3d_icon.dart';
@@ -280,6 +280,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
           ),
         ],
       ),
+    ),
     );
   }
 
@@ -1199,14 +1200,6 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
     );
   }
 
-              const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 20),
-              const SizedBox(width: 16),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   /// Ajoute le produit directement Ã  la liste des cadeaux de la personne
   Future<void> _showAddToWishlistDialog(Map<String, dynamic> product) async {

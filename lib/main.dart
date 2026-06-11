@@ -1,4 +1,4 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 // device_preview removed â€” not compatible with Dart 3.12+
 import '/custom_code/actions/index.dart' as actions;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,7 +25,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'flutter_flow/nav/nav.dart';
 import 'package:showcaseview/showcaseview.dart';
 // import '/components/connection_required_dialog.dart';
-import '/components/navigation/modern_nav_bar.dart';
+import '/components/modern_nav_bar.dart';
 import '/services/badge_service.dart';
 import '/components/offline_banner.dart';
 import '/pages/new_pages/social/social_page_widget.dart';
