@@ -1,5 +1,5 @@
-import '/utils/app_logger.dart';
-// device_preview removed — not compatible with Dart 3.12+
+﻿import '/utils/app_logger.dart';
+// device_preview removed â€” not compatible with Dart 3.12+
 import '/custom_code/actions/index.dart' as actions;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart' as provider_pkg;
@@ -25,7 +25,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'flutter_flow/nav/nav.dart';
 import 'package:showcaseview/showcaseview.dart';
 // import '/components/connection_required_dialog.dart';
-import '/components/modern_nav_bar.dart';
+import '/components/navigation/modern_nav_bar.dart';
+import '/services/badge_service.dart';
 import '/components/offline_banner.dart';
 import '/pages/new_pages/social/social_page_widget.dart';
 import '/services/push_notifications_service.dart';
@@ -50,7 +51,7 @@ Stack: ${stack?.toString().split('\n').take(10).join('\n') ?? 'No stack'}
     }
 
     // Print pour debug console (visible dans Xcode logs)
-    AppLogger.debug('🔴 ERROR CAPTURED [$source]: $error', 'Debug');
+    AppLogger.debug('ðŸ”´ ERROR CAPTURED [$source]: $error', 'Debug');
     if (stack != null) {
       AppLogger.debug('Stack trace:\n${stack.toString().split('\n').take(15).join('\n')}', 'Debug');
     }
@@ -81,15 +82,15 @@ void main() async {
     }
   };
 
-  // 2. Capture les erreurs async non-gérées (Future/Stream errors)
+  // 2. Capture les erreurs async non-gÃ©rÃ©es (Future/Stream errors)
   PlatformDispatcher.instance.onError = (error, stack) {
     ErrorLogService.logError('PlatformDispatcher', error, stack);
-    return true; // Indique qu'on a géré l'erreur
+    return true; // Indique qu'on a gÃ©rÃ© l'erreur
   };
 
 
-  // 3. Widget d'erreur personnalisé - UNIQUEMENT en debug
-  // En production (TestFlight), utiliser le widget d'erreur par défaut (silencieux)
+  // 3. Widget d'erreur personnalisÃ© - UNIQUEMENT en debug
+  // En production (TestFlight), utiliser le widget d'erreur par dÃ©faut (silencieux)
   if (kDebugMode) {
     ErrorWidget.builder = (FlutterErrorDetails details) {
       return Container(
@@ -368,7 +369,7 @@ class _NavBarPageState extends State<NavBarPage> {
   late Widget? _currentPage;
   int _currentIndex = 0;
 
-  // Créer les widgets UNE SEULE FOIS
+  // CrÃ©er les widgets UNE SEULE FOIS
   late final List<Widget> _pages;
   late final List<String> _pageNames;
 
@@ -383,8 +384,8 @@ class _NavBarPageState extends State<NavBarPage> {
     _pages = [
       HomePinterestWidget(),
       SearchPageWidget(),
-      Container(), // TikTokInspirationPageWidget replaced due to missing file
-      const SocialPageWidget(),
+      const TikTokInspirationPageWidget(),
+      const ChatListPage(),
       UserProfileWidget(),
     ];
 
@@ -423,7 +424,7 @@ class _NavBarPageState extends State<NavBarPage> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: FloatingModernNavBar(
+            child: StreamBuilder<int>(stream: BadgeService.pendingInvitesCountStream, initialData: 0, builder: (context, snapshot) { final pendingCount = snapshot.data ?? 0; return FloatingModernNavBar(
               currentIndex: _currentIndex,
               onTap: (i) async {
                 safeSetState(() {
@@ -468,6 +469,7 @@ class _NavBarPageState extends State<NavBarPage> {
                   activeIcon: IconlyPro.chatBold,
                   label: 'Social',
                   tooltip: 'Social',
+                  badgeCount: pendingCount,
                   lottieAsset: 'assets/jsons/Message chat like heart 4.json',
                 ),
                 NavBarItem(
@@ -479,10 +481,13 @@ class _NavBarPageState extends State<NavBarPage> {
                 ),
               ],
               primaryColor: const Color(0xFF8A2BE2),
-            ),
+            );
+          },
+        ),
           ),
         ],
       ),
     );
   }
 }
+

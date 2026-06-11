@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '/utils/iconly_compat.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,6 +10,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '/components/liquid_glass.dart';
 import '/components/liquid_glass_empty_state_widget.dart';
 import '/components/liquid_glass_loader.dart';
+import '/components/floating_cta_button.dart';
+import '/components/floating_cta_button.dart';
 import 'create_chat_bottom_sheet.dart';
 import '/services/birthday_service.dart'; // F6: suggestions anniversaire
 import '/utils/app_tr.dart';
@@ -24,8 +26,8 @@ class ChatListPage extends StatefulWidget {
 class _ChatListPageState extends State<ChatListPage> {
   final Color violetColor = const Color(0xFF8A2BE2);
 
-  // BUG 4 FIX: cache des profils participants pour éviter un FutureBuilder
-  // par item (rebuild infini + surcharge Firestore à chaque scroll)
+  // BUG 4 FIX: cache des profils participants pour Ã©viter un FutureBuilder
+  // par item (rebuild infini + surcharge Firestore Ã  chaque scroll)
   final Map<String, Map<String, dynamic>> _profileCache = {};
 
   String _formatTime(Timestamp? timestamp) {
@@ -37,10 +39,10 @@ class _ChatListPageState extends State<ChatListPage> {
     if (diff.inDays == 0 && now.day == date.day) {
       return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
     } else if (diff.inDays == 1 || (diff.inDays == 0 && now.day != date.day)) {
-      // 'Hier' / 'Yesterday' — needs context, handled in chatTile
+      // 'Hier' / 'Yesterday' â€” needs context, handled in chatTile
       return context.tr('Hier', 'Yesterday');
     } else if (diff.inDays < 7) {
-      // Day abbreviations — handled per-locale in chatTile
+      // Day abbreviations â€” handled per-locale in chatTile
       return context.isEn ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][date.weekday-1] : ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'][date.weekday-1];
     } else {
       return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
@@ -69,21 +71,40 @@ class _ChatListPageState extends State<ChatListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: LiquidGlassTokens.pageDark,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            // F6: Suggestions de création de groupe
-            _buildGroupSuggestions(),
-            Expanded(
-              child: _buildChatsList(),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(),
+                // F6: Suggestions de création de groupe
+                _buildGroupSuggestions(),
+                Expanded(
+                  child: _buildChatsList(),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          StreamBuilder<int>(
+            stream: BadgeService.pendingInvitesCountStream,
+            initialData: 0,
+            builder: (context, snapshot) {
+              final pendingCount = snapshot.data ?? 0;
+              return FloatingCtaButton(
+                title: 'Trouver des amis',
+                icon: Icons.person_add,
+                badgeCount: pendingCount,
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  context.push('/friends');
+                },
+              );
+            },
+          ),
+        ],
       ),
     );
   }
-
   void _openCreateChat({bool forceGroup = false}) {
     HapticFeedback.mediumImpact();
     showModalBottomSheet(
@@ -102,8 +123,8 @@ class _ChatListPageState extends State<ChatListPage> {
     );
   }
 
-  // ─── F6: Suggestions de groupe intelligentes ───────────────────────────────
-  // Génère des cards de suggestions pour créer un groupe
+  // â”€â”€â”€ F6: Suggestions de groupe intelligentes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // GÃ©nÃ¨re des cards de suggestions pour crÃ©er un groupe
   Widget _buildGroupSuggestions() {
     return FutureBuilder<List<Map<String,dynamic>>>(
       future: _loadGroupSuggestions(),
@@ -146,7 +167,7 @@ class _ChatListPageState extends State<ChatListPage> {
                         maxLines: 2, overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 2),
-                      Text('Créer un groupe',
+                      Text('CrÃ©er un groupe',
                         style: GoogleFonts.poppins(color: Colors.white38, fontSize: 10)),
                     ],
                   ),
@@ -161,12 +182,12 @@ class _ChatListPageState extends State<ChatListPage> {
 
   Future<List<Map<String,dynamic>>> _loadGroupSuggestions() async {
     final suggestions = <Map<String,dynamic>>[
-      {'emoji': '🎉', 'title': context.isEn ? 'Group gift' : 'Cadeau commun', 'type': 'gift'},
-      {'emoji': '👨‍👩‍👧', 'title': context.isEn ? 'Family Group' : 'Groupe Famille', 'type': 'family'},
-      {'emoji': '👫', 'title': 'Déjeuner surprise', 'type': 'surprise'},
+      {'emoji': 'ðŸŽ‰', 'title': context.isEn ? 'Group gift' : 'Cadeau commun', 'type': 'gift'},
+      {'emoji': 'ðŸ‘¨â€ðŸ‘©â€ðŸ‘§', 'title': context.isEn ? 'Family Group' : 'Groupe Famille', 'type': 'family'},
+      {'emoji': 'ðŸ‘«', 'title': 'DÃ©jeuner surprise', 'type': 'surprise'},
     ];
 
-    // Ajouter une suggestion anniversaire si un ami fête son anniv dans 30 j
+    // Ajouter une suggestion anniversaire si un ami fÃªte son anniv dans 30 j
     try {
       final friendsBdays = await BirthdayService.getFriendsBirthdays();
       final now = DateTime.now();
@@ -177,7 +198,7 @@ class _ChatListPageState extends State<ChatListPage> {
         final diff = thisYear.difference(now).inDays;
         if (diff >= 0 && diff <= 30) {
           suggestions.insert(0, {
-            'emoji': '🎂',
+            'emoji': 'ðŸŽ‚',
             'title': 'Anniv de ${friend['name']} dans ${diff == 0 ? "aujourd'hui" : '$diff j'}',
             'type': 'birthday',
             'friendName': friend['name'],
@@ -233,7 +254,7 @@ class _ChatListPageState extends State<ChatListPage> {
               ),
             ],
           ),
-          // Boutons d'action à droite
+          // Boutons d'action Ã  droite
           Row(
             children: [
               // Bouton Nouveau Groupe
@@ -275,7 +296,7 @@ class _ChatListPageState extends State<ChatListPage> {
                 ),
               ),
               const SizedBox(width: 8),
-              // Bouton Nouveau Message (icône)
+              // Bouton Nouveau Message (icÃ´ne)
               IconButton(
                 icon: const Icon(IconlyBold.editSquare, color: Colors.white),
                 onPressed: () => _openCreateChat(forceGroup: false),
@@ -291,7 +312,7 @@ class _ChatListPageState extends State<ChatListPage> {
 
   Widget _buildChatsList() {
     final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return Center(child: Text(context.tr('Non connecté', 'Not connected'), style: const TextStyle(color: Colors.white)));
+    if (currentUser == null) return Center(child: Text(context.tr('Non connectÃ©', 'Not connected'), style: const TextStyle(color: Colors.white)));
 
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
@@ -308,7 +329,7 @@ class _ChatListPageState extends State<ChatListPage> {
             icon: IconlyLight.chat,
             title: context.tr('Aucun message', 'No messages'),
             subtitle: context.tr(
-              'Commencez à discuter avec vos proches ou collaborez sur une liste de cadeaux.',
+              'Commencez Ã  discuter avec vos proches ou collaborez sur une liste de cadeaux.',
               'Start chatting with your friends or collaborate on a gift list.',
             ),
           );
@@ -367,7 +388,7 @@ class _ChatListPageState extends State<ChatListPage> {
                       ),
                       child: Row(
                         children: [
-                          // Avatar — FIX C5: initiale affichée si pas de photo
+                          // Avatar â€” FIX C5: initiale affichÃ©e si pas de photo
                           Container(
                             width: 56,
                             height: 56,
@@ -501,13 +522,13 @@ class _ChatListPageState extends State<ChatListPage> {
                 return chatTile(context.tr('Moi', 'Me'), '');
               }
 
-              // Si déjà en cache → affiche directement (pas de rebuild infini)
+              // Si dÃ©jÃ  en cache â†’ affiche directement (pas de rebuild infini)
               if (_profileCache.containsKey(otherUserId)) {
                 final cached = _profileCache[otherUserId]!;
                 return chatTile(cached['name'] as String, cached['photo'] as String);
               }
 
-              // Sinon charge une seule fois et met à jour le state
+              // Sinon charge une seule fois et met Ã  jour le state
               return FutureBuilder<Map<String, dynamic>>(
                 future: _getProfile(otherUserId),
                 builder: (ctx, snap) {
@@ -523,3 +544,4 @@ class _ChatListPageState extends State<ChatListPage> {
     );
   }
 }
+

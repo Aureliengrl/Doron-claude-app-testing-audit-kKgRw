@@ -1,29 +1,29 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+﻿import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
 import '/utils/app_logger.dart';
 
 /// Service de collaboration sur les listes de cadeaux.
-/// Gère : création, invitations, deep links, gestion du chat de groupe.
+/// GÃ¨re : crÃ©ation, invitations, deep links, gestion du chat de groupe.
 class CollaborationService {
   static final _db = FirebaseFirestore.instance;
   static String? get _myUid => FirebaseAuth.instance.currentUser?.uid;
 
-  // ─── Créer ou récupérer une collaboration ─────────────────────────────────
+  // â”€â”€â”€ CrÃ©er ou rÃ©cupÃ©rer une collaboration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  /// Crée une collaboration pour [profileId] ou retourne l'existante.
-  /// Crée aussi le chat de groupe si nécessaire.
+  /// CrÃ©e une collaboration pour [profileId] ou retourne l'existante.
+  /// CrÃ©e aussi le chat de groupe si nÃ©cessaire.
   static Future<Map<String, dynamic>> createOrGetCollab({
     required String profileId,
     required String profileName,
   }) async {
     final myUid = _myUid;
-    if (myUid == null) throw Exception('Non connecté');
+    if (myUid == null) throw Exception('Non connectÃ©');
 
     try {
       // Chercher une collaboration existante pour ce profil et cet owner
       // IMPORTANT: inclure where('ownerId') pour satisfaire les security rules Firestore
-      // (sans ce filtre, la query peut retourner des docs d'autres users → permission-denied)
+      // (sans ce filtre, la query peut retourner des docs d'autres users â†’ permission-denied)
       final existing = await _db
           .collection('collaborations')
           .where('profileId', isEqualTo: profileId)
@@ -35,17 +35,17 @@ class CollaborationService {
         return {'collabId': doc.id, ...doc.data()};
       }
 
-      // Générer un token unique pour le lien d'invitation
+      // GÃ©nÃ©rer un token unique pour le lien d'invitation
       final inviteToken = const Uuid().v4().replaceAll('-', '').substring(0, 16);
 
-      // Créer le chat de groupe
+      // CrÃ©er le chat de groupe
       final chatRef = _db.collection('chats').doc();
       await chatRef.set({
         'id': chatRef.id,
         'name': 'Cadeaux pour $profileName',
         'isGroup': true,
         'participants': [myUid],
-        'lastMessage': '🎁 Groupe de collaboration créé !',
+        'lastMessage': 'ðŸŽ Groupe de collaboration crÃ©Ã© !',
         'lastMessageTime': FieldValue.serverTimestamp(),
         'createdAt': FieldValue.serverTimestamp(),
         'createdBy': myUid,
@@ -55,12 +55,12 @@ class CollaborationService {
       // Premier message dans le chat
       await chatRef.collection('messages').add({
         'senderId': 'system',
-        'text': '🎁 Liste de cadeaux partagée pour $profileName. Invitez des amis pour collaborer !',
+        'text': 'ðŸŽ Liste de cadeaux partagÃ©e pour $profileName. Invitez des amis pour collaborer !',
         'timestamp': FieldValue.serverTimestamp(),
         'type': 'system',
       });
 
-      // Créer la collaboration
+      // CrÃ©er la collaboration
       final collabRef = _db.collection('collaborations').doc();
       final collabData = {
         'profileId': profileId,
@@ -74,8 +74,8 @@ class CollaborationService {
       };
       await collabRef.set(collabData);
 
-      // ── FIX #5 : écrire dans collab_tokens pour que joinByToken puisse lire
-      // sans query sur collaborations (évite permission-denied sur la query)
+      // â”€â”€ FIX #5 : Ã©crire dans collab_tokens pour que joinByToken puisse lire
+      // sans query sur collaborations (Ã©vite permission-denied sur la query)
       await _db.collection('collab_tokens').doc(inviteToken).set({
         'collabId': collabRef.id,
         'chatId': chatRef.id,
@@ -84,7 +84,7 @@ class CollaborationService {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      // Mettre à jour le profil avec chatId et collabId
+      // Mettre Ã  jour le profil avec chatId et collabId
       try {
         await _db
             .collection('users')
@@ -98,19 +98,19 @@ class CollaborationService {
         }, SetOptions(merge: true));
       } catch (e) { AppLogger.debug('CollaborationService error: $e', 'Collab'); }
 
-      AppLogger.debug('✅ CollaborationService: collab créée ${collabRef.id}', 'Collab');
+      AppLogger.debug('âœ… CollaborationService: collab crÃ©Ã©e ${collabRef.id}', 'Collab');
       return {'collabId': collabRef.id, ...collabData, 'chatId': chatRef.id};
     } catch (e) {
-      AppLogger.debug('❌ CollaborationService.createOrGetCollab: $e', 'Collab');
+      AppLogger.debug('âŒ CollaborationService.createOrGetCollab: $e', 'Collab');
       rethrow;
     }
   }
 
-  // ─── Inviter un utilisateur Doron ─────────────────────────────────────────
+  // â”€â”€â”€ Inviter un utilisateur Doron â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  /// Invite [toUid] à rejoindre [collabId].
-  /// Si [isAlreadyFriend] → ajoute directement en membre.
-  /// Sinon → crée une invitation en attente.
+  /// Invite [toUid] Ã  rejoindre [collabId].
+  /// Si [isAlreadyFriend] â†’ ajoute directement en membre.
+  /// Sinon â†’ crÃ©e une invitation en attente.
   static Future<String> inviteUser({
     required String collabId,
     required String toUid,
@@ -118,7 +118,7 @@ class CollaborationService {
     bool isAlreadyFriend = false,
   }) async {
     final myUid = _myUid;
-    if (myUid == null) throw Exception('Non connecté');
+    if (myUid == null) throw Exception('Non connectÃ©');
 
     try {
       if (isAlreadyFriend) {
@@ -127,8 +127,8 @@ class CollaborationService {
         return 'added';
       }
 
-      // Vérifier si une invitation existe déjà
-      // Utilise 2 filtres max pour éviter l'index composite, filtre status côté client
+      // VÃ©rifier si une invitation existe dÃ©jÃ 
+      // Utilise 2 filtres max pour Ã©viter l'index composite, filtre status cÃ´tÃ© client
       final existingInvite = await _db
           .collection('collab_invites')
           .where('collabId', isEqualTo: collabId)
@@ -144,7 +144,7 @@ class CollaborationService {
         return pendingInvite.first.id;
       }
 
-      // Créer l'invitation
+      // CrÃ©er l'invitation
       final inviteRef = await _db.collection('collab_invites').add({
         'collabId': collabId,
         'fromUid': myUid,
@@ -159,10 +159,10 @@ class CollaborationService {
         'pendingInvites': FieldValue.arrayUnion([toUid]),
       });
 
-      // ── Notification in-app : écrite dans 'notifications/{toUid}/items' ──
-      // Déclenche aussi une Cloud Function FCM si configurée sur cette collection
+      // â”€â”€ Notification in-app : Ã©crite dans 'notifications/{toUid}/items' â”€â”€
+      // DÃ©clenche aussi une Cloud Function FCM si configurÃ©e sur cette collection
       try {
-        // Récupérer le nom de l'inviteur
+        // RÃ©cupÃ©rer le nom de l'inviteur
         final senderDoc = await _db.collection('users').doc(myUid).get();
         final senderData = senderDoc.data() ?? {};
         final senderName = senderData['first_name'] as String? ??
@@ -180,28 +180,28 @@ class CollaborationService {
           'fromUid': myUid,
           'fromName': senderName,
           'profileName': profileName,
-          'title': '🎁 Invitation à collaborer',
-          'body': '$senderName t\'invite à participer aux cadeaux pour $profileName',
+          'title': 'ðŸŽ Invitation Ã  collaborer',
+          'body': '$senderName t\'invite Ã  participer aux cadeaux pour $profileName',
           'read': false,
           'createdAt': FieldValue.serverTimestamp(),
         });
-        AppLogger.debug('✅ Notification collab envoyée à $toUid', 'Collab');
+        AppLogger.debug('âœ… Notification collab envoyÃ©e Ã  $toUid', 'Collab');
       } catch (e) {
-        AppLogger.debug('⚠️ Notification collab failed (non-critical): $e', 'Collab');
+        AppLogger.debug('âš ï¸ Notification collab failed (non-critical): $e', 'Collab');
       }
 
-      AppLogger.debug('✅ Invitation envoyée: ${inviteRef.id}', 'Collab');
+      AppLogger.debug('âœ… Invitation envoyÃ©e: ${inviteRef.id}', 'Collab');
       return inviteRef.id;
     } catch (e) {
-      AppLogger.debug('❌ CollaborationService.inviteUser: $e', 'Collab');
+      AppLogger.debug('âŒ CollaborationService.inviteUser: $e', 'Collab');
       rethrow;
     }
   }
 
-  // ─── Ajouter un membre directement ────────────────────────────────────────
+  // â”€â”€â”€ Ajouter un membre directement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  /// FIX #1 — addMember accepte chatId et profileName en paramètre facultatif.
-  /// Cela évite un get() sur la collab qui peut échouer si l'utilisateur
+  /// FIX #1 â€” addMember accepte chatId et profileName en paramÃ¨tre facultatif.
+  /// Cela Ã©vite un get() sur la collab qui peut Ã©chouer si l'utilisateur
   /// n'est pas encore dans members/pendingInvites (permission-denied).
   static Future<void> addMember({
     required String collabId,
@@ -210,14 +210,14 @@ class CollaborationService {
     String? profileName,
   }) async {
     try {
-      // ── 1. Ajouter dans la collaboration ──────────────────────────────────
+      // â”€â”€ 1. Ajouter dans la collaboration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // On utilise set + merge : pas besoin de lire le doc d'abord.
       await _db.collection('collaborations').doc(collabId).set({
         'members': FieldValue.arrayUnion([uid]),
         'pendingInvites': FieldValue.arrayRemove([uid]),
       }, SetOptions(merge: true));
 
-      // ── 2. Si chatId non fourni, tenter de le récupérer ────────────────────
+      // â”€â”€ 2. Si chatId non fourni, tenter de le rÃ©cupÃ©rer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       String? resolvedChatId = chatId;
       String resolvedName = profileName ?? 'la liste';
 
@@ -229,41 +229,41 @@ class CollaborationService {
             resolvedName = collabDoc.data()?['profileName'] as String? ?? resolvedName;
           }
         } catch (e) {
-          AppLogger.debug('⚠️ addMember: get chatId failed (non-critical): $e', 'Collab');
+          AppLogger.debug('âš ï¸ addMember: get chatId failed (non-critical): $e', 'Collab');
         }
       }
 
-      // ── 3. Ajouter dans le chat de groupe ──────────────────────────────────
+      // â”€â”€ 3. Ajouter dans le chat de groupe â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (resolvedChatId != null) {
         try {
           await _db.collection('chats').doc(resolvedChatId).set({
             'participants': FieldValue.arrayUnion([uid]),
           }, SetOptions(merge: true));
 
-          // Message système
+          // Message systÃ¨me
           await _db.collection('chats').doc(resolvedChatId).collection('messages').add({
             'senderId': 'system',
-            'text': '👤 Un nouveau membre a rejoint la collaboration pour $resolvedName !',
+            'text': 'ðŸ‘¤ Un nouveau membre a rejoint la collaboration pour $resolvedName !',
             'timestamp': FieldValue.serverTimestamp(),
             'type': 'system',
           });
         } catch (e) {
-          AppLogger.debug('⚠️ addMember: chat update failed (non-critical): $e', 'Collab');
+          AppLogger.debug('âš ï¸ addMember: chat update failed (non-critical): $e', 'Collab');
         }
       }
 
-      AppLogger.debug('✅ Membre $uid ajouté à $collabId (chat: $resolvedChatId)', 'Collab');
+      AppLogger.debug('âœ… Membre $uid ajoutÃ© Ã  $collabId (chat: $resolvedChatId)', 'Collab');
     } catch (e) {
-      AppLogger.debug('❌ CollaborationService.addMember: $e', 'Collab');
+      AppLogger.debug('âŒ CollaborationService.addMember: $e', 'Collab');
       rethrow;
     }
   }
 
-  // ─── Accepter une invitation ───────────────────────────────────────────────
+  // â”€â”€â”€ Accepter une invitation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   static Future<Map<String, dynamic>> acceptInvite(String inviteId) async {
     final myUid = _myUid;
-    if (myUid == null) throw Exception('Non connecté');
+    if (myUid == null) throw Exception('Non connectÃ©');
 
     try {
       final inviteDoc = await _db.collection('collab_invites').doc(inviteId).get();
@@ -272,7 +272,7 @@ class CollaborationService {
 
       final collabId = invite['collabId'] as String;
 
-      // Marquer comme acceptée
+      // Marquer comme acceptÃ©e
       await _db.collection('collab_invites').doc(inviteId).update({
         'status': 'accepted',
         'acceptedAt': FieldValue.serverTimestamp(),
@@ -281,23 +281,23 @@ class CollaborationService {
       // Ajouter le membre
       await addMember(collabId: collabId, uid: myUid);
 
-      // Récupérer les infos de la collaboration
+      // RÃ©cupÃ©rer les infos de la collaboration
       final collabDoc = await _db.collection('collaborations').doc(collabId).get();
       final collab = collabDoc.data() ?? {};
 
-      AppLogger.debug('✅ Invitation acceptée: $inviteId', 'Collab');
+      AppLogger.debug('âœ… Invitation acceptÃ©e: $inviteId', 'Collab');
       return {
         'collabId': collabId,
         'chatId': collab['chatId'],
         'profileName': collab['profileName'] ?? 'la liste',
       };
     } catch (e) {
-      AppLogger.debug('❌ CollaborationService.acceptInvite: $e', 'Collab');
+      AppLogger.debug('âŒ CollaborationService.acceptInvite: $e', 'Collab');
       rethrow;
     }
   }
 
-  // ─── Refuser une invitation ────────────────────────────────────────────────
+  // â”€â”€â”€ Refuser une invitation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   static Future<void> declineInvite(String inviteId) async {
     try {
@@ -317,27 +317,27 @@ class CollaborationService {
         }
       }
     } catch (e) {
-      AppLogger.debug('❌ CollaborationService.declineInvite: $e', 'Collab');
+      AppLogger.debug('âŒ CollaborationService.declineInvite: $e', 'Collab');
     }
   }
 
-  // ─── Rejoindre via token (deep link) ──────────────────────────────────────
+  // â”€â”€â”€ Rejoindre via token (deep link) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  /// FIX #2 — joinByToken utilise la collection `collab_tokens` comme index.
-  /// La query directe sur `collaborations` échouait car la règle Firestore
-  /// ne permet pas la lecture sans être owner/member/pendingInvite.
-  /// `collab_tokens` a une règle allow read: if isAuth() → pas de problème.
+  /// FIX #2 â€” joinByToken utilise la collection `collab_tokens` comme index.
+  /// La query directe sur `collaborations` Ã©chouait car la rÃ¨gle Firestore
+  /// ne permet pas la lecture sans Ãªtre owner/member/pendingInvite.
+  /// `collab_tokens` a une rÃ¨gle allow read: if isAuth() â†’ pas de problÃ¨me.
   static Future<Map<String, dynamic>?> joinByToken(String token) async {
     final myUid = _myUid;
     if (myUid == null) return null;
 
     try {
-      // ── 1. Lire le token depuis la collection dédiée ────────────────────────
+      // â”€â”€ 1. Lire le token depuis la collection dÃ©diÃ©e â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       final tokenDoc = await _db.collection('collab_tokens').doc(token).get();
 
       if (!tokenDoc.exists) {
         // Fallback : tenter la query directe sur collaborations (anciens tokens)
-        AppLogger.debug('⚠️ joinByToken: token absent de collab_tokens, fallback query', 'Collab');
+        AppLogger.debug('âš ï¸ joinByToken: token absent de collab_tokens, fallback query', 'Collab');
         return await _joinByTokenFallback(token, myUid);
       }
 
@@ -346,7 +346,7 @@ class CollaborationService {
       final chatId = tokenData['chatId'] as String?;
       final profileName = tokenData['profileName'] as String? ?? 'la liste';
 
-      // ── 2. Vérifier si déjà membre ─────────────────────────────────────────
+      // â”€â”€ 2. VÃ©rifier si dÃ©jÃ  membre â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       try {
         final collabDoc = await _db.collection('collaborations').doc(collabId).get();
         if (collabDoc.exists) {
@@ -362,10 +362,10 @@ class CollaborationService {
         }
       } catch (_) {} // Non-critique, continuer l'ajout
 
-      // ── 3. Ajouter comme membre (chatId fourni → pas de get() interne) ─────
+      // â”€â”€ 3. Ajouter comme membre (chatId fourni â†’ pas de get() interne) â”€â”€â”€â”€â”€
       await addMember(collabId: collabId, uid: myUid, chatId: chatId, profileName: profileName);
 
-      AppLogger.debug('✅ Rejoint par token: $collabId', 'Collab');
+      AppLogger.debug('âœ… Rejoint par token: $collabId', 'Collab');
       return {
         'collabId': collabId,
         'chatId': chatId,
@@ -373,12 +373,12 @@ class CollaborationService {
         'alreadyMember': false,
       };
     } catch (e) {
-      AppLogger.debug('❌ CollaborationService.joinByToken: $e', 'Collab');
+      AppLogger.debug('âŒ CollaborationService.joinByToken: $e', 'Collab');
       return null;
     }
   }
 
-  /// Fallback pour les collaborations créées avant l'index collab_tokens.
+  /// Fallback pour les collaborations crÃ©Ã©es avant l'index collab_tokens.
   static Future<Map<String, dynamic>?> _joinByTokenFallback(String token, String myUid) async {
     try {
       final snap = await _db
@@ -399,29 +399,29 @@ class CollaborationService {
       await addMember(collabId: collabId, uid: myUid, chatId: chatId, profileName: profileName);
       return {'collabId': collabId, 'chatId': chatId, 'profileName': profileName, 'alreadyMember': false};
     } catch (e) {
-      AppLogger.debug('❌ joinByToken fallback: $e', 'Collab');
+      AppLogger.debug('âŒ joinByToken fallback: $e', 'Collab');
       return null;
     }
   }
 
-  // ─── Générer le lien d'invitation ─────────────────────────────────────────
+  // â”€â”€â”€ GÃ©nÃ©rer le lien d'invitation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  /// Génère un lien d'invitation qui :
-  /// 1. Ouvre l'app directement si installée (deep link)
+  /// GÃ©nÃ¨re un lien d'invitation qui :
+  /// 1. Ouvre l'app directement si installÃ©e (deep link)
   /// 2. Redirige vers l'App Store / Play Store sinon
   static String generateInviteLink(String inviteToken) {
     // Utilise un lien universel Apple (app_links) qui redirige vers l'app
-    // ou vers l'App Store si non installée.
-    // Le domaine doron.app doit être configuré avec apple-app-site-association.
-    // Fallback: lien App Store direct avec le token en paramètre.
+    // ou vers l'App Store si non installÃ©e.
+    // Le domaine doron.app doit Ãªtre configurÃ© avec apple-app-site-association.
+    // Fallback: lien App Store direct avec le token en paramÃ¨tre.
     return 'https://doron.app/join/$inviteToken';
   }
 
-  // ─── Streams ──────────────────────────────────────────────────────────────
+  // â”€â”€â”€ Streams â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  /// Stream des invitations collab reçues et en attente.
-  /// FIX #6: Filtre sur toUid uniquement pour éviter l'index composite (toUid+status).
-  /// Le filtre status='pending' est appliqué côté client.
+  /// Stream des invitations collab reÃ§ues et en attente.
+  /// FIX #6: Filtre sur toUid uniquement pour Ã©viter l'index composite (toUid+status).
+  /// Le filtre status='pending' est appliquÃ© cÃ´tÃ© client.
   static Stream<List<Map<String, dynamic>>> getMyPendingCollabInvitesStream() {
     final myUid = _myUid;
     if (myUid == null) return Stream.value([]);
@@ -432,7 +432,7 @@ class CollaborationService {
         .snapshots()
         .asyncMap((snap) async {
       final result = <Map<String, dynamic>>[];
-      // Filtre status côté client pour éviter l'index composite
+      // Filtre status cÃ´tÃ© client pour Ã©viter l'index composite
       final pendingDocs = snap.docs
           .where((d) => d.data()['status'] == 'pending')
           .toList();
@@ -472,7 +472,7 @@ class CollaborationService {
   }
 
 
-  /// Stream temps réel d'une collaboration.
+  /// Stream temps rÃ©el d'une collaboration.
   static Stream<Map<String, dynamic>?> getCollabStream(String collabId) {
     return _db.collection('collaborations').doc(collabId).snapshots().map((snap) {
       if (!snap.exists) return null;
@@ -480,7 +480,7 @@ class CollaborationService {
     });
   }
 
-  /// Récupère le nombre de membres d'une collab liée à un profil.
+  /// RÃ©cupÃ¨re le nombre de membres d'une collab liÃ©e Ã  un profil.
   static Future<int> getMembersCount(String profileId, String ownerUid) async {
     try {
       final snap = await _db
@@ -498,3 +498,4 @@ class CollaborationService {
     }
   }
 }
+

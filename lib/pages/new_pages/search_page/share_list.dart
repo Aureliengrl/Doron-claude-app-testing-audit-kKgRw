@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+ï»¿import 'package:flutter/material.dart';
 import '/utils/iconly_compat.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,9 +11,9 @@ import '/components/liquid_glass.dart';
 import '/services/friend_service.dart';
 import '/services/collaboration_service.dart';
 
-/// Bottom sheet de collaboration — 2 méthodes d'invitation :
-/// 1. Amis (accès rapide, ajout direct)
-/// 2. Lien (copier / partager ? redirige vers App Store si pas installé)
+/// Bottom sheet de collaboration â€” 2 mÃ©thodes d'invitation :
+/// 1. Amis (accÃ¨s rapide, ajout direct)
+/// 2. Lien (copier / partager ? redirige vers App Store si pas installÃ©)
 class ShareListBottomSheet extends StatefulWidget {
   final Map<String, dynamic> profile;
 
@@ -31,7 +31,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
 
   late TabController _tabController;
 
-  // État global
+  // Ã‰tat global
   bool _isCreatingCollab = false;
   bool _collabInitFailed = false;
   String? _collabId;
@@ -66,7 +66,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
       _collabInitFailed = false;
     });
 
-    // Charger les amis EN PARALLÈLE de la collab (pas dépendant)
+    // Charger les amis EN PARALLÃˆLE de la collab (pas dÃ©pendant)
     _loadFriends();
 
     try {
@@ -78,7 +78,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
           widget.profile['displayName'] as String? ?? 'quelqu\'un';
 
       if (profileId.isEmpty) {
-        throw Exception('profileId vide — profil invalide');
+        throw Exception('profileId vide â€” profil invalide');
       }
 
       final collab = await CollaborationService.createOrGetCollab(
@@ -93,11 +93,11 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
         _inviteLink = CollaborationService.generateInviteLink(token);
       }
 
-      // FIX #4 : notifier immédiatement le parent avec le chatId
+      // FIX #4 : notifier immÃ©diatement le parent avec le chatId
       // pour qu'il puisse afficher le badge et le bouton Chat
       if (_chatId != null && mounted) {
-        // On ne pop pas ici — le sheet reste ouvert pour inviter des amis
-        // Mais on stocke le chatId dans le résultat lors de la fermeture
+        // On ne pop pas ici â€” le sheet reste ouvert pour inviter des amis
+        // Mais on stocke le chatId dans le rÃ©sultat lors de la fermeture
       }
     } catch (e) {
       debugPrint('ShareListBottomSheet._initCollab: $e');
@@ -109,7 +109,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
 
   Future<void> _loadFriends() async {
     try {
-      // Utilise getFriends directement au lieu du stream (évite le bug de chargement infini)
+      // Utilise getFriends directement au lieu du stream (Ã©vite le bug de chargement infini)
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid == null) {
         if (mounted) setState(() => _loadingFriends = false);
@@ -132,7 +132,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
 
   Future<void> _addFriendToCollab(String uid) async {
     if (_collabId == null) {
-      // Réessayer l'initialisation avant d'abandonner
+      // RÃ©essayer l'initialisation avant d'abandonner
       await _initCollab();
       if (_collabId == null) return;
     }
@@ -140,7 +140,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
     HapticFeedback.lightImpact();
     try {
       await CollaborationService.addMember(collabId: _collabId!, uid: uid);
-      // Envoyer notification à l'ami ajouté
+      // Envoyer notification Ã  l'ami ajoutÃ©
       try {
         final myUid = FirebaseAuth.instance.currentUser?.uid;
         final profileName = widget.profile['name'] as String? ?? 'quelqu\'un';
@@ -154,7 +154,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
             'fromUid': myUid,
             'collabId': _collabId,
             'profileName': profileName,
-            'message': 'Tu as été ajouté à la liste de cadeaux pour $profileName !',
+            'message': 'Tu as Ã©tÃ© ajoutÃ© Ã  la liste de cadeaux pour $profileName !',
             'createdAt': FieldValue.serverTimestamp(),
             'read': false,
           });
@@ -162,7 +162,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
       } catch (_) {} // notification non critique
       if (mounted) {
         setState(() => _inviteStatus[uid] = 'added');
-        _showSnack('Ami ajouté à la collaboration !', _green);
+        _showSnack('Ami ajoutÃ© Ã  la collaboration !', _green);
       }
     } catch (e) {
       debugPrint('_addFriendToCollab error: $e');
@@ -218,17 +218,17 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
   }
   void _copyLink() {
     if (_inviteLink == null) {
-      _showSnack('Lien en cours de génération...', Colors.orange);
+      _showSnack('Lien en cours de gÃ©nÃ©ration...', Colors.orange);
       return;
     }
     Clipboard.setData(ClipboardData(text: _inviteLink!));
     HapticFeedback.selectionClick();
-    _showSnack('Lien copié !', _violet);
+    _showSnack('Lien copiÃ© !', _violet);
   }
 
   Future<void> _shareLink() async {
     if (_inviteLink == null) {
-      _showSnack('Lien en cours de génération...', Colors.orange);
+      _showSnack('Lien en cours de gÃ©nÃ©ration...', Colors.orange);
       return;
     }
     HapticFeedback.lightImpact();
@@ -258,10 +258,10 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
       // FIX #4 : quand le sheet se ferme, retourner le chatId au parent
       onPopInvoked: (bool didPop) {
         if (didPop && _chatId != null) {
-          // Le résultat est passé via la valeur de retour du showModalBottomSheet
+          // Le rÃ©sultat est passÃ© via la valeur de retour du showModalBottomSheet
           // On doit utiliser Navigator.pop avec la valeur avant que didPop soit true
-          // Le hook onPopInvoked est déclenché APRÈS le pop — donc on utilise
-          // une approche différente : override du bouton de fermeture ci-dessous
+          // Le hook onPopInvoked est dÃ©clenchÃ© APRÃˆS le pop â€” donc on utilise
+          // une approche diffÃ©rente : override du bouton de fermeture ci-dessous
         }
       },
       child: Container(
@@ -395,7 +395,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
                 children: [
                   CircularProgressIndicator(color: _violet, strokeWidth: 2),
                   SizedBox(height: 12),
-                  Text('Préparation de la collaboration…',
+                  Text('PrÃ©paration de la collaborationâ€¦',
                     style: TextStyle(color: Colors.white54, fontSize: 13)),
                 ],
               ),
@@ -407,13 +407,13 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
                 children: [
                   const Icon(Icons.error_outline, color: Colors.red, size: 40),
                   const SizedBox(height: 12),
-                  const Text('Échec de la connexion',
+                  const Text('Ã‰chec de la connexion',
                     style: TextStyle(color: Colors.white70, fontSize: 14)),
                   const SizedBox(height: 16),
                   TextButton.icon(
                     onPressed: _initCollab,
                     icon: const Icon(Icons.refresh, color: _violet),
-                    label: const Text('Réessayer',
+                    label: const Text('RÃ©essayer',
                       style: TextStyle(color: _violet, fontWeight: FontWeight.w600)),
                   ),
                 ],
@@ -512,7 +512,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
                       const Icon(Icons.check_rounded, color: _green, size: 14),
                       const SizedBox(width: 4),
-                      Text('Ajouté', style: GoogleFonts.poppins(fontSize: 11, color: _green, fontWeight: FontWeight.w600)),
+                      Text('AjoutÃ©', style: GoogleFonts.poppins(fontSize: 11, color: _green, fontWeight: FontWeight.w600)),
                     ]),
                   )
                 else
@@ -556,7 +556,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
             child: Column(
               children: [
                 Text(
-                  _inviteLink ?? 'Génération du lien…',
+                  _inviteLink ?? 'GÃ©nÃ©ration du lienâ€¦',
                   style: GoogleFonts.poppins(fontSize: 12, color: Colors.white60),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -603,7 +603,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Ce lien redirige vers le téléchargement de Doron si l\'app n\'est pas installée, puis ajoute la personne directement à la collaboration.',
+                    'Ce lien redirige vers le tÃ©lÃ©chargement de Doron si l\'app n\'est pas installÃ©e, puis ajoute la personne directement Ã  la collaboration.',
                     style: GoogleFonts.poppins(fontSize: 11, color: Colors.blue.shade200),
                   ),
                 ),
@@ -645,3 +645,4 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
     );
   }
 }
+

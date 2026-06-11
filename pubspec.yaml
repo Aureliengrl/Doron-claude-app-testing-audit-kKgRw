@@ -83,7 +83,7 @@ dependencies:
   permission_handler: ^11.3.1
   path_provider: 2.1.4
   plugin_platform_interface: 2.1.8
-  speech_to_text: 6.6.2
+  speech_to_text: ^7.4.0
   timeago: 3.7.1
   universal_io: 2.2.2
   xml: 6.5.0

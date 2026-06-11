@@ -7,15 +7,19 @@ import '/backend/backend.dart';
 import '/auth/firebase_auth/auth_util.dart';
 
 class SearchPageModel {
+  static List<Map<String, dynamic>>? _cachedProfiles;
+  static Map<String, List<Map<String, dynamic>>>? _cachedPersonGifts;
+  static Map<String, List<Map<String, dynamic>>>? _cachedPersonSuggestions;
+
   int? selectedProfileId;
   Set<int> likedProducts = {};
   Set<String> likedProductTitles = {}; // Pour identifier les produits likés par titre
   bool isLoading = true;
   String? errorMessage;
 
-  List<Map<String, dynamic>> profiles = [];
-  Map<String, List<Map<String, dynamic>>> personGifts = {}; // Cache des cadeaux par personId
-  Map<String, List<Map<String, dynamic>>> personSuggestions = {}; // Cache des suggestions par personId
+  List<Map<String, dynamic>> profiles = _cachedProfiles ?? [];
+  Map<String, List<Map<String, dynamic>>> personGifts = _cachedPersonGifts ?? {}; // Cache des cadeaux par personId
+  Map<String, List<Map<String, dynamic>>> personSuggestions = _cachedPersonSuggestions ?? {}; // Cache des suggestions par personId
   bool isLoadingSuggestions = false;
 
   /// Normalise un ID (String ou int) en int pour cohérence
@@ -28,7 +32,7 @@ class SearchPageModel {
   /// Charge les profils depuis Firebase/Local Storage (nouvelle architecture)
   Future<void> loadProfiles() async {
     try {
-      isLoading = true;
+      isLoading = profiles.isEmpty; // N'affiche le chargement bloquant que s'il n'y a pas de cache
       errorMessage = null;
 
       // Charger les personnes depuis la collection people
@@ -134,8 +138,9 @@ class SearchPageModel {
         };
       }).toList();
 
-      // Attendre que tous les profils soient traités en parallèle
-      final results = await Future.wait(profileFutures, eagerError: false);
+      // Attendre que tous les profils soient traités en parallèle (avec un timeout de 10 secondes)
+      final results = await Future.wait(profileFutures, eagerError: false)
+          .timeout(const Duration(seconds: 10));
 
       // Reconstruire les listes dans l'ordre original
       profiles = [];
@@ -145,6 +150,8 @@ class SearchPageModel {
         personGifts[personId] = gifts;
         profiles.add(result['profile'] as Map<String, dynamic>);
       }
+      _cachedProfiles = profiles; // Update cache
+      _cachedPersonGifts = personGifts; // Update cache
 
       // Sélectionner le premier profil par défaut
       if (profiles.isNotEmpty && selectedProfileId == null) {
@@ -406,6 +413,7 @@ class SearchPageModel {
 
       // Stocker les suggestions dans le cache
       personSuggestions[personId] = suggestions;
+      _cachedPersonSuggestions = personSuggestions; // Update cache
       isLoadingSuggestions = false;
 
       AppLogger.debug('✅ ${suggestions.length} suggestions générées pour $personId', 'Debug');

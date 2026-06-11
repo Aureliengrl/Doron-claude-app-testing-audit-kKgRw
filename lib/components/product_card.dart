@@ -49,59 +49,29 @@ class ProductCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         splashColor: _violet.withOpacity(0.1),
         highlightColor: _violet.withOpacity(0.05),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x148A2BE2),
-                blurRadius: 20,
-                spreadRadius: -2,
-                offset: Offset(0, 8),
-              ),
-              BoxShadow(
-                color: Color(0x0A000000),
-                blurRadius: 8,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              // Image avec badges
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: AspectRatio(
-                      aspectRatio: _ratios[index % _ratios.length],
-                      child: ProductImage(
-                        imageUrl: imageUrl,
-                        fit: BoxFit.cover,
-                        borderRadius: BorderRadius.zero,
-                      ),
-                    ),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: AspectRatio(
+                  aspectRatio: _ratios[index % _ratios.length],
+                  child: ProductImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.cover,
+                    borderRadius: BorderRadius.zero,
                   ),
-
-                  // Badge like (haut gauche) — seul overlay conservé
-                  if (isLiked)
-                    const Positioned(
-                      top: 8,
-                      left: 8,
-                      child: _LikeBadge(),
-                    ),
-                ],
+                ),
               ),
 
-              // Titre masqué — rendu Pinterest pur (image seule)
-              // Décommentez pour réafficher le titre sous l'image
-              // if (name.isNotEmpty)
-              //   Padding(...),
+              // Badge like (haut gauche)
+              if (isLiked)
+                const Positioned(
+                  top: 8,
+                  left: 8,
+                  child: _LikeBadge(),
+                ),
             ],
           ),
-        ),
       ),
     );
   }

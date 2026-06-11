@@ -1,3 +1,4 @@
+import '/components/aesthetic_bottom_sheet_notch.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
@@ -625,6 +626,7 @@ class GlobalProductDetailModal {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+                    const AestheticBottomSheetNotch(),
               Container(
                 margin: const EdgeInsets.only(top: 12, bottom: 8),
                 width: 40,
@@ -964,6 +966,7 @@ class GlobalProductDetailModal {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+                    const AestheticBottomSheetNotch(),
               // Handle bar
               Container(
                 margin: const EdgeInsets.only(top: 12, bottom: 8),
@@ -1091,6 +1094,7 @@ class GlobalProductDetailModal {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+                    const AestheticBottomSheetNotch(),
               // Handle bar
               Container(
                 margin: const EdgeInsets.only(top: 12, bottom: 8),
@@ -1339,6 +1343,7 @@ class GlobalProductDetailModal {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+                    const AestheticBottomSheetNotch(),
               // Handle bar
               Container(
                 margin: const EdgeInsets.only(top: 12, bottom: 8),

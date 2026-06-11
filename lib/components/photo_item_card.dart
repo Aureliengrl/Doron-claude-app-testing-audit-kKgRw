@@ -186,6 +186,8 @@ class PhotoItemCard extends StatelessWidget {
 
     // URL réseau
     return CachedNetworkImage(
+  memCacheWidth: 800,
+  memCacheHeight: 800,
       imageUrl: _imageUrl,
       fit: BoxFit.contain,
       placeholder: (context, url) => Container(
@@ -222,6 +224,8 @@ class PhotoItemCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     child: _imageUrl.isNotEmpty
                         ? CachedNetworkImage(
+  memCacheWidth: 800,
+  memCacheHeight: 800,
                             imageUrl: _imageUrl,
                             fit: BoxFit.contain,
                           )

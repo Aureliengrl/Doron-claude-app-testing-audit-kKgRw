@@ -1,3 +1,4 @@
+import '/components/aesthetic_bottom_sheet_notch.dart';
 import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
 import '/utils/iconly_compat.dart';
@@ -674,6 +675,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       ),
       child: GestureDetector(
         onLongPress: () => _showReactionAndOptions(msgId, text, isMe),
+        onDoubleTap: () => _toggleHeartReaction(msgId),
         child: Column(
           crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
@@ -830,6 +832,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     );
   }
 
+  void _toggleHeartReaction(String msgId) {
+    HapticFeedback.lightImpact();
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    if (uid.isEmpty) return;
+    FirebaseFirestore.instance.collection('chats').doc(widget.chatId).collection('messages').doc(msgId).set({'reactions': { uid: '❤️' }}, SetOptions(merge: true));
+  }
+
   void _showReactionAndOptions(String msgId, String text, bool isMe) {
     HapticFeedback.heavyImpact();
     final emojis = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
@@ -847,6 +856,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+                    const AestheticBottomSheetNotch(),
             Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 24),
             // Emoji Picker
@@ -1533,6 +1543,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+                    const AestheticBottomSheetNotch(),
             Center(
               child: Container(
                 width: 36,
@@ -1615,6 +1626,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         ),
         child: Column(
           children: [
+                    const AestheticBottomSheetNotch(),
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
               child: Column(
@@ -1792,6 +1804,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         ),
         child: Column(
           children: [
+                    const AestheticBottomSheetNotch(),
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
               child: Column(

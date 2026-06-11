@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 /// Compatibility stub for flutter_iconly — maps all icon names to Material equivalents.
 /// This allows removing the flutter_iconly package (incompatible with Dart 3.12)
 /// without changing any widget code.
@@ -14,14 +15,14 @@ class IconlyBold {
   static const IconData arrowRight2    = Icons.arrow_forward_ios_rounded;
   static const IconData arrowUp        = Icons.keyboard_arrow_up_rounded;
   static const IconData bag            = Icons.shopping_bag_rounded;
-  static const IconData bookmark       = Icons.bookmark_rounded;
+  static const IconData bookmark       = CupertinoIcons.bookmark_fill;
   static const IconData buy            = Icons.shopping_cart_rounded;
   static const IconData calendar       = Icons.calendar_today_rounded;
   static const IconData call           = Icons.call_rounded;
   static const IconData camera         = Icons.camera_rounded;
   static const IconData category       = Icons.category_rounded;
   static const IconData chart          = Icons.bar_chart_rounded;
-  static const IconData chat           = Icons.chat_bubble_rounded;
+  static const IconData chat           = CupertinoIcons.chat_bubble_fill;
   static const IconData closeSquare    = Icons.close_rounded;
   static const IconData danger         = Icons.warning_rounded;
   static const IconData delete         = Icons.delete_rounded;
@@ -35,9 +36,9 @@ class IconlyBold {
   static const IconData folder         = Icons.folder_rounded;
   static const IconData game           = Icons.sports_esports_rounded;
   static const IconData graph          = Icons.show_chart_rounded;
-  static const IconData heart          = Icons.favorite_rounded;
+  static const IconData heart          = CupertinoIcons.heart_fill;
   static const IconData hide           = Icons.visibility_off_rounded;
-  static const IconData home           = Icons.home_rounded;
+  static const IconData home           = CupertinoIcons.house_fill;
   static const IconData home2          = Icons.other_houses_rounded;
   static const IconData image          = Icons.image_rounded;
   static const IconData infoCircle     = Icons.info_rounded;
@@ -46,12 +47,12 @@ class IconlyBold {
   static const IconData lock           = Icons.lock_rounded;
   static const IconData login          = Icons.login_rounded;
   static const IconData logout         = Icons.logout_rounded;
-  static const IconData message        = Icons.message_rounded;
+  static const IconData message        = CupertinoIcons.chat_bubble_fill;
   static const IconData more           = Icons.more_horiz_rounded;
   static const IconData moreCircle     = Icons.more_horiz_rounded;
   static const IconData moreSquare     = Icons.more_horiz_rounded;
-  static const IconData notification   = Icons.notifications_rounded;
-  static const IconData notification2  = Icons.notifications_rounded;
+  static const IconData notification   = CupertinoIcons.bell_fill;
+  static const IconData notification2  = CupertinoIcons.bell_fill;
   static const IconData paper          = Icons.article_rounded;
   static const IconData paperDownload  = Icons.file_download_rounded;
   static const IconData paperFail      = Icons.description_rounded;
@@ -60,10 +61,10 @@ class IconlyBold {
   static const IconData password       = Icons.lock_rounded;
   static const IconData play           = Icons.play_circle_rounded;
   static const IconData plus           = Icons.add_circle_rounded;
-  static const IconData profile        = Icons.account_circle_rounded;
+  static const IconData profile        = CupertinoIcons.person_fill;
   static const IconData scan           = Icons.qr_code_scanner_rounded;
-  static const IconData search         = Icons.search_rounded;
-  static const IconData send           = Icons.send_rounded;
+  static const IconData search         = CupertinoIcons.search;
+  static const IconData send           = CupertinoIcons.paperplane_fill;
   static const IconData setting        = Icons.settings_rounded;
   static const IconData setting2       = Icons.settings_rounded;
   static const IconData shield         = Icons.shield_rounded;
@@ -77,10 +78,10 @@ class IconlyBold {
   static const IconData timeCircle     = Icons.access_time_rounded;
   static const IconData timeSquare     = Icons.access_time_rounded;
   static const IconData upload         = Icons.upload_rounded;
-  static const IconData user           = Icons.person_rounded;
-  static const IconData user1          = Icons.person_rounded;
-  static const IconData user2          = Icons.person_rounded;
-  static const IconData user3          = Icons.person_rounded;
+  static const IconData user           = CupertinoIcons.person_fill;
+  static const IconData user1          = CupertinoIcons.person_fill;
+  static const IconData user2          = CupertinoIcons.person_fill;
+  static const IconData user3          = CupertinoIcons.person_fill;
   static const IconData usersTwo       = Icons.group_rounded;
   static const IconData video          = Icons.videocam_rounded;
   static const IconData videoTime      = Icons.video_call_rounded;
@@ -95,7 +96,7 @@ class IconlyBold {
 class IconlyLight {
   IconlyLight._();
   static const IconData activity       = Icons.show_chart_rounded;
-  static const IconData addUser        = Icons.person_add_outlined;
+  static const IconData addUser        = CupertinoIcons.person_add;
   static const IconData arrowDown      = Icons.keyboard_arrow_down_rounded;
   static const IconData arrowLeft      = Icons.arrow_back_rounded;
   static const IconData arrowLeft2     = Icons.arrow_back_ios_rounded;
@@ -103,14 +104,14 @@ class IconlyLight {
   static const IconData arrowRight2    = Icons.arrow_forward_ios_rounded;
   static const IconData arrowUp        = Icons.keyboard_arrow_up_rounded;
   static const IconData bag            = Icons.shopping_bag_outlined;
-  static const IconData bookmark       = Icons.bookmark_border_rounded;
+  static const IconData bookmark       = CupertinoIcons.bookmark;
   static const IconData buy            = Icons.shopping_cart_outlined;
   static const IconData calendar       = Icons.calendar_today_outlined;
   static const IconData call           = Icons.call_outlined;
   static const IconData camera         = Icons.camera_outlined;
   static const IconData category       = Icons.category_outlined;
   static const IconData chart          = Icons.bar_chart_rounded;
-  static const IconData chat           = Icons.chat_bubble_outline_rounded;
+  static const IconData chat           = CupertinoIcons.chat_bubble;
   static const IconData closeSquare    = Icons.close_rounded;
   static const IconData danger         = Icons.warning_outlined;
   static const IconData delete         = Icons.delete_outline_rounded;
@@ -124,10 +125,10 @@ class IconlyLight {
   static const IconData folder         = Icons.folder_outlined;
   static const IconData game           = Icons.sports_esports_outlined;
   static const IconData graph          = Icons.show_chart_rounded;
-  static const IconData heart          = Icons.favorite_border_rounded;
+  static const IconData heart          = CupertinoIcons.heart;
   static const IconData hide           = Icons.visibility_off_outlined;
-  static const IconData home           = Icons.home_outlined;
-  static const IconData home2          = Icons.other_houses_outlined;
+  static const IconData home           = CupertinoIcons.house;
+  static const IconData home2          = CupertinoIcons.house;
   static const IconData image          = Icons.image_outlined;
   static const IconData infoCircle     = Icons.info_outline_rounded;
   static const IconData infoSquare     = Icons.info_outlined;
@@ -135,12 +136,12 @@ class IconlyLight {
   static const IconData lock           = Icons.lock_outlined;
   static const IconData login          = Icons.login_rounded;
   static const IconData logout         = Icons.logout_rounded;
-  static const IconData message        = Icons.message_outlined;
+  static const IconData message        = CupertinoIcons.chat_bubble;
   static const IconData more           = Icons.more_horiz_rounded;
   static const IconData moreCircle     = Icons.more_horiz_rounded;
   static const IconData moreSquare     = Icons.more_horiz_rounded;
-  static const IconData notification   = Icons.notifications_outlined;
-  static const IconData notification2  = Icons.notifications_none_rounded;
+  static const IconData notification   = CupertinoIcons.bell;
+  static const IconData notification2  = CupertinoIcons.bell;
   static const IconData paper          = Icons.article_outlined;
   static const IconData paperDownload  = Icons.file_download_outlined;
   static const IconData paperFail      = Icons.description_outlined;
@@ -149,10 +150,10 @@ class IconlyLight {
   static const IconData password       = Icons.lock_outlined;
   static const IconData play           = Icons.play_circle_outlined;
   static const IconData plus           = Icons.add_circle_outline_rounded;
-  static const IconData profile        = Icons.account_circle_outlined;
+  static const IconData profile        = CupertinoIcons.person;
   static const IconData scan           = Icons.qr_code_scanner_rounded;
-  static const IconData search         = Icons.search_outlined;
-  static const IconData send           = Icons.send_outlined;
+  static const IconData search         = CupertinoIcons.search;
+  static const IconData send           = CupertinoIcons.paperplane;
   static const IconData setting        = Icons.settings_outlined;
   static const IconData setting2       = Icons.settings_outlined;
   static const IconData shield         = Icons.shield_outlined;
@@ -166,10 +167,10 @@ class IconlyLight {
   static const IconData timeCircle     = Icons.access_time_outlined;
   static const IconData timeSquare     = Icons.access_time_rounded;
   static const IconData upload         = Icons.upload_outlined;
-  static const IconData user           = Icons.person_outline_rounded;
-  static const IconData user1          = Icons.person_outline_rounded;
-  static const IconData user2          = Icons.person_outline_rounded;
-  static const IconData user3          = Icons.person_outline_rounded;
+  static const IconData user           = CupertinoIcons.person;
+  static const IconData user1          = CupertinoIcons.person;
+  static const IconData user2          = CupertinoIcons.person;
+  static const IconData user3          = CupertinoIcons.person;
   static const IconData usersTwo       = Icons.group_outlined;
   static const IconData video          = Icons.videocam_outlined;
   static const IconData videoTime      = Icons.video_call_outlined;

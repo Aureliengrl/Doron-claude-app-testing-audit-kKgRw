@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 
@@ -9,20 +10,20 @@ class IconlyPro {
   IconlyPro._();
 
   // --- ICÔNES LIGHT ---
-  static const IconData homeLight = Icons.home_outlined;
-  static const IconData searchLight = Icons.search_outlined;
+  static const IconData homeLight = CupertinoIcons.house;
+  static const IconData searchLight = CupertinoIcons.search;
   static const IconData playLight = Icons.play_arrow_outlined;
-  static const IconData profileLight = Icons.person_outline_rounded;
-  static const IconData heartLight = Icons.favorite_border_rounded;
-  static const IconData sendLight = Icons.send_outlined;
-  static const IconData chatLight = Icons.chat_bubble_outline_rounded;
+  static const IconData profileLight = CupertinoIcons.person;
+  static const IconData heartLight = CupertinoIcons.heart;
+  static const IconData sendLight = CupertinoIcons.paperplane;
+  static const IconData chatLight = CupertinoIcons.chat_bubble;
 
   // --- ICÔNES BOLD (Pour onglets actifs ou favoris) ---
-  static const IconData homeBold = Icons.home_rounded;
-  static const IconData searchBold = Icons.search_rounded;
+  static const IconData homeBold = CupertinoIcons.house_fill;
+  static const IconData searchBold = CupertinoIcons.search;
   static const IconData playBold = Icons.play_arrow_rounded;
-  static const IconData profileBold = Icons.person_rounded;
-  static const IconData heartBold = Icons.favorite_rounded;
-  static const IconData sendBold = Icons.send_rounded;
-  static const IconData chatBold = Icons.chat_bubble_rounded;
+  static const IconData profileBold = CupertinoIcons.person_fill;
+  static const IconData heartBold = CupertinoIcons.heart_fill;
+  static const IconData sendBold = CupertinoIcons.paperplane_fill;
+  static const IconData chatBold = CupertinoIcons.chat_bubble_fill;
 }

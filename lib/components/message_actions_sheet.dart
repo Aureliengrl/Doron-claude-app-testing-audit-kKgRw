@@ -1,3 +1,4 @@
+import '/components/aesthetic_bottom_sheet_notch.dart';
 import 'package:flutter/material.dart';
 import '/utils/iconly_compat.dart';
 import 'package:flutter/services.dart';
@@ -185,6 +186,8 @@ class MessageActionsSheet extends StatelessWidget {
   void _showDeleteOptions(BuildContext context) {
     Navigator.pop(context);
     showModalBottomSheet(
+  isScrollControlled: true,
+  backgroundColor: Colors.transparent,
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => Container(
@@ -198,6 +201,7 @@ class MessageActionsSheet extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+                    const AestheticBottomSheetNotch(),
             Text('Supprimer ce message ?',
                 style: GoogleFonts.poppins(
                     color: Colors.white,

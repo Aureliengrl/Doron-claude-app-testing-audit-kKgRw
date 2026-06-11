@@ -1,4 +1,6 @@
+import '/components/aesthetic_bottom_sheet_notch.dart';
 import '/utils/app_logger.dart';
+import '/components/shared_product_card.dart';
 import '/services/product_validator_service.dart';
 import 'dart:async';
 import 'dart:ui';
@@ -1226,138 +1228,13 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
   }
 
   Widget _buildSectionProductCard(Map<String, dynamic> product) {
-    final isLiked = _model.likedProductTitles.contains(product['name'] ?? '');
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          setState(() {
-            _model.selectedProduct = product;
-          });
-          _showProductDetail(product);
-        },
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          width: 160,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image avec coeur et wishlist
-              Stack(
-                children: [
-                  ProductImage(
-                    imageUrl: (product['image'] as String? ?? '').isNotEmpty ? product['image'] as String : (product['imageUrl'] as String? ?? ''),
-                    height: 160,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                    ),
-                  ),
-                  // Bouton wishlist
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          _showWishlistModal(product);
-                        },
-                        borderRadius: BorderRadius.circular(50),
-                        child: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.15),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            IconlyLight.bookmark,
-                            color: violetColor,
-                            size: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Bouton coeur
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () => _toggleFavorite(product),
-                        borderRadius: BorderRadius.circular(50),
-                        child: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: isLiked ? Colors.red : Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.15),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            isLiked ? IconlyBold.heart : IconlyLight.heart,
-                            color: isLiked ? Colors.white : const Color(0xFF374151),
-                            size: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              // Info produit
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      product['name'] as String? ?? '',
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF111827),
-                        height: 1.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+    return SizedBox(
+      width: 140,
+      height: 180,
+      child: SharedProductCard(
+        product: product,
+        index: 0,
+        showWishlistButton: true,
       ),
     )
         .animate()
@@ -1783,6 +1660,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+                    const AestheticBottomSheetNotch(),
               // Handle bar
               Container(
                 margin: const EdgeInsets.only(top: 12, bottom: 8),

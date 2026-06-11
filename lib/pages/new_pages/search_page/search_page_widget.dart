@@ -1,4 +1,5 @@
-import 'dart:ui';
+﻿import 'dart:ui';
+import '/components/aesthetic_bottom_sheet_notch.dart';
 import 'package:flutter/material.dart';
 import '/components/premium_3d_icon.dart';
 import '/utils/iconly_compat.dart';
@@ -19,11 +20,14 @@ import 'search_page_model.dart';
 import '/utils/app_tr.dart';
 export 'search_page_model.dart';
 import 'package:doron/pages/new_pages/search_page/user_search_bottom_sheet.dart';
-// import share_list.dart bypassed
+import 'share_list.dart';
 import '/components/liquid_glass_empty_state_widget.dart';
 import '/components/liquid_glass_loader.dart';
 import '/components/product_detail_modal.dart';
 import '/components/shared_product_card.dart';
+import 'create_chat_bottom_sheet.dart';
+import '/components/floating_cta_button.dart';
+import '/services/social_service.dart';
 import '/services/friend_service.dart';
 import '/services/gift_events_service.dart';
 import 'dart:async';
@@ -40,7 +44,10 @@ class SearchPageWidget extends StatefulWidget {
   State<SearchPageWidget> createState() => _SearchPageWidgetState();
 }
 
-class _SearchPageWidgetState extends State<SearchPageWidget> {
+class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   late SearchPageModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final Color violetColor = const Color(0xFF8A2BE2);
@@ -53,13 +60,13 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     _model = SearchPageModel();
     _loadData();
 
-    // Écoute les cadeaux ajoutés depuis le modal produit (3 points → "Ajouter pour quelqu'un")
+    // Ã‰coute les cadeaux ajoutÃ©s depuis le modal produit (3 points â†’ "Ajouter pour quelqu'un")
     _giftEventSub = GiftEventsService.onGiftAdded.listen((event) {
       if (!mounted) return;
-      // Injection optimiste en tête de liste sans recharger tous les profils
+      // Injection optimiste en tÃªte de liste sans recharger tous les profils
       setState(() {
         _model.personGifts[event.personId] ??= [];
-        // Éviter un doublon si le produit est déjà présent
+        // Ã‰viter un doublon si le produit est dÃ©jÃ  prÃ©sent
         final alreadyPresent = _model.personGifts[event.personId]!
             .any((g) => g['id'] == event.gift['id']);
         if (!alreadyPresent) {
@@ -85,7 +92,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Afficher une erreur si le chargement a échoué
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
+
+    // Afficher une erreur si le chargement a Ã©chouÃ©
     if (_model.errorMessage != null) {
       return Scaffold(
         key: scaffoldKey,
@@ -120,7 +129,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   width: 200,
                   child: PrimaryGradientButton(
                     onPressed: () => _loadData(),
-                    text: 'Réessayer',
+                    text: 'RÃ©essayer',
                     icon: Icons.refresh,
                     gradientColors: const [Color(0xFF8A2BE2), Color(0xFFEC4899)],
                     height: 50,
@@ -133,7 +142,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       );
     }
 
-    // Afficher un indicateur de chargement si les données sont en cours de chargement
+    // Afficher un indicateur de chargement si les donnÃ©es sont en cours de chargement
     if (_model.isLoading) {
       return Scaffold(
         key: scaffoldKey,
@@ -214,14 +223,44 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               // Profils en scroll horizontal + Bouton ajouter
               SliverToBoxAdapter(child: _buildProfilesRow()),
 
-              // Info sur la personne sélectionnée
-              if (_model.currentProfile != null)
+              // Info sur la personne sÃ©lectionnÃ©e
+              if (_model.currentProfile != null) ...[
                 SliverToBoxAdapter(child: _buildProfileInfo()),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 0, bottom: 8, right: 24),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          _addPhotoForPerson(_model.currentProfile!);
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(IconlyLight.camera, color: Colors.white70, size: 18),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Ajouter une photo',
+                              style: GoogleFonts.poppins(
+                                color: Colors.white70,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
 
               // Grille de produits
               _buildProductsGrid(),
 
-              // Section Suggestions (après les cadeaux sauvegardés)
+              // Section Suggestions (aprÃ¨s les cadeaux sauvegardÃ©s)
               if (_model.currentProfile != null && _model.getFilteredProducts().isNotEmpty)
                 _buildSuggestionsSection(),
 
@@ -230,29 +269,16 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             ],
           ),
 
-          // CTA fixe en bas de l'écran
-          Positioned(
-            bottom: 90,
-            left: 0,
-            right: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    LiquidGlassTokens.pageDark.withOpacity(0),
-                    LiquidGlassTokens.pageDark.withOpacity(0.92),
-                    LiquidGlassTokens.pageDark,
-                  ],
-                ),
-              ),
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-              child: _buildSecretSantaBanner(),
-            ),
+          // CTA fixe en bas de l'Ã©cran
+          FloatingCtaButton(
+            title: 'Secret Santa',
+            subtitle: 'CrÃ©ez un groupe pour NoÃ«l',
+            onTap: () {
+              HapticFeedback.heavyImpact();
+              context.push('/secret-santa');
+            },
           ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -431,7 +457,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              'Sélectionne une personne pour voir ses cadeaux',
+              'SÃ©lectionne une personne pour voir ses cadeaux',
               style: GoogleFonts.poppins(
                 color: Colors.white.withOpacity(0.75),
                 fontSize: 15,
@@ -536,7 +562,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       ),
                     ),
                     content: Text(
-                      'Les cadeaux sauvegardés pour ${profile['name']} seront supprimés.',
+                      'Les cadeaux sauvegardÃ©s pour ${profile['name']} seront supprimÃ©s.',
                       style: GoogleFonts.poppins(fontSize: 15, color: Colors.white.withOpacity(0.80)),
                     ),
                     actions: [
@@ -568,7 +594,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 );
               },
               onDismissed: (direction) async {
-                // FIX: Soft-delete — suppression Firebase différée avec annulation
+                // FIX: Soft-delete â€” suppression Firebase diffÃ©rÃ©e avec annulation
                 final removedProfile = _model.profiles[index - 1];
                 setState(() {
                   _model.profiles.removeAt(index - 1); // FIX: index-1 car index=0 = bouton "Ajouter"
@@ -580,7 +606,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 // Afficher snackbar avec annulation
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text("${profile['name']} supprimé(e)", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    content: Text("${profile['name']} supprimÃ©(e)", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                     backgroundColor: Colors.red[700],
                     behavior: SnackBarBehavior.floating,
                     duration: const Duration(seconds: 4),
@@ -592,21 +618,21 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 }
                 await Future.delayed(const Duration(seconds: 4));
                 if (!cancelled) await FirebaseDataService.deletePerson(profileId.toString());
-                // Continuer si non annulé
+                // Continuer si non annulÃ©
               },
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () async {
-                    // Premier setState pour sélectionner le profil
+                    // Premier setState pour sÃ©lectionner le profil
                     setState(() {
                       _model.selectedProfileId = profileIdInt;
                     });
 
-                    // Charger les données (favoris + suggestions)
+                    // Charger les donnÃ©es (favoris + suggestions)
                     await _model.selectProfile(profileIdInt);
 
-                    // Deuxiéme setState pour mettre à jour avec les suggestions
+                    // DeuxiÃ©me setState pour mettre Ã  jour avec les suggestions
                     if (mounted) {
                       setState(() {});
                     }
@@ -766,7 +792,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${profile['relation']} à ${profile['occasion']}',
+                    '${profile['relation']} Ã  ${profile['occasion']}',
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       color: Colors.white.withOpacity(0.55),
@@ -782,9 +808,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         label: context.tr('Partager', 'Share'),
                         onTap: () async {
                           HapticFeedback.lightImpact();
-                          _showSnackBar(context.tr('Génération du PDF en cours...', 'Generating PDF...'), isError: false);
+                          _showSnackBar(context.tr('GÃ©nÃ©ration du PDF en cours...', 'Generating PDF...'), isError: false);
                           
-                          // On récupère les cadeaux sauvegardés pour cette personne
+                          // On rÃ©cupÃ¨re les cadeaux sauvegardÃ©s pour cette personne
                           final products = _model.getFilteredProducts(); 
                           
                           try {
@@ -793,7 +819,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                               products: products,
                             );
                           } catch (e) {
-                            _showSnackBar('Erreur lors de la génération du PDF', isError: true);
+                            _showSnackBar('Erreur lors de la gÃ©nÃ©ration du PDF', isError: true);
                           }
                         },
                       ),
@@ -806,7 +832,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                         },
                       ),
                       _buildProfileActionButton(
-                        // FIX C8: label change si collab déjà active
+                        // FIX C8: label change si collab dÃ©jÃ  active
                         icon: (profile['isShared'] == true || profile['chatId'] != null)
                             ? IconlyBold.addUser
                             : IconlyLight.addUser,
@@ -814,13 +840,13 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                             ? context.tr('Ma collab', 'My collab')
                             : context.tr('Collaborer', 'Collaborate'),
                         onTap: () {
-                           // #FIX-9: ne pas ouvrir si aucun cadeau ajouté
+                           // #FIX-9: ne pas ouvrir si aucun cadeau ajoutÃ©
                            final profileId = profile['id']?.toString() ?? profile['personId']?.toString() ?? '';
                            final giftsList = _model.personGifts[profileId] ?? [];
                            if (giftsList.isEmpty) {
                              HapticFeedback.lightImpact();
                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                               content: Text('Ajoutez d\'abord des idées cadeaux pour partager !', style: GoogleFonts.poppins(fontSize: 13)),
+                               content: Text('Ajoutez d\'abord des idÃ©es cadeaux pour partager !', style: GoogleFonts.poppins(fontSize: 13)),
                                backgroundColor: const Color(0xFFF59E0B),
                                behavior: SnackBarBehavior.floating,
                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -837,7 +863,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                                  bottom: MediaQuery.of(context).viewInsets.bottom,
                                  top: MediaQuery.of(context).size.height * 0.2,
                                ),
-                               child: Container(), // bypassed ShareListBottomSheet
+                               child: ShareListBottomSheet(profile: profile), // bypassed ShareListBottomSheet
                              ),
                            ).then((chatId) {
                              if (chatId != null && mounted) {
@@ -846,7 +872,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                                  profile['chatId'] = chatId;
                                  profile['isShared'] = true;
                                });
-                               // FIX C6: Persister dans Firebase pour survivre au redémarrage
+                               // FIX C6: Persister dans Firebase pour survivre au redÃ©marrage
                                if (personId.isNotEmpty) {
                                  FirebaseDataService.updatePersonMeta(personId, {
                                    'chatId': chatId,
@@ -857,7 +883,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                            });
                         }
                       ),
-                      // FIX C1: afficher si chatId présent OU isShared=true
+                      // FIX C1: afficher si chatId prÃ©sent OU isShared=true
                       if (profile['chatId'] != null || profile['isShared'] == true)
                         _buildProfileActionButton(
                           icon: IconlyLight.chat,
@@ -870,11 +896,6 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                              });
                           }
                         ),
-                      _buildProfileActionButton(
-                        icon: IconlyBold.camera,
-                        label: context.tr('Photo', 'Photo'),
-                        onTap: () => _addPhotoForPerson(profile),
-                      ),
                     ],
                   ),
                 ],
@@ -937,19 +958,19 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       return const SliverToBoxAdapter(
         child: LiquidGlassEmptyStateWidget(
           icon: IconlyLight.addUser,
-          title: 'Ajoutez votre première personne',
-          subtitle: 'Cliquez sur le bouton + pour ajouter ou rejoindre une liste existante et générer des idées de cadeaux personnalisées.',
+          title: 'Ajoutez votre premiÃ¨re personne',
+          subtitle: 'Cliquez sur le bouton + pour ajouter ou rejoindre une liste existante et gÃ©nÃ©rer des idÃ©es de cadeaux personnalisÃ©es.',
         ),
       );
     }
 
-    // Si profil sélectionné mais pas de produits, afficher message
+    // Si profil sÃ©lectionnÃ© mais pas de produits, afficher message
     if (products.isEmpty) {
       return const SliverToBoxAdapter(
         child: LiquidGlassEmptyStateWidget(
           icon: Icons.card_giftcard,
           title: 'Aucun cadeau pour le moment',
-          subtitle: 'Les cadeaux de cette personne apparaîtront ici. Générez des idées de cadeaux ou ajoutez-les manuellement.',
+          subtitle: 'Les cadeaux de cette personne apparaÃ®tront ici. GÃ©nÃ©rez des idÃ©es de cadeaux ou ajoutez-les manuellement.',
         ),
       );
     }
@@ -974,7 +995,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               _model.personGifts[personId]!.insert(newIndex, item);
             });
             // FIX: utiliser updateGiftOrderForPerson au lieu de saveGiftListForPerson
-            // pour modifier la liste existante et non en créer une nouvelle à chaque drag
+            // pour modifier la liste existante et non en crÃ©er une nouvelle Ã  chaque drag
             try {
               await FirebaseDataService.updateGiftOrderForPerson(
                 personId: personId,
@@ -984,8 +1005,48 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
           },
           children: [
             for (int i = 0; i < products.length; i++)
-              SharedProductCard(product: products[i], index: i),
+              SharedProductCard(
+                key: ValueKey(products[i]['id']?.toString() ?? 'product_$i'),
+                product: products[i],
+                index: i + 1,
+              ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddPhotoCard(Map<String, dynamic> profile) {
+    return Material(
+      color: Colors.transparent,
+      key: const ValueKey('add_photo_button'),
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          _addPhotoForPerson(profile);
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white38, width: 2),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(IconlyLight.camera, color: Colors.white70, size: 40),
+              const SizedBox(height: 8),
+              Text(
+                'Ajouter photo',
+                style: GoogleFonts.poppins(
+                  color: Colors.white70,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1025,7 +1086,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                 const LiquidGlassLoader(size: 32),
                 const SizedBox(height: 16),
                 Text(
-                  'Génération de suggestions...',
+                  'GÃ©nÃ©ration de suggestions...',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: Colors.white.withOpacity(0.55),
@@ -1048,7 +1109,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Séparateur
+          // SÃ©parateur
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: Container(
@@ -1065,7 +1126,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
             ),
           ),
 
-          // En-téte de la section Suggestions
+          // En-tÃ©te de la section Suggestions
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
@@ -1090,7 +1151,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Basées sur tes choix et son profil',
+                        'BasÃ©es sur tes choix et son profil',
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: Colors.white.withOpacity(0.55),
@@ -1129,249 +1190,15 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   }
 
   Widget _buildSuggestionCard(Map<String, dynamic> product) {
-    final productName = product['name'] as String? ?? product['title'] as String? ?? '';
-    final isLikedInFirebase = _model.isProductLiked(productName);
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => _showProductDetail(product),
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          width: 220,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: const Color(0xFF8A2BE2).withOpacity(0.3),
-              width: 2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF8A2BE2).withOpacity(0.15),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image avec badge "Suggestion"
-              Stack(
-                children: [
-                  ProductImage(
-                    imageUrl: product['image'] as String? ?? '',
-                    height: 180,
-                    fit: BoxFit.contain,
-                    backgroundColor: Colors.white.withOpacity(0.05),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
-                    ),
-                  ),
-                  // Badge suggestion
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFF8A2BE2),
-                            Color(0xFFEC4899),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF8A2BE2).withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.auto_awesome,
-                            color: Colors.white,
-                            size: 14,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Suggestion',
-                            style: GoogleFonts.poppins(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // Bouton coeur si liké
-                  if (isLikedInFirebase)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          IconlyBold.heart,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-
-              // Info produit
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        product['brand'] as String? ?? product['source'] as String? ?? 'Amazon',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF1F2937),
-                          height: 1.2,
-                        ),
-                      ),
-                      const Spacer(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${product['price']}€',
-                            style: GoogleFonts.poppins(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF8A2BE2),
-                            ),
-                          ),
-                          // Bouton "+" pour ajout direct à wishlist
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () => _showAddToWishlistDialog(product),
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF8A2BE2).withOpacity(0.3),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: const Icon(
-                                  Icons.add,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+    return SizedBox(
+      width: 160,
+      child: SharedProductCard(
+        product: product,
+        index: 0,
       ),
     );
   }
 
-  Widget _buildSecretSantaBanner() {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.heavyImpact();
-          context.push('/secret-santa');
-        },
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          height: 70,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF8A2BE2).withOpacity(0.4),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              const SizedBox(width: 16),
-              const Premium3DIcon(assetName: 'santa_3d.png', size: 50),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Secret Santa',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text(
-                      'Créez un groupe pour Noël',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: Colors.white.withOpacity(0.8),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 20),
               const SizedBox(width: 16),
             ],
@@ -1381,11 +1208,11 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     );
   }
 
-  /// Ajoute le produit directement à la liste des cadeaux de la personne
+  /// Ajoute le produit directement Ã  la liste des cadeaux de la personne
   Future<void> _showAddToWishlistDialog(Map<String, dynamic> product) async {
     final currentProf = _model.currentProfile;
     if (currentProf == null) {
-      _showSnackBar('Aucune personne sélectionnée', isError: true);
+      _showSnackBar('Aucune personne sÃ©lectionnÃ©e', isError: true);
       return;
     }
 
@@ -1394,22 +1221,22 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     final productName = product['name'] as String? ?? 'Produit';
 
     try {
-      // Ajouter le cadeau directement à la liste de la personne
+      // Ajouter le cadeau directement Ã  la liste de la personne
       final success = await FirebaseDataService.addGiftToPerson(
         personId: personId,
         gift: product,
       );
 
         if (success) {
-          _showSnackBar('? $productName ajouté aux cadeaux de $personName');
+          _showSnackBar('? $productName ajoutÃ© aux cadeaux de $personName');
 
-          // Recharger les données pour mettre à jour l'affichage
+          // Recharger les donnÃ©es pour mettre Ã  jour l'affichage
           await _model.loadProfiles();
           if (mounted) {
             setState(() {});
           }
       } else {
-        _showSnackBar('Ce cadeau est déjà dans la liste', isError: false);
+        _showSnackBar('Ce cadeau est dÃ©jÃ  dans la liste', isError: false);
       }
     } catch (e) {
       _showSnackBar('Erreur lors de l\'ajout: ${e.toString()}', isError: true);
@@ -1458,7 +1285,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   void _showProfileAvatarOptions(BuildContext context, Map<String, dynamic> profile) {
     HapticFeedback.mediumImpact();
     final name = profile['name'] as String? ?? 'Personne';
-    // Chercher si ce profil a un uid Firebase (personne réelle vs profil local)
+    // Chercher si ce profil a un uid Firebase (personne rÃ©elle vs profil local)
     final uid = profile['uid'] as String?;
 
     showModalBottomSheet(
@@ -1474,15 +1301,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Poignée
-            Container(
-              width: 40, height: 4,
-              margin: const EdgeInsets.only(bottom: 20),
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
+            const AestheticBottomSheetNotch(),
             Text(name, style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
             const SizedBox(height: 20),
             // Bouton Collaborer sur la liste (chat de groupe)
@@ -1497,7 +1316,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   backgroundColor: Colors.transparent,
                   builder: (_) => Padding(
                     padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.2),
-                    child: Container(), // bypassed ShareListBottomSheet
+                    child: ShareListBottomSheet(profile: profile),
                   ),
                 ).then((chatId) {
                   if (chatId != null && mounted) {
@@ -1524,7 +1343,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('$name ajouté(e) en ami !', style: GoogleFonts.poppins()),
+                        content: Text('$name ajoutÃ©(e) en ami !', style: GoogleFonts.poppins()),
                         backgroundColor: const Color(0xFF8A2BE2),
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -1579,14 +1398,14 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
   }
 
   /// Ajoute une photo dans la liste de cadeaux d'une personne (page Recherche).
-  /// ─ Stocke dans : users/{uid}/people/{personId}/gift_lists/   (même endroit que les autres cadeaux)
-  /// ─ NE passe plus par les wishlists albums (comportement précédent incorrect)
+  /// â”€ Stocke dans : users/{uid}/people/{personId}/gift_lists/   (mÃªme endroit que les autres cadeaux)
+  /// â”€ NE passe plus par les wishlists albums (comportement prÃ©cÃ©dent incorrect)
   Future<void> _addPhotoForPerson(Map<String, dynamic> profile) async {
     final personId = profile['id']?.toString() ?? '';
     final personName = (profile['name'] as String?) ?? 'Personne';
     if (personId.isEmpty) return;
 
-    // ── 1. Choix de la source image ────────────────────────────────
+    // â”€â”€ 1. Choix de la source image â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     ImageSource? source;
     await showModalBottomSheet(
       context: context,
@@ -1616,13 +1435,13 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     );
     if (source == null || !mounted) return;
 
-    // ── 2. Sélection de la photo ──────────────────────────────────
+    // â”€â”€ 2. SÃ©lection de la photo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     final picker = ImagePicker();
     final picked = await picker.pickImage(
-      source: source!, imageQuality: 60, maxWidth: 1200, maxHeight: 1200, requestFullMetadata: false); // FIX P1-C: qualit\u00e9 r\u00e9duite + contrainte taille → 3x plus rapide
+      source: source!, imageQuality: 60, maxWidth: 1200, maxHeight: 1200, requestFullMetadata: false); // FIX P1-C: qualit\u00e9 r\u00e9duite + contrainte taille â†’ 3x plus rapide
     if (picked == null || !mounted) return;
 
-    // ── 3. Dialog Nom + Prix ────────────────────────────────────
+    // â”€â”€ 3. Dialog Nom + Prix â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     String productName = '';
     String productPrice = '';
     final nameCtrl = TextEditingController();
@@ -1635,7 +1454,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
         title: Row(children: [
           const Icon(IconlyLight.ticket, color: Color(0xFF8A2BE2), size: 20),
           const SizedBox(width: 8),
-          Text('Détails du produit', style: GoogleFonts.poppins(
+          Text('DÃ©tails du produit', style: GoogleFonts.poppins(
               color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
         ]),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -1698,13 +1517,13 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     priceCtrl.dispose();
     if (confirmed != true || !mounted) return;
 
-    // ── 4. Construction du gift local ────────────────────────────────────
+    // â”€â”€ 4. Construction du gift local â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     final photoId = 'photo_${DateTime.now().millisecondsSinceEpoch}';
     final photoGiftLocal = {
       'id': photoId,
       'type': 'photo',
       'name': productName.isNotEmpty ? productName : 'Photo',
-      'image': picked.path,    // chemin local — affiché immédiatement
+      'image': picked.path,    // chemin local â€” affichÃ© immÃ©diatement
       'price': productPrice,
       'caption': productName,
       'brand': '',
@@ -1713,32 +1532,32 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
       '_uploading': true,
     };
 
-    // ── 5. INJECTION OPTIMISTE IMMÉDIATE dans la grille ─────────────────
-    // On insère en tête de liste sans attendre Firebase → UI instantanée
+    // â”€â”€ 5. INJECTION OPTIMISTE IMMÃ‰DIATE dans la grille â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // On insÃ¨re en tÃªte de liste sans attendre Firebase â†’ UI instantanÃ©e
     _model.personGifts[personId] ??= [];
     _model.personGifts[personId]!.insert(0, photoGiftLocal);
-    if (mounted) setState(() {}); // grille mise à jour en < 16ms
+    if (mounted) setState(() {}); // grille mise Ã  jour en < 16ms
 
-    // Snack discret immédiat
-    _showSnackBar('📷 Photo ajoutée ! Upload en cours…');
+    // Snack discret immÃ©diat
+    _showSnackBar('ðŸ“· Photo ajoutÃ©e ! Upload en coursâ€¦');
 
-    // ── 6. Persistance en arrière-plan (Firebase + Storage) ─────────────
+    // â”€â”€ 6. Persistance en arriÃ¨re-plan (Firebase + Storage) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     FirebaseDataService.addGiftToPerson(
       personId: personId,
       gift: photoGiftLocal,
     ).then((ok) {
       if (!ok) {
-        // Doublon détecté : retirer l'entrée optimiste
+        // Doublon dÃ©tectÃ© : retirer l'entrÃ©e optimiste
         if (mounted) {
           setState(() {
             _model.personGifts[personId]?.removeWhere((g) => g['id'] == photoId);
           });
-          _showSnackBar('Ce produit est déjà dans la liste', isError: false);
+          _showSnackBar('Ce produit est dÃ©jÃ  dans la liste', isError: false);
         }
       }
     });
 
-    // Upload Storage en arrière-plan
+    // Upload Storage en arriÃ¨re-plan
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
       OptimisticImageUploader.upload(
@@ -1759,7 +1578,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               }
             });
           }
-          // Mettre à jour le gift avec l'URL CDN dans Firestore
+          // Mettre Ã  jour le gift avec l'URL CDN dans Firestore
           try {
             await FirebaseDataService.updateGiftInPerson(
               personId: personId,
@@ -1767,18 +1586,18 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
               updates: {'image': cdnUrl, '_uploading': false},
             );
           } catch (_) {}
-          if (mounted) _showSnackBar('📷 Photo de $personName sauvegardée !');
+          if (mounted) _showSnackBar('ðŸ“· Photo de $personName sauvegardÃ©e !');
         },
         onUploadError: (_) {
-          if (mounted) _showSnackBar('⚠️ Erreur upload — photo sauvegardée localement', isError: true);
+          if (mounted) _showSnackBar('âš ï¸ Erreur upload â€” photo sauvegardÃ©e localement', isError: true);
         },
         );
       }
   }
 
-  /// Upload une photo locale vers Firebase Storage et retourne l'URL de téléchargement.
+  /// Upload une photo locale vers Firebase Storage et retourne l'URL de tÃ©lÃ©chargement.
   /// Chemin : users/{uid}/person_photos/{personId}/{timestamp}.jpg
-  /// @deprecated — utiliser OptimisticImageUploader.upload() à la place
+  /// @deprecated â€” utiliser OptimisticImageUploader.upload() Ã  la place
   Future<String?> _uploadPhotoToStorage(String localPath, String personId) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return null;
@@ -1789,3 +1608,4 @@ class _SearchPageWidgetState extends State<SearchPageWidget> {
     );
   }
 }
+

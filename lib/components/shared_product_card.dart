@@ -74,197 +74,90 @@ class SharedProductCard extends StatelessWidget {
           : () => GlobalProductDetailModal.show(context, _normalized),
       child: ClipRRect(
         key: ValueKey('card_${_name}_$index'),
-        borderRadius: BorderRadius.circular(18),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isReordering
-                  ? _violet.withOpacity(0.12)
-                  : Colors.white.withOpacity(0.06),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: isReordering
-                    ? _violet.withOpacity(0.4)
-                    : Colors.white.withOpacity(0.10),
-                width: 0.5,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── Image ──
-                Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(18),
-                        topRight: Radius.circular(18),
-                      ),
-                      child: _image.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: _image,
-                              width: double.infinity,
-                              height: 140,
-                              fit: BoxFit.cover,
-                              // FIX: placeholder simple sans spinner (cohérent avec le reste de l'app)
-                              placeholder: (_, __) => Container(
-                                height: 140,
-                                color: Colors.white.withOpacity(0.05),
-                              ),
-                              errorWidget: (_, __, ___) => Container(
-                                height: 140,
-                                color: Colors.white.withOpacity(0.05),
-                                child: const Icon(
-                                  IconlyLight.image,
-                                  color: Colors.white24,
-                                  size: 40,
-                                ),
-                              ),
-                            )
-                          : Container(
-                              height: 140,
-                              color: Colors.white.withOpacity(0.05),
-                              child: const Icon(
-                                Icons.card_giftcard_rounded,
-                                color: Colors.white24,
-                                size: 40,
-                              ),
-                            ),
+        borderRadius: BorderRadius.circular(12),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _image.isNotEmpty
+                ? CachedNetworkImage(
+                    memCacheWidth: 800,
+                    memCacheHeight: 800,
+                    imageUrl: _image,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => Container(color: Colors.white.withOpacity(0.05)),
+                    errorWidget: (_, __, ___) => Container(
+                      color: Colors.white.withOpacity(0.05),
+                      child: const Center(child: Icon(IconlyLight.image, color: Colors.white24, size: 32)),
                     ),
-                    if (showWishlistButton && !isReordering)
-                      Positioned(
-                        top: 6,
-                        right: 6,
-                        child: GestureDetector(
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            WishlistPickerSheet.show(context, _normalized);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.50),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(IconlyLight.moreCircle, color: Colors.white, size: 15),
-                          ),
-                        ),
-                      ),
-                    if (product['is_perfect_match'] == true)
-                      Positioned(
-                        bottom: 6,
-                        left: 6,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(colors: [_violet, _pink]),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [BoxShadow(color: _violet.withOpacity(0.5), blurRadius: 4)],
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(IconlyBold.star, color: Colors.white, size: 12),
-                              const SizedBox(width: 4),
-                              Text('Perfect Match', style: GoogleFonts.outfit(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    if (isReordering)
-                      Positioned(
-                        top: 6,
-                        right: 6,
-                        child: Container(
-                          padding: const EdgeInsets.all(5),
-                          decoration: BoxDecoration(
-                            color: _violet.withOpacity(0.7),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.drag_handle_rounded, color: Colors.white, size: 15),
-                        ),
-                      ),
-                    if (onRemove != null && !isReordering)
-                      Positioned(
-                        top: 6,
-                        left: 6,
-                        child: GestureDetector(
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            onRemove!();
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.7),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.close_rounded, color: Colors.white, size: 13),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-                // ── Texte : brand / prix ──
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Marque
-                        if (_brand.isNotEmpty)
-                          Text(
-                            _brand.toUpperCase(),
-                            style: GoogleFonts.poppins(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              color: _violet,
-                              letterSpacing: 0.8,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        const SizedBox(height: 3),
-                        // Nom du produit
-                        Text(
-                          _name,
-                          style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white.withOpacity(0.88),
-                            height: 1.25,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const Spacer(),
-                        // Prix
-                        if (_price.isNotEmpty)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [_gold.withOpacity(0.20), _pink.withOpacity(0.14)],
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              _price.contains('€') ? _price : '$_price €',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                color: _gold,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
+                  )
+                : Container(
+                    color: Colors.white.withOpacity(0.05),
+                    child: const Center(child: Icon(Icons.card_giftcard_rounded, color: Colors.white24, size: 32)),
+                  ),
+            if (showWishlistButton && !isReordering)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    WishlistPickerSheet.show(context, _normalized);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.50), shape: BoxShape.circle),
+                    child: const Icon(IconlyLight.moreCircle, color: Colors.white, size: 16),
                   ),
                 ),
-              ],
-            ),
-          ),
+              ),
+            if (product['is_perfect_match'] == true)
+              Positioned(
+                bottom: 8,
+                left: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [_violet, _pink]),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [BoxShadow(color: _violet.withOpacity(0.5), blurRadius: 4)],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(IconlyBold.star, color: Colors.white, size: 10),
+                      const SizedBox(width: 4),
+                      Text('Perfect Match', style: GoogleFonts.outfit(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ),
+            if (isReordering)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(color: _violet.withOpacity(0.7), shape: BoxShape.circle),
+                  child: const Icon(Icons.drag_handle_rounded, color: Colors.white, size: 16),
+                ),
+              ),
+            if (onRemove != null && !isReordering)
+              Positioned(
+                top: 8,
+                left: 8,
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    onRemove!();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(color: Colors.red.withOpacity(0.7), shape: BoxShape.circle),
+                    child: const Icon(Icons.close_rounded, color: Colors.white, size: 14),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     )

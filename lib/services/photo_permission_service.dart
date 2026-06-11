@@ -1,3 +1,4 @@
+import '/components/aesthetic_bottom_sheet_notch.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '/utils/iconly_compat.dart';
@@ -84,6 +85,7 @@ class PhotoPermissionService {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+                    const AestheticBottomSheetNotch(),
             Container(
               width: 40, height: 4,
               margin: const EdgeInsets.only(bottom: 20),

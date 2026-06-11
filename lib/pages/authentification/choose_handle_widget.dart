@@ -132,7 +132,7 @@ class _ChooseHandleWidgetState extends State<ChooseHandleWidget> {
                 LiquidGlassInput(
                   controller: _handleController,
                   hintText: 'ex: marc_dupont',
-                  prefixIcon: IconlyLight.message,
+                  prefixIcon: IconlyLight.chat,
                   keyboardType: TextInputType.text,
                 ),
                 if (_errorMessage != null)

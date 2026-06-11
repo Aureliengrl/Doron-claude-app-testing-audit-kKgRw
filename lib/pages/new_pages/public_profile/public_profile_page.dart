@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
 import '/utils/iconly_compat.dart';
 import 'package:flutter/services.dart';
@@ -14,7 +14,7 @@ import '/components/liquid_glass_loader.dart';
 import '/components/shared_product_card.dart';
 import '/components/block_report_sheet.dart';
 
-/// Page de profil public — m�me layout que user_profile_widget.dart
+/// Page de profil public â€” même layout que user_profile_widget.dart
 /// Route : /public-profile/:uid
 class PublicProfilePage extends StatefulWidget {
   final String uid;
@@ -38,7 +38,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   Map<String, dynamic>? _profile;
   List<Map<String, dynamic>> _wishlists = [];
   List<Map<String, dynamic>> _likedProducts = [];
-  bool _likedProductsArePrivate = false; // true si l'onglet "Produits lik�s" n'est pas accessible
+  bool _likedProductsArePrivate = false; // true si l'onglet "Produits likés" n'est pas accessible
   FriendshipStatus _friendshipStatus = FriendshipStatus.none;
   String? _requestId;
   bool _isLoading = true;
@@ -107,7 +107,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 
   Future<void> _loadLikedProducts() async {
-    // Les produits lik�s sont priv�s : on ne charge jamais ceux d'un autre utilisateur
+    // Les produits likés sont privés : on ne charge jamais ceux d'un autre utilisateur
     if (!_isMyProfile) {
       _likedProductsArePrivate = true;
       return;
@@ -152,9 +152,9 @@ class _PublicProfilePageState extends State<PublicProfilePage>
             _friendshipStatus = FriendshipStatus.pendingSent;
             _requestId = id;
           });
-          _showSnack('✅ Demande envoy�e !', _green);
+          _showSnack('âœ… Demande envoyée !', _green);
         } else {
-          _showSnack('❌ Erreur lors de l\'envoi', Colors.red);
+          _showSnack('âŒ Erreur lors de l\'envoi', Colors.red);
         }
         break;
       case FriendshipStatus.pendingSent:
@@ -165,7 +165,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
               _friendshipStatus = FriendshipStatus.none;
               _requestId = null;
             });
-            _showSnack('Demande annul�e', Colors.grey);
+            _showSnack('Demande annulée', Colors.grey);
           }
         }
         break;
@@ -178,7 +178,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
               _requestId = null;
               _friendsCount++;
             });
-            _showSnack('?? Vous �tes maintenant amis !', _green);
+            _showSnack('?? Vous êtes maintenant amis !', _green);
           }
         }
         break;
@@ -189,7 +189,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
             _friendshipStatus = FriendshipStatus.none;
             _friendsCount = (_friendsCount - 1).clamp(0, 999);
           });
-          _showSnack('Retir� de vos amis', Colors.grey);
+          _showSnack('Retiré de vos amis', Colors.grey);
         }
         break;
     }
@@ -218,9 +218,9 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     ));
   }
 
-  // ══════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // BUILD
-  // ══════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   @override
   Widget build(BuildContext context) {
@@ -240,204 +240,227 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     );
   }
 
-  // ─── App Bar (identique au profil perso) ───────────────────────────────────
+  // â”€â”€â”€ App Bar (identique au profil perso) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildAppBar() {
-    final photoUrl = _profile!['photoUrl'] as String? ?? '';
-    final displayName = _profile!['displayName'] as String? ?? '';
-    final handle = _profile!['handle'] as String? ?? '';
-    final bio = _profile!['bio'] as String? ?? '';
+    final displayName = _profile?['displayName'] as String? ?? 'Utilisateur';
+    final handle = _profile?['handle'] as String? ?? '';
+    final photoUrl = _profile?['photoUrl'] as String? ?? '';
+    final bio = _profile?['bio'] as String? ?? '';
 
-    return SliverAppBar(
-      expandedHeight: 240,
-      floating: false,
-      pinned: true,
-      backgroundColor: LiquidGlassTokens.pageDark,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-        onPressed: () => Navigator.of(context).pop(),
-      ),
-      actions: [
-        if (!_isMyProfile)
-          IconButton(
-            icon: const Icon(IconlyLight.moreCircle, color: Colors.white),
-            onPressed: () {
-              final h = _profile?['handle'] as String? ?? _profile?['displayName'] as String? ?? '';
-              BlockReportSheet.show(context, uid: widget.uid, handle: h);
-            },
-          ),
-      ],
-      flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: const BoxDecoration(
-            gradient: LiquidGlassTokens.darkPageGradient,
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      // Photo de profil
-                      Stack(
-                        children: [
-                          Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                  color: Colors.white.withOpacity(0.8), width: 2),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: _violet.withOpacity(0.6),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: ClipOval(
-                              child: photoUrl.isNotEmpty
-                                  ? CachedNetworkImage(
-                                      imageUrl: photoUrl,
-                                      fit: BoxFit.cover,
-                                      cacheKey: 'pub_profile_' + photoUrl,
-                                      memCacheHeight: 160,
-                                      memCacheWidth: 160,
-                                      placeholder: (_, __) => Container(
-                                        color: Colors.grey[800],
-                                        child: const Center(
-                                          child: LiquidGlassLoader(size: 16, isDark: false),
-                                        ),
-                                      ),
-                                      errorWidget: (_, __, ___) => _buildAvatarFallback(displayName),
-                                    )
-                                  : _buildAvatarFallback(displayName),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 24),
-                      // Stats — Amis / Wishlists / Cadeaux
-                      Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _buildProfileStat('Amis', '$_friendsCount'),
-                            _buildProfileStat(context.tr('Wishlists', 'Wishlists'), '${_wishlists.length}'),
-                            _buildProfileStat('Cadeaux', '${_likedProducts.length}'),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  // Nom & Handle
-                  const SizedBox(height: 12),
-                  Text(
-                    displayName,
-                    style: GoogleFonts.outfit(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  if (handle.isNotEmpty)
-                    Text(
-                      '@$handle',
-                      style: GoogleFonts.outfit(fontSize: 14, color: Colors.white70),
-                    ),
-                  // S9 FIX: afficher la presence en ligne sur le profil public
-                  if (!_isMyProfile) Builder(builder: (ctx) {
-                    final isOnline = _profile?['isOnline'] == true;
-                    final lastSeen = _profile?['lastSeen'];
-                    String statusText = '';
-                    Color statusColor = Colors.white38;
-                    if (isOnline) {
-                      statusText = 'En ligne';
-                      statusColor = const Color(0xFF10B981);
-                    } else if (lastSeen != null) {
-                      final seen = (lastSeen as dynamic).toDate() as DateTime;
-                      final diff = DateTime.now().difference(seen);
-                      if (diff.inMinutes < 1) { statusText = 'Vu a l instant'; statusColor = Colors.white54; }
-                      else if (diff.inMinutes < 60) { statusText = 'Vu il y a ${diff.inMinutes} min'; statusColor = Colors.white38; }
-                      else if (diff.inHours < 24) { statusText = 'Vu il y a ${diff.inHours}h'; statusColor = Colors.white38; }
-                    }
-                    if (statusText.isEmpty) return const SizedBox.shrink();
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Row(
-                        children: [
-                          Container(width: 7, height: 7, decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle)),
-                          const SizedBox(width: 5),
-                          Text(statusText, style: GoogleFonts.outfit(fontSize: 12, color: statusColor)),
-                        ],
-                      ),
-                    );
-                  }),
-                  // F3: affichage de l'anniversaire de l'ami sur son profil public
-                  if (_friendshipStatus == FriendshipStatus.friends) Builder(builder: (ctx) {
-                    final b = _profile?['birthday'] as Map<String, dynamic>?;
-                    if (b == null) return const SizedBox.shrink();
-                    const months = ['', 'jan', 'f�v', 'mar', 'avr', 'mai', 'juin', 'juil', 'ao�t', 'sep', 'oct', 'nov', 'd�c'];
-                    final now = DateTime.now();
-                    final day = (b['day'] as num).toInt();
-                    final month = (b['month'] as num).toInt();
-                    final isToday = now.day == day && now.month == month;
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Row(
-                        children: [
-                          Text(isToday ? '??' : '??', style: const TextStyle(fontSize: 14)),
-                          const SizedBox(width: 4),
-                          Text(
-                            isToday ? "C'est son anniversaire aujourd'hui !" : 'Anniv: $day ${months[month]}',
-                            style: GoogleFonts.outfit(
-                              fontSize: 12,
-                              color: isToday ? const Color(0xFFEC4899) : Colors.white54,
-                              fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                  if (bio.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        bio,
-                        style: GoogleFonts.outfit(fontSize: 13, color: Colors.white70),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  const SizedBox(height: 12),
-                  // Boutons d'action — remplacent "Modifier/Amis/Partager" du profil perso
-                  if (!_isMyProfile)
+    return SliverToBoxAdapter(
+      child: ClipRRect(
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  _violet.withOpacity(0.12),
+                  _pink.withOpacity(0.06),
+                ],
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(28),
+                bottomRight: Radius.circular(28),
+              ),
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.white.withOpacity(0.10),
+                  width: 0.5,
+                ),
+              ),
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Back button row
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(child: _buildFriendButton()),
-                        if (_friendshipStatus == FriendshipStatus.friends ||
-                            _friendshipStatus == FriendshipStatus.pendingReceived) ...[
-                          const SizedBox(width: 8),
-                          _buildChatButton(),
-                        ],
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                        if (!_isMyProfile)
+                          IconButton(
+                            icon: const Icon(IconlyLight.moreCircle, color: Colors.white),
+                            onPressed: () {
+                              final h = _profile?['handle'] as String? ?? _profile?['displayName'] as String? ?? '';
+                              BlockReportSheet.show(context, uid: widget.uid, handle: h);
+                            },
+                          ),
                       ],
                     ),
-                  const SizedBox(height: 8),
-                ],
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        // Photo de profil
+                        Stack(
+                          children: [
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color: Colors.white.withOpacity(0.8), width: 2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: _violet.withOpacity(0.6),
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ClipOval(
+                                child: photoUrl.isNotEmpty
+                                    ? CachedNetworkImage(
+                                        imageUrl: photoUrl,
+                                        fit: BoxFit.cover,
+                                        cacheKey: 'pub_profile_' + photoUrl,
+                                        memCacheHeight: 160,
+                                        memCacheWidth: 160,
+                                        placeholder: (_, __) => Container(
+                                          color: Colors.grey[800],
+                                          child: const Center(
+                                            child: LiquidGlassLoader(size: 16, isDark: false),
+                                          ),
+                                        ),
+                                        errorWidget: (_, __, ___) => _buildAvatarFallback(displayName),
+                                      )
+                                    : _buildAvatarFallback(displayName),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(width: 24),
+                        // Stats — Amis / Wishlists / Cadeaux
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildProfileStat('Amis', '$_friendsCount'),
+                              _buildProfileStat(context.tr('Wishlists', 'Wishlists'), '${_wishlists.length}'),
+                              _buildProfileStat('Cadeaux', '${_likedProducts.length}'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Nom & Handle
+                    const SizedBox(height: 12),
+                    Text(
+                      displayName,
+                      style: GoogleFonts.poppins(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    if (handle.isNotEmpty)
+                      Text(
+                        '@$handle',
+                        style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70),
+                      ),
+                    // S9 FIX: afficher la presence en ligne sur le profil public
+                    if (!_isMyProfile) Builder(builder: (ctx) {
+                      final isOnline = _profile?['isOnline'] == true;
+                      final lastSeen = _profile?['lastSeen'];
+                      String statusText = '';
+                      Color statusColor = Colors.white38;
+                      if (isOnline) {
+                        statusText = 'En ligne';
+                        statusColor = const Color(0xFF10B981);
+                      } else if (lastSeen != null) {
+                        final seen = (lastSeen as dynamic).toDate() as DateTime;
+                        final diff = DateTime.now().difference(seen);
+                        if (diff.inMinutes < 1) { statusText = 'Vu à l''instant'; statusColor = Colors.white54; }
+                        else if (diff.inMinutes < 60) { statusText = 'Vu il y a ${diff.inMinutes} min'; statusColor = Colors.white38; }
+                        else if (diff.inHours < 24) { statusText = 'Vu il y a ${diff.inHours}h'; statusColor = Colors.white38; }
+                      }
+                      if (statusText.isEmpty) return const SizedBox.shrink();
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(
+                          children: [
+                            Container(width: 7, height: 7, decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle)),
+                            const SizedBox(width: 5),
+                            Text(statusText, style: GoogleFonts.poppins(fontSize: 12, color: statusColor)),
+                          ],
+                        ),
+                      );
+                    }),
+                    // F3: affichage de l'anniversaire de l'ami sur son profil public
+                    if (_friendshipStatus == FriendshipStatus.friends) Builder(builder: (ctx) {
+                      final b = _profile?['birthday'] as Map<String, dynamic>?;
+                      if (b == null) return const SizedBox.shrink();
+                      const months = ['', 'jan', 'fév', 'mar', 'avr', 'mai', 'juin', 'juil', 'août', 'sep', 'oct', 'nov', 'déc'];
+                      final now = DateTime.now();
+                      final day = (b['day'] as num).toInt();
+                      final month = (b['month'] as num).toInt();
+                      final isToday = now.day == day && now.month == month;
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(
+                          children: [
+                            Text(isToday ? '🎂' : '🎈', style: const TextStyle(fontSize: 14)),
+                            const SizedBox(width: 4),
+                            Text(
+                              isToday ? "C'est son anniversaire aujourd'hui !" : 'Anniv: $day ${months[month]}',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: isToday ? const Color(0xFFEC4899) : Colors.white54,
+                                fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                    if (bio.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          bio,
+                          style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+                    // Boutons d'action
+                    if (!_isMyProfile)
+                      Row(
+                        children: [
+                          Expanded(child: _buildFriendButton()),
+                          if (_friendshipStatus == FriendshipStatus.friends ||
+                              _friendshipStatus == FriendshipStatus.pendingReceived) ...[
+                            const SizedBox(width: 8),
+                            _buildChatButton(),
+                          ],
+                        ],
+                      ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
               ),
             ),
           ),
         ),
-      ),
-    );
+      );
   }
-
   Widget _buildAvatarFallback(String displayName) {
     return Container(
       color: _violet.withOpacity(0.3),
@@ -472,9 +495,9 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   Widget _buildFriendButton() {
     final configs = {
       FriendshipStatus.none: (label: context.tr('Ajouter en ami', 'Add as friend'), icon: IconlyLight.addUser, color: _violet),
-      FriendshipStatus.pendingSent: (label: 'En attente…', icon: Icons.hourglass_top_rounded, color: Colors.grey.shade600),
+      FriendshipStatus.pendingSent: (label: 'En attenteâ€¦', icon: Icons.hourglass_top_rounded, color: Colors.grey.shade600),
       FriendshipStatus.pendingReceived: (label: 'Accepter', icon: Icons.check_circle_rounded, color: _green),
-      FriendshipStatus.friends: (label: 'Amis ✓', icon: IconlyLight.user2, color: const Color(0xFF6366F1)),
+      FriendshipStatus.friends: (label: 'Amis âœ“', icon: IconlyLight.user2, color: const Color(0xFF6366F1)),
     };
     final cfg = configs[_friendshipStatus]!;
 
@@ -513,7 +536,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     );
   }
 
-  // ─── Tab Bar (identique au profil perso) ───────────────────────────────────
+  // â”€â”€â”€ Tab Bar (identique au profil perso) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildTabBar() {
     return SliverPersistentHeader(
@@ -534,7 +557,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                 children: [
                   const Icon(IconlyLight.document),
                   const SizedBox(width: 8),
-                  Text(context.tr('Wishlists', 'Wishlists')),
+                  Text(context.tr('Listes cadeaux', 'Gift lists')),
                 ],
               ),
             ),
@@ -544,7 +567,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                 children: [
                   const Icon(IconlyBold.heart),
                   const SizedBox(width: 8),
-                  const Text('Produits lik�s'),
+                  Text(context.tr('Coups de coeur', 'Favourites')),
                 ],
               ),
             ),
@@ -554,9 +577,6 @@ class _PublicProfilePageState extends State<PublicProfilePage>
       ),
     );
   }
-
-  // ─── Tab Content ────────────────────────────────────────────────────────────
-
   Widget _buildTabContent() {
     return SliverFillRemaining(
       child: TabBarView(
@@ -678,7 +698,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 
   Widget _buildLikedProducts() {
-    // Produits lik�s d'un autre utilisateur — toujours priv�s
+    // Produits likés d'un autre utilisateur â€” toujours privés
     if (_likedProductsArePrivate) {
       return Center(
         child: Column(
@@ -696,7 +716,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
             ),
             const SizedBox(height: 20),
             Text(
-              'Produits lik�s priv�s',
+              'Produits likés privés',
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -705,7 +725,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
             ),
             const SizedBox(height: 8),
             Text(
-              'Les produits lik�s de cet utilisateur\nsont priv�s et non visibles.',
+              'Les produits likés de cet utilisateur\nsont privés et non visibles.',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(fontSize: 14, color: Colors.white30),
             ),
@@ -721,11 +741,11 @@ class _PublicProfilePageState extends State<PublicProfilePage>
           children: [
             Icon(IconlyLight.heart, size: 80, color: Colors.white.withOpacity(0.35)),
             const SizedBox(height: 16),
-            Text('Aucun produit lik�',
+            Text('Aucun produit liké',
                 style: GoogleFonts.poppins(
                     fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
             const SizedBox(height: 8),
-            Text('Les produits lik�s de cet utilisateur appara�tront ici',
+            Text('Les produits likés de cet utilisateur apparaîtront ici',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
           ],
@@ -767,7 +787,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 }
 
-// ─── D�l�gu� Tab Bar sticky ─────────────────────────────────────────────────
+// â”€â”€â”€ Délégué Tab Bar sticky â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;

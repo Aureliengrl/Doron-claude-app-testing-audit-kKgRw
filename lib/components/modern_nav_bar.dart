@@ -8,21 +8,20 @@ import 'package:lottie/lottie.dart';
 import '/components/liquid_glass.dart';
 
 // ══════════════════════════════════════════════════════════════════════════════
-// FloatingModernNavBar — Liquid Glass iOS 26
+// FloatingModernNavBar — Liquid Glass iOS 26 + Apple Store style
 //
 //   Design :
-//   • Onglet ACTIF   : mini-pilule glass (icon + label côte à côte)
-//   • Onglet INACTIF : icône seule, parfaitement centrée
-//   • Bouton PROFIL  : cercle glass séparé à droite
+//   • Barre FLOTTANTE arrondie, fond glass translucide (BackdropFilter blur)
+//   • Bloc transparent (capsule) qui GLISSE entre les onglets (Apple Store)
+//   • L'onglet actif a son icône blanche éclatante à l'intérieur de la capsule
+//   • Les onglets inactifs ont des icônes semi-transparentes
+//   • Animation spring physique naturelle pour le switch
+//   • Haptic feedback à chaque onglet traversé
 //
 //   Interactions :
-//   • Tap normal → spring snap vers l'onglet
-//   • Long press + glisser → Tab Scrubbing en temps réel
-//     - La pilule indicatrice suit le doigt et s'étire (morphing liquide)
-//     - Les pages défilent en sync via onTabScrub callback
-//     - Au relâchement : spring snap vers l'onglet le plus proche
-//   • Haptic lightImpact par onglet traversé pendant le scrub
-//   • Haptic mediumImpact au snap final
+//   • Tap → spring snap avec la capsule qui glisse
+//   • Horizontal drag → scrubbing en temps réel (la capsule suit le doigt)
+//   • Double tap sur onglet actif → scroll to top (optionnel)
 // ══════════════════════════════════════════════════════════════════════════════
 
 class FloatingModernNavBar extends StatefulWidget {
@@ -44,7 +43,7 @@ class FloatingModernNavBar extends StatefulWidget {
     this.primaryColor,
     this.height = 64,
     this.borderRadius = 32,
-    this.margin = const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+    this.margin = const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
   });
 
   @override
@@ -54,33 +53,36 @@ class FloatingModernNavBar extends StatefulWidget {
 class _FloatingModernNavBarState extends State<FloatingModernNavBar>
     with TickerProviderStateMixin {
 
-  // ── Scrubbing state ──────────────────────────────────────────────────────
-  double _scrubProgress = 0.0; // 0.0 … leftItems.length (float tab index)
-  bool _isScrubbing = false;
-  double _dragStartX = 0;
-  double _scrubStartProgress = 0;
-  int _lastHapticTab = 0;
-
-  // ── Spring animation ─────────────────────────────────────────────────────
+  // ── Spring animation for indicator sliding ─────────────────────────────
   late AnimationController _springCtrl;
   late Animation<double> _springAnim;
+  double _indicatorPos = 0.0; // current float tab index position
+
+  // ── Scrub state ────────────────────────────────────────────────────────
+  bool _isScrubbing = false;
+  double _dragStartX = 0;
+  double _scrubStart = 0;
+  int _lastHapticTab = 0;
+
 
   @override
   void initState() {
     super.initState();
-    _scrubProgress = widget.currentIndex.toDouble().clamp(0.0, _leftCount - 1.0);
-    _springCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 420));
-    _springCtrl.addListener(() {
-      setState(() {});
-    });
+    _indicatorPos = widget.currentIndex.toDouble();
+
+    _springCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 480),
+    );
+
+
   }
 
   @override
   void didUpdateWidget(FloatingModernNavBar old) {
     super.didUpdateWidget(old);
     if (!_isScrubbing && old.currentIndex != widget.currentIndex) {
-      final target = widget.currentIndex.clamp(0, _leftCount - 1).toDouble();
-      _animateSpringTo(target);
+      _animateTo(widget.currentIndex.toDouble());
     }
   }
 
@@ -90,533 +92,415 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
     super.dispose();
   }
 
-  int get _leftCount => widget.items.length > 1 ? widget.items.length - 1 : widget.items.length;
+  int get _count => widget.items.length;
 
-  void _animateSpringTo(double target) {
-    final start = _scrubProgress;
-    _springAnim = Tween<double>(begin: start, end: target).animate(
-      CurvedAnimation(parent: _springCtrl, curve: _SpringOutCurve()),
+  // ── Spring animation ──────────────────────────────────────────────────
+  void _animateTo(double target) {
+    final from = _indicatorPos;
+    _springAnim = Tween<double>(begin: from, end: target).animate(
+      CurvedAnimation(parent: _springCtrl, curve: _LiquidSpring()),
     );
-    _springCtrl.forward(from: 0.0);
-    _springCtrl.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        setState(() => _scrubProgress = target);
-      }
-    });
     _springAnim.addListener(() {
-      setState(() => _scrubProgress = _springAnim.value);
+      if (mounted) setState(() => _indicatorPos = _springAnim.value);
     });
+    _springCtrl.forward(from: 0.0);
   }
 
-  // ── Drag handlers ─────────────────────────────────────────────────────────
+  // ── Drag/scrub ────────────────────────────────────────────────────────
   void _onDragStart(DragStartDetails d) {
     _isScrubbing = true;
     _dragStartX = d.localPosition.dx;
-    _scrubStartProgress = _scrubProgress;
-    _lastHapticTab = _scrubProgress.round();
+    _scrubStart = _indicatorPos;
+    _lastHapticTab = _indicatorPos.round();
     _springCtrl.stop();
     HapticFeedback.lightImpact();
   }
 
-  void _onDragUpdate(DragUpdateDetails d, double pillWidth) {
+  void _onDragUpdate(DragUpdateDetails d, double barW) {
     if (!_isScrubbing) return;
-    final tabW = pillWidth / _leftCount;
+    final tabW = barW / _count;
     final delta = (d.localPosition.dx - _dragStartX) / tabW;
-    final newProgress = (_scrubStartProgress + delta).clamp(-0.15, _leftCount - 0.85);
-    setState(() => _scrubProgress = newProgress);
+    final p = (_scrubStart + delta).clamp(-0.12, _count - 0.88);
+    setState(() => _indicatorPos = p);
 
-    // Haptic par onglet traversé
-    final nearestTab = newProgress.round().clamp(0, _leftCount - 1);
-    if (nearestTab != _lastHapticTab) {
-      HapticFeedback.lightImpact();
-      _lastHapticTab = nearestTab;
-      widget.onTabScrub?.call(nearestTab);
+    final nearest = p.round().clamp(0, _count - 1);
+    if (nearest != _lastHapticTab) {
+      HapticFeedback.selectionClick();
+      _lastHapticTab = nearest;
+      widget.onTabScrub?.call(nearest);
     }
   }
 
   void _onDragEnd(DragEndDetails d) {
     if (!_isScrubbing) return;
     _isScrubbing = false;
-    final target = _scrubProgress.round().clamp(0, _leftCount - 1).toDouble();
-    _animateSpringTo(target);
+    final target = _indicatorPos.round().clamp(0, _count - 1).toDouble();
+    _animateTo(target);
     HapticFeedback.mediumImpact();
-    widget.onTap(target.round());
-  }
-
-  // ── Indicateur : position + largeur selon le scrub progress ──────────────
-  _PillGeometry _computeIndicator(double pillWidth) {
-    final tabW = pillWidth / _leftCount;
-    final lower = _scrubProgress.floor().clamp(0, _leftCount - 1);
-    final upper = (_scrubProgress.ceil()).clamp(0, _leftCount - 1);
-    final frac = _scrubProgress - lower;
-
-    // Centre de chaque slot
-    final cL = lower * tabW + tabW / 2;
-    final cU = upper * tabW + tabW / 2;
-
-    const baseW = 90.0;
-    if (lower == upper || frac.abs() < 0.005) {
-      return _PillGeometry(left: cL - baseW / 2, width: baseW);
-    }
-
-    // Morphing liquide : étirement entre deux onglets
-    final stretch = math.sin(frac * math.pi); // 0 → 1 → 0
-    final leftEdge  = cL - baseW / 2;
-    final rightEdge = cU + baseW / 2;
-    final stretchW  = (rightEdge - leftEdge) * stretch + baseW * (1 - stretch);
-    final center    = cL + (cU - cL) * frac;
-    return _PillGeometry(left: center - stretchW / 2, width: stretchW);
+    widget.onTap(target.toInt());
   }
 
   @override
   Widget build(BuildContext context) {
     final primary = widget.primaryColor ?? LiquidGlassTokens.primary;
-    final allItems = widget.items;
+    final bottomPad = MediaQuery.of(context).padding.bottom;
 
     return Padding(
-      padding: EdgeInsets.zero, // Full width iOS style
+      padding: EdgeInsets.only(
+        left: widget.margin.left,
+        right: widget.margin.right,
+        bottom: bottomPad + widget.margin.bottom,
+      ),
       child: Container(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom), // safe area
-        decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: Colors.white.withOpacity(0.1), width: 1)),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 30, offset: const Offset(0, -5)),
-          ],
-        ),
-        child: ClipRRect(
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 50, sigmaY: 50),
-            child: Container(
-              height: widget.height,
-              color: Colors.black.withOpacity(0.55), // Translucent dark glass
-              child: LayoutBuilder(builder: (ctx, constraints) {
-                final pillW = constraints.maxWidth;
-                final geo = _computeIndicator(pillW);
-
-                return GestureDetector(
-                  onHorizontalDragStart: _onDragStart,
-                  onHorizontalDragUpdate: (d) => _onDragUpdate(d, pillW),
-                  onHorizontalDragEnd: _onDragEnd,
-                  behavior: HitTestBehavior.opaque,
-                  child: Stack(
-                    children: [
-                      // ── Indicateur glissant / morphing ─────────────
-                      AnimatedPositioned(
-                        duration: _isScrubbing ? Duration.zero : const Duration(milliseconds: 1),
-                        left: geo.left.clamp(6.0, pillW - geo.width - 6.0),
-                        top: (widget.height - 44) / 2,
-                        child: _ActivePillIndicator(
-                          width: geo.width.clamp(44.0, pillW - 12.0),
-                          height: 44,
-                          primary: primary,
-                        ),
-                      ),
-
-                      // ── Items ────────────────────────────────────────
-                      Row(
-                        children: List.generate(
-                          allItems.length,
-                          (i) {
-                            final dist = (_scrubProgress - i).abs();
-                            final isActive = dist < 0.45;
-                            return _NavItem(
-                              item: allItems[i],
-                              isSelected: isActive,
-                              primary: primary,
-                              height: widget.height,
-                              onTap: () {
-                                _animateSpringTo(i.toDouble());
-                                HapticFeedback.mediumImpact();
-                                widget.onTap(i);
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+          height: widget.height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+            boxShadow: [
+              // Main shadow
+              BoxShadow(
+                color: Colors.black.withOpacity(0.32),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+                spreadRadius: -4,
+              ),
+              // Color glow
+              BoxShadow(
+                color: primary.withOpacity(0.10),
+                blurRadius: 36,
+                offset: const Offset(0, 12),
+                spreadRadius: -8,
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 50, sigmaY: 50),
+              child: CustomPaint(
+                painter: _GlassBarPainter(
+                  borderRadius: widget.borderRadius,
+                  primary: primary,
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(widget.borderRadius),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.white.withOpacity(0.13),
+                        Colors.white.withOpacity(0.05),
+                      ],
+                    ),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.20),
+                      width: 0.7,
+                    ),
                   ),
-                );
-              }),
-            ),
+                  child: LayoutBuilder(builder: (ctx, constraints) {
+                    final barW = constraints.maxWidth;
+                    return GestureDetector(
+                      onHorizontalDragStart: _onDragStart,
+                      onHorizontalDragUpdate: (d) => _onDragUpdate(d, barW),
+                      onHorizontalDragEnd: _onDragEnd,
+                      behavior: HitTestBehavior.opaque,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          // ─── TRANSPARENT SLIDING BLOCK (Apple Store style) ───
+                          _buildSlidingBlock(barW, primary),
+
+                          // ─── TAB ITEMS ──────────────────────────────────────
+                          Row(
+                            children: List.generate(_count, (i) {
+                              final dist = (_indicatorPos - i).abs();
+                              final isActive = dist < 0.45;
+                              return Expanded(
+                                child: _TabItem(
+                                  item: widget.items[i],
+                                  isActive: isActive,
+                                  primary: primary,
+                                  height: widget.height,
+                                  onTap: () {
+                                    _animateTo(i.toDouble());
+                                    HapticFeedback.mediumImpact();
+                                    widget.onTap(i);
+                                  },
+                                ),
+                              );
+                            }),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ),
+              ),
           ),
         ),
-      )
-          .animate()
-          .fadeIn(duration: 400.ms)
-          .slideY(begin: 0.6, end: 0, duration: 550.ms, curve: Curves.easeOutCubic),
+      ),
+    )
+        .animate()
+        .fadeIn(duration: 350.ms, delay: 80.ms)
+        .slideY(begin: 0.5, end: 0, duration: 480.ms, delay: 40.ms, curve: Curves.easeOutCubic);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SLIDING TRANSPARENT BLOCK — Apple Store style capsule
+  // ═══════════════════════════════════════════════════════════════════════
+  Widget _buildSlidingBlock(double barW, Color primary) {
+    final tabW = barW / _count;
+    final blockW = tabW - 10;
+
+    // Calculate morphing stretch when between tabs
+    final lower = _indicatorPos.floor().clamp(0, _count - 1);
+    final frac = _indicatorPos - lower;
+    final stretch = math.sin(frac * math.pi); // 0→1→0 between tabs
+    final extraW = stretch * tabW * 0.22;
+    final finalW = blockW + extraW;
+
+    final centerX = (_indicatorPos * tabW) + tabW / 2;
+    final left = (centerX - finalW / 2).clamp(5.0, barW - finalW - 5.0);
+
+    final vertPad = 8.0;
+    final blockH = widget.height - vertPad * 2;
+
+    return AnimatedPositioned(
+      duration: _isScrubbing ? Duration.zero : const Duration(milliseconds: 1),
+      left: left,
+      top: vertPad,
+      child: Container(
+        width: finalW.clamp(32.0, barW - 10),
+        height: blockH,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(blockH / 2),
+          // ── The transparent glass block ──
+          color: Colors.white.withOpacity(0.13),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.25),
+            width: 0.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: primary.withOpacity(0.15),
+              blurRadius: 12,
+              offset: const Offset(0, 2),
+              spreadRadius: -2,
+            ),
+          ],
+        ),
+        // Inner specular highlight
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(blockH / 2),
+          child: CustomPaint(
+            painter: _BlockSpecularPainter(borderRadius: blockH / 2),
+          ),
+        ),
+      ),
     );
   }
 }
 
-// Courbe spring custom
-class _SpringOutCurve extends Curve {
+// ══════════════════════════════════════════════════════════════════════════════
+// _LiquidSpring — courbe spring iOS-like
+// ══════════════════════════════════════════════════════════════════════════════
+class _LiquidSpring extends Curve {
   @override
   double transformInternal(double t) {
-    // easeOutBack springy
-    const c1 = 1.70158, c3 = c1 + 1;
+    const c1 = 1.70158;
+    const c3 = c1 + 1;
     return 1 + c3 * math.pow(t - 1, 3) + c1 * math.pow(t - 1, 2);
   }
 }
 
-class _PillGeometry {
-  final double left;
-  final double width;
-  const _PillGeometry({required this.left, required this.width});
-}
-
 // ══════════════════════════════════════════════════════════════════════════════
-// _GlassPill
+// _GlassBarPainter — specular highlights on the main bar
 // ══════════════════════════════════════════════════════════════════════════════
-class _GlassPill extends StatelessWidget {
-  final Widget child;
-  final double height;
+class _GlassBarPainter extends CustomPainter {
   final double borderRadius;
   final Color primary;
-
-  const _GlassPill({
-    required this.child,
-    required this.height,
-    required this.borderRadius,
-    required this.primary,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final radius = BorderRadius.circular(borderRadius);
-    return Container(
-      height: height,
-      decoration: BoxDecoration(
-        borderRadius: radius,
-        boxShadow: [
-          BoxShadow(color: primary.withOpacity(0.28), blurRadius: 40, offset: const Offset(0, 14), spreadRadius: -6),
-          BoxShadow(color: Colors.black.withOpacity(0.35), blurRadius: 24, offset: const Offset(0, 6)),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: radius,
-        child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: 60, sigmaY: 60),
-          child: CustomPaint(
-            painter: _GlassPainter(borderRadius: borderRadius, primary: primary),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: radius,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white.withOpacity(0.20),
-                    Colors.white.withOpacity(0.05),
-                    Colors.white.withOpacity(0.10),
-                  ],
-                  stops: const [0.0, 0.50, 1.0],
-                ),
-              ),
-              child: child,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _GlassPainter extends CustomPainter {
-  final double borderRadius;
-  final Color primary;
-  const _GlassPainter({required this.borderRadius, required this.primary});
+  const _GlassBarPainter({required this.borderRadius, required this.primary});
 
   @override
   void paint(Canvas canvas, Size size) {
     final r = borderRadius;
+
+    // Top specular shine
     canvas.drawRRect(
-      RRect.fromRectAndCorners(Rect.fromLTWH(0, 0, size.width, size.height * 0.44),
-          topLeft: Radius.circular(r), topRight: Radius.circular(r)),
+      RRect.fromRectAndCorners(
+        Rect.fromLTWH(0, 0, size.width, size.height * 0.40),
+        topLeft: Radius.circular(r),
+        topRight: Radius.circular(r),
+      ),
       Paint()
         ..shader = LinearGradient(
-          begin: Alignment.topCenter, end: Alignment.bottomCenter,
-          colors: [Colors.white.withOpacity(0.26), Colors.white.withOpacity(0)],
-        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.44)),
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.white.withOpacity(0.16),
+            Colors.white.withOpacity(0.0),
+          ],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.40)),
     );
+
+    // Top edge highlight
+    final topEdge = Path()
+      ..moveTo(r + 10, 0.5)
+      ..lineTo(size.width - r - 10, 0.5);
     canvas.drawPath(
-      Path()..moveTo(r, 0)..lineTo(size.width - r, 0),
-      Paint()..color = Colors.white.withOpacity(0.58)..strokeWidth = 1.0..style = PaintingStyle.stroke..strokeCap = StrokeCap.round,
-    );
-    canvas.drawPath(
-      Path()..moveTo(r, size.height)..lineTo(size.width - r, size.height),
+      topEdge,
       Paint()
-        ..shader = const LinearGradient(colors: [Color(0x0CFF6B6B), Color(0x1200C8FF), Color(0x14B97EF8), Color(0x1200C8FF), Color(0x0CFF6B6B)])
-            .createShader(Rect.fromLTWH(0, size.height - 2, size.width, 2))
-        ..strokeWidth = 1.5..style = PaintingStyle.stroke,
+        ..color = Colors.white.withOpacity(0.35)
+        ..strokeWidth = 0.6
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round,
     );
-    final sidePaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter, end: Alignment.bottomCenter,
-        colors: [primary.withOpacity(0.26), Colors.transparent, primary.withOpacity(0.08)],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
-      ..strokeWidth = 0.8..style = PaintingStyle.stroke;
-    canvas.drawPath(Path()..moveTo(0, r)..lineTo(0, size.height - r), sidePaint);
-    canvas.drawPath(Path()..moveTo(size.width, r)..lineTo(size.width, size.height - r), sidePaint);
+
+    // Bottom iridescent edge (liquid glass signature)
+    final bottomEdge = Path()
+      ..moveTo(r + 16, size.height - 0.5)
+      ..lineTo(size.width - r - 16, size.height - 0.5);
+    canvas.drawPath(
+      bottomEdge,
+      Paint()
+        ..shader = LinearGradient(
+          colors: [
+            primary.withOpacity(0.0),
+            primary.withOpacity(0.18),
+            const Color(0xFFEC4899).withOpacity(0.14),
+            const Color(0xFF00D4FF).withOpacity(0.10),
+            primary.withOpacity(0.0),
+          ],
+          stops: const [0.0, 0.25, 0.5, 0.75, 1.0],
+        ).createShader(Rect.fromLTWH(0, size.height - 2, size.width, 2))
+        ..strokeWidth = 1.0
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round,
+    );
   }
 
   @override
-  bool shouldRepaint(_GlassPainter old) => false;
+  bool shouldRepaint(_GlassBarPainter old) => false;
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// _ActivePillIndicator — pilule interne qui glisse et morphe
+// _BlockSpecularPainter — inner shine on the sliding block
 // ══════════════════════════════════════════════════════════════════════════════
-class _ActivePillIndicator extends StatelessWidget {
-  final double width;
-  final double height;
-  final Color primary;
-
-  const _ActivePillIndicator({required this.width, required this.height, required this.primary});
+class _BlockSpecularPainter extends CustomPainter {
+  final double borderRadius;
+  const _BlockSpecularPainter({required this.borderRadius});
 
   @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(height / 2),
-      child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          width: width,
-          height: height,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(height / 2),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withOpacity(0.28),
-                Colors.white.withOpacity(0.10),
-                primary.withOpacity(0.24),
-              ],
-              stops: const [0.0, 0.55, 1.0],
-            ),
-            boxShadow: [
-              BoxShadow(color: primary.withOpacity(0.42), blurRadius: 14, offset: const Offset(0, 5), spreadRadius: -3),
-              BoxShadow(color: Colors.white.withOpacity(0.12), blurRadius: 0, offset: const Offset(0, -1)),
-            ],
-            border: Border.all(color: Colors.white.withOpacity(0.42), width: 0.8),
-          ),
-        ),
+  void paint(Canvas canvas, Size size) {
+    // Top half specular
+    canvas.drawRRect(
+      RRect.fromRectAndCorners(
+        Rect.fromLTWH(0, 0, size.width, size.height * 0.45),
+        topLeft: Radius.circular(borderRadius),
+        topRight: Radius.circular(borderRadius),
       ),
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.white.withOpacity(0.12),
+            Colors.white.withOpacity(0.0),
+          ],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.45)),
     );
   }
+
+  @override
+  bool shouldRepaint(_BlockSpecularPainter old) => false;
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// _NavItem
+// _TabItem — individual tab icon
 // ══════════════════════════════════════════════════════════════════════════════
-class _NavItem extends StatefulWidget {
+class _TabItem extends StatefulWidget {
   final NavBarItem item;
-  final bool isSelected;
+  final bool isActive;
   final Color primary;
   final double height;
   final VoidCallback onTap;
 
-  const _NavItem({
+  const _TabItem({
     required this.item,
-    required this.isSelected,
+    required this.isActive,
     required this.primary,
     required this.height,
     required this.onTap,
   });
 
   @override
-  State<_NavItem> createState() => _NavItemState();
+  State<_TabItem> createState() => _TabItemState();
 }
 
-class _NavItemState extends State<_NavItem> {
+class _TabItemState extends State<_TabItem> {
   bool _pressed = false;
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: widget.onTap,
-        onTapDown: (_) => setState(() => _pressed = true),
-        onTapUp: (_) => setState(() => _pressed = false),
-        onTapCancel: () => setState(() => _pressed = false),
-        behavior: HitTestBehavior.translucent,
-        child: AnimatedScale(
-          scale: _pressed ? 0.90 : 1.0,
-          duration: 100.ms,
-          child: SizedBox(
-            height: widget.height,
-            child: Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Icon
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      AnimatedSwitcher(
-                        duration: 160.ms,
-                        transitionBuilder: (child, anim) => ScaleTransition(
-                          scale: anim,
-                          child: FadeTransition(opacity: anim, child: child),
-                        ),
-                        child: widget.item.lottieAsset != null
-                            ? Lottie.asset(
-                                widget.item.lottieAsset!,
-                                width: widget.item.iconSize + 8,
-                                height: widget.item.iconSize + 8,
-                                animate: widget.isSelected,
-                                repeat: false,
-                              )
-                            : Icon(
-                                widget.isSelected ? widget.item.activeIcon : widget.item.icon,
-                                key: ValueKey(widget.isSelected),
-                                color: widget.isSelected ? Colors.white : Colors.white.withOpacity(0.52),
-                                size: widget.item.iconSize,
-                                shadows: widget.isSelected
-                                    ? [Shadow(color: widget.primary.withOpacity(0.75), blurRadius: 12)]
-                                    : [Shadow(color: Colors.black.withOpacity(0.4), blurRadius: 4, offset: const Offset(0, 1))],
-                              ),
-                      ),
-                      if (widget.item.badgeCount > 0)
-                        Positioned(
-                          right: -9, top: -7,
-                          child: _Badge(count: widget.item.badgeCount),
-                        ),
-                    ],
-                  ),
-                  // Label animé
-                  AnimatedSize(
-                    duration: 300.ms,
-                    curve: const Cubic(0.34, 1.2, 0.64, 1),
-                    child: widget.isSelected
-                        ? Row(mainAxisSize: MainAxisSize.min, children: [
-                            const SizedBox(width: 7),
-                            AnimatedOpacity(
-                              opacity: 1.0,
-                              duration: 200.ms,
-                              child: Text(
-                                widget.item.label,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                  letterSpacing: 0.15,
-                                  shadows: [Shadow(color: widget.primary.withOpacity(0.45), blurRadius: 8)],
-                                ),
-                              ),
-                            ),
-                          ])
-                        : const SizedBox.shrink(),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
+    final color = widget.isActive
+        ? Colors.white
+        : Colors.white.withOpacity(0.42);
 
-// ══════════════════════════════════════════════════════════════════════════════
-// _CircleNavItem — bouton circulaire profil
-// ══════════════════════════════════════════════════════════════════════════════
-class _CircleNavItem extends StatefulWidget {
-  final NavBarItem item;
-  final bool isSelected;
-  final Color primary;
-  final double size;
-  final VoidCallback onTap;
+    final shadows = widget.isActive
+        ? [Shadow(color: widget.primary.withOpacity(0.65), blurRadius: 16)]
+        : <Shadow>[];
 
-  const _CircleNavItem({
-    required this.item, required this.isSelected,
-    required this.primary, required this.size, required this.onTap,
-  });
-
-  @override
-  State<_CircleNavItem> createState() => _CircleNavItemState();
-}
-
-class _CircleNavItemState extends State<_CircleNavItem> {
-  bool _pressed = false;
-
-  @override
-  Widget build(BuildContext context) {
     return GestureDetector(
-      onTapDown: (_) { HapticFeedback.lightImpact(); setState(() => _pressed = true); },
+      onTap: widget.onTap,
+      onTapDown: (_) => setState(() => _pressed = true),
       onTapUp: (_) => setState(() => _pressed = false),
       onTapCancel: () => setState(() => _pressed = false),
-      onTap: () { HapticFeedback.mediumImpact(); widget.onTap(); },
+      behavior: HitTestBehavior.translucent,
       child: AnimatedScale(
-        scale: _pressed ? 0.90 : 1.0,
-        duration: 100.ms,
-        child: Container(
-          width: widget.size, height: widget.size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(color: widget.primary.withOpacity(0.28), blurRadius: 40, offset: const Offset(0, 14), spreadRadius: -6),
-              BoxShadow(color: Colors.black.withOpacity(0.35), blurRadius: 24, offset: const Offset(0, 6)),
-            ],
-          ),
-          child: ClipOval(
-            child: BackdropFilter(
-              filter: ui.ImageFilter.blur(sigmaX: 60, sigmaY: 60),
-              child: AnimatedContainer(
-                duration: 300.ms,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft, end: Alignment.bottomRight,
-                    colors: widget.isSelected
-                        ? [widget.primary.withOpacity(0.60), widget.primary.withOpacity(0.35), const Color(0xFFEC4899).withOpacity(0.28)]
-                        : [Colors.white.withOpacity(0.20), Colors.white.withOpacity(0.05), Colors.white.withOpacity(0.10)],
-                    stops: const [0.0, 0.55, 1.0],
+        scale: _pressed ? 0.85 : 1.0,
+        duration: 80.ms,
+        curve: Curves.easeInOut,
+        child: SizedBox(
+          height: widget.height,
+          child: Center(
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                AnimatedSwitcher(
+                  duration: 200.ms,
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.easeInCubic,
+                  transitionBuilder: (child, anim) => ScaleTransition(
+                    scale: anim,
+                    child: FadeTransition(opacity: anim, child: child),
                   ),
-                  border: Border.all(
-                    color: widget.isSelected ? Colors.white.withOpacity(0.45) : Colors.white.withOpacity(0.52),
-                    width: widget.isSelected ? 0.8 : 1.0,
-                  ),
+                  child: widget.item.lottieAsset != null
+                      ? Lottie.asset(
+                          widget.item.lottieAsset!,
+                          key: ValueKey('lottie_${widget.isActive}_${widget.item.label}'),
+                          width: widget.item.iconSize + 6,
+                          height: widget.item.iconSize + 6,
+                          animate: widget.isActive,
+                          repeat: false,
+                        )
+                      : Icon(
+                          widget.isActive
+                              ? widget.item.activeIcon
+                              : widget.item.icon,
+                          key: ValueKey('icon_${widget.isActive}_${widget.item.label}'),
+                          color: color,
+                          size: widget.item.iconSize,
+                          shadows: shadows,
+                        ),
                 ),
-                child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Stack(clipBehavior: Clip.none, children: [
-                    AnimatedSwitcher(
-                      duration: 160.ms,
-                      child: widget.item.lottieAsset != null
-                          ? Lottie.asset(
-                              widget.item.lottieAsset!,
-                              width: widget.item.iconSize + 8,
-                              height: widget.item.iconSize + 8,
-                              animate: widget.isSelected,
-                              repeat: false,
-                            )
-                          : Icon(
-                              widget.isSelected ? widget.item.activeIcon : widget.item.icon,
-                              key: ValueKey(widget.isSelected),
-                              color: widget.isSelected ? Colors.white : Colors.white.withOpacity(0.52),
-                              size: widget.item.iconSize,
-                              shadows: widget.isSelected
-                                  ? [Shadow(color: widget.primary.withOpacity(0.8), blurRadius: 12)]
-                                  : [],
-                            ),
-                    ),
-                    if (widget.item.badgeCount > 0)
-                      Positioned(right: -9, top: -7, child: _Badge(count: widget.item.badgeCount)),
-                  ]),
-                  const SizedBox(height: 3),
-                  AnimatedDefaultTextStyle(
-                    duration: 200.ms,
-                    style: GoogleFonts.poppins(
-                      fontSize: 9,
-                      fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w400,
-                      color: widget.isSelected ? Colors.white : Colors.white.withOpacity(0.50),
-                    ),
-                    child: Text(widget.item.label),
+                // Badge
+                if (widget.item.badgeCount > 0)
+                  Positioned(
+                    right: -10,
+                    top: -8,
+                    child: _Badge(count: widget.item.badgeCount),
                   ),
-                ]),
-              ),
+              ],
             ),
           ),
         ),
@@ -644,14 +528,32 @@ class _Badge extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
         constraints: const BoxConstraints(minWidth: 17, minHeight: 17),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [Color(0xFFFF4B4B), Color(0xFFFF2266)]),
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFF4B4B), Color(0xFFFF2266)],
+          ),
           borderRadius: BorderRadius.circular(9),
-          border: Border.all(color: Colors.black.withOpacity(0.85), width: 1.5),
-          boxShadow: [BoxShadow(color: const Color(0xFFFF4B4B).withOpacity(0.55), blurRadius: 7, offset: const Offset(0, 2))],
+          border: Border.all(
+            color: const Color(0xFF0A0014).withOpacity(0.9),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFF4B4B).withOpacity(0.55),
+              blurRadius: 7,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        child: Text(label,
-          style: GoogleFonts.poppins(fontSize: 9, fontWeight: FontWeight.w800, color: Colors.white, height: 1.2),
-          textAlign: TextAlign.center),
+        child: Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 9,
+            fontWeight: FontWeight.w800,
+            color: Colors.white,
+            height: 1.2,
+          ),
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }
@@ -680,8 +582,13 @@ class NavBarItem {
   });
 
   NavBarItem copyWith({int? badgeCount}) => NavBarItem(
-        icon: icon, activeIcon: activeIcon, label: label, tooltip: tooltip,
-        iconSize: iconSize, badgeCount: badgeCount ?? this.badgeCount,
+        icon: icon,
+        activeIcon: activeIcon,
+        label: label,
+        tooltip: tooltip,
+        iconSize: iconSize,
+        badgeCount: badgeCount ?? this.badgeCount,
+        lottieAsset: lottieAsset,
       );
 }
 
