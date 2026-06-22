@@ -27,8 +27,8 @@ class ChatListPage extends StatefulWidget {
 class _ChatListPageState extends State<ChatListPage> {
   final Color violetColor = const Color(0xFF8A2BE2);
 
-  // BUG 4 FIX: cache des profils participants pour Ã©viter un FutureBuilder
-  // par item (rebuild infini + surcharge Firestore Ã  chaque scroll)
+  // BUG 4 FIX: cache des profils participants pour éviter un FutureBuilder
+  // par item (rebuild infini + surcharge Firestore à chaque scroll)
   final Map<String, Map<String, dynamic>> _profileCache = {};
 
   String _formatTime(Timestamp? timestamp) {
@@ -125,7 +125,7 @@ class _ChatListPageState extends State<ChatListPage> {
   }
 
   // â”€â”€â”€ F6: Suggestions de groupe intelligentes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // GÃ©nÃ¨re des cards de suggestions pour crÃ©er un groupe
+  // Génère des cards de suggestions pour créer un groupe
   Widget _buildGroupSuggestions() {
     return FutureBuilder<List<Map<String,dynamic>>>(
       future: _loadGroupSuggestions(),
@@ -168,7 +168,7 @@ class _ChatListPageState extends State<ChatListPage> {
                         maxLines: 2, overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 2),
-                      Text('CrÃ©er un groupe',
+                      Text('Créer un groupe',
                         style: GoogleFonts.poppins(color: Colors.white38, fontSize: 10)),
                     ],
                   ),
@@ -185,10 +185,10 @@ class _ChatListPageState extends State<ChatListPage> {
     final suggestions = <Map<String,dynamic>>[
       {'emoji': 'ðŸŽ‰', 'title': context.isEn ? 'Group gift' : 'Cadeau commun', 'type': 'gift'},
       {'emoji': 'ðŸ‘¨â€ðŸ‘©â€ðŸ‘§', 'title': context.isEn ? 'Family Group' : 'Groupe Famille', 'type': 'family'},
-      {'emoji': 'ðŸ‘«', 'title': 'DÃ©jeuner surprise', 'type': 'surprise'},
+      {'emoji': 'ðŸ‘«', 'title': 'Déjeuner surprise', 'type': 'surprise'},
     ];
 
-    // Ajouter une suggestion anniversaire si un ami fÃªte son anniv dans 30 j
+    // Ajouter une suggestion anniversaire si un ami fête son anniv dans 30 j
     try {
       final friendsBdays = await BirthdayService.getFriendsBirthdays();
       final now = DateTime.now();
@@ -255,7 +255,7 @@ class _ChatListPageState extends State<ChatListPage> {
               ),
             ],
           ),
-          // Boutons d'action Ã  droite
+          // Boutons d'action à droite
           Row(
             children: [
               // Bouton Nouveau Groupe
@@ -297,7 +297,7 @@ class _ChatListPageState extends State<ChatListPage> {
                 ),
               ),
               const SizedBox(width: 8),
-              // Bouton Nouveau Message (icÃ´ne)
+              // Bouton Nouveau Message (icône)
               IconButton(
                 icon: const Icon(IconlyBold.editSquare, color: Colors.white),
                 onPressed: () => _openCreateChat(forceGroup: false),
@@ -313,7 +313,7 @@ class _ChatListPageState extends State<ChatListPage> {
 
   Widget _buildChatsList() {
     final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return Center(child: Text(context.tr('Non connectÃ©', 'Not connected'), style: const TextStyle(color: Colors.white)));
+    if (currentUser == null) return Center(child: Text(context.tr('Non connecté', 'Not connected'), style: const TextStyle(color: Colors.white)));
 
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
@@ -330,7 +330,7 @@ class _ChatListPageState extends State<ChatListPage> {
             icon: IconlyLight.chat,
             title: context.tr('Aucun message', 'No messages'),
             subtitle: context.tr(
-              'Commencez Ã  discuter avec vos proches ou collaborez sur une liste de cadeaux.',
+              'Commencez à discuter avec vos proches ou collaborez sur une liste de cadeaux.',
               'Start chatting with your friends or collaborate on a gift list.',
             ),
           );
@@ -389,7 +389,7 @@ class _ChatListPageState extends State<ChatListPage> {
                       ),
                       child: Row(
                         children: [
-                          // Avatar â€” FIX C5: initiale affichÃ©e si pas de photo
+                          // Avatar â€” FIX C5: initiale affichée si pas de photo
                           Container(
                             width: 56,
                             height: 56,
@@ -523,13 +523,13 @@ class _ChatListPageState extends State<ChatListPage> {
                 return chatTile(context.tr('Moi', 'Me'), '');
               }
 
-              // Si dÃ©jÃ  en cache â†’ affiche directement (pas de rebuild infini)
+              // Si déjà en cache â†’ affiche directement (pas de rebuild infini)
               if (_profileCache.containsKey(otherUserId)) {
                 final cached = _profileCache[otherUserId]!;
                 return chatTile(cached['name'] as String, cached['photo'] as String);
               }
 
-              // Sinon charge une seule fois et met Ã  jour le state
+              // Sinon charge une seule fois et met à jour le state
               return FutureBuilder<Map<String, dynamic>>(
                 future: _getProfile(otherUserId),
                 builder: (ctx, snap) {

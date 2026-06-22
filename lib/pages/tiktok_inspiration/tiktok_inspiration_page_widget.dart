@@ -27,7 +27,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
   late TikTokInspirationPageModel _model;
   final PageController _pageController = PageController();
   String _selectedFilter = 'Pour toi';
-  final List<String> _filters = ['Pour toi', 'Amis', 'VÃªtements', 'ActivitÃ©s'];
+  final List<String> _filters = ['Pour toi', 'Amis', 'Vêtements', 'Activités'];
 
   @override
   void initState() {
@@ -344,7 +344,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                     children: [
                       const AppNotch(
                         title: 'Inspiration',
-                        subtitle: 'Glissez pour dÃ©couvrir',
+                        subtitle: 'Glissez pour découvrir',
                       ),
                       _buildTopFilters(),
                     ],

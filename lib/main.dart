@@ -83,15 +83,15 @@ void main() async {
     }
   };
 
-  // 2. Capture les erreurs async non-gÃ©rÃ©es (Future/Stream errors)
+  // 2. Capture les erreurs async non-gérées (Future/Stream errors)
   PlatformDispatcher.instance.onError = (error, stack) {
     ErrorLogService.logError('PlatformDispatcher', error, stack);
-    return true; // Indique qu'on a gÃ©rÃ© l'erreur
+    return true; // Indique qu'on a géré l'erreur
   };
 
 
-  // 3. Widget d'erreur personnalisÃ© - UNIQUEMENT en debug
-  // En production (TestFlight), utiliser le widget d'erreur par dÃ©faut (silencieux)
+  // 3. Widget d'erreur personnalisé - UNIQUEMENT en debug
+  // En production (TestFlight), utiliser le widget d'erreur par défaut (silencieux)
   if (kDebugMode) {
     ErrorWidget.builder = (FlutterErrorDetails details) {
       return Container(
@@ -370,7 +370,7 @@ class _NavBarPageState extends State<NavBarPage> {
   late Widget? _currentPage;
   int _currentIndex = 0;
 
-  // CrÃ©er les widgets UNE SEULE FOIS
+  // Créer les widgets UNE SEULE FOIS
   late final List<Widget> _pages;
   late final List<String> _pageNames;
 

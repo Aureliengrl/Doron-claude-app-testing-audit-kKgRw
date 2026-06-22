@@ -58,13 +58,13 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
     _model = SearchPageModel();
     _loadData();
 
-    // Ã‰coute les cadeaux ajoutÃ©s depuis le modal produit (3 points â†’ "Ajouter pour quelqu'un")
+    // Ã‰coute les cadeaux ajoutés depuis le modal produit (3 points â†’ "Ajouter pour quelqu'un")
     _giftEventSub = GiftEventsService.onGiftAdded.listen((event) {
       if (!mounted) return;
-      // Injection optimiste en tÃªte de liste sans recharger tous les profils
+      // Injection optimiste en tête de liste sans recharger tous les profils
       setState(() {
         _model.personGifts[event.personId] ??= [];
-        // Ã‰viter un doublon si le produit est dÃ©jÃ  prÃ©sent
+        // Ã‰viter un doublon si le produit est déjà présent
         final alreadyPresent = _model.personGifts[event.personId]!
             .any((g) => g['id'] == event.gift['id']);
         if (!alreadyPresent) {
@@ -92,7 +92,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
 
-    // Afficher une erreur si le chargement a Ã©chouÃ©
+    // Afficher une erreur si le chargement a échoué
     if (_model.errorMessage != null) {
       return Scaffold(
         key: scaffoldKey,
@@ -127,7 +127,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                   width: 200,
                   child: PrimaryGradientButton(
                     onPressed: () => _loadData(),
-                    text: 'RÃ©essayer',
+                    text: 'Réessayer',
                     icon: Icons.refresh,
                     gradientColors: const [Color(0xFF8A2BE2), Color(0xFFEC4899)],
                     height: 50,
@@ -140,7 +140,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
       );
     }
 
-    // Afficher un indicateur de chargement si les donnÃ©es sont en cours de chargement
+    // Afficher un indicateur de chargement si les données sont en cours de chargement
     if (_model.isLoading) {
       return Scaffold(
         key: scaffoldKey,
@@ -221,7 +221,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
               // Profils en scroll horizontal + Bouton ajouter
               SliverToBoxAdapter(child: _buildProfilesRow()),
 
-              // Info sur la personne sÃ©lectionnÃ©e
+              // Info sur la personne sélectionnée
               if (_model.currentProfile != null) ...[
                 SliverToBoxAdapter(child: _buildProfileInfo()),
                 SliverToBoxAdapter(
@@ -258,7 +258,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
               // Grille de produits
               _buildProductsGrid(),
 
-              // Section Suggestions (aprÃ¨s les cadeaux sauvegardÃ©s)
+              // Section Suggestions (après les cadeaux sauvegardés)
               if (_model.currentProfile != null && _model.getFilteredProducts().isNotEmpty)
                 _buildSuggestionsSection(),
 
@@ -267,10 +267,10 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
             ],
           ),
 
-          // CTA fixe en bas de l'Ã©cran
+          // CTA fixe en bas de l'écran
           FloatingCtaButton(
             title: 'Secret Santa',
-            subtitle: 'CrÃ©ez un groupe pour NoÃ«l',
+            subtitle: 'Créez un groupe pour Noël',
             onTap: () {
               HapticFeedback.heavyImpact();
               context.push('/secret-santa');
@@ -456,7 +456,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              'SÃ©lectionne une personne pour voir ses cadeaux',
+              'Sélectionne une personne pour voir ses cadeaux',
               style: GoogleFonts.poppins(
                 color: Colors.white.withOpacity(0.75),
                 fontSize: 15,
@@ -561,7 +561,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                       ),
                     ),
                     content: Text(
-                      'Les cadeaux sauvegardÃ©s pour ${profile['name']} seront supprimÃ©s.',
+                      'Les cadeaux sauvegardés pour ${profile['name']} seront supprimés.',
                       style: GoogleFonts.poppins(fontSize: 15, color: Colors.white.withOpacity(0.80)),
                     ),
                     actions: [
@@ -593,7 +593,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                 );
               },
               onDismissed: (direction) async {
-                // FIX: Soft-delete â€” suppression Firebase diffÃ©rÃ©e avec annulation
+                // FIX: Soft-delete â€” suppression Firebase différée avec annulation
                 final removedProfile = _model.profiles[index - 1];
                 setState(() {
                   _model.profiles.removeAt(index - 1); // FIX: index-1 car index=0 = bouton "Ajouter"
@@ -605,7 +605,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                 // Afficher snackbar avec annulation
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text("${profile['name']} supprimÃ©(e)", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                    content: Text("${profile['name']} supprimé(e)", style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                     backgroundColor: Colors.red[700],
                     behavior: SnackBarBehavior.floating,
                     duration: const Duration(seconds: 4),
@@ -617,21 +617,21 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                 }
                 await Future.delayed(const Duration(seconds: 4));
                 if (!cancelled) await FirebaseDataService.deletePerson(profileId.toString());
-                // Continuer si non annulÃ©
+                // Continuer si non annulé
               },
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () async {
-                    // Premier setState pour sÃ©lectionner le profil
+                    // Premier setState pour sélectionner le profil
                     setState(() {
                       _model.selectedProfileId = profileIdInt;
                     });
 
-                    // Charger les donnÃ©es (favoris + suggestions)
+                    // Charger les données (favoris + suggestions)
                     await _model.selectProfile(profileIdInt);
 
-                    // DeuxiÃ©me setState pour mettre Ã  jour avec les suggestions
+                    // Deuxiéme setState pour mettre à jour avec les suggestions
                     if (mounted) {
                       setState(() {});
                     }
@@ -791,7 +791,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${profile['relation']} Ã  ${profile['occasion']}',
+                    '${profile['relation']} à ${profile['occasion']}',
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       color: Colors.white.withOpacity(0.55),
@@ -807,9 +807,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                         label: context.tr('Partager', 'Share'),
                         onTap: () async {
                           HapticFeedback.lightImpact();
-                          _showSnackBar(context.tr('GÃ©nÃ©ration du PDF en cours...', 'Generating PDF...'), isError: false);
+                          _showSnackBar(context.tr('Génération du PDF en cours...', 'Generating PDF...'), isError: false);
                           
-                          // On rÃ©cupÃ¨re les cadeaux sauvegardÃ©s pour cette personne
+                          // On récupère les cadeaux sauvegardés pour cette personne
                           final products = _model.getFilteredProducts(); 
                           
                           try {
@@ -818,7 +818,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                               products: products,
                             );
                           } catch (e) {
-                            _showSnackBar('Erreur lors de la gÃ©nÃ©ration du PDF', isError: true);
+                            _showSnackBar('Erreur lors de la génération du PDF', isError: true);
                           }
                         },
                       ),
@@ -831,7 +831,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                         },
                       ),
                       _buildProfileActionButton(
-                        // FIX C8: label change si collab dÃ©jÃ  active
+                        // FIX C8: label change si collab déjà active
                         icon: (profile['isShared'] == true || profile['chatId'] != null)
                             ? IconlyBold.addUser
                             : IconlyLight.addUser,
@@ -839,13 +839,13 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                             ? context.tr('Ma collab', 'My collab')
                             : context.tr('Collaborer', 'Collaborate'),
                         onTap: () {
-                           // #FIX-9: ne pas ouvrir si aucun cadeau ajoutÃ©
+                           // #FIX-9: ne pas ouvrir si aucun cadeau ajouté
                            final profileId = profile['id']?.toString() ?? profile['personId']?.toString() ?? '';
                            final giftsList = _model.personGifts[profileId] ?? [];
                            if (giftsList.isEmpty) {
                              HapticFeedback.lightImpact();
                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                               content: Text('Ajoutez d\'abord des idÃ©es cadeaux pour partager !', style: GoogleFonts.poppins(fontSize: 13)),
+                               content: Text('Ajoutez d\'abord des idées cadeaux pour partager !', style: GoogleFonts.poppins(fontSize: 13)),
                                backgroundColor: const Color(0xFFF59E0B),
                                behavior: SnackBarBehavior.floating,
                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -871,7 +871,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                                  profile['chatId'] = chatId;
                                  profile['isShared'] = true;
                                });
-                               // FIX C6: Persister dans Firebase pour survivre au redÃ©marrage
+                               // FIX C6: Persister dans Firebase pour survivre au redémarrage
                                if (personId.isNotEmpty) {
                                  FirebaseDataService.updatePersonMeta(personId, {
                                    'chatId': chatId,
@@ -882,7 +882,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                            });
                         }
                       ),
-                      // FIX C1: afficher si chatId prÃ©sent OU isShared=true
+                      // FIX C1: afficher si chatId présent OU isShared=true
                       if (profile['chatId'] != null || profile['isShared'] == true)
                         _buildProfileActionButton(
                           icon: IconlyLight.chat,
@@ -957,19 +957,19 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
       return const SliverToBoxAdapter(
         child: LiquidGlassEmptyStateWidget(
           icon: IconlyLight.addUser,
-          title: 'Ajoutez votre premiÃ¨re personne',
-          subtitle: 'Cliquez sur le bouton + pour ajouter ou rejoindre une liste existante et gÃ©nÃ©rer des idÃ©es de cadeaux personnalisÃ©es.',
+          title: 'Ajoutez votre première personne',
+          subtitle: 'Cliquez sur le bouton + pour ajouter ou rejoindre une liste existante et générer des idées de cadeaux personnalisées.',
         ),
       );
     }
 
-    // Si profil sÃ©lectionnÃ© mais pas de produits, afficher message
+    // Si profil sélectionné mais pas de produits, afficher message
     if (products.isEmpty) {
       return const SliverToBoxAdapter(
         child: LiquidGlassEmptyStateWidget(
           icon: Icons.card_giftcard,
           title: 'Aucun cadeau pour le moment',
-          subtitle: 'Les cadeaux de cette personne apparaÃ®tront ici. GÃ©nÃ©rez des idÃ©es de cadeaux ou ajoutez-les manuellement.',
+          subtitle: 'Les cadeaux de cette personne apparaîtront ici. Générez des idées de cadeaux ou ajoutez-les manuellement.',
         ),
       );
     }
@@ -994,7 +994,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
               _model.personGifts[personId]!.insert(newIndex, item);
             });
             // FIX: utiliser updateGiftOrderForPerson au lieu de saveGiftListForPerson
-            // pour modifier la liste existante et non en crÃ©er une nouvelle Ã  chaque drag
+            // pour modifier la liste existante et non en créer une nouvelle à chaque drag
             try {
               await FirebaseDataService.updateGiftOrderForPerson(
                 personId: personId,
@@ -1085,7 +1085,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                 const LiquidGlassLoader(size: 32),
                 const SizedBox(height: 16),
                 Text(
-                  'GÃ©nÃ©ration de suggestions...',
+                  'Génération de suggestions...',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     color: Colors.white.withOpacity(0.55),
@@ -1108,7 +1108,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // SÃ©parateur
+          // Séparateur
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: Container(
@@ -1125,7 +1125,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
             ),
           ),
 
-          // En-tÃ©te de la section Suggestions
+          // En-téte de la section Suggestions
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
@@ -1150,7 +1150,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'BasÃ©es sur tes choix et son profil',
+                        'Basées sur tes choix et son profil',
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           color: Colors.white.withOpacity(0.55),
@@ -1199,11 +1199,11 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
   }
 
 
-  /// Ajoute le produit directement Ã  la liste des cadeaux de la personne
+  /// Ajoute le produit directement à la liste des cadeaux de la personne
   Future<void> _showAddToWishlistDialog(Map<String, dynamic> product) async {
     final currentProf = _model.currentProfile;
     if (currentProf == null) {
-      _showSnackBar('Aucune personne sÃ©lectionnÃ©e', isError: true);
+      _showSnackBar('Aucune personne sélectionnée', isError: true);
       return;
     }
 
@@ -1212,22 +1212,22 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
     final productName = product['name'] as String? ?? 'Produit';
 
     try {
-      // Ajouter le cadeau directement Ã  la liste de la personne
+      // Ajouter le cadeau directement à la liste de la personne
       final success = await FirebaseDataService.addGiftToPerson(
         personId: personId,
         gift: product,
       );
 
         if (success) {
-          _showSnackBar('? $productName ajoutÃ© aux cadeaux de $personName');
+          _showSnackBar('? $productName ajouté aux cadeaux de $personName');
 
-          // Recharger les donnÃ©es pour mettre Ã  jour l'affichage
+          // Recharger les données pour mettre à jour l'affichage
           await _model.loadProfiles();
           if (mounted) {
             setState(() {});
           }
       } else {
-        _showSnackBar('Ce cadeau est dÃ©jÃ  dans la liste', isError: false);
+        _showSnackBar('Ce cadeau est déjà dans la liste', isError: false);
       }
     } catch (e) {
       _showSnackBar('Erreur lors de l\'ajout: ${e.toString()}', isError: true);
@@ -1276,7 +1276,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
   void _showProfileAvatarOptions(BuildContext context, Map<String, dynamic> profile) {
     HapticFeedback.mediumImpact();
     final name = profile['name'] as String? ?? 'Personne';
-    // Chercher si ce profil a un uid Firebase (personne rÃ©elle vs profil local)
+    // Chercher si ce profil a un uid Firebase (personne réelle vs profil local)
     final uid = profile['uid'] as String?;
 
     showModalBottomSheet(
@@ -1334,7 +1334,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('$name ajoutÃ©(e) en ami !', style: GoogleFonts.poppins()),
+                        content: Text('$name ajouté(e) en ami !', style: GoogleFonts.poppins()),
                         backgroundColor: const Color(0xFF8A2BE2),
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -1389,8 +1389,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
   }
 
   /// Ajoute une photo dans la liste de cadeaux d'une personne (page Recherche).
-  /// â”€ Stocke dans : users/{uid}/people/{personId}/gift_lists/   (mÃªme endroit que les autres cadeaux)
-  /// â”€ NE passe plus par les wishlists albums (comportement prÃ©cÃ©dent incorrect)
+  /// â”€ Stocke dans : users/{uid}/people/{personId}/gift_lists/   (même endroit que les autres cadeaux)
+  /// â”€ NE passe plus par les wishlists albums (comportement précédent incorrect)
   Future<void> _addPhotoForPerson(Map<String, dynamic> profile) async {
     final personId = profile['id']?.toString() ?? '';
     final personName = (profile['name'] as String?) ?? 'Personne';
@@ -1426,7 +1426,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
     );
     if (source == null || !mounted) return;
 
-    // â”€â”€ 2. SÃ©lection de la photo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â”€â”€ 2. Sélection de la photo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     final picker = ImagePicker();
     final picked = await picker.pickImage(
       source: source!, imageQuality: 60, maxWidth: 1200, maxHeight: 1200, requestFullMetadata: false); // FIX P1-C: qualit\u00e9 r\u00e9duite + contrainte taille â†’ 3x plus rapide
@@ -1445,7 +1445,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
         title: Row(children: [
           const Icon(IconlyLight.ticket, color: Color(0xFF8A2BE2), size: 20),
           const SizedBox(width: 8),
-          Text('DÃ©tails du produit', style: GoogleFonts.poppins(
+          Text('Détails du produit', style: GoogleFonts.poppins(
               color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
         ]),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -1514,7 +1514,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
       'id': photoId,
       'type': 'photo',
       'name': productName.isNotEmpty ? productName : 'Photo',
-      'image': picked.path,    // chemin local â€” affichÃ© immÃ©diatement
+      'image': picked.path,    // chemin local â€” affiché immédiatement
       'price': productPrice,
       'caption': productName,
       'brand': '',
@@ -1524,31 +1524,31 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
     };
 
     // â”€â”€ 5. INJECTION OPTIMISTE IMMÃ‰DIATE dans la grille â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    // On insÃ¨re en tÃªte de liste sans attendre Firebase â†’ UI instantanÃ©e
+    // On insère en tête de liste sans attendre Firebase â†’ UI instantanée
     _model.personGifts[personId] ??= [];
     _model.personGifts[personId]!.insert(0, photoGiftLocal);
-    if (mounted) setState(() {}); // grille mise Ã  jour en < 16ms
+    if (mounted) setState(() {}); // grille mise à jour en < 16ms
 
-    // Snack discret immÃ©diat
-    _showSnackBar('ðŸ“· Photo ajoutÃ©e ! Upload en coursâ€¦');
+    // Snack discret immédiat
+    _showSnackBar('ðŸ“· Photo ajoutée ! Upload en coursâ€¦');
 
-    // â”€â”€ 6. Persistance en arriÃ¨re-plan (Firebase + Storage) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â”€â”€ 6. Persistance en arrière-plan (Firebase + Storage) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     FirebaseDataService.addGiftToPerson(
       personId: personId,
       gift: photoGiftLocal,
     ).then((ok) {
       if (!ok) {
-        // Doublon dÃ©tectÃ© : retirer l'entrÃ©e optimiste
+        // Doublon détecté : retirer l'entrée optimiste
         if (mounted) {
           setState(() {
             _model.personGifts[personId]?.removeWhere((g) => g['id'] == photoId);
           });
-          _showSnackBar('Ce produit est dÃ©jÃ  dans la liste', isError: false);
+          _showSnackBar('Ce produit est déjà dans la liste', isError: false);
         }
       }
     });
 
-    // Upload Storage en arriÃ¨re-plan
+    // Upload Storage en arrière-plan
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
       OptimisticImageUploader.upload(
@@ -1569,7 +1569,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
               }
             });
           }
-          // Mettre Ã  jour le gift avec l'URL CDN dans Firestore
+          // Mettre à jour le gift avec l'URL CDN dans Firestore
           try {
             await FirebaseDataService.updateGiftInPerson(
               personId: personId,
@@ -1577,18 +1577,18 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
               updates: {'image': cdnUrl, '_uploading': false},
             );
           } catch (_) {}
-          if (mounted) _showSnackBar('ðŸ“· Photo de $personName sauvegardÃ©e !');
+          if (mounted) _showSnackBar('ðŸ“· Photo de $personName sauvegardée !');
         },
         onUploadError: (_) {
-          if (mounted) _showSnackBar('âš ï¸ Erreur upload â€” photo sauvegardÃ©e localement', isError: true);
+          if (mounted) _showSnackBar('âš ï¸ Erreur upload â€” photo sauvegardée localement', isError: true);
         },
         );
       }
   }
 
-  /// Upload une photo locale vers Firebase Storage et retourne l'URL de tÃ©lÃ©chargement.
+  /// Upload une photo locale vers Firebase Storage et retourne l'URL de téléchargement.
   /// Chemin : users/{uid}/person_photos/{personId}/{timestamp}.jpg
-  /// @deprecated â€” utiliser OptimisticImageUploader.upload() Ã  la place
+  /// @deprecated â€” utiliser OptimisticImageUploader.upload() à la place
   Future<String?> _uploadPhotoToStorage(String localPath, String personId) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return null;

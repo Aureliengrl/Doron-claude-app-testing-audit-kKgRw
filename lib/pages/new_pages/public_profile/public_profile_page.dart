@@ -15,7 +15,7 @@ import '/components/liquid_glass_loader.dart';
 import '/components/shared_product_card.dart';
 import '/components/block_report_sheet.dart';
 
-/// Page de profil public Ã¢â‚¬â€ mÃªme layout que user_profile_widget.dart
+/// Page de profil public ââ‚¬â€ même layout que user_profile_widget.dart
 /// Route : /public-profile/:uid
 class PublicProfilePage extends StatefulWidget {
   final String uid;
@@ -39,7 +39,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   Map<String, dynamic>? _profile;
   List<Map<String, dynamic>> _wishlists = [];
   List<Map<String, dynamic>> _likedProducts = [];
-  bool _likedProductsArePrivate = false; // true si l'onglet "Produits likÃ©s" n'est pas accessible
+  bool _likedProductsArePrivate = false; // true si l'onglet "Produits likés" n'est pas accessible
   FriendshipStatus _friendshipStatus = FriendshipStatus.none;
   String? _requestId;
   bool _isLoading = true;
@@ -108,7 +108,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 
   Future<void> _loadLikedProducts() async {
-    // Les produits likÃ©s sont privÃ©s : on ne charge jamais ceux d'un autre utilisateur
+    // Les produits likés sont privés : on ne charge jamais ceux d'un autre utilisateur
     if (!_isMyProfile) {
       _likedProductsArePrivate = true;
       return;
@@ -153,9 +153,9 @@ class _PublicProfilePageState extends State<PublicProfilePage>
             _friendshipStatus = FriendshipStatus.pendingSent;
             _requestId = id;
           });
-          _showSnack('Ã¢Å“â€¦ Demande envoyÃ©e !', _green);
+          _showSnack('âÅ“â€¦ Demande envoyée !', _green);
         } else {
-          _showSnack('Ã¢ÂÅ’ Erreur lors de l\'envoi', Colors.red);
+          _showSnack('âÂÅ’ Erreur lors de l\'envoi', Colors.red);
         }
         break;
       case FriendshipStatus.pendingSent:
@@ -166,7 +166,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
               _friendshipStatus = FriendshipStatus.none;
               _requestId = null;
             });
-            _showSnack('Demande annulÃ©e', Colors.grey);
+            _showSnack('Demande annulée', Colors.grey);
           }
         }
         break;
@@ -179,7 +179,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
               _requestId = null;
               _friendsCount++;
             });
-            _showSnack('?? Vous Ãªtes maintenant amis !', _green);
+            _showSnack('?? Vous êtes maintenant amis !', _green);
           }
         }
         break;
@@ -190,7 +190,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
             _friendshipStatus = FriendshipStatus.none;
             _friendsCount = (_friendsCount - 1).clamp(0, 999);
           });
-          _showSnack('RetirÃ© de vos amis', Colors.grey);
+          _showSnack('Retiré de vos amis', Colors.grey);
         }
         break;
     }
@@ -219,9 +219,9 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     ));
   }
 
-  // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+  // ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
   // BUILD
-  // Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+  // ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
 
   @override
   Widget build(BuildContext context) {
@@ -241,7 +241,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     );
   }
 
-  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ App Bar (identique au profil perso) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+  // ââ€â‚¬ââ€â‚¬ââ€â‚¬ App Bar (identique au profil perso) ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬
 
   Widget _buildAppBar() {
     final displayName = _profile?['displayName'] as String? ?? 'Utilisateur';
@@ -387,7 +387,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                       } else if (lastSeen != null) {
                         final seen = (lastSeen as dynamic).toDate() as DateTime;
                         final diff = DateTime.now().difference(seen);
-                        if (diff.inMinutes < 1) { statusText = 'Vu Ã  l''instant'; statusColor = Colors.white54; }
+                        if (diff.inMinutes < 1) { statusText = 'Vu à l''instant'; statusColor = Colors.white54; }
                         else if (diff.inMinutes < 60) { statusText = 'Vu il y a ${diff.inMinutes} min'; statusColor = Colors.white38; }
                         else if (diff.inHours < 24) { statusText = 'Vu il y a ${diff.inHours}h'; statusColor = Colors.white38; }
                       }
@@ -407,7 +407,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                     if (_friendshipStatus == FriendshipStatus.friends) Builder(builder: (ctx) {
                       final b = _profile?['birthday'] as Map<String, dynamic>?;
                       if (b == null) return const SizedBox.shrink();
-                      const months = ['', 'jan', 'fÃ©v', 'mar', 'avr', 'mai', 'juin', 'juil', 'aoÃ»t', 'sep', 'oct', 'nov', 'dÃ©c'];
+                      const months = ['', 'jan', 'fév', 'mar', 'avr', 'mai', 'juin', 'juil', 'août', 'sep', 'oct', 'nov', 'déc'];
                       final now = DateTime.now();
                       final day = (b['day'] as num).toInt();
                       final month = (b['month'] as num).toInt();
@@ -497,9 +497,9 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   Widget _buildFriendButton() {
     final configs = {
       FriendshipStatus.none: (label: context.tr('Ajouter en ami', 'Add as friend'), icon: IconlyLight.addUser, color: _violet),
-      FriendshipStatus.pendingSent: (label: 'En attenteÃ¢â‚¬Â¦', icon: Icons.hourglass_top_rounded, color: Colors.grey.shade600),
+      FriendshipStatus.pendingSent: (label: 'En attenteââ‚¬Â¦', icon: Icons.hourglass_top_rounded, color: Colors.grey.shade600),
       FriendshipStatus.pendingReceived: (label: 'Accepter', icon: Icons.check_circle_rounded, color: _green),
-      FriendshipStatus.friends: (label: 'Amis Ã¢Å“â€œ', icon: IconlyLight.user2, color: const Color(0xFF6366F1)),
+      FriendshipStatus.friends: (label: 'Amis âÅ“â€œ', icon: IconlyLight.user2, color: const Color(0xFF6366F1)),
     };
     final cfg = configs[_friendshipStatus]!;
 
@@ -538,7 +538,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     );
   }
 
-  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Tab Bar (identique au profil perso) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+  // ââ€â‚¬ââ€â‚¬ââ€â‚¬ Tab Bar (identique au profil perso) ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬
 
   Widget _buildTabBar() {
     return SliverPersistentHeader(
@@ -700,7 +700,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 
   Widget _buildLikedProducts() {
-    // Produits likÃ©s d'un autre utilisateur Ã¢â‚¬â€ toujours privÃ©s
+    // Produits likés d'un autre utilisateur ââ‚¬â€ toujours privés
     if (_likedProductsArePrivate) {
       return Center(
         child: Column(
@@ -718,7 +718,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
             ),
             const SizedBox(height: 20),
             Text(
-              'Produits likÃ©s privÃ©s',
+              'Produits likés privés',
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -727,7 +727,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
             ),
             const SizedBox(height: 8),
             Text(
-              'Les produits likÃ©s de cet utilisateur\nsont privÃ©s et non visibles.',
+              'Les produits likés de cet utilisateur\nsont privés et non visibles.',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(fontSize: 14, color: Colors.white30),
             ),
@@ -743,11 +743,11 @@ class _PublicProfilePageState extends State<PublicProfilePage>
           children: [
             Icon(IconlyLight.heart, size: 80, color: Colors.white.withOpacity(0.35)),
             const SizedBox(height: 16),
-            Text('Aucun produit likÃ©',
+            Text('Aucun produit liké',
                 style: GoogleFonts.poppins(
                     fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
             const SizedBox(height: 8),
-            Text('Les produits likÃ©s de cet utilisateur apparaÃ®tront ici',
+            Text('Les produits likés de cet utilisateur apparaîtront ici',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
           ],
@@ -789,7 +789,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ DÃ©lÃ©guÃ© Tab Bar sticky Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+// ââ€â‚¬ââ€â‚¬ââ€â‚¬ Délégué Tab Bar sticky ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬
 
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;
