@@ -386,7 +386,7 @@ class _NavBarPageState extends State<NavBarPage> {
       HomePinterestWidget(),
       SearchPageWidget(),
       const TikTokInspirationPageWidget(),
-      const ChatListPage(),
+      const SocialPageWidget(),
       UserProfileWidget(),
     ];
 

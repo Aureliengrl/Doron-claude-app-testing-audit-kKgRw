@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../../services/badge_service.dart';
 import '/utils/iconly_compat.dart';
 import 'package:flutter/services.dart';
@@ -18,7 +18,8 @@ import '/services/birthday_service.dart'; // F6: suggestions anniversaire
 import '/utils/app_tr.dart';
 
 class ChatListPage extends StatefulWidget {
-  const ChatListPage({super.key});
+  final bool showBackButton;
+  const ChatListPage({super.key, this.showBackButton = true});
 
   @override
   State<ChatListPage> createState() => _ChatListPageState();
@@ -239,12 +240,14 @@ class _ChatListPageState extends State<ChatListPage> {
         children: [
           Row(
             children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
-                onPressed: () => context.pop(),
-                splashRadius: 24,
-              ),
-              const SizedBox(width: 8),
+              if (widget.showBackButton) ...[
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+                  onPressed: () => context.pop(),
+                  splashRadius: 24,
+                ),
+                const SizedBox(width: 8),
+              ],
               Text(
                 context.tr('Messages', 'Messages'),
                 style: GoogleFonts.poppins(

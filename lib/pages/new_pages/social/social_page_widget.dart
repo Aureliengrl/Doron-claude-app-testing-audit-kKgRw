@@ -86,7 +86,7 @@ class _SocialPageWidgetState extends State<SocialPageWidget> with SingleTickerPr
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  const ChatListPage(),
+                  const ChatListPage(showBackButton: false),
                   const FriendsPage(),
                 ],
               ),
