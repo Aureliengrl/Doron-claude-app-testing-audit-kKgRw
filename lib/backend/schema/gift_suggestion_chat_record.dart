@@ -19,12 +19,12 @@ class GiftSuggestionChatRecord extends FirestoreRecord {
 
   // "Title" field.
   String? _title;
-  String get title => _title ✨ '';
+  String get title => _title ?? '';
   bool hasTitle() => _title != null;
 
   // "Products" field.
   List<ProductsStruct>? _products;
-  List<ProductsStruct> get products => _products ✨ const [];
+  List<ProductsStruct> get products => _products ?? const [];
   bool hasProducts() => _products != null;
 
   // "UserId" field.
@@ -35,7 +35,7 @@ class GiftSuggestionChatRecord extends FirestoreRecord {
   // "OpenAiResponses" field.
   List<OpenAiResponseStruct>? _openAiResponses;
   List<OpenAiResponseStruct> get openAiResponses =>
-      _openAiResponses ✨ const [];
+      _openAiResponses ?? const [];
   bool hasOpenAiResponses() => _openAiResponses != null;
 
   // "Timestamp" field.

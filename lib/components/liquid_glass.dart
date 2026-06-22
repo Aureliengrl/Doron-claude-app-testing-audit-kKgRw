@@ -92,17 +92,17 @@ class LiquidGlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surface = darkMode
-        ✨ LiquidGlassTokens.glassSurfaceDark
+        ? LiquidGlassTokens.glassSurfaceDark
         : LiquidGlassTokens.glassSurfaceLight;
     final border = darkMode
-        ✨ LiquidGlassTokens.glassBorderDark
+        ? LiquidGlassTokens.glassBorderDark
         : LiquidGlassTokens.glassBorderLight;
     final specular = darkMode
-        ✨ LiquidGlassTokens.glassSpecularDark
+        ? LiquidGlassTokens.glassSpecularDark
         : LiquidGlassTokens.glassSpecularLight;
 
-    final tint = tintColor ✨ (darkMode
-        ✨ LiquidGlassTokens.primary.withOpacity(0.06)
+    final tint = tintColor ?? (darkMode
+        ? LiquidGlassTokens.primary.withOpacity(0.06)
         : Colors.transparent);
 
     final radius = BorderRadius.circular(borderRadius);
@@ -136,7 +136,7 @@ class LiquidGlassCard extends StatelessWidget {
               ),
             ),
             child: padding != null
-                ✨ Padding(padding: padding!, child: child)
+                ? Padding(padding: padding!, child: child)
                 : child,
           ),
         ),
@@ -149,7 +149,7 @@ class LiquidGlassCard extends StatelessWidget {
         height: height,
         decoration: BoxDecoration(
           borderRadius: radius,
-          boxShadow: boxShadow ✨ LiquidGlassTokens.shadowSubtle,
+          boxShadow: boxShadow ?? LiquidGlassTokens.shadowSubtle,
         ),
         child: content,
       );
@@ -234,8 +234,8 @@ class LiquidGlassSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surface = color ✨ (darkMode
-        ✨ const Color(0x1AFFFFFF)
+    final surface = color ?? (darkMode
+        ? const Color(0x1AFFFFFF)
         : const Color(0xCCFFFFFF));
 
     final Widget inner = BackdropFilter(
@@ -246,13 +246,13 @@ class LiquidGlassSurface extends StatelessWidget {
           borderRadius: borderRadius,
           border: Border.all(
             color: darkMode
-                ✨ const Color(0x33FFFFFF)
+                ? const Color(0x33FFFFFF)
                 : const Color(0x44FFFFFF),
             width: 0.5,
           ),
         ),
         child: padding != null
-            ✨ Padding(padding: padding!, child: child)
+            ? Padding(padding: padding!, child: child)
             : child,
       ),
     );
@@ -290,7 +290,7 @@ class LiquidGlassPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primary = activeColor ✨ LiquidGlassTokens.primary;
+    final primary = activeColor ?? LiquidGlassTokens.primary;
 
     return GestureDetector(
       onTap: onTap,
@@ -305,14 +305,14 @@ class LiquidGlassPill extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(height / 2),
               gradient: isActive
-                  ✨ LinearGradient(
+                  ? LinearGradient(
                       colors: [primary, primary.withBlue(220)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     )
                   : LinearGradient(
                       colors: darkMode
-                          ✨ [
+                          ? [
                               Colors.white.withOpacity(0.12),
                               Colors.white.withOpacity(0.06),
                             ]
@@ -323,12 +323,12 @@ class LiquidGlassPill extends StatelessWidget {
                     ),
               border: Border.all(
                 color: isActive
-                    ✨ Colors.white.withOpacity(0.3)
-                    : Colors.white.withOpacity(darkMode ✨ 0.18 : 0.5),
+                    ? Colors.white.withOpacity(0.3)
+                    : Colors.white.withOpacity(darkMode ? 0.18 : 0.5),
                 width: 1.0,
               ),
               boxShadow: isActive
-                  ✨ [
+                  ? [
                       BoxShadow(
                         color: primary.withOpacity(0.4),
                         blurRadius: 12,
@@ -366,7 +366,7 @@ class DarkPageBackground extends StatelessWidget {
         gradient: LiquidGlassTokens.darkPageGradient,
       ),
       child: addOrbs
-          ✨ Stack(
+          ? Stack(
               children: [
                 // Orbe violet haut-gauche
                 Positioned(
@@ -467,11 +467,11 @@ class LiquidGlassInput extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: darkMode
-                ✨ Colors.white.withOpacity(0.10)
+                ? Colors.white.withOpacity(0.10)
                 : Colors.white.withOpacity(0.60),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Colors.white.withOpacity(darkMode ✨ 0.20 : 0.50),
+              color: Colors.white.withOpacity(darkMode ? 0.20 : 0.50),
               width: 1.0,
             ),
           ),
@@ -481,30 +481,30 @@ class LiquidGlassInput extends StatelessWidget {
             keyboardType: keyboardType,
             obscureText: obscureText,
             style: TextStyle(
-              color: darkMode ✨ Colors.white : const Color(0xFF111827),
+              color: darkMode ? Colors.white : const Color(0xFF111827),
               fontSize: 15,
             ),
             decoration: InputDecoration(
               hintText: hintText,
               hintStyle: TextStyle(
                 color: darkMode
-                    ✨ Colors.white.withOpacity(0.45)
+                    ? Colors.white.withOpacity(0.45)
                     : Colors.black.withOpacity(0.35),
                 fontSize: 15,
               ),
               prefixIcon: prefixIcon != null
-                  ✨ Icon(prefixIcon,
+                  ? Icon(prefixIcon,
                       color: darkMode
-                          ✨ Colors.white.withOpacity(0.55)
+                          ? Colors.white.withOpacity(0.55)
                           : Colors.black.withOpacity(0.40),
                       size: 20)
                   : null,
               suffixIcon: suffixIcon != null
-                  ✨ GestureDetector(
+                  ? GestureDetector(
                       onTap: onSuffixTap,
                       child: Icon(suffixIcon,
                           color: darkMode
-                              ✨ Colors.white.withOpacity(0.55)
+                              ? Colors.white.withOpacity(0.55)
                               : Colors.black.withOpacity(0.40),
                           size: 20))
                   : null,

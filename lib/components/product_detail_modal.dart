@@ -67,7 +67,7 @@ class GlobalProductDetailModal {
                   Stack(
                     children: [
                       ProductImage(
-                        imageUrl: product['image'] as String? ✨ product['product_photo'] as String? ✨ product['image_url'] as String? ✨ '',
+                        imageUrl: product['image'] as String? ?? product['product_photo'] as String? ?? product['image_url'] as String? ?? '',
                         height: 350,
                         fit: BoxFit.contain,
                         borderRadius: const BorderRadius.only(
@@ -201,7 +201,7 @@ class GlobalProductDetailModal {
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
-                                color: isLiked ✨ Colors.red : Colors.white.withOpacity(0.95),
+                                color: isLiked ? Colors.red : Colors.white.withOpacity(0.95),
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
@@ -212,8 +212,8 @@ class GlobalProductDetailModal {
                                 ],
                               ),
                               child: Icon(
-                                isLiked ✨ IconlyBold.heart : IconlyLight.heart,
-                                color: isLiked ✨ Colors.white : const Color(0xFF111827),
+                                isLiked ? IconlyBold.heart : IconlyLight.heart,
+                                color: isLiked ? Colors.white : const Color(0xFF111827),
                                 size: 18,
                               ),
                             ),
@@ -239,7 +239,7 @@ class GlobalProductDetailModal {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            product['brand'] as String? ✨ product['source'] as String? ✨ product['platform'] as String? ✨ 'Amazon',
+                            product['brand'] as String? ?? product['source'] as String? ?? product['platform'] as String? ?? 'Amazon',
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -249,7 +249,7 @@ class GlobalProductDetailModal {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          product['name'] as String? ✨ product['product_title'] as String? ✨ product['product_name'] as String? ✨ 'Produit',
+                          product['name'] as String? ?? product['product_title'] as String? ?? product['product_name'] as String? ?? 'Produit',
                           style: GoogleFonts.poppins(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
@@ -259,15 +259,15 @@ class GlobalProductDetailModal {
                         const SizedBox(height: 16),
                         // #FIX-2: masquer prix si 0 ou null
                         Builder(builder: (_) {
-                          final _priceRaw = product['price'] ✨ product['product_price'];
-                          final _priceStr = _priceRaw?.toString().replaceAll('\u20ac', '').trim() ✨ '';
+                          final _priceRaw = product['price'] ?? product['product_price'];
+                          final _priceStr = _priceRaw?.toString().replaceAll('\u20ac', '').trim() ?? '';
                           final _isBlank = _priceStr.isEmpty || _priceStr == '0' || _priceStr == '0.0';
                           return Text(
-                            _isBlank ✨ context.tr('Prix non renseigné', 'Price not listed') : '${_priceStr}€',
+                            _isBlank ? context.tr('Prix non renseigné', 'Price not listed') : '${_priceStr}€',
                             style: GoogleFonts.poppins(
-                              fontSize: _isBlank ✨ 16 : 32,
+                              fontSize: _isBlank ? 16 : 32,
                               fontWeight: FontWeight.bold,
-                              color: _isBlank ✨ Colors.white38 : violetColor,
+                              color: _isBlank ? Colors.white38 : violetColor,
                             ),
                           );
                         }),
@@ -285,7 +285,7 @@ class GlobalProductDetailModal {
                           )
                         else
                           Text(
-                          context.tr('Cadeau parfait par ${product['brand'] as String? ✨ product['source'] as String? ✨ product['platform'] as String? ✨ 'une marque de qualité'}', 'The perfect gift from ${product['brand'] as String? ✨ product['source'] as String? ✨ product['platform'] as String? ✨ 'a quality brand'}'),
+                          context.tr('Cadeau parfait par ${product['brand'] as String? ?? product['source'] as String? ?? product['platform'] as String? ?? 'une marque de qualité'}', 'The perfect gift from ${product['brand'] as String? ?? product['source'] as String? ?? product['platform'] as String? ?? 'a quality brand'}'),
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               color: Colors.white60,
@@ -351,22 +351,22 @@ class GlobalProductDetailModal {
           .toList();
       // Trier : affiliés d'abord, puis par priorité, puis par prix
       buyLinks.sort((a, b) {
-        final aAff = a['affiliated'] == true ✨ 0 : 1;
-        final bAff = b['affiliated'] == true ✨ 0 : 1;
+        final aAff = a['affiliated'] == true ? 0 : 1;
+        final bAff = b['affiliated'] == true ? 0 : 1;
         if (aAff != bAff) return aAff - bAff;
-        final aPrio = (a['priority'] as num?)?.toInt() ✨ 99;
-        final bPrio = (b['priority'] as num?)?.toInt() ✨ 99;
+        final aPrio = (a['priority'] as num?)?.toInt() ?? 99;
+        final bPrio = (b['priority'] as num?)?.toInt() ?? 99;
         if (aPrio != bPrio) return aPrio - bPrio;
-        final aPrice = (a['price'] as num?)?.toDouble() ✨ 9999;
-        final bPrice = (b['price'] as num?)?.toDouble() ✨ 9999;
+        final aPrice = (a['price'] as num?)?.toDouble() ?? 9999;
+        final bPrice = (b['price'] as num?)?.toDouble() ?? 9999;
         return aPrice.compareTo(bPrice);
       });
     }
 
     // Pas de buyLinks → fallback bouton simple
     if (buyLinks.isEmpty) {
-      final url = (product['product_url'] ✨ product['url'] ✨ '').toString();
-      final brand = (product['brand'] ✨ product['source'] ✨ 'Boutique').toString();
+      final url = (product['product_url'] ?? product['url'] ?? '').toString();
+      final brand = (product['brand'] ?? product['source'] ?? 'Boutique').toString();
       if (url.isEmpty) {
         return Padding(
           padding: const EdgeInsets.only(top: 4),
@@ -397,7 +397,7 @@ class GlobalProductDetailModal {
 
     // Trouver le prix min pour le badge
     final prices = buyLinks.map((l) => (l['price'] as num?)?.toDouble()).whereType<double>().toList();
-    final priceMin = prices.isNotEmpty ✨ prices.reduce((a, b) => a < b ✨ a : b) : null;
+    final priceMin = prices.isNotEmpty ? prices.reduce((a, b) => a < b ? a : b) : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -423,7 +423,7 @@ class GlobalProductDetailModal {
                   border: Border.all(color: const Color(0xFF10B981).withOpacity(0.4)),
                 ),
                 child: Text(
-                  'Dès ${priceMin.toStringAsFixed(priceMin == priceMin.roundToDouble() ✨ 0 : 2)}€',
+                  'Dès ${priceMin.toStringAsFixed(priceMin == priceMin.roundToDouble() ? 0 : 2)}€',
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -436,8 +436,8 @@ class GlobalProductDetailModal {
         const SizedBox(height: 10),
         // Liste des liens
         ...buyLinks.take(6).map((link) {
-          final site    = (link['site'] as String?) ✨ 'Boutique';
-          final url     = (link['url'] as String?) ✨ '';
+          final site    = (link['site'] as String?) ?? 'Boutique';
+          final url     = (link['url'] as String?) ?? '';
           final price   = (link['price'] as num?)?.toDouble();
           final isAffiliated = link['affiliated'] == true;
           final isBest  = price != null && price == priceMin;
@@ -447,7 +447,7 @@ class GlobalProductDetailModal {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: GestureDetector(
-              onTap: url.isNotEmpty ✨ () async {
+              onTap: url.isNotEmpty ? () async {
                 HapticFeedback.lightImpact();
                 try { await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication); } catch (_) {}
               } : null,
@@ -456,14 +456,14 @@ class GlobalProductDetailModal {
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                 decoration: BoxDecoration(
                   color: isBest
-                      ✨ const Color(0xFF10B981).withOpacity(0.08)
+                      ? const Color(0xFF10B981).withOpacity(0.08)
                       : Colors.white.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: isBest
-                        ✨ const Color(0xFF10B981).withOpacity(0.4)
+                        ? const Color(0xFF10B981).withOpacity(0.4)
                         : Colors.white.withOpacity(0.08),
-                    width: isBest ✨ 1.5 : 1,
+                    width: isBest ? 1.5 : 1,
                   ),
                 ),
                 child: Row(
@@ -516,11 +516,11 @@ class GlobalProductDetailModal {
                     // Prix
                     if (price != null)
                       Text(
-                        '${price.toStringAsFixed(price == price.roundToDouble() ✨ 0 : 2)}€',
+                        '${price.toStringAsFixed(price == price.roundToDouble() ? 0 : 2)}€',
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: isBest ✨ const Color(0xFF10B981) : Colors.white,
+                          color: isBest ? const Color(0xFF10B981) : Colors.white,
                         ),
                       ),
                     const SizedBox(width: 8),
@@ -560,11 +560,11 @@ class GlobalProductDetailModal {
           .doc(uid)
           .collection('favorites');
 
-      final productTitle = product['name'] as String? ✨ product['product_title'] as String? ✨ 'Produit';
-      final productImage = product['image'] as String? ✨ product['product_photo'] as String? ✨ product['image_url'] as String? ✨ '';
-      final productUrl = product['product_url'] ✨ product['url'] ✨ ProductUrlService.generateProductUrl(product);
-      final brandOrSource = product['brand'] ✨ product['source'] ✨ product['platform'] ✨ 'Amazon';
-      final price = '${product['price'] ✨ product['product_price'] ✨ 0}'.replaceAll('€', '').trim();
+      final productTitle = product['name'] as String? ?? product['product_title'] as String? ?? 'Produit';
+      final productImage = product['image'] as String? ?? product['product_photo'] as String? ?? product['image_url'] as String? ?? '';
+      final productUrl = product['product_url'] ?? product['url'] ?? ProductUrlService.generateProductUrl(product);
+      final brandOrSource = product['brand'] ?? product['source'] ?? product['platform'] ?? 'Amazon';
+      final price = '${product['price'] ?? product['product_price'] ?? 0}'.replaceAll('€', '').trim();
 
       if (isCurrentlyLiked) {
         // Supprimer : chercher par name
@@ -655,7 +655,7 @@ class GlobalProductDetailModal {
                             ),
                           ),
                           Text(
-                            product['name'] as String? ✨ product['product_title'] as String? ✨ '',
+                            product['name'] as String? ?? product['product_title'] as String? ?? '',
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               color: Colors.white60,
@@ -704,7 +704,7 @@ class GlobalProductDetailModal {
                     itemCount: wishlists.length,
                     itemBuilder: (context, index) {
                       final wishlist = wishlists[index];
-                      final giftCount = (wishlist['productCount'] as int?) ✨ (wishlist['productIds'] as List?)?.length ✨ 0;
+                      final giftCount = (wishlist['productCount'] as int?) ?? (wishlist['productIds'] as List?)?.length ?? 0;
 
                       return ListTile(
                         leading: Container(
@@ -721,7 +721,7 @@ class GlobalProductDetailModal {
                           ),
                         ),
                         title: Text(
-                          wishlist['name'] as String? ✨ 'Wishlist',
+                          wishlist['name'] as String? ?? 'Wishlist',
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -729,7 +729,7 @@ class GlobalProductDetailModal {
                           ),
                         ),
                         subtitle: Text(
-                          '$giftCount cadeau${giftCount > 1 ✨ 's' : ''}',
+                          '$giftCount cadeau${giftCount > 1 ? 's' : ''}',
                           style: GoogleFonts.poppins(
                             fontSize: 13,
                             color: Colors.white60,
@@ -1179,14 +1179,14 @@ class GlobalProductDetailModal {
                         final chatData = chatDoc.data() as Map<String, dynamic>;
                         final chatId = chatDoc.id;
                         final isGroup = chatData['isGroup'] == true;
-                        final chatName = chatData['name'] as String? ✨ 'Conversation';
+                        final chatName = chatData['name'] as String? ?? 'Conversation';
 
                         if (isGroup) {
                           return _buildChatTile(sheetContext, chatId, chatName, chatData['photoUrl'] as String?, product);
                         }
 
                         // For 1-on-1 chats, resolve the other user's name
-                        final participants = (chatData['participants'] as List?)?.cast<String>() ✨ [];
+                        final participants = (chatData['participants'] as List?)?.cast<String>() ?? [];
                         final otherUid = participants.firstWhere(
                           (p) => p != user.uid,
                           orElse: () => '',
@@ -1198,12 +1198,12 @@ class GlobalProductDetailModal {
                         return FutureBuilder<DocumentSnapshot>(
                           future: FirebaseFirestore.instance.collection('users').doc(otherUid).get(),
                           builder: (context, userSnap) {
-                            final userData = userSnap.data?.data() as Map<String, dynamic>? ✨ {};
+                            final userData = userSnap.data?.data() as Map<String, dynamic>? ?? {};
                             final name = userData['first_name'] as String? ??
                                 userData['display_name'] as String? ??
                                 userData['name'] as String? ??
                                 chatName;
-                            final photo = userData['photo_url'] as String? ✨ userData['photoUrl'] as String?;
+                            final photo = userData['photo_url'] as String? ?? userData['photoUrl'] as String?;
                             return _buildChatTile(sheetContext, chatId, name, photo, product);
                           },
                         );
@@ -1224,10 +1224,10 @@ class GlobalProductDetailModal {
       leading: CircleAvatar(
         radius: 24,
         backgroundColor: violetColor.withOpacity(0.2),
-        backgroundImage: (photoUrl != null && photoUrl.isNotEmpty) ✨ CachedNetworkImageProvider(photoUrl) : null,
+        backgroundImage: (photoUrl != null && photoUrl.isNotEmpty) ? CachedNetworkImageProvider(photoUrl) : null,
         child: (photoUrl == null || photoUrl.isEmpty)
-            ✨ Text(
-                name.isNotEmpty ✨ name[0].toUpperCase() : '✨',
+            ? Text(
+                name.isNotEmpty ? name[0].toUpperCase() : '?',
                 style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
               )
             : null,
@@ -1254,11 +1254,11 @@ class GlobalProductDetailModal {
     if (user == null) return;
 
     try {
-      final productTitle = product['name'] as String? ✨ product['product_title'] as String? ✨ 'Produit';
-      final productImage = product['image'] as String? ✨ product['product_photo'] as String? ✨ product['image_url'] as String? ✨ '';
-      final productUrl = product['product_url'] ✨ product['url'] ✨ ProductUrlService.generateProductUrl(product);
-      final brand = product['brand'] ✨ product['source'] ✨ product['platform'] ✨ '';
-      final price = '${product['price'] ✨ product['product_price'] ✨ 0}'.replaceAll('€', '').trim();
+      final productTitle = product['name'] as String? ?? product['product_title'] as String? ?? 'Produit';
+      final productImage = product['image'] as String? ?? product['product_photo'] as String? ?? product['image_url'] as String? ?? '';
+      final productUrl = product['product_url'] ?? product['url'] ?? ProductUrlService.generateProductUrl(product);
+      final brand = product['brand'] ?? product['source'] ?? product['platform'] ?? '';
+      final price = '${product['price'] ?? product['product_price'] ?? 0}'.replaceAll('€', '').trim();
 
       final productCardJson = json.encode({
         'name': productTitle,
@@ -1384,7 +1384,7 @@ class GlobalProductDetailModal {
                         child: CircularProgressIndicator(color: Color(0xFF8A2BE2)),
                       );
                     }
-                    final people = snapshot.data ✨ [];
+                    final people = snapshot.data ?? [];
                     if (people.isEmpty) {
                       return Center(
                         child: Padding(
@@ -1422,33 +1422,33 @@ class GlobalProductDetailModal {
                       itemCount: people.length,
                       itemBuilder: (context, index) {
                         final person = people[index];
-                        final personId = person['id'] as String? ✨ '';
+                        final personId = person['id'] as String? ?? '';
                         // Chercher le nom dans plusieurs structures possibles (local vs Firebase)
-                        final tags = person['tags'] as Map<String, dynamic>? ✨ {};
+                        final tags = person['tags'] as Map<String, dynamic>? ?? {};
                         final personName = (person['name'] as String?)?.isNotEmpty == true
-                            ✨ person['name'] as String
+                            ? person['name'] as String
                             : (tags['name'] as String?)?.isNotEmpty == true
-                                ✨ tags['name'] as String
+                                ? tags['name'] as String
                                 : (tags['personName'] as String?)?.isNotEmpty == true
-                                    ✨ tags['personName'] as String
+                                    ? tags['personName'] as String
                                     : (tags['recipient'] as String?)?.isNotEmpty == true
-                                        ✨ tags['recipient'] as String
+                                        ? tags['recipient'] as String
                                         : (person['firstName'] as String?)?.isNotEmpty == true
-                                            ✨ person['firstName'] as String
+                                            ? person['firstName'] as String
                                             : 'Proche';
-                        final personEmoji = person['emoji'] as String? ✨ person['avatar'] as String? ✨ tags['emoji'] as String?;
-                        final personPhoto = person['photoUrl'] as String? ✨ person['photo_url'] as String?;
+                        final personEmoji = person['emoji'] as String? ?? person['avatar'] as String? ?? tags['emoji'] as String?;
+                        final personPhoto = person['photoUrl'] as String? ?? person['photo_url'] as String?;
 
                         return ListTile(
                           leading: CircleAvatar(
                             radius: 24,
                             backgroundColor: const Color(0xFFEC4899).withOpacity(0.2),
-                            backgroundImage: (personPhoto != null && personPhoto.isNotEmpty) ✨ CachedNetworkImageProvider(personPhoto) : null,
+                            backgroundImage: (personPhoto != null && personPhoto.isNotEmpty) ? CachedNetworkImageProvider(personPhoto) : null,
                             child: (personPhoto == null || personPhoto.isEmpty)
-                                ✨ Text(
-                                    personEmoji ✨ (personName.isNotEmpty ✨ personName[0].toUpperCase() : '✨'),
+                                ? Text(
+                                    personEmoji ?? (personName.isNotEmpty ? personName[0].toUpperCase() : '?'),
                                     style: GoogleFonts.poppins(
-                                      fontSize: personEmoji != null ✨ 22 : 18,
+                                      fontSize: personEmoji != null ? 22 : 18,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
@@ -1486,11 +1486,11 @@ class GlobalProductDetailModal {
     if (personId.isEmpty) return;
 
     try {
-      final productTitle = product['name'] as String? ✨ product['product_title'] as String? ✨ 'Produit';
-      final productImage = product['image'] as String? ✨ product['product_photo'] as String? ✨ product['image_url'] as String? ✨ '';
-      final productUrl = product['product_url'] ✨ product['url'] ✨ ProductUrlService.generateProductUrl(product);
-      final brand = product['brand'] ✨ product['source'] ✨ product['platform'] ✨ '';
-      final price = '${product['price'] ✨ product['product_price'] ✨ 0}'.replaceAll('€', '').trim();
+      final productTitle = product['name'] as String? ?? product['product_title'] as String? ?? 'Produit';
+      final productImage = product['image'] as String? ?? product['product_photo'] as String? ?? product['image_url'] as String? ?? '';
+      final productUrl = product['product_url'] ?? product['url'] ?? ProductUrlService.generateProductUrl(product);
+      final brand = product['brand'] ?? product['source'] ?? product['platform'] ?? '';
+      final price = '${product['price'] ?? product['product_price'] ?? 0}'.replaceAll('€', '').trim();
 
       final gift = {
         'id': 'gift_${DateTime.now().millisecondsSinceEpoch}',

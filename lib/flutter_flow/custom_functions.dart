@@ -26,8 +26,8 @@ double getDiscountAmazon(
   if (newPrice == null || orginalPrice == null) return 0.0;
 
   // $ sign hatana aur double me convert karna
-  double newP = double.tryParse(newPrice.replaceAll('\$', '')) ✨ 0.0;
-  double originalP = double.tryParse(orginalPrice.replaceAll('\$', '')) ✨ 0.0;
+  double newP = double.tryParse(newPrice.replaceAll('\$', '')) ?? 0.0;
+  double originalP = double.tryParse(orginalPrice.replaceAll('\$', '')) ?? 0.0;
 
   if (originalP == 0) return 0.0; // Divide by zero ka issue avoid karne ke liye
 
@@ -61,7 +61,7 @@ String getTitle(String? jsonString) {
   if (jsonString == null) return "Invalid JSON";
   try {
     Map<String, dynamic> data = jsonDecode(jsonString);
-    return data["title"] ✨ "No title found";
+    return data["title"] ?? "No title found";
   } catch (e) {
     return "Invalid JSON";
   }

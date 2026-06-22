@@ -46,7 +46,7 @@ class _ShimmerBoxState extends State<_ShimmerBox>
           width: widget.width,
           height: widget.height,
           decoration: BoxDecoration(
-            borderRadius: widget.borderRadius ✨ BorderRadius.zero,
+            borderRadius: widget.borderRadius ?? BorderRadius.zero,
             gradient: LinearGradient(
               begin: Alignment(_anim.value - 1, 0),
               end: Alignment(_anim.value, 0),
@@ -96,7 +96,7 @@ class CachedImage extends StatelessWidget {
     }
 
     return ClipRRect(
-      borderRadius: borderRadius ✨ BorderRadius.zero,
+      borderRadius: borderRadius ?? BorderRadius.zero,
       child: CachedNetworkImage(
         imageUrl: imageUrl,
         width: width,
@@ -112,7 +112,7 @@ class CachedImage extends StatelessWidget {
             ),
         errorWidget: (context, url, error) {
           AppLogger.debug('❌ Erreur chargement image: $url - $error', 'Debug');
-          return errorWidget ✨ _buildErrorWidget();
+          return errorWidget ?? _buildErrorWidget();
         },
         // PERF AXE 3: 150ms au lieu de 300ms — images pop 2× plus vite
         fadeInDuration: const Duration(milliseconds: 150),
@@ -142,7 +142,7 @@ class CachedImage extends StatelessWidget {
             pinkColor.withOpacity(0.1),
           ],
         ),
-        borderRadius: borderRadius ✨ BorderRadius.zero,
+        borderRadius: borderRadius ?? BorderRadius.zero,
       ),
       child: Center(
         child: Column(
@@ -150,7 +150,7 @@ class CachedImage extends StatelessWidget {
           children: [
             Icon(
               Icons.card_giftcard,
-              size: width != null && width! < 100 ✨ 40 : 60,
+              size: width != null && width! < 100 ? 40 : 60,
               color: violetColor.withOpacity(0.5),
             ),
             if (width == null || width! >= 100) ...[
@@ -200,7 +200,7 @@ class ProductImage extends StatelessWidget {
         decoration: BoxDecoration(
           color: backgroundColor,
           gradient: backgroundColor == null
-              ✨ LinearGradient(
+              ? LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
@@ -209,7 +209,7 @@ class ProductImage extends StatelessWidget {
                   ],
                 )
               : null,
-          borderRadius: borderRadius ✨ BorderRadius.circular(12),
+          borderRadius: borderRadius ?? BorderRadius.circular(12),
         ),
         child: Center(
           child: Column(
@@ -247,7 +247,7 @@ class ProductImage extends StatelessWidget {
       return Container(
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: borderRadius ✨ BorderRadius.zero,
+          borderRadius: borderRadius ?? BorderRadius.zero,
         ),
         child: imageWidget,
       );
@@ -302,7 +302,7 @@ class FullscreenProductImage extends StatelessWidget {
     }
 
     return ClipRRect(
-      borderRadius: borderRadius ✨ BorderRadius.zero,
+      borderRadius: borderRadius ?? BorderRadius.zero,
       child: CachedNetworkImage(
         imageUrl: imageUrl,
         height: height,
@@ -422,14 +422,14 @@ class CachedCircleAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = backgroundColor ✨ _violet.withOpacity(0.3);
+    final bg = backgroundColor ?? _violet.withOpacity(0.3);
     final size = radius * 2;
 
     if (!_hasPhoto) {
       return CircleAvatar(
         radius: radius,
         backgroundColor: bg,
-        child: fallback ✨ Icon(Icons.person, color: Colors.white, size: radius),
+        child: fallback ?? Icon(Icons.person, color: Colors.white, size: radius),
       );
     }
 
@@ -447,13 +447,13 @@ class CachedCircleAvatar extends StatelessWidget {
             width: size,
             height: size,
             color: bg,
-            child: fallback ✨ Icon(Icons.person, color: Colors.white54, size: radius),
+            child: fallback ?? Icon(Icons.person, color: Colors.white54, size: radius),
           ),
           errorWidget: (_, __, ___) => Container(
             width: size,
             height: size,
             color: bg,
-            child: fallback ✨ Icon(Icons.person, color: Colors.white54, size: radius),
+            child: fallback ?? Icon(Icons.person, color: Colors.white54, size: radius),
           ),
         ),
       ),

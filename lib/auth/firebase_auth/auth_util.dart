@@ -16,22 +16,22 @@ final _authManager = FirebaseAuthManager();
 FirebaseAuthManager get authManager => _authManager;
 
 String get currentUserEmail =>
-    currentUserDocument?.email ✨ currentUser?.email ✨ '';
+    currentUserDocument?.email ?? currentUser?.email ?? '';
 
-String get currentUserUid => currentUser?.uid ✨ '';
+String get currentUserUid => currentUser?.uid ?? '';
 
 String get currentUserDisplayName =>
-    currentUserDocument?.displayName ✨ currentUser?.displayName ✨ '';
+    currentUserDocument?.displayName ?? currentUser?.displayName ?? '';
 
 String get currentUserPhoto =>
-    currentUserDocument?.photoUrl ✨ currentUser?.photoUrl ✨ '';
+    currentUserDocument?.photoUrl ?? currentUser?.photoUrl ?? '';
 
 String get currentPhoneNumber =>
-    currentUserDocument?.phoneNumber ✨ currentUser?.phoneNumber ✨ '';
+    currentUserDocument?.phoneNumber ?? currentUser?.phoneNumber ?? '';
 
-String get currentJwtToken => _currentJwtToken ✨ '';
+String get currentJwtToken => _currentJwtToken ?? '';
 
-bool get currentUserEmailVerified => currentUser?.emailVerified ✨ false;
+bool get currentUserEmailVerified => currentUser?.emailVerified ?? false;
 
 /// Create a Stream that listens to the current user's JWT Token, since Firebase
 /// generates a new token every hour.
@@ -42,15 +42,15 @@ final jwtTokenStream = FirebaseAuth.instance
     .asBroadcastStream();
 
 DocumentReference? get currentUserReference =>
-    loggedIn ✨ UsersRecord.collection.doc(currentUser!.uid) : null;
+    loggedIn ? UsersRecord.collection.doc(currentUser!.uid) : null;
 
 UsersRecord? currentUserDocument;
 final authenticatedUserStream = FirebaseAuth.instance
     .authStateChanges()
-    .map<String>((user) => user?.uid ✨ '')
+    .map<String>((user) => user?.uid ?? '')
     .switchMap(
       (uid) => uid.isEmpty
-          ✨ Stream.value(null)
+          ? Stream.value(null)
           : UsersRecord.getDocument(UsersRecord.collection.doc(uid))
               .handleError((_) {}),
     )

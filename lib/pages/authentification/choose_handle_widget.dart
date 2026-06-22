@@ -77,7 +77,7 @@ class _ChooseHandleWidgetState extends State<ChooseHandleWidget> {
       // Routing logic (borrowed from AuthentificationWidget)
       if (widget.personId != null && widget.personId!.isNotEmpty) {
         final returnParam = (widget.returnTo != null && widget.returnTo!.isNotEmpty)
-            ✨ '&returnTo=${Uri.encodeComponent(widget.returnTo!)}'
+            ? '&returnTo=${Uri.encodeComponent(widget.returnTo!)}'
             : '';
         context.go('/onboarding-gifts-result?personId=${widget.personId}$returnParam');
       } else {
@@ -148,10 +148,10 @@ class _ChooseHandleWidgetState extends State<ChooseHandleWidget> {
                   height: 56,
                   isActive: !_isLoading,
                   activeColor: const Color(0xFF8A2BE2),
-                  onTap: _isLoading ✨ () {} : _saveHandle,
+                  onTap: _isLoading ? () {} : _saveHandle,
                   child: Center(
                     child: _isLoading
-                        ✨ const SizedBox(
+                        ? const SizedBox(
                             width: 24,
                             height: 24,
                             child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),

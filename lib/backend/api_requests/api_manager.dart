@@ -84,19 +84,19 @@ class ApiCallOptions extends Equatable {
     bool? isStreamingApi,
   }) {
     return ApiCallOptions(
-      callName: callName ✨ this.callName,
-      callType: callType ✨ this.callType,
-      apiUrl: apiUrl ✨ this.apiUrl,
-      headers: headers ✨ _cloneMap(this.headers),
-      params: params ✨ _cloneMap(this.params),
-      bodyType: bodyType ✨ this.bodyType,
-      body: body ✨ this.body,
-      returnBody: returnBody ✨ this.returnBody,
-      encodeBodyUtf8: encodeBodyUtf8 ✨ this.encodeBodyUtf8,
-      decodeUtf8: decodeUtf8 ✨ this.decodeUtf8,
-      alwaysAllowBody: alwaysAllowBody ✨ this.alwaysAllowBody,
-      cache: cache ✨ this.cache,
-      isStreamingApi: isStreamingApi ✨ this.isStreamingApi,
+      callName: callName ?? this.callName,
+      callType: callType ?? this.callType,
+      apiUrl: apiUrl ?? this.apiUrl,
+      headers: headers ?? _cloneMap(this.headers),
+      params: params ?? _cloneMap(this.params),
+      bodyType: bodyType ?? this.bodyType,
+      body: body ?? this.body,
+      returnBody: returnBody ?? this.returnBody,
+      encodeBodyUtf8: encodeBodyUtf8 ?? this.encodeBodyUtf8,
+      decodeUtf8: decodeUtf8 ?? this.decodeUtf8,
+      alwaysAllowBody: alwaysAllowBody ?? this.alwaysAllowBody,
+      cache: cache ?? this.cache,
+      isStreamingApi: isStreamingApi ?? this.isStreamingApi,
     );
   }
 
@@ -159,12 +159,12 @@ class ApiCallResponse {
   final Object? exception;
   // Whether we received a 2xx status (which generally marks success).
   bool get succeeded => statusCode >= 200 && statusCode < 300;
-  String getHeader(String headerName) => headers[headerName] ✨ '';
+  String getHeader(String headerName) => headers[headerName] ?? '';
   // Return the raw body from the response, or if this came from a cloud call
   // and the body is not a string, then the json encoded body.
   String get bodyText =>
       response?.body ??
-      (jsonBody is String ✨ jsonBody as String : jsonEncode(jsonBody));
+      (jsonBody is String ? jsonBody as String : jsonEncode(jsonBody));
   String get exceptionMessage => exception.toString();
 
   /// Creates a new [ApiCallResponse] with optionally updated parameters.
@@ -181,12 +181,12 @@ class ApiCallResponse {
     Object? exception,
   }) {
     return ApiCallResponse(
-      jsonBody ✨ this.jsonBody,
-      headers ✨ this.headers,
-      statusCode ✨ this.statusCode,
-      response: response ✨ this.response,
-      streamedResponse: streamedResponse ✨ this.streamedResponse,
-      exception: exception ✨ this.exception,
+      jsonBody ?? this.jsonBody,
+      headers ?? this.headers,
+      statusCode ?? this.statusCode,
+      response: response ?? this.response,
+      streamedResponse: streamedResponse ?? this.streamedResponse,
+      exception: exception ?? this.exception,
     );
   }
 
@@ -198,9 +198,9 @@ class ApiCallResponse {
     dynamic jsonBody;
     try {
       final responseBody = decodeUtf8 && returnBody
-          ✨ const Utf8Decoder().convert(response.bodyBytes)
+          ? const Utf8Decoder().convert(response.bodyBytes)
           : response.body;
-      jsonBody = returnBody ✨ json.decode(responseBody) : null;
+      jsonBody = returnBody ? json.decode(responseBody) : null;
     } catch (_) {}
     return ApiCallResponse(
       jsonBody,
@@ -213,8 +213,8 @@ class ApiCallResponse {
   static ApiCallResponse fromCloudCallResponse(Map<String, dynamic> response) =>
       ApiCallResponse(
         response['body'],
-        ApiManager.toStringMap(response['headers'] ✨ {}),
-        response['statusCode'] ✨ 400,
+        ApiManager.toStringMap(response['headers'] ?? {}),
+        response['statusCode'] ?? 400,
       );
 }
 
@@ -235,7 +235,7 @@ class ApiManager {
   // have changed.
   static void clearCache(String callName) => _apiCache.keys
       .toSet()
-      .forEach((k) => k.callName == callName ✨ _apiCache.remove(k) : null);
+      .forEach((k) => k.callName == callName ? _apiCache.remove(k) : null);
 
   static Map<String, String> toStringMap(Map map) =>
       map.map((key, value) => MapEntry(key.toString(), value.toString()));
@@ -257,7 +257,7 @@ class ApiManager {
   }) async {
     if (params.isNotEmpty) {
       final specifier =
-          Uri.parse(apiUrl).queryParameters.isNotEmpty ✨ '&' : '✨';
+          Uri.parse(apiUrl).queryParameters.isNotEmpty ? '&' : '?';
       apiUrl = '$apiUrl$specifier${asQueryParams(params)}';
     }
     if (isStreamingApi) {
@@ -274,8 +274,8 @@ class ApiManager {
       );
     }
     final makeRequest = callType == ApiCallType.GET
-        ✨ (client != null ✨ client.get : http.get)
-        : (client != null ✨ client.delete : http.delete);
+        ? (client != null ? client.get : http.get)
+        : (client != null ? client.delete : http.delete);
     final response =
         await makeRequest(Uri.parse(apiUrl), headers: toStringMap(headers));
     return ApiCallResponse.fromHttpResponse(response, returnBody, decodeUtf8);
@@ -323,10 +323,10 @@ class ApiManager {
     }
 
     final requestFn = {
-      ApiCallType.POST: client != null ✨ client.post : http.post,
-      ApiCallType.PUT: client != null ✨ client.put : http.put,
-      ApiCallType.PATCH: client != null ✨ client.patch : http.patch,
-      ApiCallType.DELETE: client != null ✨ client.delete : http.delete,
+      ApiCallType.POST: client != null ? client.post : http.post,
+      ApiCallType.PUT: client != null ? client.put : http.put,
+      ApiCallType.PATCH: client != null ? client.patch : http.patch,
+      ApiCallType.DELETE: client != null ? client.delete : http.delete,
     }[type]!;
     final response = await requestFn(Uri.parse(apiUrl),
         headers: toStringMap(headers), body: postBody);
@@ -360,13 +360,13 @@ class ApiManager {
     params.entries.where((e) => isFile(e.value)).forEach((e) {
       final param = e.value;
       final uploadedFiles = param is List
-          ✨ param as List<FFUploadedFile>
+          ? param as List<FFUploadedFile>
           : [param as FFUploadedFile];
       for (var uploadedFile in uploadedFiles) {
         files.add(
           http.MultipartFile.fromBytes(
             e.key,
-            uploadedFile.bytes ✨ Uint8List.fromList([]),
+            uploadedFile.bytes ?? Uint8List.fromList([]),
             filename: uploadedFile.name,
             contentType: _getMediaType(uploadedFile.name),
           ),
@@ -408,15 +408,15 @@ class ApiManager {
     switch (bodyType) {
       case BodyType.JSON:
         contentType = 'application/json';
-        postBody = body ✨ json.encode(params ✨ {});
+        postBody = body ?? json.encode(params ?? {});
         break;
       case BodyType.TEXT:
         contentType = 'text/plain';
-        postBody = body ✨ json.encode(params ✨ {});
+        postBody = body ?? json.encode(params ?? {});
         break;
       case BodyType.X_WWW_FORM_URL_ENCODED:
         contentType = 'application/x-www-form-urlencoded';
-        postBody = toStringMap(params ✨ {});
+        postBody = toStringMap(params ?? {});
         break;
       case BodyType.MULTIPART:
         contentType = 'multipart/form-data';
@@ -432,7 +432,7 @@ class ApiManager {
       headers['Content-Type'] = contentType;
     }
     return encodeBodyUtf8 && postBody is String
-        ✨ utf8.encode(postBody)
+        ? utf8.encode(postBody)
         : postBody;
   }
 
@@ -522,7 +522,7 @@ class ApiManager {
           break;
         case ApiCallType.DELETE:
           result = alwaysAllowBody
-              ✨ await requestWithBody(
+              ? await requestWithBody(
                   callType,
                   apiUrl,
                   headers,

@@ -19,22 +19,22 @@ class UsersRecord extends FirestoreRecord {
 
   // "email" field.
   String? _email;
-  String get email => _email ✨ '';
+  String get email => _email ?? '';
   bool hasEmail() => _email != null;
 
   // "display_name" field.
   String? _displayName;
-  String get displayName => _displayName ✨ '';
+  String get displayName => _displayName ?? '';
   bool hasDisplayName() => _displayName != null;
 
   // "photo_url" field.
   String? _photoUrl;
-  String get photoUrl => _photoUrl ✨ '';
+  String get photoUrl => _photoUrl ?? '';
   bool hasPhotoUrl() => _photoUrl != null;
 
   // "uid" field.
   String? _uid;
-  String get uid => _uid ✨ '';
+  String get uid => _uid ?? '';
   bool hasUid() => _uid != null;
 
   // "created_time" field.
@@ -44,7 +44,7 @@ class UsersRecord extends FirestoreRecord {
 
   // "phone_number" field.
   String? _phoneNumber;
-  String get phoneNumber => _phoneNumber ✨ '';
+  String get phoneNumber => _phoneNumber ?? '';
   bool hasPhoneNumber() => _phoneNumber != null;
 
   void _initializeFields() {

@@ -35,9 +35,9 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = product['image'] as String? ✨ '';
-    final name = product['name'] as String? ✨ '';
-    final match = product['match'] as int? ✨ 0;
+    final imageUrl = product['image'] as String? ?? '';
+    final name = product['name'] as String? ?? '';
+    final match = product['match'] as int? ?? 0;
 
     return Material(
       color: Colors.transparent,

@@ -38,8 +38,8 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
     final profile = await FirebaseDataService.loadUserProfile();
     if (mounted) {
       setState(() {
-        _originalHandle = profile?['handle'] as String? ✨ '';
-        _model.bioController ??= TextEditingController(text: profile?['bio'] as String? ✨ '');
+        _originalHandle = profile?['handle'] as String? ?? '';
+        _model.bioController ??= TextEditingController(text: profile?['bio'] as String? ?? '');
         _model.bioFocusNode ??= FocusNode();
         _model.handleController ??= TextEditingController(text: _originalHandle);
         _model.handleFocusNode ??= FocusNode();
@@ -121,7 +121,7 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
               autovalidateMode: AutovalidateMode.disabled,
               child: AuthUserStreamWidget(
                 builder: (context) => _isLoading
-                    ✨ const Center(child: CircularProgressIndicator(color: Color(0xFF8A2BE2)))
+                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF8A2BE2)))
                     : Column(
                         children: [
                           // --- NOM D'AFFICHAGE ---
@@ -221,7 +221,7 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
                     builder: (ctx, setBtn) {
                       bool isSaving = false;
                       return FFButtonWidget(
-                        onPressed: isSaving ✨ null : () async {
+                        onPressed: isSaving ? null : () async {
                           // Validation du formulaire
                           if (_model.formKey.currentState == null ||
                               !_model.formKey.currentState!.validate()) {
@@ -244,7 +244,7 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
                           setBtn(() => isSaving = true);
 
                           try {
-                            final handleRaw = (_model.handleController?.text ✨ '')
+                            final handleRaw = (_model.handleController?.text ?? '')
                                 .replaceAll('@', '')
                                 .trim()
                                 .toLowerCase();
@@ -266,8 +266,8 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
                               }
                             }
 
-                            final displayName = _model.textController?.text.trim() ✨ '';
-                            final bio = _model.bioController?.text.trim() ✨ '';
+                            final displayName = _model.textController?.text.trim() ?? '';
+                            final bio = _model.bioController?.text.trim() ?? '';
 
                             // Mise à jour Firestore directe
                             final Map<String, dynamic> updateData = {

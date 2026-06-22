@@ -164,7 +164,7 @@ class CollaborationService {
       try {
         // Récupérer le nom de l'inviteur
         final senderDoc = await _db.collection('users').doc(myUid).get();
-        final senderData = senderDoc.data() ✨ {};
+        final senderData = senderDoc.data() ?? {};
         final senderName = senderData['first_name'] as String? ??
             senderData['display_name'] as String? ??
             'Quelqu\'un';
@@ -219,14 +219,14 @@ class CollaborationService {
 
       // â”€â”€ 2. Si chatId non fourni, tenter de le récupérer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       String? resolvedChatId = chatId;
-      String resolvedName = profileName ✨ 'la liste';
+      String resolvedName = profileName ?? 'la liste';
 
       if (resolvedChatId == null) {
         try {
           final collabDoc = await _db.collection('collaborations').doc(collabId).get();
           if (collabDoc.exists) {
             resolvedChatId = collabDoc.data()?['chatId'] as String?;
-            resolvedName = collabDoc.data()?['profileName'] as String? ✨ resolvedName;
+            resolvedName = collabDoc.data()?['profileName'] as String? ?? resolvedName;
           }
         } catch (e) {
           AppLogger.debug('âš ï¸ addMember: get chatId failed (non-critical): $e', 'Collab');
@@ -283,13 +283,13 @@ class CollaborationService {
 
       // Récupérer les infos de la collaboration
       final collabDoc = await _db.collection('collaborations').doc(collabId).get();
-      final collab = collabDoc.data() ✨ {};
+      final collab = collabDoc.data() ?? {};
 
       AppLogger.debug('âœ… Invitation acceptée: $inviteId', 'Collab');
       return {
         'collabId': collabId,
         'chatId': collab['chatId'],
-        'profileName': collab['profileName'] ✨ 'la liste',
+        'profileName': collab['profileName'] ?? 'la liste',
       };
     } catch (e) {
       AppLogger.debug('âŒ CollaborationService.acceptInvite: $e', 'Collab');
@@ -344,13 +344,13 @@ class CollaborationService {
       final tokenData = tokenDoc.data()!;
       final collabId = tokenData['collabId'] as String;
       final chatId = tokenData['chatId'] as String?;
-      final profileName = tokenData['profileName'] as String? ✨ 'la liste';
+      final profileName = tokenData['profileName'] as String? ?? 'la liste';
 
       // â”€â”€ 2. Vérifier si déjà membre â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       try {
         final collabDoc = await _db.collection('collaborations').doc(collabId).get();
         if (collabDoc.exists) {
-          final members = (collabDoc.data()?['members'] as List?)?.cast<String>() ✨ [];
+          final members = (collabDoc.data()?['members'] as List?)?.cast<String>() ?? [];
           if (members.contains(myUid)) {
             return {
               'collabId': collabId,
@@ -391,8 +391,8 @@ class CollaborationService {
       final collab = collabDoc.data();
       final collabId = collabDoc.id;
       final chatId = collab['chatId'] as String?;
-      final profileName = collab['profileName'] as String? ✨ 'la liste';
-      final members = (collab['members'] as List?)?.cast<String>() ✨ [];
+      final profileName = collab['profileName'] as String? ?? 'la liste';
+      final members = (collab['members'] as List?)?.cast<String>() ?? [];
       if (members.contains(myUid)) {
         return {'collabId': collabId, 'chatId': chatId, 'profileName': profileName, 'alreadyMember': true};
       }
@@ -440,18 +440,18 @@ class CollaborationService {
         final data = doc.data();
         try {
           final senderDoc = await _db.collection('users').doc(data['fromUid']).get();
-          final sender = senderDoc.data() ✨ {};
+          final sender = senderDoc.data() ?? {};
           result.add({
             'inviteId': doc.id,
             'collabId': data['collabId'],
             'fromUid': data['fromUid'],
-            'profileName': data['profileName'] ✨ 'une liste',
-            'fromName': sender['first_name'] ✨ sender['display_name'] ✨ 'Quelqu\'un',
+            'profileName': data['profileName'] ?? 'une liste',
+            'fromName': sender['first_name'] ?? sender['display_name'] ?? 'Quelqu\'un',
             'fromPhotoUrl': (sender['photo_url'] as String?)?.isNotEmpty == true
-                ✨ sender['photo_url'] as String
+                ? sender['photo_url'] as String
                 : (sender['photoUrl'] as String?)?.isNotEmpty == true
-                    ✨ sender['photoUrl'] as String
-                    : (sender['photoURL'] as String?) ✨ '',
+                    ? sender['photoUrl'] as String
+                    : (sender['photoURL'] as String?) ?? '',
             'createdAt': data['createdAt'],
           });
         } catch (e) {
@@ -460,7 +460,7 @@ class CollaborationService {
             'inviteId': doc.id,
             'collabId': data['collabId'],
             'fromUid': data['fromUid'],
-            'profileName': data['profileName'] ✨ 'une liste',
+            'profileName': data['profileName'] ?? 'une liste',
             'fromName': 'Quelqu\'un',
             'fromPhotoUrl': '',
             'createdAt': data['createdAt'],
@@ -490,7 +490,7 @@ class CollaborationService {
           .limit(1)
           .get();
       if (snap.docs.isEmpty) return 0;
-      final members = (snap.docs.first.data()['members'] as List?) ✨ [];
+      final members = (snap.docs.first.data()['members'] as List?) ?? [];
       return members.length;
     } catch (e) {
       AppLogger.debug('CollaborationService error: $e', 'Collab');

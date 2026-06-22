@@ -20,7 +20,7 @@ class SuggestionService {
     try {
       // 1. Charger mes données (friends list)
       final myDoc = await _db.collection('users').doc(me.uid).get();
-      final myFriends = List<String>.from(myDoc.data()?['friends'] ✨ []);
+      final myFriends = List<String>.from(myDoc.data()?['friends'] ?? []);
       final excluded = <String>{me.uid, ...myFriends};
 
       final suggestions = <String, Map<String, dynamic>>{};
@@ -38,8 +38,8 @@ class SuggestionService {
       final result = filteredKeys.map((uid) => suggestions[uid]!).toList();
       result.sort((a, b) {
         // Priorité : amis d'amis > contacts
-        final aScore = a['mutualCount'] as int? ✨ 0;
-        final bScore = b['mutualCount'] as int? ✨ 0;
+        final aScore = a['mutualCount'] as int? ?? 0;
+        final bScore = b['mutualCount'] as int? ?? 0;
         return bScore.compareTo(aScore);
       });
 
@@ -62,7 +62,7 @@ class SuggestionService {
     // On charge les friends de chacun de mes amis (par batch de 10 max Firestore)
     final batches = <List<String>>[];
     for (int i = 0; i < myFriends.length; i += 10) {
-      batches.add(myFriends.sublist(i, i + 10 > myFriends.length ✨ myFriends.length : i + 10));
+      batches.add(myFriends.sublist(i, i + 10 > myFriends.length ? myFriends.length : i + 10));
     }
 
     for (final batch in batches) {
@@ -71,7 +71,7 @@ class SuggestionService {
           .get();
 
       for (final friendDoc in snap.docs) {
-        final theirFriends = List<String>.from(friendDoc.data()['friends'] ✨ []);
+        final theirFriends = List<String>.from(friendDoc.data()['friends'] ?? []);
         for (final candidateUid in theirFriends) {
           if (excluded.contains(candidateUid)) continue;
 
@@ -98,16 +98,16 @@ class SuggestionService {
     if (toFetch.isEmpty) return;
 
     for (int i = 0; i < toFetch.length; i += 10) {
-      final batch = toFetch.sublist(i, i + 10 > toFetch.length ✨ toFetch.length : i + 10);
+      final batch = toFetch.sublist(i, i + 10 > toFetch.length ? toFetch.length : i + 10);
       final profileSnap = await _db.collection('users')
           .where(FieldPath.documentId, whereIn: batch)
           .get();
       for (final doc in profileSnap.docs) {
         final d = doc.data();
         if (suggestions.containsKey(doc.id)) {
-          suggestions[doc.id]!['displayName'] = d['display_name'] ✨ d['displayName'] ✨ 'Utilisateur';
-          suggestions[doc.id]!['handle'] = d['handle'] ✨ '';
-          suggestions[doc.id]!['photoUrl'] = d['photo_url'] ✨ d['photoUrl'] ✨ '';
+          suggestions[doc.id]!['displayName'] = d['display_name'] ?? d['displayName'] ?? 'Utilisateur';
+          suggestions[doc.id]!['handle'] = d['handle'] ?? '';
+          suggestions[doc.id]!['photoUrl'] = d['photo_url'] ?? d['photoUrl'] ?? '';
         }
       }
     }
@@ -139,7 +139,7 @@ class SuggestionService {
       // (le champ phoneNumber doit être stocké dans le document user)
       final batches = phones.toList();
       for (int i = 0; i < batches.length; i += 10) {
-        final batch = batches.sublist(i, i + 10 > batches.length ✨ batches.length : i + 10);
+        final batch = batches.sublist(i, i + 10 > batches.length ? batches.length : i + 10);
         final snap = await _db.collection('users')
             .where('phoneNumber', whereIn: batch)
             .get();
@@ -156,9 +156,9 @@ class SuggestionService {
               'uid': uid,
               'source': 'contact',
               'mutualCount': 0,
-              'displayName': d['display_name'] ✨ d['displayName'] ✨ 'Utilisateur',
-              'handle': d['handle'] ✨ '',
-              'photoUrl': d['photo_url'] ✨ d['photoUrl'] ✨ '',
+              'displayName': d['display_name'] ?? d['displayName'] ?? 'Utilisateur',
+              'handle': d['handle'] ?? '',
+              'photoUrl': d['photo_url'] ?? d['photoUrl'] ?? '',
             };
           }
         }

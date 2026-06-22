@@ -17,7 +17,7 @@ class AmazonAffiliationService {
           return newUri.toString();
         } catch (e) {
           // Fallback if parsing fails
-          if (originalUrl.contains('✨')) {
+          if (originalUrl.contains('?')) {
             return '$originalUrl&tag=$amazonTag';
           } else {
             return '$originalUrl?tag=$amazonTag';

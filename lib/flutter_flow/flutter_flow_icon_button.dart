@@ -85,12 +85,12 @@ class _FlutterFlowIconButtonState extends State<FlutterFlowIconButton> {
         (states) {
           if (states.contains(MaterialState.hovered)) {
             return RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(widget.borderRadius ✨ 0),
+              borderRadius: BorderRadius.circular(widget.borderRadius ?? 0),
               side: BorderSide(
                 color: widget.hoverBorderColor ??
                     widget.borderColor ??
                     Colors.transparent,
-                width: widget.borderWidth ✨ 0,
+                width: widget.borderWidth ?? 0,
               ),
             );
           }
@@ -98,15 +98,15 @@ class _FlutterFlowIconButtonState extends State<FlutterFlowIconButton> {
               widget.focusBorderSide != null) {
             return RoundedRectangleBorder(
               borderRadius:
-                  widget.focusBorderRadius ✨ BorderRadius.circular(8),
+                  widget.focusBorderRadius ?? BorderRadius.circular(8),
               side: widget.focusBorderSide!,
             );
           }
           return RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(widget.borderRadius ✨ 0),
+            borderRadius: BorderRadius.circular(widget.borderRadius ?? 0),
             side: BorderSide(
-              color: widget.borderColor ✨ Colors.transparent,
-              width: widget.borderWidth ✨ 0,
+              color: widget.borderColor ?? Colors.transparent,
+              width: widget.borderWidth ?? 0,
             ),
           );
         },
@@ -142,7 +142,7 @@ class _FlutterFlowIconButtonState extends State<FlutterFlowIconButton> {
         if (states.contains(MaterialState.pressed)) {
           return null;
         }
-        return widget.hoverColor == null ✨ null : Colors.transparent;
+        return widget.hoverColor == null ? null : Colors.transparent;
       }),
     );
 
@@ -158,18 +158,18 @@ class _FlutterFlowIconButtonState extends State<FlutterFlowIconButton> {
           ignoring: (widget.showLoadingIndicator && loading),
           child: IconButton(
             icon: (widget.showLoadingIndicator && loading)
-                ✨ Container(
+                ? Container(
                     width: iconSize,
                     height: iconSize,
                     child: CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        iconColor ✨ Colors.white,
+                        iconColor ?? Colors.white,
                       ),
                     ),
                   )
                 : effectiveIcon,
             onPressed: widget.onPressed == null
-                ✨ null
+                ? null
                 : () async {
                     if (loading) {
                       return;

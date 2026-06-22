@@ -48,7 +48,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
 
   /// UID effectif du propriétaire (l'ami ou soi-même)
   String? get _effectiveOwnerUid =>
-      widget.ownerUid ✨ FirebaseAuth.instance.currentUser?.uid;
+      widget.ownerUid ?? FirebaseAuth.instance.currentUser?.uid;
 
   /// Fixé à 2 colonnes pour un rendu premium dans les albums
   final int _gridColumns = 2;
@@ -113,7 +113,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
       }
 
       final wData = wishlistDoc.data()!;
-      final isPublicFlag = wData['isPublic'] as bool? ✨ false;
+      final isPublicFlag = wData['isPublic'] as bool? ?? false;
 
       // FIX : si ownerUid est fourni explicitement depuis le profil public
       // (via PublicProfilePage → getVisibleWishlists), l'accès est déjà validé.
@@ -123,11 +123,11 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
 
       _wishlistData = {
         'id': wishlistDoc.id,
-        'name': wData['name'] ✨ 'Wishlist',
-        'emoji': wData['emoji'] ✨ '🎁',
+        'name': wData['name'] ?? 'Wishlist',
+        'emoji': wData['emoji'] ?? '🎁',
         // FIX: si ownerUid fourni → on force isPublic=true pour débloquer _buildContent
-        'isPublic': accessGranted ✨ true : isPublicFlag,
-        'coverPhoto': wData['coverPhoto'] ✨ '',
+        'isPublic': accessGranted ? true : isPublicFlag,
+        'coverPhoto': wData['coverPhoto'] ?? '',
         'ownerUid': ownerUid,
       };
 
@@ -186,7 +186,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
       HapticFeedback.mediumImpact();
       final url = await WishlistSharingService.getShareUrl(widget.wishlistId);
       await Share.share(
-        'Voici ma wishlist "${_wishlistData?['name'] ✨ 'Wishlist'}" sur Doron :\n$url',
+        'Voici ma wishlist "${_wishlistData?['name'] ?? 'Wishlist'}" sur Doron :\n$url',
         subject: 'Ma wishlist Doron',
       );
     } catch (e) {
@@ -264,7 +264,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
     await EventReminderService.setEventDate(
       wishlistId: widget.wishlistId,
       eventDate: picked,
-      eventLabel: label.isNotEmpty ✨ label : null,
+      eventLabel: label.isNotEmpty ? label : null,
     );
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -284,7 +284,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
     final myUid = FirebaseAuth.instance.currentUser?.uid;
     if (myUid == null) return;
 
-    final ownerUid = _wishlistData?['ownerUid'] as String? ✨ myUid;
+    final ownerUid = _wishlistData?['ownerUid'] as String? ?? myUid;
 
     if (_reservations.containsKey(productId)) {
       if (_reservations[productId] == myUid) {
@@ -340,7 +340,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
           children: [
             _buildHeader(),
             Expanded(
-              child: _isLoading ✨ _buildLoading() : _buildContent(),
+              child: _isLoading ? _buildLoading() : _buildContent(),
             ),
           ],
         ),
@@ -389,7 +389,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        _wishlistData?['name'] ✨ 'Chargement...',
+                        _wishlistData?['name'] ?? 'Chargement...',
                         style: GoogleFonts.poppins(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -420,7 +420,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
                 Padding(
                   padding: const EdgeInsets.only(left: 56),
                   child: Text(
-                    '${_products.length} produit${_products.length > 1 ✨ 's' : ''}',
+                    '${_products.length} produit${_products.length > 1 ? 's' : ''}',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: Colors.white.withOpacity(0.85),
@@ -475,7 +475,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
         final prefs = await SharedPreferences.getInstance();
         final serializable = _products.map((p) => {
           ...p,
-          'addedAt': (p['addedAt'] is String) ✨ p['addedAt'] : DateTime.now().toIso8601String(),
+          'addedAt': (p['addedAt'] is String) ? p['addedAt'] : DateTime.now().toIso8601String(),
         }).toList();
         await prefs.setString('wishlist_products_${widget.wishlistId}', jsonEncode(serializable));
       } catch (_) {}
@@ -529,15 +529,15 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
         padding: const EdgeInsets.fromLTRB(14, 8, 14, 100),
         children: List.generate(_products.length, (index) {
           final docData = _products[index];
-          final productId = docData['id'] as String? ✨ '';
-          final nested = docData['product'] as Map<String, dynamic>? ✨ {};
+          final productId = docData['id'] as String? ?? '';
+          final nested = docData['product'] as Map<String, dynamic>? ?? {};
           final normalizedProduct = {
             'id': productId,
-            'name': nested['product_title'] ✨ docData['name'] ✨ docData['product_name'] ✨ 'Inconnu',
-            'brand': nested['platform'] ✨ docData['brand'] ✨ docData['source'] ✨ '',
-            'image': nested['product_photo'] ✨ docData['image'] ✨ docData['image_url'] ✨ '',
-            'price': nested['product_price'] ✨ docData['price']?.toString() ✨ '',
-            'url': nested['product_url'] ✨ docData['product_url'] ✨ docData['url'] ✨ '',
+            'name': nested['product_title'] ?? docData['name'] ?? docData['product_name'] ?? 'Inconnu',
+            'brand': nested['platform'] ?? docData['brand'] ?? docData['source'] ?? '',
+            'image': nested['product_photo'] ?? docData['image'] ?? docData['image_url'] ?? '',
+            'price': nested['product_price'] ?? docData['price']?.toString() ?? '',
+            'url': nested['product_url'] ?? docData['product_url'] ?? docData['url'] ?? '',
           };
           return SharedProductCard(
             product: normalizedProduct,
@@ -564,22 +564,22 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
       },
       children: List.generate(_products.length, (index) {
         final docData = _products[index];
-        final productId = docData['id'] as String? ✨ '';
-        final nested = docData['product'] as Map<String, dynamic>? ✨ {};
+        final productId = docData['id'] as String? ?? '';
+        final nested = docData['product'] as Map<String, dynamic>? ?? {};
         final normalizedProduct = {
           'id': productId,
-          'name': nested['product_title'] ✨ docData['name'] ✨ docData['product_name'] ✨ 'Inconnu',
-          'brand': nested['platform'] ✨ docData['brand'] ✨ docData['source'] ✨ '',
-          'image': nested['product_photo'] ✨ docData['image'] ✨ docData['image_url'] ✨ '',
-          'price': nested['product_price'] ✨ docData['price']?.toString() ✨ '',
-          'url': nested['product_url'] ✨ docData['product_url'] ✨ docData['url'] ✨ '',
+          'name': nested['product_title'] ?? docData['name'] ?? docData['product_name'] ?? 'Inconnu',
+          'brand': nested['platform'] ?? docData['brand'] ?? docData['source'] ?? '',
+          'image': nested['product_photo'] ?? docData['image'] ?? docData['image_url'] ?? '',
+          'price': nested['product_price'] ?? docData['price']?.toString() ?? '',
+          'url': nested['product_url'] ?? docData['product_url'] ?? docData['url'] ?? '',
         };
         return SizedBox(
-          key: ValueKey(productId.isNotEmpty ✨ productId : 'prod_$index'),
+          key: ValueKey(productId.isNotEmpty ? productId : 'prod_$index'),
           child: SharedProductCard(
             product: normalizedProduct,
             index: index,
-            onRemove: productId.isNotEmpty ✨ () => _removeProduct(productId) : null,
+            onRemove: productId.isNotEmpty ? () => _removeProduct(productId) : null,
           ),
         );
       }),

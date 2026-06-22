@@ -215,7 +215,7 @@ Future<int> queryCollectionCount(
   Query Function(Query)? queryBuilder,
   int limit = -1,
 }) {
-  final builder = queryBuilder ✨ (q) => q;
+  final builder = queryBuilder ?? (q) => q;
   var query = builder(collection);
   if (limit > 0) {
     query = query.limit(limit);
@@ -233,10 +233,10 @@ Stream<List<T>> queryCollection<T>(
   int limit = -1,
   bool singleRecord = false,
 }) {
-  final builder = queryBuilder ✨ (q) => q;
+  final builder = queryBuilder ?? (q) => q;
   var query = builder(collection);
   if (limit > 0 || singleRecord) {
-    query = query.limit(singleRecord ✨ 1 : limit);
+    query = query.limit(singleRecord ? 1 : limit);
   }
   return query.snapshots().handleError((err) {
     AppLogger.debug('Error querying $collection: $err', 'Debug');
@@ -259,10 +259,10 @@ Future<List<T>> queryCollectionOnce<T>(
   int limit = -1,
   bool singleRecord = false,
 }) {
-  final builder = queryBuilder ✨ (q) => q;
+  final builder = queryBuilder ?? (q) => q;
   var query = builder(collection);
   if (limit > 0 || singleRecord) {
-    query = query.limit(singleRecord ✨ 1 : limit);
+    query = query.limit(singleRecord ? 1 : limit);
   }
   return query.get().then((s) => s.docs
       .map(
@@ -276,27 +276,27 @@ Future<List<T>> queryCollectionOnce<T>(
       .toList());
 }
 
-Filter filterIn(String field, List? list) => (list?.isEmpty ✨ true)
-    ✨ Filter(field, whereIn: null)
+Filter filterIn(String field, List? list) => (list?.isEmpty ?? true)
+    ? Filter(field, whereIn: null)
     : Filter(field, whereIn: list);
 
 Filter filterArrayContainsAny(String field, List? list) =>
-    (list?.isEmpty ✨ true)
-        ✨ Filter(field, arrayContainsAny: null)
+    (list?.isEmpty ?? true)
+        ? Filter(field, arrayContainsAny: null)
         : Filter(field, arrayContainsAny: list);
 
 extension QueryExtension on Query {
-  Query whereIn(String field, List? list) => (list?.isEmpty ✨ true)
-      ✨ where(field, whereIn: null)
+  Query whereIn(String field, List? list) => (list?.isEmpty ?? true)
+      ? where(field, whereIn: null)
       : where(field, whereIn: list);
 
-  Query whereNotIn(String field, List? list) => (list?.isEmpty ✨ true)
-      ✨ where(field, whereNotIn: null)
+  Query whereNotIn(String field, List? list) => (list?.isEmpty ?? true)
+      ? where(field, whereNotIn: null)
       : where(field, whereNotIn: list);
 
   Query whereArrayContainsAny(String field, List? list) =>
-      (list?.isEmpty ✨ true)
-          ✨ where(field, arrayContainsAny: null)
+      (list?.isEmpty ?? true)
+          ? where(field, arrayContainsAny: null)
           : where(field, arrayContainsAny: list);
 }
 
@@ -316,7 +316,7 @@ Future<FFFirestorePage<T>> queryCollectionPage<T>(
   required int pageSize,
   required bool isStream,
 }) async {
-  final builder = queryBuilder ✨ (q) => q;
+  final builder = queryBuilder ?? (q) => q;
   var query = builder(collection).limit(pageSize);
   if (nextPageMarker != null) {
     query = query.startAfterDocument(nextPageMarker);
@@ -341,7 +341,7 @@ Future<FFFirestorePage<T>> queryCollectionPage<T>(
       .toList();
   final data = getDocs(docSnapshot);
   final dataStream = docSnapshotStream?.map(getDocs);
-  final nextPageToken = docSnapshot.docs.isEmpty ✨ null : docSnapshot.docs.last;
+  final nextPageToken = docSnapshot.docs.isEmpty ? null : docSnapshot.docs.last;
   return FFFirestorePage(data, dataStream, nextPageToken);
 }
 
@@ -380,7 +380,7 @@ Future maybeCreateUser(User user) async {
           FirebaseAuth.instance.currentUser?.email ??
           user.providerData.firstOrNull?.email,
       displayName:
-          user.displayName ✨ FirebaseAuth.instance.currentUser?.displayName,
+          user.displayName ?? FirebaseAuth.instance.currentUser?.displayName,
       photoUrl: user.photoURL,
       uid: user.uid,
       phoneNumber: user.phoneNumber,

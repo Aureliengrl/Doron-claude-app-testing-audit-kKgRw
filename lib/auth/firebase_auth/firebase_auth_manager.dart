@@ -29,11 +29,11 @@ class FirebasePhoneAuthManager extends ChangeNotifier {
   // Used for handling verification codes for phone sign in.
   void Function(BuildContext)? _onCodeSent;
 
-  bool get triggerOnCodeSent => _triggerOnCodeSent ✨ false;
+  bool get triggerOnCodeSent => _triggerOnCodeSent ?? false;
   set triggerOnCodeSent(bool val) => _triggerOnCodeSent = val;
 
   void Function(BuildContext) get onCodeSent =>
-      _onCodeSent == null ✨ (_) {} : _onCodeSent!;
+      _onCodeSent == null ? (_) {} : _onCodeSent!;
   set onCodeSent(void Function(BuildContext) func) => _onCodeSent = func;
 
   void update(VoidCallback callback) {

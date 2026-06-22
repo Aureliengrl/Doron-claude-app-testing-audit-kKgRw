@@ -193,11 +193,11 @@ class DoronTheme {
         ),
         switchTheme: SwitchThemeData(
           thumbColor: MaterialStateProperty.resolveWith(
-            (states) => states.contains(MaterialState.selected) ✨ rose : null,
+            (states) => states.contains(MaterialState.selected) ? rose : null,
           ),
           trackColor: MaterialStateProperty.resolveWith(
             (states) => states.contains(MaterialState.selected)
-                ✨ rose.withOpacity(0.5)
+                ? rose.withOpacity(0.5)
                 : null,
           ),
         ),

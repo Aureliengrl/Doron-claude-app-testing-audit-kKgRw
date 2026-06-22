@@ -94,7 +94,7 @@ class ChatSearchDelegate extends SearchDelegate<String?> {
         final queryLower = query.toLowerCase();
         final matchingDocs = snapshot.data!.docs.where((doc) {
           final text =
-              ((doc.data() as Map<String, dynamic>)['text'] as String? ✨ '')
+              ((doc.data() as Map<String, dynamic>)['text'] as String? ?? '')
                   .toLowerCase();
           return text.contains(queryLower);
         }).toList();
@@ -114,10 +114,10 @@ class ChatSearchDelegate extends SearchDelegate<String?> {
           itemBuilder: (context, index) {
             final data =
                 matchingDocs[index].data() as Map<String, dynamic>;
-            final text = data['text'] as String? ✨ '';
+            final text = data['text'] as String? ?? '';
             final timestamp = data['timestamp'] as Timestamp?;
             final time = timestamp != null
-                ✨ '${timestamp.toDate().day}/${timestamp.toDate().month} ${timestamp.toDate().hour}:${timestamp.toDate().minute.toString().padLeft(2, '0')}'
+                ? '${timestamp.toDate().day}/${timestamp.toDate().month} ${timestamp.toDate().hour}:${timestamp.toDate().minute.toString().padLeft(2, '0')}'
                 : '';
 
             return Container(

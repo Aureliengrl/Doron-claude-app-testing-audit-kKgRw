@@ -127,8 +127,8 @@ class MatchingEngine {
   // ---------------------------------------------------------------------------
 
   static Set<String> _extractProductTags(Map<String, dynamic> product) {
-    final tags = (product['tags'] as List?)?.cast<String>() ✨ <String>[];
-    final cats = (product['categories'] as List?)?.cast<String>() ✨ <String>[];
+    final tags = (product['tags'] as List?)?.cast<String>() ?? <String>[];
+    final cats = (product['categories'] as List?)?.cast<String>() ?? <String>[];
     return {...tags, ...cats}
         .map((t) => t.toLowerCase().replaceAll('-', '_'))
         .toSet();
@@ -159,7 +159,7 @@ class MatchingEngine {
 
     if (productGenderTags.isEmpty) {
       // Pas de tag genre → déduction depuis le nom du produit
-      final name = (product['name'] ✨ '').toString().toLowerCase();
+      final name = (product['name'] ?? '').toString().toLowerCase();
       if (userGender == 'gender_homme' && _isStronglyFeminine(name)) return -10000.0;
       if (userGender == 'gender_femme' && _isStronglyMasculine(name)) return -10000.0;
       return s + 50.0; // Produit universel
@@ -207,16 +207,16 @@ class MatchingEngine {
 
     String? userAgeTag = ageTagFromSearch;
     if (userAgeTag == null) {
-      final age = (userProfile['age'] ✨ userProfile['recipientAge'])?.toString() ✨ '';
+      final age = (userProfile['age'] ?? userProfile['recipientAge'])?.toString() ?? '';
       if (age.isNotEmpty) {
-        final ageInt = int.tryParse(age) ✨ 0;
+        final ageInt = int.tryParse(age) ?? 0;
         if (ageInt > 0) {
           userAgeTag = ageInt < 13
-              ✨ 'age_enfant'
+              ? 'age_enfant'
               : ageInt < 25
-                  ✨ 'age_ado'
+                  ? 'age_ado'
                   : ageInt < 50
-                      ✨ 'age_adulte'
+                      ? 'age_adulte'
                       : 'age_senior';
         }
       }
@@ -292,7 +292,7 @@ class MatchingEngine {
     if (productBudgetTags.isEmpty) {
       final price = product['price'];
       if (price == null) return s + 10.0;
-      final priceInt = price is int ✨ price : (price is double ✨ price.toInt() : 0);
+      final priceInt = price is int ? price : (price is double ? price.toInt() : 0);
       effectiveBudget = TagsDefinitions.getBudgetTagFromPrice(priceInt).toLowerCase();
     } else {
       effectiveBudget = productBudgetTags.first.toLowerCase();
@@ -307,7 +307,7 @@ class MatchingEngine {
       'budget_100_200': ['budget_50_100', 'budget_200+'],
       'budget_200+': ['budget_100_200'],
     };
-    final adjacents = adjacentBudgets[userBudget] ✨ [];
+    final adjacents = adjacentBudgets[userBudget] ?? [];
     if (adjacents.contains(effectiveBudget)) {
       // Adjacent : pas d'exclusion, pénalité modérée
       if (isHome) return s - 30.0;
@@ -452,7 +452,7 @@ class MatchingEngine {
 
     final price = product['price'];
     if (price == null) return s;
-    final priceInt = price is int ✨ price : (price is double ✨ price.toInt() : 0);
+    final priceInt = price is int ? price : (price is double ? price.toInt() : 0);
 
     // Budget 200€+ avec produit < 30€ = maladroit comme cadeau
     if (userBudget == 'budget_200+' && priceInt < 30) return s - 40.0;
@@ -493,7 +493,7 @@ class MatchingEngine {
   static double _scoreBrandSeen(
       double s, Map<String, dynamic> product, List<String> brandsSeen) {
     if (brandsSeen.isEmpty) return s;
-    final brand = (product['brand'] ✨ '').toString().toLowerCase();
+    final brand = (product['brand'] ?? '').toString().toLowerCase();
     if (brand.isEmpty) return s;
     if (brandsSeen.any((b) => b.toLowerCase() == brand)) return s - 15.0;
     return s;

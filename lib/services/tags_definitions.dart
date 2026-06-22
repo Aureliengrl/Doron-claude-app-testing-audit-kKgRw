@@ -253,7 +253,7 @@ class TagsDefinitions {
       'saison_ete': 'saison_hiver',
       'saison_hiver': 'saison_ete',
     };
-    return opposites[saison] ✨ '';
+    return opposites[saison] ?? '';
   }
 
   // ========================================================================

@@ -69,8 +69,8 @@ class AppStateNotifier extends ChangeNotifier {
   bool notifyOnAuthChange = true;
 
   bool get loading => user == null || showSplashImage;
-  bool get loggedIn => user?.loggedIn ✨ false;
-  bool get initiallyLoggedIn => initialUser?.loggedIn ✨ false;
+  bool get loggedIn => user?.loggedIn ?? false;
+  bool get initiallyLoggedIn => initialUser?.loggedIn ?? false;
   bool get shouldRedirect => loggedIn && _redirectLocation != null;
 
   String getRedirectLocation() => _redirectLocation!;
@@ -163,7 +163,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
       errorBuilder: (context, state) =>
-          appStateNotifier.loggedIn ✨ NavBarPage() : AuthentificationWidget(),
+          appStateNotifier.loggedIn ? NavBarPage() : AuthentificationWidget(),
       routes: [
         FFRoute(
           name: '_initialize',
@@ -200,7 +200,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: FavouritesWidget.routePath,
           requireAuth: false,
           builder: (context, params) => params.isEmpty
-              ✨ NavBarPage(initialPage: 'Favourites')
+              ? NavBarPage(initialPage: 'Favourites')
               : FavouritesWidget(),
         ),
         // Chat routes removed - files no longer exist
@@ -209,7 +209,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         //     path: ChatHistoryWidget.routePath,
         //     requireAuth: false,
         //     builder: (context, params) => params.isEmpty
-        //         ✨ NavBarPage(initialPage: 'ChatHistory')
+        //         ? NavBarPage(initialPage: 'ChatHistory')
         //         : NavBarPage(
         //             initialPage: 'ChatHistory',
         //             page: ChatHistoryWidget(),
@@ -268,7 +268,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: HomePinterestWidget.routePath,
           requireAuth: false,
           builder: (context, params) => params.isEmpty
-              ✨ NavBarPage(initialPage: 'HomePinterest')
+              ? NavBarPage(initialPage: 'HomePinterest')
               : HomePinterestWidget(),
         ),
         FFRoute(
@@ -276,7 +276,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: SearchPageWidget.routePath,
           requireAuth: false,
           builder: (context, params) => params.isEmpty
-              ✨ NavBarPage(initialPage: 'SearchPage')
+              ? NavBarPage(initialPage: 'SearchPage')
               : SearchPageWidget(),
         ),
         FFRoute(
@@ -296,7 +296,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: '/chat-room/:chatId',
           requireAuth: true,
           builder: (context, params) => ChatRoomPage(
-            chatId: params.getParam<String>('chatId', ParamType.String) ✨ '',
+            chatId: params.getParam<String>('chatId', ParamType.String) ?? '',
             chatData: null,
           ),
         ),
@@ -317,7 +317,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: '/voiceAnalysis',
           requireAuth: false,
           builder: (context, params) => VoiceAnalysisPageWidget(
-            transcript: params.getParam<String>('transcript', ParamType.String) ✨ '',
+            transcript: params.getParam<String>('transcript', ParamType.String) ?? '',
           ),
         ),
         // ── Splash / TikTok / Admin ──────────────────────────────────────────
@@ -357,7 +357,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: WishlistDetailsWidget.routePath,
           requireAuth: true,
           builder: (context, params) => WishlistDetailsWidget(
-            wishlistId: params.getParam<String>('wishlistId', ParamType.String) ✨ '',
+            wishlistId: params.getParam<String>('wishlistId', ParamType.String) ?? '',
             ownerUid: params.getParam<String>('ownerUid', ParamType.String),
           ),
         ),
@@ -367,7 +367,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: PublicProfilePage.routePath,
           requireAuth: false,
           builder: (context, params) => PublicProfilePage(
-            uid: params.getParam<String>('uid', ParamType.String) ✨ '',
+            uid: params.getParam<String>('uid', ParamType.String) ?? '',
           ),
         ),
         // Page Amis
@@ -390,7 +390,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: JoinCollabPage.routePath,
           requireAuth: true,
           builder: (context, params) => JoinCollabPage(
-            token: params.getParam<String>('token', ParamType.String) ✨ '',
+            token: params.getParam<String>('token', ParamType.String) ?? '',
           ),
         ),
         // F3: Calendrier anniversaires & fêtes
@@ -418,7 +418,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: SecretSantaLobbyPage.routePath,
           requireAuth: true,
           builder: (context, params) => SecretSantaLobbyPage(
-            groupId: params.getParam<String>('groupId', ParamType.String) ✨ '',
+            groupId: params.getParam<String>('groupId', ParamType.String) ?? '',
           ),
         ),
         FFRoute(
@@ -426,7 +426,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: SecretSantaRevealPage.routePath,
           requireAuth: true,
           builder: (context, params) => SecretSantaRevealPage(
-            groupId: params.getParam<String>('groupId', ParamType.String) ✨ '',
+            groupId: params.getParam<String>('groupId', ParamType.String) ?? '',
           ),
         ),
         FFRoute(
@@ -434,7 +434,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           path: SecretSantaWishlistPage.routePath,
           requireAuth: true,
           builder: (context, params) => SecretSantaWishlistPage(
-            groupId: params.getParam<String>('groupId', ParamType.String) ✨ '',
+            groupId: params.getParam<String>('groupId', ParamType.String) ?? '',
           ),
         ),
         // ── Notifications ─────────────────────────────────────────────────
@@ -465,7 +465,7 @@ extension NavigationExtensions on BuildContext {
     bool ignoreRedirect = false,
   }) =>
       !mounted || GoRouter.of(this).shouldRedirect(ignoreRedirect)
-          ✨ null
+          ? null
           : goNamed(
               name,
               pathParameters: pathParameters,
@@ -482,7 +482,7 @@ extension NavigationExtensions on BuildContext {
     bool ignoreRedirect = false,
   }) =>
       !mounted || GoRouter.of(this).shouldRedirect(ignoreRedirect)
-          ✨ null
+          ? null
           : pushNamed(
               name,
               pathParameters: pathParameters,
@@ -505,7 +505,7 @@ extension GoRouterExtensions on GoRouter {
   AppStateNotifier get appState => AppStateNotifier.instance;
   void prepareAuthEvent([bool ignoreRedirect = false]) =>
       appState.hasRedirect() && !ignoreRedirect
-          ✨ null
+          ? null
           : appState.updateNotifyOnAuthChange(false);
   bool shouldRedirect(bool ignoreRedirect) =>
       !ignoreRedirect && appState.hasRedirect();
@@ -516,13 +516,13 @@ extension GoRouterExtensions on GoRouter {
 
 extension _GoRouterStateExtensions on GoRouterState {
   Map<String, dynamic> get extraMap =>
-      extra != null ✨ extra as Map<String, dynamic> : {};
+      extra != null ? extra as Map<String, dynamic> : {};
   Map<String, dynamic> get allParams => <String, dynamic>{}
     ..addAll(pathParameters)
     ..addAll(uri.queryParameters)
     ..addAll(extraMap);
   TransitionInfo get transitionInfo => extraMap.containsKey(kTransitionInfoKey)
-      ✨ extraMap[kTransitionInfoKey] as TransitionInfo
+      ? extraMap[kTransitionInfoKey] as TransitionInfo
       : TransitionInfo.appDefault();
 }
 
@@ -623,13 +623,13 @@ class FFRoute {
           fixStatusBarOniOS16AndBelow(context);
           final ffParams = FFParameters(state, asyncParams);
           final page = ffParams.hasFutures
-              ✨ FutureBuilder(
+              ? FutureBuilder(
                   future: ffParams.completeFutures(),
                   builder: (context, _) => builder(context, ffParams),
                 )
               : builder(context, ffParams);
           final child = appStateNotifier.loading
-              ✨ Container(
+              ? Container(
                   color: const Color(0xFF062248),
                   child: const Center(
                     child: CircularProgressIndicator(
@@ -641,7 +641,7 @@ class FFRoute {
 
           final transitionInfo = state.transitionInfo;
           return transitionInfo.hasTransition
-              ✨ CustomTransitionPage(
+              ? CustomTransitionPage(
                   key: state.pageKey,
                   child: child,
                   transitionDuration: transitionInfo.duration,
@@ -695,7 +695,7 @@ class RootPageContext {
 
   static bool isInactiveRootPage(BuildContext context) {
     final rootPageContext = context.read<RootPageContext?>();
-    final isRootPage = rootPageContext?.isRootPage ✨ false;
+    final isRootPage = rootPageContext?.isRootPage ?? false;
     final location = GoRouterState.of(context).uri.toString();
     return isRootPage &&
         location != '/' &&
@@ -712,7 +712,7 @@ extension GoRouterLocationExtension on GoRouter {
   String getCurrentLocation() {
     final RouteMatch lastMatch = routerDelegate.currentConfiguration.last;
     final RouteMatchList matchList = lastMatch is ImperativeRouteMatch
-        ✨ lastMatch.matches
+        ? lastMatch.matches
         : routerDelegate.currentConfiguration;
     return matchList.uri.toString();
   }

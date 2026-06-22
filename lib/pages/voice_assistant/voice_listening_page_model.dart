@@ -2,7 +2,7 @@ import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:doron/services/voice_assistant_service.dart';
 
-/// Model pour la page d'ï¿½coute vocale
+/// Model pour la page d'écoute vocale
 class VoiceListeningPageModel extends ChangeNotifier {
   final VoiceAssistantService _voiceService = VoiceAssistantService();
 
@@ -20,10 +20,10 @@ class VoiceListeningPageModel extends ChangeNotifier {
 
   /// Initialise le service vocal
   Future<void> initialize() async {
-    AppLogger.debug('Initializing voice listening page...', 'Debug');
+    AppLogger.debug('?? Initializing voice listening page...', 'Debug');
 
-    // âœ¨ FIX: Reset les anciens callbacks avant de configurer les nouveaux
-    // (ï¿½vite les callbacks stales si la page est recre)
+    // ? FIX: Reset les anciens callbacks avant de configurer les nouveaux
+    // (évite les callbacks stales si la page est recre)
     _voiceService.reset();
 
     // Setup callbacks
@@ -38,7 +38,7 @@ class VoiceListeningPageModel extends ChangeNotifier {
     };
 
     _voiceService.onFinalTranscript = (text) {
-      AppLogger.debug('Final transcript received: $text', 'Debug');
+      AppLogger.debug('? Final transcript received: $text', 'Debug');
       _transcript = text;
       _displayText = text;
       _isListening = false;
@@ -46,7 +46,7 @@ class VoiceListeningPageModel extends ChangeNotifier {
     };
 
     _voiceService.onError = (error) {
-      AppLogger.debug('Voice error: $error', 'Debug');
+      AppLogger.debug('? Voice error: $error', 'Debug');
       _hasError = true;
       _errorMessage = error;
       _displayText = 'Erreur: $error';
@@ -64,11 +64,11 @@ class VoiceListeningPageModel extends ChangeNotifier {
     }
   }
 
-  /// Commence l'ï¿½coute
+  /// Commence l'écoute
   Future<void> startListening() async {
     if (_isListening) return;
 
-    AppLogger.debug('Starting listening...', 'Debug');
+    AppLogger.debug('?? Starting listening...', 'Debug');
     _hasError = false;
     _errorMessage = '';
     _transcript = '';
@@ -79,27 +79,27 @@ class VoiceListeningPageModel extends ChangeNotifier {
     await _voiceService.startListening();
   }
 
-  /// Arrï¿½te l'ï¿½coute
+  /// Arrête l'écoute
   Future<void> stopListening() async {
     if (!_isListening) return;
 
-    AppLogger.debug('Stopping listening...', 'Debug');
+    AppLogger.debug('?? Stopping listening...', 'Debug');
     await _voiceService.stopListening();
     _isListening = false;
     notifyListeners();
   }
 
-  /// Annule l'ï¿½coute
+  /// Annule l'écoute
   Future<void> cancel() async {
-    AppLogger.debug('Cancelling listening...', 'Debug');
+    AppLogger.debug('? Cancelling listening...', 'Debug');
     await _voiceService.cancel();
     _isListening = false;
     _transcript = '';
-    _displayText = 'ï¿½coute annulï¿½e';
+    _displayText = 'Écoute annulée';
     notifyListeners();
   }
 
-  /// Vï¿½rifie si le transcript est valide pour continuer
+  /// Vérifie si le transcript est valide pour continuer
   bool canProceed() {
     return _transcript.trim().isNotEmpty && !_isListening;
   }

@@ -49,7 +49,7 @@ class BirthdayService {
 
     try {
       final userDoc = await _db.collection('users').doc(uid).get();
-      final friends = List<String>.from(userDoc.data()?['friends'] ✨ []);
+      final friends = List<String>.from(userDoc.data()?['friends'] ?? []);
       if (friends.isEmpty) return [];
 
       // FIX F8: Parallélisation — avant: N requêtes séquentielles (1 par ami)
@@ -66,9 +66,9 @@ class BirthdayService {
         if (b == null) continue;
         result.add({
           'uid': doc.id,
-          'name': data['first_name'] ✨ data['display_name'] ✨ 'Ami',
-          'handle': data['handle'] ✨ '',
-          'photoUrl': data['photoUrl'] ✨ '',
+          'name': data['first_name'] ?? data['display_name'] ?? 'Ami',
+          'handle': data['handle'] ?? '',
+          'photoUrl': data['photoUrl'] ?? '',
           'day': (b['day'] as num).toInt(),
           'month': (b['month'] as num).toInt(),
         });
@@ -180,7 +180,7 @@ class BirthdayService {
 
     void addEvent(DateTime date, CalendarEvent event) {
       final key = DateTime(date.year, date.month, date.day);
-      events[key] = [...(events[key] ✨ []), event];
+      events[key] = [...(events[key] ?? []), event];
     }
 
     // 1. Mon anniversaire

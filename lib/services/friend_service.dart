@@ -22,7 +22,7 @@ class FriendService {
     if (myUid == null) return false;
     try {
       final doc = await _db.collection('users').doc(myUid).get();
-      final friends = (doc.data()?['friends'] as List?)?.cast<String>() ✨ [];
+      final friends = (doc.data()?['friends'] as List?)?.cast<String>() ?? [];
       return friends.contains(otherUid);
     } catch (e) {
       AppLogger.debug('isFriend error: $e', 'FriendService');
@@ -38,7 +38,7 @@ class FriendService {
 
     // Écoute le document user. À chaque modification, récupère les profils amis.
     return _db.collection('users').doc(myUid).snapshots().asyncMap((snap) async {
-      final friendUids = (snap.data()?['friends'] as List?)?.cast<String>() ✨ [];
+      final friendUids = (snap.data()?['friends'] as List?)?.cast<String>() ?? [];
       if (friendUids.isEmpty) return <Map<String, dynamic>>[];
       return await getFriends(myUid);
     });
@@ -74,19 +74,19 @@ class FriendService {
           try {
             final senderDoc = await _db.collection('users').doc(fromUid).get();
             if (senderDoc.exists) {
-              final sender = senderDoc.data() ✨ {};
+              final sender = senderDoc.data() ?? {};
               displayName = (sender['first_name'] as String?) ??
                            (sender['display_name'] as String?) ??
                            (sender['name'] as String?) ??
-                           ((sender['email'] as String? ✨ '').split('@').first.isNotEmpty
-                               ✨ (sender['email'] as String).split('@').first
+                           ((sender['email'] as String? ?? '').split('@').first.isNotEmpty
+                               ? (sender['email'] as String).split('@').first
                                : 'Utilisateur');
-              handle = (sender['handle'] as String?) ✨ (sender['username'] as String?) ✨ '';
+              handle = (sender['handle'] as String?) ?? (sender['username'] as String?) ?? '';
               photoUrl = (sender['photo_url'] as String?)?.isNotEmpty == true
-                  ✨ sender['photo_url'] as String
+                  ? sender['photo_url'] as String
                   : (sender['photoUrl'] as String?)?.isNotEmpty == true
-                      ✨ sender['photoUrl'] as String
-                      : (sender['photoURL'] as String?) ✨ '';
+                      ? sender['photoUrl'] as String
+                      : (sender['photoURL'] as String?) ?? '';
             }
           } catch (e) {
             AppLogger.debug('getPendingRequestsStream: cannot load sender $fromUid: $e', 'FriendService');
@@ -151,7 +151,7 @@ class FriendService {
       // ── Notification in-app ──────────────────────────────────────────────
       try {
         final senderDoc = await _db.collection('users').doc(myUid).get();
-        final senderData = senderDoc.data() ✨ {};
+        final senderData = senderDoc.data() ?? {};
         final senderName = senderData['first_name'] as String? ??
             senderData['display_name'] as String? ??
             'Quelqu\'un';
@@ -289,7 +289,7 @@ class FriendService {
 
     try {
       final myDoc = await _db.collection('users').doc(myUid).get();
-      final friends = (myDoc.data()?['friends'] as List?)?.cast<String>() ✨ [];
+      final friends = (myDoc.data()?['friends'] as List?)?.cast<String>() ?? [];
       if (friends.contains(otherUid)) {
         return (status: FriendshipStatus.friends, requestId: null);
       }
@@ -348,19 +348,19 @@ class FriendService {
       for (final doc in pendingDocs) {
         final data = doc.data();
         final senderDoc = await _db.collection('users').doc(data['fromUid']).get();
-        final sender = senderDoc.data() ✨ {};
+        final sender = senderDoc.data() ?? {};
         requests.add({
           'requestId': doc.id,
           'fromUid': data['fromUid'],
           'displayName': sender['first_name'] as String? ??
                          sender['display_name'] as String? ??
-                         sender['name'] as String? ✨ 'Utilisateur',
-          'handle': sender['handle'] ✨ sender['username'] ✨ '',
+                         sender['name'] as String? ?? 'Utilisateur',
+          'handle': sender['handle'] ?? sender['username'] ?? '',
           'photoUrl': (sender['photo_url'] as String?)?.isNotEmpty == true
-              ✨ sender['photo_url'] as String
+              ? sender['photo_url'] as String
               : (sender['photoUrl'] as String?)?.isNotEmpty == true
-                  ✨ sender['photoUrl'] as String
-                  : (sender['photoURL'] as String?) ✨ '',
+                  ? sender['photoUrl'] as String
+                  : (sender['photoURL'] as String?) ?? '',
           'createdAt': data['createdAt'],
         });
       }
@@ -386,13 +386,13 @@ class FriendService {
   static Future<List<Map<String, dynamic>>> getFriends(String uid) async {
     try {
       final doc = await _db.collection('users').doc(uid).get();
-      final friendUids = (doc.data()?['friends'] as List?)?.cast<String>() ✨ [];
+      final friendUids = (doc.data()?['friends'] as List?)?.cast<String>() ?? [];
       if (friendUids.isEmpty) return [];
 
       final profiles = <Map<String, dynamic>>[];
       for (var i = 0; i < friendUids.length; i += 10) {
         final chunk = friendUids.sublist(
-            i, i + 10 > friendUids.length ✨ friendUids.length : i + 10);
+            i, i + 10 > friendUids.length ? friendUids.length : i + 10);
         final snap = await _db
             .collection('users')
             .where(FieldPath.documentId, whereIn: chunk)
@@ -403,13 +403,13 @@ class FriendService {
             'uid': d.id,
             'displayName': data['first_name'] as String? ??
                            data['display_name'] as String? ??
-                           data['name'] as String? ✨ 'Utilisateur',
-            'handle': data['handle'] ✨ data['username'] ✨ '',
+                           data['name'] as String? ?? 'Utilisateur',
+            'handle': data['handle'] ?? data['username'] ?? '',
             'photoUrl': (data['photo_url'] as String?)?.isNotEmpty == true
-                ✨ data['photo_url'] as String
+                ? data['photo_url'] as String
                 : (data['photoUrl'] as String?)?.isNotEmpty == true
-                    ✨ data['photoUrl'] as String
-                    : (data['photoURL'] as String?) ✨ '',
+                    ? data['photoUrl'] as String
+                    : (data['photoURL'] as String?) ?? '',
           });
         }
       }
@@ -436,7 +436,7 @@ class FriendService {
           .get();
 
       for (final doc in snap.docs) {
-        final participants = (doc.data()['participants'] as List?)?.cast<String>() ✨ [];
+        final participants = (doc.data()['participants'] as List?)?.cast<String>() ?? [];
         if (participants.contains(friendUid) && participants.length == 2) {
           return doc.id;
         }

@@ -32,7 +32,7 @@ class _UserSearchBottomSheetState extends State<UserSearchBottomSheet> {
   }
 
   void _onSearchChanged(String query) {
-    if (_debounce?.isActive ✨ false) _debounce!.cancel();
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
       if (query.isNotEmpty) {
         _performSearch(query);
@@ -117,11 +117,11 @@ class _UserSearchBottomSheetState extends State<UserSearchBottomSheet> {
           // Content
           Expanded(
             child: _isLoading
-                ✨ Center(
+                ? Center(
                     child: CircularProgressIndicator(color: _violetColor),
                   )
                 : _results.isEmpty
-                    ✨ _buildEmptyState()
+                    ? _buildEmptyState()
                     : ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                         itemCount: _results.length,
@@ -143,7 +143,7 @@ class _UserSearchBottomSheetState extends State<UserSearchBottomSheet> {
         const SizedBox(height: 16),
         Text(
           _searchController.text.isEmpty
-              ✨ 'Tapez un nom pour commencer'
+              ? 'Tapez un nom pour commencer'
               : 'Aucun utilisateur trouvé',
           style: GoogleFonts.poppins(
             color: Colors.white.withOpacity(0.5),
@@ -155,10 +155,10 @@ class _UserSearchBottomSheetState extends State<UserSearchBottomSheet> {
   }
 
   Widget _buildUserTile(Map<String, dynamic> user) {
-    final photoUrl = user['photoUrl'] as String? ✨ '';
-    final displayName = user['displayName'] as String? ✨ 'Utilisateur';
-    final handle = user['handle'] as String? ✨ '';
-    final uid = user['uid'] as String? ✨ '';
+    final photoUrl = user['photoUrl'] as String? ?? '';
+    final displayName = user['displayName'] as String? ?? 'Utilisateur';
+    final handle = user['handle'] as String? ?? '';
+    final uid = user['uid'] as String? ?? '';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -179,10 +179,10 @@ class _UserSearchBottomSheetState extends State<UserSearchBottomSheet> {
                   radius: 26,
                   backgroundColor: _violetColor.withOpacity(0.3),
                   backgroundImage: photoUrl.isNotEmpty
-                      ✨ CachedNetworkImageProvider(photoUrl)
+                      ? CachedNetworkImageProvider(photoUrl)
                       : null,
                   child: photoUrl.isEmpty
-                      ✨ Text(
+                      ? Text(
                           displayName[0].toUpperCase(),
                           style: GoogleFonts.poppins(
                             color: Colors.white,

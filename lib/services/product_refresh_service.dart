@@ -27,7 +27,7 @@ class ProductRefreshService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: json.encode({'limit': limit ✨ 9999}),
+        body: json.encode({'limit': limit ?? 9999}),
       ).timeout(const Duration(minutes: 5));
 
       if (response.statusCode == 200) {
@@ -55,13 +55,13 @@ class ProductRefreshService {
         final data = doc.data();
         return {
           'id': doc.id,
-          'name': data['name'] ✨ data['product_title'] ✨ 'Inconnu',
-          'brand': data['brand'] ✨ '',
-          'price': data['price']?.toString() ✨ '',
-          'image': data['image'] ✨ '',
-          'url': data['url'] ✨ '',
-          'imageStatus': data['imageStatus'] ✨ 'unknown',
-          'urlStatus': data['urlStatus'] ✨ 'unknown',
+          'name': data['name'] ?? data['product_title'] ?? 'Inconnu',
+          'brand': data['brand'] ?? '',
+          'price': data['price']?.toString() ?? '',
+          'image': data['image'] ?? '',
+          'url': data['url'] ?? '',
+          'imageStatus': data['imageStatus'] ?? 'unknown',
+          'urlStatus': data['urlStatus'] ?? 'unknown',
           'lastChecked': data['lastChecked'],
         };
       }).toList();
@@ -75,7 +75,7 @@ class ProductRefreshService {
   static Future<Map<String, dynamic>?> getLastRefreshLog() async {
     try {
       final doc = await _db.collection('system').doc('product_refresh_log').get();
-      return doc.exists ✨ doc.data() : null;
+      return doc.exists ? doc.data() : null;
     } catch (_) {
       return null;
     }

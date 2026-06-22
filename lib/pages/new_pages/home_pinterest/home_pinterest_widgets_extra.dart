@@ -52,7 +52,7 @@ class SearchBarWidget extends StatelessWidget {
               size: 22,
             ),
             suffixIcon: controller.text.isNotEmpty
-                ✨ IconButton(
+                ? IconButton(
                     icon: Icon(
                       Icons.clear,
                       size: 20,
@@ -106,10 +106,10 @@ class QuickFiltersWidget extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: isActive ✨ violetColor : Colors.white,
+            color: isActive ? violetColor : Colors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isActive ✨ violetColor : const Color(0xFFE5E7EB),
+              color: isActive ? violetColor : const Color(0xFFE5E7EB),
               width: 1.5,
             ),
           ),
@@ -119,7 +119,7 @@ class QuickFiltersWidget extends StatelessWidget {
               Icon(
                 icon,
                 size: 16,
-                color: isActive ✨ Colors.white : violetColor,
+                color: isActive ? Colors.white : violetColor,
               ),
               const SizedBox(width: 6),
               Text(
@@ -127,7 +127,7 @@ class QuickFiltersWidget extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: isActive ✨ Colors.white : violetColor,
+                  color: isActive ? Colors.white : violetColor,
                 ),
               ),
             ],

@@ -59,14 +59,14 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
       key: scaffoldKey,
       backgroundColor: LiquidGlassTokens.pageDark,
       body: _model.isLoading
-          âœ¨ Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   CircularProgressIndicator(color: violetColor),
                   const SizedBox(height: 24),
                   Text(
-                    'Gï¿½nï¿½ration des cadeaux...',
+                    '?? Génération des cadeaux...',
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       color: violetColor,
@@ -78,16 +78,16 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
             )
           : CustomScrollView(
               slivers: [
-                // Header violet arrondi avec rï¿½sumï¿½
+                // Header violet arrondi avec résumé
                 SliverToBoxAdapter(child: _buildHeader()),
 
-                // Message IA personnalisï¿½
+                // Message IA personnalisé
                 SliverToBoxAdapter(child: _buildAIMessage()),
 
-                // Filtres de catï¿½gories
+                // Filtres de catégories
                 SliverToBoxAdapter(child: _buildFilters()),
 
-                // Liste des rï¿½sultats
+                // Liste des résultats
                 _buildResultsList(),
 
                 // Boutons Enregistrer / Refaire (dans le scroll, pas fixes)
@@ -152,7 +152,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
               // Titre
               Expanded(
                 child: Text(
-                  'Rï¿½sultats IA',
+                  'Résultats IA',
                   style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 20,
@@ -236,7 +236,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '12 cadeaux parfaits trouvï¿½s !',
+                  '12 cadeaux parfaits trouvés !',
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -245,7 +245,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Sï¿½lectionnï¿½s selon ses passions et ton budget',
+                  'Sélectionnés selon ses passions et ton budget',
                   style: GoogleFonts.poppins(
                     fontSize: 13,
                     color: Colors.white.withOpacity(0.55),
@@ -289,17 +289,17 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                   ),
                   decoration: BoxDecoration(
                     color: isActive
-                        âœ¨ violetColor
+                        ? violetColor
                         : Colors.white,
                     borderRadius: BorderRadius.circular(50),
                     border: Border.all(
                       color: isActive
-                          âœ¨ violetColor
+                          ? violetColor
                           : Colors.grey[300]!,
                       width: 2,
                     ),
                     boxShadow: isActive
-                        âœ¨ [
+                        ? [
                             BoxShadow(
                               color: violetColor.withOpacity(0.3),
                               blurRadius: 12,
@@ -313,7 +313,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: isActive âœ¨ Colors.white : const Color(0xFF6B7280),
+                      color: isActive ? Colors.white : const Color(0xFF6B7280),
                     ),
                   ),
                 ),
@@ -327,7 +327,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
 
   Widget _buildResultsList() {
     if (_isReordering) {
-      // Mode rï¿½organisation : liste rï¿½ordonnable
+      // Mode réorganisation : liste réordonnable
       return SliverToBoxAdapter(
         child: ReorderableListView.builder(
           shrinkWrap: true,
@@ -350,7 +350,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
           itemBuilder: (context, index) {
             final gift = _model.giftResults[index];
             return Container(
-              key: ValueKey(gift['id']?.toString() âœ¨ '$index'),
+              key: ValueKey(gift['id']?.toString() ?? '$index'),
               child: _buildGiftCard(gift, index, isReordering: true),
             );
           },
@@ -365,7 +365,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
           (context, index) {
             final gift = _model.giftResults[index];
             return GestureDetector(
-              key: ValueKey(gift['id']?.toString() âœ¨ '$index'),
+              key: ValueKey(gift['id']?.toString() ?? '$index'),
               onLongPress: () {
                 HapticFeedback.mediumImpact();
                 setState(() => _isReordering = true);
@@ -388,16 +388,16 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
   Widget _buildGiftCard(Map<String, dynamic> gift, int index, {bool isReordering = false}) {
     final isLiked = _model.likedGifts.contains(gift['id']);
     final matchRaw = gift['match'];
-    final matchPercent = matchRaw is int âœ¨ matchRaw : (matchRaw is double âœ¨ matchRaw.toInt() : 85);
+    final matchPercent = matchRaw is int ? matchRaw : (matchRaw is double ? matchRaw.toInt() : 85);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: BounceCard(
-        onTap: isReordering âœ¨ null : () => _showGiftDetail(gift),
+        onTap: isReordering ? null : () => _showGiftDetail(gift),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
-          border: isReordering âœ¨ Border.all(color: violetColor.withOpacity(0.5), width: 2) : null,
+          border: isReordering ? Border.all(color: violetColor.withOpacity(0.5), width: 2) : null,
           boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 12, offset: const Offset(0, 4))],
         ),
         child: IntrinsicHeight(
@@ -409,7 +409,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                 child: Stack(
                   children: [
                     CachedNetworkImage(
-                      imageUrl: gift['image'] as String? âœ¨ '',
+                      imageUrl: gift['image'] as String? ?? '',
                       width: 140, height: 160, fit: BoxFit.cover, memCacheWidth: 280,
                       placeholder: (context, url) => Container(color: Colors.grey[200]),
                       errorWidget: (context, url, error) => Container(color: Colors.grey[200], child: const Icon(Icons.error)),
@@ -454,11 +454,11 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(color: violetColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                        child: Text(gift['brand'] as String? âœ¨ '', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.bold, color: violetColor)),
+                        child: Text(gift['brand'] as String? ?? '', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.bold, color: violetColor)),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        gift['name'] as String? âœ¨ '',
+                        gift['name'] as String? ?? '',
                         maxLines: 2, overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold, color: const Color(0xFF111827), height: 1.3),
                       ),
@@ -466,16 +466,16 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('${gift['price']}ï¿½', style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: violetColor)),
+                          Text('${gift['price']}€', style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: violetColor)),
                           const SizedBox(height: 8),
                           Row(children: [
                             Material(color: Colors.transparent, child: InkWell(
-                              onTap: () { setState(() { final idRaw = gift['id']; final giftId = idRaw is int âœ¨ idRaw : (int.tryParse(idRaw.toString()) âœ¨ 0); _model.toggleLike(giftId); }); },
+                              onTap: () { setState(() { final idRaw = gift['id']; final giftId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0); _model.toggleLike(giftId); }); },
                               borderRadius: BorderRadius.circular(50),
                               child: Container(
                                 padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(color: isLiked âœ¨ Colors.red.withOpacity(0.1) : Colors.grey[100], shape: BoxShape.circle),
-                                child: Icon(isLiked âœ¨ IconlyBold.heart : IconlyLight.heart, color: isLiked âœ¨ Colors.red : const Color(0xFF9CA3AF), size: 20),
+                                decoration: BoxDecoration(color: isLiked ? Colors.red.withOpacity(0.1) : Colors.grey[100], shape: BoxShape.circle),
+                                child: Icon(isLiked ? IconlyBold.heart : IconlyLight.heart, color: isLiked ? Colors.red : const Color(0xFF9CA3AF), size: 20),
                               ),
                             )),
                             const Spacer(),
@@ -518,9 +518,9 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
 
   void _showGiftDetail(Map<String, dynamic> gift) {
     final isLiked = _model.likedGifts.contains(gift['id']);
-    // FIX: Cast sï¿½curisï¿½ pour ï¿½viter crash
+    // FIX: Cast sécurisé pour éviter crash
     final matchRaw = gift['match'];
-    final matchPercent = matchRaw is int âœ¨ matchRaw : (matchRaw is double âœ¨ matchRaw.toInt() : 85);
+    final matchPercent = matchRaw is int ? matchRaw : (matchRaw is double ? matchRaw.toInt() : 85);
 
     showDialog(
       context: context,
@@ -701,9 +701,9 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                             onPressed: () {
                               if (mounted) {
                                 setState(() {
-                                  // FIX: Cast sï¿½curisï¿½
+                                  // FIX: Cast sécurisé
                                   final idRaw = gift['id'];
-                                  final giftId = idRaw is int âœ¨ idRaw : (int.tryParse(idRaw.toString()) âœ¨ 0);
+                                  final giftId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0);
                                   _model.toggleLike(giftId);
                                 });
                                 context.pop();
@@ -711,7 +711,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isLiked
-                                  âœ¨ Colors.red
+                                  ? Colors.red
                                   : Colors.grey[200],
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
@@ -720,8 +720,8 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                               elevation: 0,
                             ),
                             child: Icon(
-                              isLiked âœ¨ IconlyBold.heart : IconlyLight.heart,
-                              color: isLiked âœ¨ Colors.white : const Color(0xFF6B7280),
+                              isLiked ? IconlyBold.heart : IconlyLight.heart,
+                              color: isLiked ? Colors.white : const Color(0xFF6B7280),
                             ),
                           ),
                         ),
@@ -731,14 +731,14 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                           flex: 3,
                           child: ElevatedButton(
                             onPressed: () async {
-                              // Gï¿½nï¿½rer une URL de produit intelligente (=95% prï¿½cision)
+                              // Générer une URL de produit intelligente (=95% précision)
                               final url = ProductUrlService.generateProductUrl(gift);
                               if (url.isNotEmpty) {
                                 final uri = Uri.parse(url);
                                 if (await canLaunchUrl(uri)) {
                                   await launchUrl(uri, mode: LaunchMode.externalApplication);
                                 } else {
-                                  AppLogger.debug('Cannot launch URL: $url', 'Debug');
+                                  AppLogger.debug('? Cannot launch URL: $url', 'Debug');
                                 }
                               }
                             },
@@ -793,7 +793,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
           Expanded(
             child: ElevatedButton.icon(
               onPressed: () {
-                // Retour ï¿½ l'onboarding (skip questions sur soi)
+                // Retour à l'onboarding (skip questions sur soi)
                 context.go('/onboarding-advanced?skipUserQuestions=true');
               },
               icon: const Icon(Icons.refresh, size: 20),

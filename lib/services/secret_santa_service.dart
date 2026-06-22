@@ -33,14 +33,14 @@ class SecretSantaGroup {
     final d = doc.data() as Map<String, dynamic>;
     return SecretSantaGroup(
       id: doc.id,
-      name: d['name'] as String? ✨ '',
-      mode: d['mode'] as String? ✨ 'personal',
-      budget: Map<String, int>.from(d['budget'] as Map? ✨ {'min': 0, 'max': 50}),
-      status: d['status'] as String? ✨ 'open',
-      theme: d['theme'] as String? ✨ 'christmas',
-      createdBy: d['createdBy'] as String? ✨ '',
-      inviteToken: d['inviteToken'] as String? ✨ '',
-      participantUids: List<String>.from(d['participantUids'] as List? ✨ []),
+      name: d['name'] as String? ?? '',
+      mode: d['mode'] as String? ?? 'personal',
+      budget: Map<String, int>.from(d['budget'] as Map? ?? {'min': 0, 'max': 50}),
+      status: d['status'] as String? ?? 'open',
+      theme: d['theme'] as String? ?? 'christmas',
+      createdBy: d['createdBy'] as String? ?? '',
+      inviteToken: d['inviteToken'] as String? ?? '',
+      participantUids: List<String>.from(d['participantUids'] as List? ?? []),
       createdAt: (d['createdAt'] as Timestamp?)?.toDate(),
     );
   }
@@ -93,9 +93,9 @@ class SecretSantaService {
 
     // Récupérer le profil de l'organisateur pour le pré-remplir
     final userDoc = await _db.collection('users').doc(myUid).get();
-    final userData = userDoc.data() ✨ {};
-    final displayName = userData['display_name'] ✨ userData['first_name'] ✨ 'Organisateur';
-    final photoUrl = userData['photo_url'] ✨ userData['photoUrl'] ✨ '';
+    final userData = userDoc.data() ?? {};
+    final displayName = userData['display_name'] ?? userData['first_name'] ?? 'Organisateur';
+    final photoUrl = userData['photo_url'] ?? userData['photoUrl'] ?? '';
 
     final groupRef = _db.collection('secret_santa_groups').doc();
     final now = FieldValue.serverTimestamp();
@@ -161,15 +161,15 @@ class SecretSantaService {
       if (!groupDoc.exists) return null;
 
       final group = groupDoc.data()!;
-      final uids = List<String>.from(group['participantUids'] as List? ✨ []);
+      final uids = List<String>.from(group['participantUids'] as List? ?? []);
 
       if (uids.contains(myUid)) return groupId; // Déjà membre
 
       // Récupérer le profil
       final userDoc = await _db.collection('users').doc(myUid).get();
-      final userData = userDoc.data() ✨ {};
-      final displayName = userData['display_name'] ✨ userData['first_name'] ✨ 'Participant';
-      final photoUrl = userData['photo_url'] ✨ userData['photoUrl'] ✨ '';
+      final userData = userDoc.data() ?? {};
+      final displayName = userData['display_name'] ?? userData['first_name'] ?? 'Participant';
+      final photoUrl = userData['photo_url'] ?? userData['photoUrl'] ?? '';
 
       final batch = _db.batch();
       batch.update(_db.collection('secret_santa_groups').doc(groupId), {
@@ -213,7 +213,7 @@ class SecretSantaService {
       final uids = List<String>.from(group['participantUids'] as List);
       if (uids.length < 2) throw Exception('Il faut au moins 2 participants');
 
-      final exclusions = (group['exclusions'] as List? ✨ [])
+      final exclusions = (group['exclusions'] as List? ?? [])
           .map((e) => List<String>.from(e as List))
           .toList();
 
@@ -261,7 +261,7 @@ class SecretSantaService {
             .collection('participants')
             .doc(receiver)
             .get();
-        final receiverName = receiverParticipant.data()?['displayName'] ✨ 'Quelqu\'un';
+        final receiverName = receiverParticipant.data()?['displayName'] ?? 'Quelqu\'un';
 
         batch.set(
           _db.collection('secret_santa_groups').doc(groupId).collection('pairs').doc(giver),
@@ -286,7 +286,7 @@ class SecretSantaService {
             'secretSantaGroupId': groupId,
             'secretSantaTargetUid': receiver,
             'occasion': group['theme'],
-            'budgetTier': 'Secret Santa (Max ${group['budget'] != null ✨ group['budget']['max'] : 50}€)',
+            'budgetTier': 'Secret Santa (Max ${group['budget'] != null ? group['budget']['max'] : 50}€)',
           }
         };
         
@@ -384,7 +384,7 @@ class SecretSantaService {
         .collection('secret_santa_groups')
         .doc(groupId)
         .snapshots()
-        .map((doc) => doc.exists ✨ SecretSantaGroup.fromFirestore(doc) : null);
+        .map((doc) => doc.exists ? SecretSantaGroup.fromFirestore(doc) : null);
   }
 
   // ── Lien d'invitation ──────────────────────────────────────────────────────
@@ -412,8 +412,8 @@ class SecretSantaService {
         final productsSnap = await wl.reference.collection('products').get();
         for (final p in productsSnap.docs) {
           final data = p.data();
-          final price = (data['price'] ✨ data['prix'] ✨ 0);
-          final priceNum = price is num ✨ price.toDouble() : double.tryParse(price.toString()) ✨ 0;
+          final price = (data['price'] ?? data['prix'] ?? 0);
+          final priceNum = price is num ? price.toDouble() : double.tryParse(price.toString()) ?? 0;
 
           // Filtrer par budget (tolérance 10%)
           if (priceNum <= budgetMax * 1.1) {

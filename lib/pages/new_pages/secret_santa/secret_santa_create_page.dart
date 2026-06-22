@@ -46,7 +46,7 @@ class _SecretSantaCreatePageState extends State<SecretSantaCreatePage> {
     setState(() => _loading = true);
     try {
       final groupId = await SecretSantaService.createGroup(
-        name: _nameCtrl.text.trim().isEmpty ✨ 'Mon Secret Santa' : _nameCtrl.text.trim(),
+        name: _nameCtrl.text.trim().isEmpty ? 'Mon Secret Santa' : _nameCtrl.text.trim(),
         mode: 'personal',
         budgetMin: _budgetMin.round(),
         budgetMax: _budgetMax.round(),
@@ -89,10 +89,10 @@ class _SecretSantaCreatePageState extends State<SecretSantaCreatePage> {
               children: List.generate(2, (i) => Expanded(
                 child: Container(
                   height: 4,
-                  margin: EdgeInsets.only(right: i < 1 ✨ 8 : 0),
+                  margin: EdgeInsets.only(right: i < 1 ? 8 : 0),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(2),
-                    color: i <= _step ✨ _violet : Colors.white.withOpacity(0.15),
+                    color: i <= _step ? _violet : Colors.white.withOpacity(0.15),
                   ),
                 ),
               )),
@@ -108,7 +108,7 @@ class _SecretSantaCreatePageState extends State<SecretSantaCreatePage> {
                 ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
                 child: FadeTransition(opacity: anim, child: child),
               ),
-              child: _step == 0 ✨ _buildStep0() : _buildStep1(),
+              child: _step == 0 ? _buildStep0() : _buildStep1(),
             ),
           ),
         ],
@@ -168,12 +168,12 @@ class _SecretSantaCreatePageState extends State<SecretSantaCreatePage> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                     gradient: selected
-                        ✨ LinearGradient(colors: [_violet.withOpacity(0.5), _pink.withOpacity(0.3)])
+                        ? LinearGradient(colors: [_violet.withOpacity(0.5), _pink.withOpacity(0.3)])
                         : null,
-                    color: selected ✨ null : Colors.white.withOpacity(0.07),
+                    color: selected ? null : Colors.white.withOpacity(0.07),
                     border: Border.all(
-                      color: selected ✨ _violet : Colors.white.withOpacity(0.12),
-                      width: selected ✨ 1.5 : 1,
+                      color: selected ? _violet : Colors.white.withOpacity(0.12),
+                      width: selected ? 1.5 : 1,
                     ),
                   ),
                   child: Row(
@@ -183,8 +183,8 @@ class _SecretSantaCreatePageState extends State<SecretSantaCreatePage> {
                       const SizedBox(width: 8),
                       Text(t['label']!,
                           style: GoogleFonts.poppins(
-                            color: selected ✨ Colors.white : Colors.white70,
-                            fontWeight: selected ✨ FontWeight.w600 : FontWeight.w400,
+                            color: selected ? Colors.white : Colors.white70,
+                            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                             fontSize: 14,
                           )),
                     ],
@@ -346,14 +346,14 @@ class _SecretSantaCreatePageState extends State<SecretSantaCreatePage> {
               Expanded(
                 flex: 2,
                 child: ElevatedButton(
-                  onPressed: _loading ✨ null : _create,
+                  onPressed: _loading ? null : _create,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _violet,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                   child: _loading
-                      ✨ const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                       : Text('🎅 Créer le groupe', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
                 ),
               ),

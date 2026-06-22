@@ -15,7 +15,7 @@ class CatalogRepository {
     String? category,
     int limit = 50,
   }) =>
-      FirebaseDataService.getGifts(categories: category != null ✨ [category] : null, limit: limit);
+      FirebaseDataService.getGifts(categories: category != null ? [category] : null, limit: limit);
 
   /// Charge un produit par son ID.
   Future<Map<String, dynamic>?> getGift(String giftId) =>

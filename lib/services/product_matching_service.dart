@@ -50,7 +50,7 @@ class ProductMatchingService {
 
       // Si c'est une string non vide
       if (value is String && value.isNotEmpty && value.startsWith('http')) {
-        AppLogger.debug('🖼️ Image trouvée dans champ "$field": ${value.substring(0, value.length > 50 ✨ 50 : value.length)}...', 'Matching');
+        AppLogger.debug('🖼️ Image trouvée dans champ "$field": ${value.substring(0, value.length > 50 ? 50 : value.length)}...', 'Matching');
         return value;
       }
 
@@ -58,7 +58,7 @@ class ProductMatchingService {
       if (value is List && value.isNotEmpty) {
         final firstImage = value.first;
         if (firstImage is String && firstImage.isNotEmpty && firstImage.startsWith('http')) {
-          AppLogger.debug('🖼️ Image trouvée dans array "$field": ${firstImage.substring(0, firstImage.length > 50 ✨ 50 : firstImage.length)}...', 'Matching');
+          AppLogger.debug('🖼️ Image trouvée dans array "$field": ${firstImage.substring(0, firstImage.length > 50 ? 50 : firstImage.length)}...', 'Matching');
           return firstImage;
         }
       }
@@ -90,16 +90,16 @@ class ProductMatchingService {
       AppLogger.info('🎯 Matching produits pour tags: ${userTags.keys.join(", ")}', 'Matching');
       AppLogger.info('🔒 Mode filtrage: $filteringMode', 'Matching');
       AppLogger.debug('📋 User tags complets: $userTags', 'Matching');
-      AppLogger.info('🚫 Exclusion de ${excludeProductIds?.length ✨ 0} produits', 'Matching');
+      AppLogger.info('🚫 Exclusion de ${excludeProductIds?.length ?? 0} produits', 'Matching');
 
       // FIX F2: clé isolée par UID — évite que les marques vues par l'utilisateur A
       // influencent les recommandations de l'utilisateur B sur le même appareil
-      List<String> effectiveBrandsSeen = brandsSeen ✨ [];
+      List<String> effectiveBrandsSeen = brandsSeen ?? [];
       if (effectiveBrandsSeen.isEmpty) {
         try {
-          final uid = FirebaseAuth.instance.currentUser?.uid ✨ 'anon';
+          final uid = FirebaseAuth.instance.currentUser?.uid ?? 'anon';
           final prefs = await SharedPreferences.getInstance();
-          effectiveBrandsSeen = prefs.getStringList('brands_seen_v3_$uid') ✨ [];
+          effectiveBrandsSeen = prefs.getStringList('brands_seen_v3_$uid') ?? [];
           AppLogger.debug('🏷️ Marques déjà vues (${effectiveBrandsSeen.length}): $effectiveBrandsSeen', 'Matching');
         } catch (e) {
           AppLogger.warning('⚠️ Impossible de charger brands_seen: $e', 'Matching');
@@ -123,7 +123,7 @@ class ProductMatchingService {
       String? genderFilter;
 
       // Déterminer le genre pour le scoring côté client
-      final gender = userTags['gender'] ✨ userTags['recipientGender'];
+      final gender = userTags['gender'] ?? userTags['recipientGender'];
       if (gender != null) {
         final genderStr = gender.toString();
         if (genderStr.contains('Femme') || genderStr.contains('femme')) {
@@ -206,7 +206,7 @@ class ProductMatchingService {
       // FIX F12: N'injecter la wishlist QUE si personIdentifier est un UID Firebase
       // (format: 20-28 chars alphanumériques). Un prénom libre comme "Marie" peut
       // matcher n'importe quel utilisateur Doron nommé Marie, y compris des inconnus.
-      final personIdentifier = userTags['personUid'] ✨ userTags['personIdentifier'];
+      final personIdentifier = userTags['personUid'] ?? userTags['personIdentifier'];
       final looksLikeUid = personIdentifier != null &&
           personIdentifier.toString().length >= 20 &&
           !personIdentifier.toString().contains(' ');
@@ -232,7 +232,7 @@ class ProductMatchingService {
       // Cela permet d'avoir des cadeaux innovants même en mode PERSON
       final giftTypes = userTags['giftTypes'];
       if (giftTypes != null) {
-        final typesList = giftTypes is List ✨ giftTypes : [giftTypes];
+        final typesList = giftTypes is List ? giftTypes : [giftTypes];
         AppLogger.info('🎁 Types de cadeaux demandés: ${typesList.join(", ")} (scoring favorisera ces types)', 'Matching');
       }
 
@@ -258,7 +258,7 @@ class ProductMatchingService {
             brandsSeen: effectiveBrandsSeen, // Anti-doublon marque
           );
           // Epsilon de variation : ±8pts — brise les égalités sans déplacer les tops nets
-          final epsilon = score > -1000 ✨ (variationRng.nextDouble() * 16.0 - 8.0) : 0.0;
+          final epsilon = score > -1000 ? (variationRng.nextDouble() * 16.0 - 8.0) : 0.0;
           scoredProducts.add({
             ...product,
             '_matchScore': score + epsilon,
@@ -364,7 +364,7 @@ class ProductMatchingService {
       final maxPerCategory = (count * 0.3).ceil(); // 30% max par catégorie
       final seenProductIds = <dynamic>{};
       final seenProductNames = <String>{}; // Déduplication par nom normalisé
-      final excludedIds = excludeProductIds?.toSet() ✨ {};
+      final excludedIds = excludeProductIds?.toSet() ?? {};
       int categoryFilteredCount = 0; // Compteur de produits filtrés par catégorie
 
       // ✅ EXCLUSION RÉACTIVÉE pour éviter de revoir les mêmes produits
@@ -376,13 +376,13 @@ class ProductMatchingService {
         if (selectedProducts.length >= count) break;
 
         final productId = product['id'];
-        final brand = product['brand']?.toString() ✨ 'Unknown';
-        final productName = product['name']?.toString() ✨ '';
+        final brand = product['brand']?.toString() ?? 'Unknown';
+        final productName = product['name']?.toString() ?? '';
         final normalizedName = _normalizeProductName(productName);
 
         // Extraire la catégorie principale
-        final categories = (product['categories'] as List?)?.cast<String>() ✨ [];
-        final mainCategory = categories.isNotEmpty ✨ categories.first : 'Autre';
+        final categories = (product['categories'] as List?)?.cast<String>() ?? [];
+        final mainCategory = categories.isNotEmpty ? categories.first : 'Autre';
 
         // 1️⃣ Vérifier exclusion des produits déjà vus
         if (excludedIds.contains(productId)) {
@@ -400,13 +400,13 @@ class ProductMatchingService {
         }
 
         // 4️⃣ Vérifier limite par marque (max 20%)
-        final currentBrandCount = brandCounts[brand] ✨ 0;
+        final currentBrandCount = brandCounts[brand] ?? 0;
         if (currentBrandCount >= maxPerBrand) {
           continue; // Skip, trop de produits de cette marque
         }
 
         // 5️⃣ Vérifier limite par catégorie (max 30%)
-        final currentCategoryCount = categoryCounts[mainCategory] ✨ 0;
+        final currentCategoryCount = categoryCounts[mainCategory] ?? 0;
         if (currentCategoryCount >= maxPerCategory) {
           continue; // Skip, trop de produits de cette catégorie
         }
@@ -418,9 +418,9 @@ class ProductMatchingService {
         // 7️⃣ Vérifier correspondance catégorie - FILTRAGE STRICT si catégorie sélectionnée
         // Si l'utilisateur a cliqué sur une catégorie (Tech, Mode, etc.), montrer UNIQUEMENT cette catégorie
         if (category != null && category != 'Pour toi' && category != 'all') {
-          final productTags = (product['tags'] as List?)?.cast<String>() ✨ [];
-          final productCategories = (product['categories'] as List?)?.cast<String>() ✨ [];
-          final productCategory = product['category']?.toString() ✨ '';
+          final productTags = (product['tags'] as List?)?.cast<String>() ?? [];
+          final productCategories = (product['categories'] as List?)?.cast<String>() ?? [];
+          final productCategory = product['category']?.toString() ?? '';
 
           // Normaliser la catégorie recherchée
           final normalizedCategory = _normalizeTag(category);
@@ -456,13 +456,13 @@ class ProductMatchingService {
       try {
         final seenBrands = selectedProducts
             .take(10)
-            .map((p) => (p['brand'] ✨ '').toString().toLowerCase())
+            .map((p) => (p['brand'] ?? '').toString().toLowerCase())
             .where((b) => b.isNotEmpty)
             .toSet()
             .take(5)
             .toList();
         if (seenBrands.isNotEmpty) {
-          final uid = FirebaseAuth.instance.currentUser?.uid ✨ 'anon';
+          final uid = FirebaseAuth.instance.currentUser?.uid ?? 'anon';
           final prefs = await SharedPreferences.getInstance();
           await prefs.setStringList('brands_seen_v3_$uid', seenBrands);
           AppLogger.debug('💾 Marques sauvegardées (uid=$uid): $seenBrands', 'Matching');
@@ -475,8 +475,8 @@ class ProductMatchingService {
       // Séparer par catégorie et entremêler
       final productsByCategory = <String, List<Map<String, dynamic>>>{};
       for (var product in selectedProducts) {
-        final categories = (product['categories'] as List?)?.cast<String>() ✨ [];
-        final mainCategory = categories.isNotEmpty ✨ categories.first : 'Autre';
+        final categories = (product['categories'] as List?)?.cast<String>() ?? [];
+        final mainCategory = categories.isNotEmpty ? categories.first : 'Autre';
         productsByCategory.putIfAbsent(mainCategory, () => []).add(product);
       }
 
@@ -599,7 +599,7 @@ class ProductMatchingService {
     // ========================================================================
     // 1️⃣ GENRE
     // ========================================================================
-    final gender = userTags['gender'] ✨ userTags['recipientGender'];
+    final gender = userTags['gender'] ?? userTags['recipientGender'];
     if (gender != null) {
       final genderStr = gender.toString().toLowerCase();
       // FIX: Détecter "Femme" et "Homme" même avec emojis
@@ -621,7 +621,7 @@ class ProductMatchingService {
     // ========================================================================
     // 2️⃣ ÂGE (Directement en tags de recherche)
     // ========================================================================
-    final age = userTags['age'] ✨ userTags['recipientAge'];
+    final age = userTags['age'] ?? userTags['recipientAge'];
     if (age != null) {
       final ageStr = age.toString().toLowerCase();
       if (ageStr.contains('moins de 12') || ageStr.contains('enfant')) {
@@ -638,7 +638,7 @@ class ProductMatchingService {
     // ========================================================================
     // 3️⃣ BUDGET (STRICT - 1 seul tag principal, conversion des paliers)
     // ========================================================================
-    final budgetTier = userTags['budgetTier'] ✨ userTags['budget'];
+    final budgetTier = userTags['budgetTier'] ?? userTags['budget'];
     if (budgetTier != null) {
       final budgetStr = budgetTier.toString().toLowerCase();
       if (budgetStr.contains('< 20') || budgetStr == '10.0' || budgetStr == '20.0') {
@@ -660,7 +660,7 @@ class ProductMatchingService {
     // ========================================================================
     final personality = userTags['recipientPersonality'];
     if (personality != null) {
-      final personalityList = personality is List ✨ personality : [personality];
+      final personalityList = personality is List ? personality : [personality];
       for (final p in personalityList) {
         final pStr = p.toString().toLowerCase();
         if (pStr.contains("explorateur")) {
@@ -708,7 +708,7 @@ class ProductMatchingService {
     // ========================================================================
     final preferredCategories = userTags['preferredCategories'];
     if (preferredCategories != null) {
-      final catList = preferredCategories is List ✨ preferredCategories : [preferredCategories];
+      final catList = preferredCategories is List ? preferredCategories : [preferredCategories];
       for (final cat in catList) {
         final catStr = cat.toString();
         final converted = TagsDefinitions.categoryConversion[catStr];
@@ -723,7 +723,7 @@ class ProductMatchingService {
     // ========================================================================
     final giftTypes = userTags['giftTypes'];
     if (giftTypes != null) {
-      final typesList = giftTypes is List ✨ giftTypes : [giftTypes];
+      final typesList = giftTypes is List ? giftTypes : [giftTypes];
       for (final type in typesList) {
         final typeStr = type.toString().toLowerCase();
         if (typeStr.contains('physique')) {
@@ -788,8 +788,8 @@ class ProductMatchingService {
                                categoryFilter != 'all';
 
     // Extraire TOUS les tags du produit (tags + categories)
-    final productTags = (product['tags'] as List?)?.cast<String>() ✨ [];
-    final productCategories = (product['categories'] as List?)?.cast<String>() ✨ [];
+    final productTags = (product['tags'] as List?)?.cast<String>() ?? [];
+    final productCategories = (product['categories'] as List?)?.cast<String>() ?? [];
     // Normaliser les tags : toLowerCase + remplacer tirets par underscores
     // Firebase peut avoir "budget_100-200" ou "budget_100_200", on standardise
     final allProductTags = {...productTags, ...productCategories}
@@ -819,7 +819,7 @@ class ProductMatchingService {
       if (productGenderTags.isEmpty) {
         // Produit sans tag de genre explicite
         // 🔒 On essaie de deviner le genre depuis le nom (MOTS-CLÉS TRÈS SPÉCIFIQUES uniquement)
-        final productName = (product['name'] ✨ '').toString().toLowerCase();
+        final productName = (product['name'] ?? '').toString().toLowerCase();
 
         // Mots-clés TRÈS SPÉCIFIQUES pour femmes (exclusion forte)
         final strongFeminineKeywords = ['robe de soirée', 'jupe', 'lingerie', 'soutien-gorge',
@@ -883,9 +883,9 @@ class ProductMatchingService {
     }
 
     // 🔒 2. ÂGE (SCORING UNIQUEMENT - JAMAIS d'exclusion)
-    final age = userTags['age'] ✨ userTags['recipientAge'];
+    final age = userTags['age'] ?? userTags['recipientAge'];
     if (age != null) {
-      final ageInt = int.tryParse(age.toString()) ✨ 0;
+      final ageInt = int.tryParse(age.toString()) ?? 0;
       if (ageInt > 0) {
         // 🔒 1.B PROTECTION MINEURS (ZÉRO TOLÉRANCE ALCOOL)
         if (ageInt < 18 && allProductTags.contains('cat_alcool')) {
@@ -972,7 +972,7 @@ class ProductMatchingService {
       final productBudgetTags = allProductTags.where((t) => t.startsWith('budget_')).toList();
       if (productBudgetTags.isEmpty) {
         final price = product['price'];
-        final priceInt = price is int ✨ price : (price is double ✨ price.toInt() : 0);
+        final priceInt = price is int ? price : (price is double ? price.toInt() : 0);
         productBudget = TagsDefinitions.getBudgetTagFromPrice(priceInt);
       } else {
         productBudget = productBudgetTags.first;
@@ -1114,8 +1114,8 @@ class ProductMatchingService {
       
       if (isActivity) {
         // Obtenir la description ou le nom ou un tag location du produit
-        final productName = (product['name'] ✨ '').toString().toLowerCase();
-        final productDesc = (product['description'] ✨ '').toString().toLowerCase();
+        final productName = (product['name'] ?? '').toString().toLowerCase();
+        final productDesc = (product['description'] ?? '').toString().toLowerCase();
         
         // On cherche le nom de la ville ou département (ex: "Paris", "Île-de-France")
         final parts = locStr.replaceAll(RegExp(r'[()]'), ' ').split(' ').where((p) => p.length > 3).toList();
@@ -1143,7 +1143,7 @@ class ProductMatchingService {
     // ========================================================================
 
     // 📈 Popularité (max 20 points)
-    final popularity = product['popularity'] as int? ✨ 0;
+    final popularity = product['popularity'] as int? ?? 0;
     if (popularity > 0) {
       final popularityScore = (popularity * 0.2).clamp(0, 20);
       score += popularityScore;
@@ -1166,7 +1166,7 @@ class ProductMatchingService {
       if (username.isEmpty) return [];
       
       // Nettoyer le @ si présent
-      final cleanUsername = username.startsWith('@') ✨ username.substring(1) : username;
+      final cleanUsername = username.startsWith('@') ? username.substring(1) : username;
       
       final FirebaseFirestore firestore = FirebaseFirestore.instance;
       // Chercher l'utilisateur par username (requiert que le champ username existe dans 'users')
@@ -1227,9 +1227,9 @@ class ProductMatchingService {
     final sections = <Map<String, dynamic>>[];
 
     // Extraire sexe et âge de l'utilisateur
-    final gender = userTags['gender'] ✨ userTags['recipientGender'];
-    final age = userTags['age'] ✨ userTags['recipientAge'];
-    final ageInt = age is int ✨ age : int.tryParse(age.toString()) ✨ 25;
+    final gender = userTags['gender'] ?? userTags['recipientGender'];
+    final age = userTags['age'] ?? userTags['recipientAge'];
+    final ageInt = age is int ? age : int.tryParse(age.toString()) ?? 25;
 
     String genderLabel = 'Unisexe';
     String ageLabel = '';
@@ -1442,7 +1442,7 @@ class ProductMatchingService {
       'aventures': 'travel',
     };
 
-    return synonymMap[normalized] ✨ normalized;
+    return synonymMap[normalized] ?? normalized;
   }
 
   /// Normalise un nom de produit pour détecter les doublons visuels

@@ -170,17 +170,17 @@ class _VoiceResultsPageWidgetState extends State<VoiceResultsPageWidget> {
                                   // Extraire les informations de l'analyse
                                   final analysis = model.analysis!;
                                   final personTags = {
-                                    'name': analysis['recipientName'] ✨ 'Sans nom',
+                                    'name': analysis['recipientName'] ?? 'Sans nom',
                                     'gender': analysis['gender'],
-                                    'recipient': analysis['recipientType'] ✨ 'une personne',
-                                    'budget': (analysis['budget']?['max'] ✨ 50).toDouble(),
-                                    'recipientAge': analysis['age']?.toString() ✨ analysis['ageRange'] ✨ '25',
-                                    'recipientHobbies': analysis['hobbies'] ✨ [],
-                                    'recipientPersonality': analysis['personality'] ✨ '',
-                                    'occasion': analysis['occasion'] ✨ 'sans occasion',
-                                    'recipientStyle': analysis['style'] ✨ '',
-                                    'preferredCategories': analysis['preferredCategories'] ✨ [],
-                                    'interests': analysis['interests'] ✨ [],
+                                    'recipient': analysis['recipientType'] ?? 'une personne',
+                                    'budget': (analysis['budget']?['max'] ?? 50).toDouble(),
+                                    'recipientAge': analysis['age']?.toString() ?? analysis['ageRange'] ?? '25',
+                                    'recipientHobbies': analysis['hobbies'] ?? [],
+                                    'recipientPersonality': analysis['personality'] ?? '',
+                                    'occasion': analysis['occasion'] ?? 'sans occasion',
+                                    'recipientStyle': analysis['style'] ?? '',
+                                    'preferredCategories': analysis['preferredCategories'] ?? [],
+                                    'interests': analysis['interests'] ?? [],
                                   };
 
                                   // Créer la personne avec isPendingFirstGen=true
@@ -239,7 +239,7 @@ class _VoiceResultsPageWidgetState extends State<VoiceResultsPageWidget> {
                     padding: const EdgeInsets.all(24),
                     child: Text(
                       model.isGeneratingProducts
-                          ✨ 'Génération de suggestions...'
+                          ? 'Génération de suggestions...'
                           : 'Suggestions de cadeaux',
                       style: const TextStyle(
                         fontFamily: 'Outfit',
@@ -316,7 +316,7 @@ class _VoiceResultsPageWidgetState extends State<VoiceResultsPageWidget> {
                               padding: const EdgeInsets.all(8),
                               child: Center(
                                 child: Text(
-                                  'Erreur: ${e.toString().substring(0, e.toString().length > 50 ✨ 50 : e.toString().length)}',
+                                  'Erreur: ${e.toString().substring(0, e.toString().length > 50 ? 50 : e.toString().length)}',
                                   style: const TextStyle(color: Colors.red, fontSize: 10),
                                   textAlign: TextAlign.center,
                                 ),
@@ -343,9 +343,9 @@ class _VoiceResultsPageWidgetState extends State<VoiceResultsPageWidget> {
 
   Widget _buildProductCard(Map<String, dynamic> product, BuildContext context) {
     // FIX CRASH: Extraire les valeurs avec sécurité maximale
-    final String productName = (product['name'] ✨ 'Produit').toString();
-    final String productBrand = (product['brand'] ✨ '').toString();
-    final String productImage = (product['image'] ✨ '').toString();
+    final String productName = (product['name'] ?? 'Produit').toString();
+    final String productBrand = (product['brand'] ?? '').toString();
+    final String productImage = (product['image'] ?? '').toString();
 
     // Prix: conversion sécurisée
     String productPrice;
@@ -473,7 +473,7 @@ class _VoiceResultsPageWidgetState extends State<VoiceResultsPageWidget> {
                         Expanded(
                           child: Text(
                             productPrice == '0' || productPrice.isEmpty
-                              ✨ 'Prix non renseigné'
+                              ? 'Prix non renseigné'
                               : '${productPrice}€',
                             style: const TextStyle(
                               fontFamily: 'Outfit',

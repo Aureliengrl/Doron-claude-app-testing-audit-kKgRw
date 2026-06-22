@@ -57,7 +57,7 @@ class ProductValidatorService {
       if (numMatch != null) {
         return '${numMatch.group(0)!.replaceAll(',', '.')} €';
       }
-      return str.contains('€') ✨ str : '$str €';
+      return str.contains('€') ? str : '$str €';
     }
     return '';
   }
@@ -158,7 +158,7 @@ class ProductValidatorService {
     final image = _normalizeImage(product);
     if (image.isNotEmpty) score += 25;
 
-    final url = product['url'] as String? ✨ '';
+    final url = product['url'] as String? ?? '';
     if (url.isNotEmpty && url != '#' && !url.contains('/s?k=')) score += 15; // URL directe
 
     final brand = _normalizeBrand(product);

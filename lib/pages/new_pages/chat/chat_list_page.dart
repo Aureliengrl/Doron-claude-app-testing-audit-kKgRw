@@ -44,7 +44,7 @@ class _ChatListPageState extends State<ChatListPage> {
       return context.tr('Hier', 'Yesterday');
     } else if (diff.inDays < 7) {
       // Day abbreviations â€” handled per-locale in chatTile
-      return context.isEn ✨ ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][date.weekday-1] : ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'][date.weekday-1];
+      return context.isEn ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][date.weekday-1] : ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'][date.weekday-1];
     } else {
       return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
     }
@@ -58,8 +58,8 @@ class _ChatListPageState extends State<ChatListPage> {
       if (doc.exists) {
         final data = doc.data()!;
         final profile = {
-          'name': data['display_name'] ✨ data['first_name'] ✨ 'Utilisateur',
-          'photo': data['photo_url'] ✨ data['photoUrl'] ✨ '',
+          'name': data['display_name'] ?? data['first_name'] ?? 'Utilisateur',
+          'photo': data['photo_url'] ?? data['photoUrl'] ?? '',
         };
         _profileCache[uid] = profile;
         return profile;
@@ -90,7 +90,7 @@ class _ChatListPageState extends State<ChatListPage> {
             stream: BadgeService.pendingInvitesCountStream,
             initialData: 0,
             builder: (context, snapshot) {
-              final pendingCount = snapshot.data ✨ 0;
+              final pendingCount = snapshot.data ?? 0;
               return FloatingCtaButton(
                 title: 'Trouver des amis',
                 icon: Icons.person_add,
@@ -130,7 +130,7 @@ class _ChatListPageState extends State<ChatListPage> {
     return FutureBuilder<List<Map<String,dynamic>>>(
       future: _loadGroupSuggestions(),
       builder: (ctx, snap) {
-        final suggestions = snap.data ✨ [];
+        final suggestions = snap.data ?? [];
         if (suggestions.isEmpty) return const SizedBox.shrink();
         return Container(
           height: 100,
@@ -183,8 +183,8 @@ class _ChatListPageState extends State<ChatListPage> {
 
   Future<List<Map<String,dynamic>>> _loadGroupSuggestions() async {
     final suggestions = <Map<String,dynamic>>[
-      {'emoji': 'ðŸŽ‰', 'title': context.isEn ✨ 'Group gift' : 'Cadeau commun', 'type': 'gift'},
-      {'emoji': 'ðŸ‘¨â€ðŸ‘©â€ðŸ‘§', 'title': context.isEn ✨ 'Family Group' : 'Groupe Famille', 'type': 'family'},
+      {'emoji': 'ðŸŽ‰', 'title': context.isEn ? 'Group gift' : 'Cadeau commun', 'type': 'gift'},
+      {'emoji': 'ðŸ‘¨â€ðŸ‘©â€ðŸ‘§', 'title': context.isEn ? 'Family Group' : 'Groupe Famille', 'type': 'family'},
       {'emoji': 'ðŸ‘«', 'title': 'Déjeuner surprise', 'type': 'surprise'},
     ];
 
@@ -200,7 +200,7 @@ class _ChatListPageState extends State<ChatListPage> {
         if (diff >= 0 && diff <= 30) {
           suggestions.insert(0, {
             'emoji': 'ðŸŽ‚',
-            'title': 'Anniv de ${friend['name']} dans ${diff == 0 ✨ "aujourd'hui" : '$diff j'}',
+            'title': 'Anniv de ${friend['name']} dans ${diff == 0 ? "aujourd'hui" : '$diff j'}',
             'type': 'birthday',
             'friendName': friend['name'],
           });
@@ -357,11 +357,11 @@ class _ChatListPageState extends State<ChatListPage> {
             final chatId = chatDoc.id;
             
             final isGroup = chatData['isGroup'] == true;
-            final lastMessage = chatData['lastMessage'] as String? ✨ '';
+            final lastMessage = chatData['lastMessage'] as String? ?? '';
             final lastMessageTime = chatData['lastMessageTime'] as Timestamp?;
             final unread = (chatData['unreadCount'] as Map?)?.entries
                 .firstWhere((e) => e.key == currentUser.uid, orElse: () => MapEntry('', 0))
-                .value ✨ 0;
+                .value ?? 0;
 
             Widget chatTile(String chatName, String photoUrl) {
               return Padding(
@@ -395,18 +395,18 @@ class _ChatListPageState extends State<ChatListPage> {
                             height: 56,
                             decoration: BoxDecoration(
                               gradient: isGroup
-                                ✨ const RadialGradient(
+                                ? const RadialGradient(
                                     colors: [Color(0xFF8A2BE2), Color(0xFF4A148C)])
                                 : photoUrl.isEmpty
-                                  ✨ LinearGradient(
+                                  ? LinearGradient(
                                       colors: [
                                         HSLColor.fromAHSL(1, (chatName.hashCode % 360).toDouble().abs(), 0.55, 0.45).toColor(),
                                         HSLColor.fromAHSL(1, ((chatName.hashCode + 60) % 360).toDouble().abs(), 0.55, 0.35).toColor(),
                                       ],
                                     )
                                   : null,
-                              color: (!isGroup && photoUrl.isNotEmpty) ✨ null : null,
-                              image: (!isGroup && photoUrl.isNotEmpty) ✨ DecorationImage(
+                              color: (!isGroup && photoUrl.isNotEmpty) ? null : null,
+                              image: (!isGroup && photoUrl.isNotEmpty) ? DecorationImage(
                                 image: CachedNetworkImageProvider(photoUrl),
                                 fit: BoxFit.cover,
                               ) : null,
@@ -420,12 +420,12 @@ class _ChatListPageState extends State<ChatListPage> {
                               ],
                             ),
                             child: (!isGroup && photoUrl.isNotEmpty)
-                              ✨ null
+                              ? null
                               : Center(
                                   child: isGroup
-                                    ✨ const Icon(IconlyBold.user2, color: Colors.white, size: 26)
+                                    ? const Icon(IconlyBold.user2, color: Colors.white, size: 26)
                                     : Text(
-                                        chatName.isNotEmpty ✨ chatName[0].toUpperCase() : '✨',
+                                        chatName.isNotEmpty ? chatName[0].toUpperCase() : '?',
                                         style: GoogleFonts.poppins(
                                           color: Colors.white,
                                           fontSize: 22,
@@ -448,7 +448,7 @@ class _ChatListPageState extends State<ChatListPage> {
                                         chatName,
                                         style: GoogleFonts.poppins(
                                           fontSize: 16,
-                                          fontWeight: (unread as int) > 0 ✨ FontWeight.bold : FontWeight.w600,
+                                          fontWeight: (unread as int) > 0 ? FontWeight.bold : FontWeight.w600,
                                           color: Colors.white,
                                         ),
                                         maxLines: 1,
@@ -459,8 +459,8 @@ class _ChatListPageState extends State<ChatListPage> {
                                       _formatTime(lastMessageTime),
                                       style: GoogleFonts.poppins(
                                         fontSize: 12,
-                                        color: (unread as int) > 0 ✨ const Color(0xFFEC4899) : Colors.white.withOpacity(0.5),
-                                        fontWeight: (unread as int) > 0 ✨ FontWeight.bold : FontWeight.normal,
+                                        color: (unread as int) > 0 ? const Color(0xFFEC4899) : Colors.white.withOpacity(0.5),
+                                        fontWeight: (unread as int) > 0 ? FontWeight.bold : FontWeight.normal,
                                       ),
                                     ),
                                   ],
@@ -470,7 +470,7 @@ class _ChatListPageState extends State<ChatListPage> {
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        lastMessage.isNotEmpty ✨ lastMessage : 'Nouvelle conversation',
+                                        lastMessage.isNotEmpty ? lastMessage : 'Nouvelle conversation',
                                         style: GoogleFonts.poppins(
                                           fontSize: 13,
                                           color: Colors.white.withOpacity(0.6),
@@ -510,10 +510,10 @@ class _ChatListPageState extends State<ChatListPage> {
             }
 
             if (isGroup) {
-              return chatTile(chatData['name'] as String? ✨ 'Groupe', '');
+              return chatTile(chatData['name'] as String? ?? 'Groupe', '');
             } else {
               // BUG 4 FIX: utilise le cache au lieu d'un FutureBuilder par item
-              final participants = List<String>.from(chatData['participants'] ✨ []);
+              final participants = List<String>.from(chatData['participants'] ?? []);
               final otherUserId = participants.firstWhere(
                 (id) => id != currentUser.uid,
                 orElse: () => currentUser.uid,
@@ -533,8 +533,8 @@ class _ChatListPageState extends State<ChatListPage> {
               return FutureBuilder<Map<String, dynamic>>(
                 future: _getProfile(otherUserId),
                 builder: (ctx, snap) {
-                  final name = snap.data?['name'] as String? ✨ 'Utilisateur';
-                  final photo = snap.data?['photo'] as String? ✨ '';
+                  final name = snap.data?['name'] as String? ?? 'Utilisateur';
+                  final photo = snap.data?['photo'] as String? ?? '';
                   return chatTile(name, photo);
                 },
               );

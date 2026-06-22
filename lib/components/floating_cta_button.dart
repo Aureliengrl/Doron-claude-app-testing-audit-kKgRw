@@ -21,11 +21,11 @@ class FloatingCtaButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget buttonContent = child ✨ Row(
+    Widget buttonContent = child ?? Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (icon != null) ...[
-          Icon(icon, color: Colors.white, size: subtitle != null ✨ 28 : 22),
+          Icon(icon, color: Colors.white, size: subtitle != null ? 28 : 22),
           const SizedBox(width: 8),
         ],
         if (subtitle != null)

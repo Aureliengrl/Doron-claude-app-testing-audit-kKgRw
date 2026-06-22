@@ -42,7 +42,7 @@ class SendFullPromptCall {
   "messages": [
     {
       "role": "system",
-      "content": "You are an AI assistant that asks dynamic and personalized questions to understand user preferences better. The user provides a 'language' variable ('en' for English, 'fr' for French). You must generate responses strictly in the specified language. You will receive the full chat history as JSON and must use this context to ask relevant follow-up questions. The first follow-up must always identify who the gift is for (e.g., 'Who is this gift for?' or 'Are you shopping for a friend, family member, or someone else?'). If applicable, ask about the budget.I want you to answer every time with no accent, write the sentences without any accent or special characters like ï¿½ for example. After these, generate a personalized follow-up question based on the user's answers. \\n\\nFinally, create a 'final_product_query' optimized for e-commerce platforms (Amazon, eBay, Walmart, etc.) when enough details are collected, even if the budget is missing. Additionally, determine whether the product query falls under the category of cosmetics or furniture. If the product is related to cosmetics (e.g., makeup, skincare, perfumes), set 'is_cosmetics' to true. If the product is related to furniture (e.g., chairs, tables, sofas), set 'is_furniture' to true. Otherwise, both should be false.\\n\\nSTRICTLY return a valid JSON object with the following structure: \\n{\\n  \\"follow_up_question\\": \\"Your generated follow-up question here (language should match user input)\\",\\n  \\"final_product_query\\": \\"The optimized product search query\\",\\n  \\"is_cosmetics\\": true/false,\\n  \\"is_furniture\\": true/false\\n}"
+      "content": "You are an AI assistant that asks dynamic and personalized questions to understand user preferences better. The user provides a 'language' variable ('en' for English, 'fr' for French). You must generate responses strictly in the specified language. You will receive the full chat history as JSON and must use this context to ask relevant follow-up questions. The first follow-up must always identify who the gift is for (e.g., 'Who is this gift for?' or 'Are you shopping for a friend, family member, or someone else?'). If applicable, ask about the budget.I want you to answer every time with no accent, write the sentences without any accent or special characters like € for example. After these, generate a personalized follow-up question based on the user's answers. \\n\\nFinally, create a 'final_product_query' optimized for e-commerce platforms (Amazon, eBay, Walmart, etc.) when enough details are collected, even if the budget is missing. Additionally, determine whether the product query falls under the category of cosmetics or furniture. If the product is related to cosmetics (e.g., makeup, skincare, perfumes), set 'is_cosmetics' to true. If the product is related to furniture (e.g., chairs, tables, sofas), set 'is_furniture' to true. Otherwise, both should be false.\\n\\nSTRICTLY return a valid JSON object with the following structure: \\n{\\n  \\"follow_up_question\\": \\"Your generated follow-up question here (language should match user input)\\",\\n  \\"final_product_query\\": \\"The optimized product search query\\",\\n  \\"is_cosmetics\\": true/false,\\n  \\"is_furniture\\": true/false\\n}"
     },
     {
       "role": "user",
@@ -156,7 +156,7 @@ class TitleGeneratorCall {
   "messages": [
     {
       "role": "system",
-      "content": "Given the following chat history in JSON format and I want you to answer every time with no accent, write the sentences without any accent or special characters like ï¿½ for example, generate a short and relevant title that summarizes the conversation. Only return a JSON object with a single key 'title'. No explanations or extra text.I want you to answer every time with no accent, write the sentences without any accent or special characters like ï¿½ for example"
+      "content": "Given the following chat history in JSON format and I want you to answer every time with no accent, write the sentences without any accent or special characters like € for example, generate a short and relevant title that summarizes the conversation. Only return a JSON object with a single key 'title'. No explanations or extra text.I want you to answer every time with no accent, write the sentences without any accent or special characters like € for example"
     },
     {
       "role": "user",
@@ -215,7 +215,7 @@ class OpenAIChatGPTCall {
   "messages": [
     {
       "role": "system",
-      "content": "Tu es un assistant qui gï¿½nï¿½re des questions pour aider ï¿½ trouver un cadeau idï¿½al. Rï¿½PONDS TOUJOURS EN JSON PUR, SANS TEXTE ENCODï¿½ CAR FLUTTERFLOW NE LE COMPREND PAS, NI FORMATAGE INUTILE. Voici le format strict que tu dois suivre : { \\"question\\": \\"Texte de la question\\", \\"choices\\": [\\"Option 1\\", \\"Option 2\\", \\"Option 3\\"] }. Ne rajoute aucun autre texte, explication ou mise en forme en dehors de ce JSON. Je veux que tu ecrives chaque reponse et chaque titre sans utiliser la moindre majuscule ou caractï¿½res specials"
+      "content": "Tu es un assistant qui génère des questions pour aider à trouver un cadeau idéal. RÉPONDS TOUJOURS EN JSON PUR, SANS TEXTE ENCODÉ CAR FLUTTERFLOW NE LE COMPREND PAS, NI FORMATAGE INUTILE. Voici le format strict que tu dois suivre : { \\"question\\": \\"Texte de la question\\", \\"choices\\": [\\"Option 1\\", \\"Option 2\\", \\"Option 3\\"] }. Ne rajoute aucun autre texte, explication ou mise en forme en dehors de ce JSON. Je veux que tu ecrives chaque reponse et chaque titre sans utiliser la moindre majuscule ou caractères specials"
     },
     {
       "role": "user",
@@ -280,7 +280,7 @@ class OpenAiChatGPTAlgoaceCall {
   "messages": [
     {
       "role": "system",
-      "content": "You are an assistant that generates precise product search queries optimized for e-commerce platforms like Amazon, eBay, and Walmart. Given user input, return a single search query that can be used directly in e-commerce site search bars. Respond with a single string only, without any explanations or extra text. I want you to answer every time with no accent, write the sentences without any accent or special characters like ï¿½ for example"
+      "content": "You are an assistant that generates precise product search queries optimized for e-commerce platforms like Amazon, eBay, and Walmart. Given user input, return a single search query that can be used directly in e-commerce site search bars. Respond with a single string only, without any explanations or extra text. I want you to answer every time with no accent, write the sentences without any accent or special characters like € for example"
     },
     {
       "role": "user",
@@ -619,14 +619,14 @@ String _serializeList(List? list) {
 }
 
 String _serializeJson(dynamic jsonVar, [bool isList = false]) {
-  jsonVar ??= (isList âœ¨ [] : {});
+  jsonVar ??= (isList ? [] : {});
   try {
     return json.encode(jsonVar, toEncodable: _toEncodable);
   } catch (_) {
     if (kDebugMode) {
       AppLogger.debug("Json serialization failed. Returning empty json.", 'Debug');
     }
-    return isList âœ¨ '[]' : '{}';
+    return isList ? '[]' : '{}';
   }
 }
 

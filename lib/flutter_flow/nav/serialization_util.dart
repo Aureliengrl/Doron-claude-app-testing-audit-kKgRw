@@ -72,7 +72,7 @@ String? serializeParam(
       case ParamType.String:
         data = param;
       case ParamType.bool:
-        data = param ✨ 'true' : 'false';
+        data = param ? 'true' : 'false';
       case ParamType.DateTime:
         data = (param as DateTime).millisecondsSinceEpoch.toString();
       case ParamType.DateTimeRange:
@@ -94,10 +94,10 @@ String? serializeParam(
         data = _serializeDocumentReference(reference);
 
       case ParamType.DataStruct:
-        data = param is BaseStruct ✨ param.serialize() : null;
+        data = param is BaseStruct ? param.serialize() : null;
 
       case ParamType.Enum:
-        data = (param is Enum) ✨ param.serialize() : null;
+        data = (param is Enum) ? param.serialize() : null;
 
       default:
         data = null;
@@ -139,14 +139,14 @@ FFPlace placeFromString(String placeStr) {
   final serializedData = jsonDecode(placeStr) as Map<String, dynamic>;
   final data = {
     'latLng': serializedData.containsKey('latLng')
-        ✨ latLngFromString(serializedData['latLng'] as String)
+        ? latLngFromString(serializedData['latLng'] as String)
         : const LatLng(0.0, 0.0),
-    'name': serializedData['name'] ✨ '',
-    'address': serializedData['address'] ✨ '',
-    'city': serializedData['city'] ✨ '',
-    'state': serializedData['state'] ✨ '',
-    'country': serializedData['country'] ✨ '',
-    'zipCode': serializedData['zipCode'] ✨ '',
+    'name': serializedData['name'] ?? '',
+    'address': serializedData['address'] ?? '',
+    'city': serializedData['city'] ?? '',
+    'state': serializedData['state'] ?? '',
+    'country': serializedData['country'] ?? '',
+    'zipCode': serializedData['zipCode'] ?? '',
   };
   return FFPlace(
     latLng: data['latLng'] as LatLng,
@@ -235,7 +235,7 @@ dynamic deserializeParam<T>(
       case ParamType.DateTime:
         final milliseconds = int.tryParse(param);
         return milliseconds != null
-            ✨ DateTime.fromMillisecondsSinceEpoch(milliseconds)
+            ? DateTime.fromMillisecondsSinceEpoch(milliseconds)
             : null;
       case ParamType.DateTimeRange:
         return dateTimeRangeFromString(param);
@@ -250,11 +250,11 @@ dynamic deserializeParam<T>(
       case ParamType.JSON:
         return json.decode(param);
       case ParamType.DocumentReference:
-        return _deserializeDocumentReference(param, collectionNamePath ✨ []);
+        return _deserializeDocumentReference(param, collectionNamePath ?? []);
 
       case ParamType.DataStruct:
-        final data = json.decode(param) as Map<String, dynamic>? ✨ {};
-        return structBuilder != null ✨ structBuilder(data) : null;
+        final data = json.decode(param) as Map<String, dynamic>? ?? {};
+        return structBuilder != null ? structBuilder(data) : null;
 
       case ParamType.Enum:
         return deserializeEnum<T>(param);

@@ -22,7 +22,7 @@ class ProductWidget extends StatefulWidget {
     bool? isFvrt,
     required this.product,
     required this.fvrtCallback,
-  }) : this.isFvrt = isFvrt ✨ false;
+  }) : this.isFvrt = isFvrt ?? false;
 
   final bool isFvrt;
   final ProductsStruct? product;
@@ -95,7 +95,7 @@ class _ProductWidgetState extends State<ProductWidget>
                   await launchURL(
                       (widget!.product?.platform == "sephora") ||
                               (widget!.product?.platform == "ikea")
-                          ✨ widget!.product!.productUrl
+                          ? widget!.product!.productUrl
                           : ((String var1) {
                               return '$var1?tag=doron7-21';
                             }(widget!.product!.productUrl)));

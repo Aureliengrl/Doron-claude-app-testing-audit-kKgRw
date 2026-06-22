@@ -19,12 +19,12 @@ class QAsRecord extends FirestoreRecord {
 
   // "Question" field.
   String? _question;
-  String get question => _question ✨ '';
+  String get question => _question ?? '';
   bool hasQuestion() => _question != null;
 
   // "Answer" field.
   String? _answer;
-  String get answer => _answer ✨ '';
+  String get answer => _answer ?? '';
   bool hasAnswer() => _answer != null;
 
   // "TimeStamp" field.

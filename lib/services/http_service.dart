@@ -2,7 +2,7 @@ import '/utils/app_logger.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 
-/// Service pour g�rer les appels HTTP avec retry logic et timeout
+/// Service pour g�rer les appels HTTP avec retry logic et timeout
 class HttpService {
   static const int defaultTimeoutSeconds = 30;
   static const int defaultMaxRetries = 3;
@@ -21,7 +21,7 @@ class HttpService {
 
     while (attempt < maxRetries) {
       try {
-        AppLogger.debug('HTTP POST attempt ${attempt + 1}/$maxRetries to ${url.host}', 'Debug');
+        AppLogger.debug('?? HTTP POST attempt ${attempt + 1}/$maxRetries to ${url.host}', 'Debug');
 
         final response = await http
             .post(
@@ -38,24 +38,24 @@ class HttpService {
 
         // Success - return response
         if (response.statusCode >= 200 && response.statusCode < 300) {
-          AppLogger.debug('HTTP POST successful (${response.statusCode})', 'Debug');
+          AppLogger.debug('? HTTP POST successful (${response.statusCode})', 'Debug');
           return response;
         }
 
         // Server error (5xx) - retry
         if (response.statusCode >= 500) {
-          AppLogger.debug('Server error (${response.statusCode}), will retry...', 'Debug');
+          AppLogger.debug('?? Server error (${response.statusCode}), will retry...', 'Debug');
           lastException = Exception('Server error: ${response.statusCode}');
         } else {
           // Client error (4xx) - don't retry, return immediately
-          AppLogger.debug('Client error (${response.statusCode}), not retrying', 'Debug');
+          AppLogger.debug('? Client error (${response.statusCode}), not retrying', 'Debug');
           return response;
         }
       } on TimeoutException catch (e) {
-        AppLogger.debug('Timeout on attempt ${attempt + 1}: $e', 'Debug');
+        AppLogger.debug('?? Timeout on attempt ${attempt + 1}: $e', 'Debug');
         lastException = e;
       } on Exception catch (e) {
-        AppLogger.debug('Error on attempt ${attempt + 1}: $e', 'Debug');
+        AppLogger.debug('? Error on attempt ${attempt + 1}: $e', 'Debug');
         lastException = e;
       }
 
@@ -65,14 +65,14 @@ class HttpService {
       // Wait before retry (exponential backoff)
       if (attempt < maxRetries) {
         final delaySeconds = retryDelaysSeconds[attempt - 1];
-        AppLogger.debug('Waiting ${delaySeconds}s before retry...', 'Debug');
+        AppLogger.debug('? Waiting ${delaySeconds}s before retry...', 'Debug');
         await Future.delayed(Duration(seconds: delaySeconds));
       }
     }
 
     // All retries failed
-    AppLogger.debug('All $maxRetries attempts failed', 'Debug');
-    throw lastException ✨ Exception('Request failed after $maxRetries attempts');
+    AppLogger.debug('? All $maxRetries attempts failed', 'Debug');
+    throw lastException ?? Exception('Request failed after $maxRetries attempts');
   }
 
   /// Effectue un GET avec retry logic et timeout
@@ -87,7 +87,7 @@ class HttpService {
 
     while (attempt < maxRetries) {
       try {
-        AppLogger.debug('HTTP GET attempt ${attempt + 1}/$maxRetries to ${url.host}', 'Debug');
+        AppLogger.debug('?? HTTP GET attempt ${attempt + 1}/$maxRetries to ${url.host}', 'Debug');
 
         final response = await http
             .get(
@@ -103,24 +103,24 @@ class HttpService {
 
         // Success
         if (response.statusCode >= 200 && response.statusCode < 300) {
-          AppLogger.debug('HTTP GET successful (${response.statusCode})', 'Debug');
+          AppLogger.debug('? HTTP GET successful (${response.statusCode})', 'Debug');
           return response;
         }
 
         // Server error - retry
         if (response.statusCode >= 500) {
-          AppLogger.debug('Server error (${response.statusCode}), will retry...', 'Debug');
+          AppLogger.debug('?? Server error (${response.statusCode}), will retry...', 'Debug');
           lastException = Exception('Server error: ${response.statusCode}');
         } else {
           // Client error - don't retry
-          AppLogger.debug('Client error (${response.statusCode}), not retrying', 'Debug');
+          AppLogger.debug('? Client error (${response.statusCode}), not retrying', 'Debug');
           return response;
         }
       } on TimeoutException catch (e) {
-        AppLogger.debug('Timeout on attempt ${attempt + 1}: $e', 'Debug');
+        AppLogger.debug('?? Timeout on attempt ${attempt + 1}: $e', 'Debug');
         lastException = e;
       } on Exception catch (e) {
-        AppLogger.debug('Error on attempt ${attempt + 1}: $e', 'Debug');
+        AppLogger.debug('? Error on attempt ${attempt + 1}: $e', 'Debug');
         lastException = e;
       }
 
@@ -128,12 +128,12 @@ class HttpService {
 
       if (attempt < maxRetries) {
         final delaySeconds = retryDelaysSeconds[attempt - 1];
-        AppLogger.debug('Waiting ${delaySeconds}s before retry...', 'Debug');
+        AppLogger.debug('? Waiting ${delaySeconds}s before retry...', 'Debug');
         await Future.delayed(Duration(seconds: delaySeconds));
       }
     }
 
-    AppLogger.debug('All $maxRetries attempts failed', 'Debug');
-    throw lastException ✨ Exception('Request failed after $maxRetries attempts');
+    AppLogger.debug('? All $maxRetries attempts failed', 'Debug');
+    throw lastException ?? Exception('Request failed after $maxRetries attempts');
   }
 }

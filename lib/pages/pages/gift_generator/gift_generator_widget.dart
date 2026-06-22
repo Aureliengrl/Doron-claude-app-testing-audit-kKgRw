@@ -335,7 +335,7 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                                   '5ia4f15y' /* Frère, Soeur */,
                                 ),
                                 heading: FFLocalizations.of(context).getText(
-                                  '1djo92qp' /* À qui est destiné le cadeau ✨ */,
+                                  '1djo92qp' /* À qui est destiné le cadeau ? */,
                                 ),
                               ),
                             ).animateOnPageLoad(animationsMap[
@@ -346,7 +346,7 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                               child: TextFieldWithHeadingWidget(
                                 hintText: '18',
                                 heading: FFLocalizations.of(context).getText(
-                                  'mvmxsqdd' /* Quel âge ont-ils ✨ */,
+                                  'mvmxsqdd' /* Quel âge ont-ils ? */,
                                 ),
                               ),
                             ).animateOnPageLoad(animationsMap[
@@ -357,7 +357,7 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                               children: [
                                 Text(
                                   FFLocalizations.of(context).getText(
-                                    'ovrncmsl' /* Quel est votre budget ✨ */,
+                                    'ovrncmsl' /* Quel est votre budget ? */,
                                   ),
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
@@ -843,7 +843,7 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                                                         Theme.of(context)
                                                                     .brightness ==
                                                                 Brightness.dark
-                                                            ✨ FlutterFlowTheme
+                                                            ? FlutterFlowTheme
                                                                     .of(context)
                                                                 .primaryText
                                                             : FlutterFlowTheme
@@ -1010,7 +1010,7 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                                 ),
                                 FFButtonWidget(
                                   onPressed: (_model.interests.length >= 5)
-                                      ✨ null
+                                      ? null
                                       : () async {
                                           if (_model.interestsTextController
                                                       .text !=
@@ -1110,7 +1110,7 @@ class _GiftGeneratorWidgetState extends State<GiftGeneratorWidget>
                                       _model.apiResultoga =
                                           await AmazonApiForOpenAICall.call(
                                         query: OpenAiChatGPTAlgoaceCall.querry(
-                                          (_model.apiResponse?.jsonBody ✨ ''),
+                                          (_model.apiResponse?.jsonBody ?? ''),
                                         ),
                                         minPrice: double.tryParse(
                                             _model.minTextController.text),

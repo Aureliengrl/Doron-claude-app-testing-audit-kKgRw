@@ -61,13 +61,13 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
         _model.apiAmazon = await AmazonApiSearchAndDiscountsCall.call(
           query: ' ',
           country:
-              FFLocalizations.of(context).languageCode == 'en' ✨ 'us' : 'fr',
+              FFLocalizations.of(context).languageCode == 'en' ? 'us' : 'fr',
         );
 
-        if ((_model.apiAmazon?.succeeded ✨ true)) {
+        if ((_model.apiAmazon?.succeeded ?? true)) {
           FFAppState().HomeProducts =
               AmazonApiSearchAndDiscountsCall.productsList(
-            (_model.apiAmazon?.jsonBody ✨ ''),
+            (_model.apiAmazon?.jsonBody ?? ''),
           )!
                   .toList()
                   .cast<ProductsStruct>();
@@ -78,92 +78,92 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
           search: 'BEST_SELLING',
         );
 
-        if ((_model.sephora?.succeeded ✨ true)) {
+        if ((_model.sephora?.succeeded ?? true)) {
           while (SephoraCall.productLink(
-                (_model.sephora?.jsonBody ✨ ''),
+                (_model.sephora?.jsonBody ?? ''),
               )!
                   .length >
               _model.loopCounter) {
             FFAppState().addToHomeProducts(ProductsStruct(
               productTitle: (SephoraCall.description(
-                            (_model.sephora?.jsonBody ✨ ''),
+                            (_model.sephora?.jsonBody ?? ''),
                           )?.elementAtOrNull(_model.loopCounter)) !=
                           null &&
                       (SephoraCall.description(
-                            (_model.sephora?.jsonBody ✨ ''),
+                            (_model.sephora?.jsonBody ?? ''),
                           )?.elementAtOrNull(_model.loopCounter)) !=
                           ''
-                  ✨ (SephoraCall.description(
-                      (_model.sephora?.jsonBody ✨ ''),
+                  ? (SephoraCall.description(
+                      (_model.sephora?.jsonBody ?? ''),
                     )?.elementAtOrNull(_model.loopCounter))
                   : '',
               productPrice: (SephoraCall.price(
-                            (_model.sephora?.jsonBody ✨ ''),
+                            (_model.sephora?.jsonBody ?? ''),
                           )?.elementAtOrNull(_model.loopCounter)) !=
                           null &&
                       (SephoraCall.price(
-                            (_model.sephora?.jsonBody ✨ ''),
+                            (_model.sephora?.jsonBody ?? ''),
                           )?.elementAtOrNull(_model.loopCounter)) !=
                           ''
-                  ✨ (SephoraCall.price(
-                      (_model.sephora?.jsonBody ✨ ''),
+                  ? (SephoraCall.price(
+                      (_model.sephora?.jsonBody ?? ''),
                     )?.elementAtOrNull(_model.loopCounter))
                   : '',
               productUrl: (SephoraCall.productLink(
-                            (_model.sephora?.jsonBody ✨ ''),
+                            (_model.sephora?.jsonBody ?? ''),
                           )?.elementAtOrNull(_model.loopCounter)) !=
                           null &&
                       (SephoraCall.productLink(
-                            (_model.sephora?.jsonBody ✨ ''),
+                            (_model.sephora?.jsonBody ?? ''),
                           )?.elementAtOrNull(_model.loopCounter)) !=
                           ''
-                  ✨ (SephoraCall.productLink(
-                      (_model.sephora?.jsonBody ✨ ''),
+                  ? (SephoraCall.productLink(
+                      (_model.sephora?.jsonBody ?? ''),
                     )?.elementAtOrNull(_model.loopCounter))
                   : '',
               productOriginalPrice: (SephoraCall.price(
-                            (_model.sephora?.jsonBody ✨ ''),
+                            (_model.sephora?.jsonBody ?? ''),
                           )?.elementAtOrNull(_model.loopCounter)) !=
                           null &&
                       (SephoraCall.price(
-                            (_model.sephora?.jsonBody ✨ ''),
+                            (_model.sephora?.jsonBody ?? ''),
                           )?.elementAtOrNull(_model.loopCounter)) !=
                           ''
-                  ✨ (SephoraCall.price(
-                      (_model.sephora?.jsonBody ✨ ''),
+                  ? (SephoraCall.price(
+                      (_model.sephora?.jsonBody ?? ''),
                     )?.elementAtOrNull(_model.loopCounter))
                   : '',
               productStarRating: (SephoraCall.rating(
-                            (_model.sephora?.jsonBody ✨ ''),
+                            (_model.sephora?.jsonBody ?? ''),
                           )?.elementAtOrNull(_model.loopCounter)) !=
                           null &&
                       (SephoraCall.rating(
-                            (_model.sephora?.jsonBody ✨ ''),
+                            (_model.sephora?.jsonBody ?? ''),
                           )?.elementAtOrNull(_model.loopCounter)) !=
                           ''
-                  ✨ (SephoraCall.rating(
-                      (_model.sephora?.jsonBody ✨ ''),
+                  ? (SephoraCall.rating(
+                      (_model.sephora?.jsonBody ?? ''),
                     )?.elementAtOrNull(_model.loopCounter))
                   : '',
               productPhoto: (SephoraCall.imgLink(
-                            (_model.sephora?.jsonBody ✨ ''),
+                            (_model.sephora?.jsonBody ?? ''),
                           )?.elementAtOrNull(_model.loopCounter)) !=
                           null &&
                       (SephoraCall.imgLink(
-                            (_model.sephora?.jsonBody ✨ ''),
+                            (_model.sephora?.jsonBody ?? ''),
                           )?.elementAtOrNull(_model.loopCounter)) !=
                           ''
-                  ✨ (SephoraCall.imgLink(
-                      (_model.sephora?.jsonBody ✨ ''),
+                  ? (SephoraCall.imgLink(
+                      (_model.sephora?.jsonBody ?? ''),
                     )?.elementAtOrNull(_model.loopCounter))
                   : '',
               productNumRatings: (int.parse(((SephoraCall.totalReviews(
-                        (_model.sephora?.jsonBody ✨ ''),
+                        (_model.sephora?.jsonBody ?? ''),
                       )!
                           .elementAtOrNull(_model.loopCounter))!))) !=
                       null
-                  ✨ (int.parse(((SephoraCall.totalReviews(
-                      (_model.sephora?.jsonBody ✨ ''),
+                  ? (int.parse(((SephoraCall.totalReviews(
+                      (_model.sephora?.jsonBody ?? ''),
                     )!
                       .elementAtOrNull(_model.loopCounter))!)))
                   : 0,
@@ -177,31 +177,31 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
         _model.ikeaOnPageLoad = await IkeaCall.call(
           keyword: ' gift',
           languageCode:
-              FFLocalizations.of(context).languageCode == 'en' ✨ 'en' : 'fr',
+              FFLocalizations.of(context).languageCode == 'en' ? 'en' : 'fr',
           countryCode:
-              FFLocalizations.of(context).languageCode == 'en' ✨ 'us' : 'fr',
+              FFLocalizations.of(context).languageCode == 'en' ? 'us' : 'fr',
         );
 
-        if ((_model.ikeaOnPageLoad?.succeeded ✨ true)) {
+        if ((_model.ikeaOnPageLoad?.succeeded ?? true)) {
           while (IkeaCall.producttitle(
-                (_model.ikeaOnPageLoad?.jsonBody ✨ ''),
+                (_model.ikeaOnPageLoad?.jsonBody ?? ''),
               )!
                   .length >
               _model.loopCounter) {
             FFAppState().addToHomeProducts(ProductsStruct(
               productTitle: IkeaCall.producttitle(
-                (_model.ikeaOnPageLoad?.jsonBody ✨ ''),
+                (_model.ikeaOnPageLoad?.jsonBody ?? ''),
               )?.elementAtOrNull(_model.loopCounter),
               productPrice: '${(IkeaCall.currency(
-                    (_model.ikeaOnPageLoad?.jsonBody ✨ ''),
-                  )?.elementAtOrNull(_model.loopCounter)) == 'USD' ✨ '\$' : '€'}${(IkeaCall.productprice(
-                (_model.ikeaOnPageLoad?.jsonBody ✨ ''),
+                    (_model.ikeaOnPageLoad?.jsonBody ?? ''),
+                  )?.elementAtOrNull(_model.loopCounter)) == 'USD' ? '\$' : '€'}${(IkeaCall.productprice(
+                (_model.ikeaOnPageLoad?.jsonBody ?? ''),
               )?.elementAtOrNull(_model.loopCounter))?.toString()}',
               productUrl: IkeaCall.producturl(
-                (_model.ikeaOnPageLoad?.jsonBody ✨ ''),
+                (_model.ikeaOnPageLoad?.jsonBody ?? ''),
               )?.elementAtOrNull(_model.loopCounter),
               productPhoto: IkeaCall.productphoto(
-                (_model.ikeaOnPageLoad?.jsonBody ✨ ''),
+                (_model.ikeaOnPageLoad?.jsonBody ?? ''),
               )?.elementAtOrNull(_model.loopCounter),
               platform: "ikea",
             ));
@@ -211,26 +211,26 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
         _model.loopCounter = _model.loopCounter + 0;
         _model.apiResultb92 = await ZaraCall.call();
 
-        if ((_model.apiResultb92?.succeeded ✨ true)) {
+        if ((_model.apiResultb92?.succeeded ?? true)) {
           while (IkeaCall.producttitle(
-                (_model.ikeaOnPageLoad?.jsonBody ✨ ''),
+                (_model.ikeaOnPageLoad?.jsonBody ?? ''),
               )!
                   .length >
               _model.loopCounter) {
             FFAppState().addToHomeProducts(ProductsStruct(
               productTitle: IkeaCall.producttitle(
-                (_model.ikeaOnPageLoad?.jsonBody ✨ ''),
+                (_model.ikeaOnPageLoad?.jsonBody ?? ''),
               )?.elementAtOrNull(_model.loopCounter),
               productPrice: '${(IkeaCall.currency(
-                    (_model.ikeaOnPageLoad?.jsonBody ✨ ''),
-                  )?.elementAtOrNull(_model.loopCounter)) == 'USD' ✨ '\$' : '€'}${(IkeaCall.productprice(
-                (_model.ikeaOnPageLoad?.jsonBody ✨ ''),
+                    (_model.ikeaOnPageLoad?.jsonBody ?? ''),
+                  )?.elementAtOrNull(_model.loopCounter)) == 'USD' ? '\$' : '€'}${(IkeaCall.productprice(
+                (_model.ikeaOnPageLoad?.jsonBody ?? ''),
               )?.elementAtOrNull(_model.loopCounter))?.toString()}',
               productUrl: IkeaCall.producturl(
-                (_model.ikeaOnPageLoad?.jsonBody ✨ ''),
+                (_model.ikeaOnPageLoad?.jsonBody ?? ''),
               )?.elementAtOrNull(_model.loopCounter),
               productPhoto: IkeaCall.productphoto(
-                (_model.ikeaOnPageLoad?.jsonBody ✨ ''),
+                (_model.ikeaOnPageLoad?.jsonBody ?? ''),
               )?.elementAtOrNull(_model.loopCounter),
               platform: "ikea",
             ));
@@ -493,7 +493,7 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
                               country:
                                   FFLocalizations.of(context).languageCode ==
                                           'en'
-                                      ✨ 'us'
+                                      ? 'us'
                                       : 'fr',
                             );
 
@@ -502,7 +502,7 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
                               _model.toggleSearchProduct = true;
                               _model.searchedProducts =
                                   AmazonApiSearchAndDiscountsCall.productsList(
-                                (_model.searchedOutputCopy?.jsonBody ✨ ''),
+                                (_model.searchedOutputCopy?.jsonBody ?? ''),
                               )!
                                       .toList()
                                       .cast<ProductsStruct>();
@@ -511,14 +511,14 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
                               search: _model.searchTextController.text,
                             );
 
-                            if ((_model.seporaOnChange?.succeeded ✨ true)) {
+                            if ((_model.seporaOnChange?.succeeded ?? true)) {
                               while ((SephoraCall.productLink(
                                             (_model.seporaOnChange?.jsonBody ??
                                                 ''),
                                           )!
                                               .length <=
                                           15
-                                      ✨ SephoraCall.productLink(
+                                      ? SephoraCall.productLink(
                                           (_model.seporaOnChange?.jsonBody ??
                                               ''),
                                         )!
@@ -527,26 +527,26 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
                                   _model.loopCounter) {
                                 _model.addToSearchedProducts(ProductsStruct(
                                   productTitle: SephoraCall.description(
-                                    (_model.seporaOnChange?.jsonBody ✨ ''),
+                                    (_model.seporaOnChange?.jsonBody ?? ''),
                                   )?.elementAtOrNull(_model.loopCounter),
                                   productPrice: SephoraCall.price(
-                                    (_model.seporaOnChange?.jsonBody ✨ ''),
+                                    (_model.seporaOnChange?.jsonBody ?? ''),
                                   )?.elementAtOrNull(_model.loopCounter),
                                   productUrl: SephoraCall.productLink(
-                                    (_model.seporaOnChange?.jsonBody ✨ ''),
+                                    (_model.seporaOnChange?.jsonBody ?? ''),
                                   )?.elementAtOrNull(_model.loopCounter),
                                   productOriginalPrice: SephoraCall.price(
-                                    (_model.seporaOnChange?.jsonBody ✨ ''),
+                                    (_model.seporaOnChange?.jsonBody ?? ''),
                                   )?.elementAtOrNull(_model.loopCounter),
                                   productStarRating: SephoraCall.rating(
-                                    (_model.seporaOnChange?.jsonBody ✨ ''),
+                                    (_model.seporaOnChange?.jsonBody ?? ''),
                                   )?.elementAtOrNull(_model.loopCounter),
                                   productPhoto: SephoraCall.imgLink(
-                                    (_model.seporaOnChange?.jsonBody ✨ ''),
+                                    (_model.seporaOnChange?.jsonBody ?? ''),
                                   )?.elementAtOrNull(_model.loopCounter),
                                   productNumRatings: int.parse(
                                       ((SephoraCall.totalReviews(
-                                    (_model.seporaOnChange?.jsonBody ✨ ''),
+                                    (_model.seporaOnChange?.jsonBody ?? ''),
                                   )!
                                           .elementAtOrNull(
                                               _model.loopCounter))!)),
@@ -561,47 +561,47 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
                               languageCode:
                                   FFLocalizations.of(context).languageCode ==
                                           'en'
-                                      ✨ 'en'
+                                      ? 'en'
                                       : 'fr',
                               countryCode:
                                   FFLocalizations.of(context).languageCode ==
                                           'en'
-                                      ✨ 'us'
+                                      ? 'us'
                                       : 'fr',
                             );
 
-                            if ((_model.ikeaOnChange?.succeeded ✨ true)) {
+                            if ((_model.ikeaOnChange?.succeeded ?? true)) {
                               while ((IkeaCall.producttitle(
                                             (_model.ikeaOnChange?.jsonBody ??
                                                 ''),
                                           )!
                                               .length <=
                                           15
-                                      ✨ IkeaCall.producttitle(
-                                          (_model.ikeaOnChange?.jsonBody ✨ ''),
+                                      ? IkeaCall.producttitle(
+                                          (_model.ikeaOnChange?.jsonBody ?? ''),
                                         )!
                                           .length
                                       : 15) >
                                   _model.loopCounter) {
                                 _model.addToSearchedProducts(ProductsStruct(
                                   productTitle: IkeaCall.producttitle(
-                                    (_model.ikeaOnChange?.jsonBody ✨ ''),
+                                    (_model.ikeaOnChange?.jsonBody ?? ''),
                                   )?.elementAtOrNull(_model.loopCounter),
                                   productPrice: '${(IkeaCall.currency(
-                                        (_model.ikeaOnChange?.jsonBody ✨ ''),
-                                      )?.elementAtOrNull(_model.loopCounter)) == 'USD' ✨ '\$' : '€'}${(IkeaCall.productprice(
-                                    (_model.ikeaOnChange?.jsonBody ✨ ''),
+                                        (_model.ikeaOnChange?.jsonBody ?? ''),
+                                      )?.elementAtOrNull(_model.loopCounter)) == 'USD' ? '\$' : '€'}${(IkeaCall.productprice(
+                                    (_model.ikeaOnChange?.jsonBody ?? ''),
                                   )?.elementAtOrNull(_model.loopCounter))?.toString()}',
                                   productUrl: IkeaCall.producturl(
-                                    (_model.ikeaOnChange?.jsonBody ✨ ''),
+                                    (_model.ikeaOnChange?.jsonBody ?? ''),
                                   )?.elementAtOrNull(_model.loopCounter),
                                   productOriginalPrice: '${(IkeaCall.currency(
-                                        (_model.ikeaOnChange?.jsonBody ✨ ''),
-                                      )?.elementAtOrNull(_model.loopCounter)) == 'USD' ✨ '\$' : '€'}${(IkeaCall.productprice(
-                                    (_model.ikeaOnChange?.jsonBody ✨ ''),
+                                        (_model.ikeaOnChange?.jsonBody ?? ''),
+                                      )?.elementAtOrNull(_model.loopCounter)) == 'USD' ? '\$' : '€'}${(IkeaCall.productprice(
+                                    (_model.ikeaOnChange?.jsonBody ?? ''),
                                   )?.elementAtOrNull(_model.loopCounter))?.toString()}',
                                   productPhoto: IkeaCall.productphoto(
-                                    (_model.ikeaOnChange?.jsonBody ✨ ''),
+                                    (_model.ikeaOnChange?.jsonBody ?? ''),
                                   )?.elementAtOrNull(_model.loopCounter),
                                   platform: "ikea",
                                 ));
@@ -668,7 +668,7 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
                             borderSide: BorderSide(
                               color: Theme.of(context).brightness ==
                                       Brightness.light
-                                  ✨ FlutterFlowTheme.of(context).primary
+                                  ? FlutterFlowTheme.of(context).primary
                                   : FlutterFlowTheme.of(context).primaryText,
                               width: 1.0,
                             ),
@@ -678,7 +678,7 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
                             borderSide: BorderSide(
                               color: Theme.of(context).brightness ==
                                       Brightness.light
-                                  ✨ FlutterFlowTheme.of(context).primary
+                                  ? FlutterFlowTheme.of(context).primary
                                   : FlutterFlowTheme.of(context).primaryText,
                               width: 1.0,
                             ),
@@ -750,7 +750,7 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
                                   country: FFLocalizations.of(context)
                                               .languageCode ==
                                           'en'
-                                      ✨ 'us'
+                                      ? 'us'
                                       : 'fr',
                                 );
 
@@ -760,7 +760,7 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
                                   _model.searchedProducts =
                                       AmazonApiSearchAndDiscountsCall
                                               .productsList(
-                                    (_model.searchedOutput?.jsonBody ✨ ''),
+                                    (_model.searchedOutput?.jsonBody ?? ''),
                                   )!
                                           .toList()
                                           .cast<ProductsStruct>();
@@ -778,7 +778,7 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
                                               )!
                                                   .length <=
                                               15
-                                          ✨ SephoraCall.totalReviews(
+                                          ? SephoraCall.totalReviews(
                                               (_model.seporaOnSubmit
                                                       ?.jsonBody ??
                                                   ''),
@@ -788,26 +788,26 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
                                       _model.loopCounter) {
                                     _model.addToSearchedProducts(ProductsStruct(
                                       productTitle: SephoraCall.description(
-                                        (_model.seporaOnSubmit?.jsonBody ✨ ''),
+                                        (_model.seporaOnSubmit?.jsonBody ?? ''),
                                       )?.elementAtOrNull(_model.loopCounter),
                                       productPrice: SephoraCall.price(
-                                        (_model.seporaOnSubmit?.jsonBody ✨ ''),
+                                        (_model.seporaOnSubmit?.jsonBody ?? ''),
                                       )?.elementAtOrNull(_model.loopCounter),
                                       productUrl: SephoraCall.productLink(
-                                        (_model.seporaOnSubmit?.jsonBody ✨ ''),
+                                        (_model.seporaOnSubmit?.jsonBody ?? ''),
                                       )?.elementAtOrNull(_model.loopCounter),
                                       productOriginalPrice: SephoraCall.price(
-                                        (_model.seporaOnSubmit?.jsonBody ✨ ''),
+                                        (_model.seporaOnSubmit?.jsonBody ?? ''),
                                       )?.elementAtOrNull(_model.loopCounter),
                                       productStarRating: SephoraCall.rating(
-                                        (_model.seporaOnSubmit?.jsonBody ✨ ''),
+                                        (_model.seporaOnSubmit?.jsonBody ?? ''),
                                       )?.elementAtOrNull(_model.loopCounter),
                                       productPhoto: SephoraCall.imgLink(
-                                        (_model.seporaOnSubmit?.jsonBody ✨ ''),
+                                        (_model.seporaOnSubmit?.jsonBody ?? ''),
                                       )?.elementAtOrNull(_model.loopCounter),
                                       productNumRatings: int.parse(
                                           ((SephoraCall.totalReviews(
-                                        (_model.seporaOnSubmit?.jsonBody ✨ ''),
+                                        (_model.seporaOnSubmit?.jsonBody ?? ''),
                                       )!
                                               .elementAtOrNull(
                                                   _model.loopCounter))!)),
@@ -821,16 +821,16 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
                                   languageCode: FFLocalizations.of(context)
                                               .languageCode ==
                                           'en'
-                                      ✨ 'en'
+                                      ? 'en'
                                       : 'fr',
                                   countryCode: FFLocalizations.of(context)
                                               .languageCode ==
                                           'en'
-                                      ✨ 'us'
+                                      ? 'us'
                                       : 'fr',
                                 );
 
-                                if ((_model.ikeaOnSubmit?.succeeded ✨ true)) {
+                                if ((_model.ikeaOnSubmit?.succeeded ?? true)) {
                                   while ((IkeaCall.currency(
                                                 (_model.ikeaOnSubmit
                                                         ?.jsonBody ??
@@ -838,7 +838,7 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
                                               )!
                                                   .length <=
                                               15
-                                          ✨ IkeaCall.currency(
+                                          ? IkeaCall.currency(
                                               (_model.ikeaOnSubmit?.jsonBody ??
                                                   ''),
                                             )!
@@ -847,25 +847,25 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
                                       _model.loopCounter) {
                                     _model.addToSearchedProducts(ProductsStruct(
                                       productTitle: IkeaCall.producttitle(
-                                        (_model.ikeaOnSubmit?.jsonBody ✨ ''),
+                                        (_model.ikeaOnSubmit?.jsonBody ?? ''),
                                       )?.elementAtOrNull(_model.loopCounter),
                                       productPrice: '${(IkeaCall.currency(
                                             (_model.ikeaOnSubmit?.jsonBody ??
                                                 ''),
-                                          )?.elementAtOrNull(_model.loopCounter)) == 'USD' ✨ '\$' : '€'}${(IkeaCall.productprice(
-                                        (_model.ikeaOnSubmit?.jsonBody ✨ ''),
+                                          )?.elementAtOrNull(_model.loopCounter)) == 'USD' ? '\$' : '€'}${(IkeaCall.productprice(
+                                        (_model.ikeaOnSubmit?.jsonBody ?? ''),
                                       )?.elementAtOrNull(_model.loopCounter))?.toString()}',
                                       productUrl: IkeaCall.producturl(
-                                        (_model.ikeaOnSubmit?.jsonBody ✨ ''),
+                                        (_model.ikeaOnSubmit?.jsonBody ?? ''),
                                       )?.elementAtOrNull(_model.loopCounter),
                                       productOriginalPrice: '${(IkeaCall.currency(
                                             (_model.ikeaOnSubmit?.jsonBody ??
                                                 ''),
-                                          )?.elementAtOrNull(_model.loopCounter)) == 'USD' ✨ '\$' : '€'}${(IkeaCall.productprice(
-                                        (_model.ikeaOnSubmit?.jsonBody ✨ ''),
+                                          )?.elementAtOrNull(_model.loopCounter)) == 'USD' ? '\$' : '€'}${(IkeaCall.productprice(
+                                        (_model.ikeaOnSubmit?.jsonBody ?? ''),
                                       )?.elementAtOrNull(_model.loopCounter))?.toString()}',
                                       productPhoto: IkeaCall.productphoto(
-                                        (_model.ikeaOnSubmit?.jsonBody ✨ ''),
+                                        (_model.ikeaOnSubmit?.jsonBody ?? ''),
                                       )?.elementAtOrNull(_model.loopCounter),
                                       platform: "ikea",
                                     ));
@@ -890,7 +890,7 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
                                 IconlyLight.search,
                                 color: Theme.of(context).brightness ==
                                         Brightness.light
-                                    ✨ FlutterFlowTheme.of(context).primary
+                                    ? FlutterFlowTheme.of(context).primary
                                     : FlutterFlowTheme.of(context).primaryText,
                                 size: 24.0,
                               ),
@@ -918,7 +918,7 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
                                 Icons.cancel_rounded,
                                 color: Theme.of(context).brightness ==
                                         Brightness.light
-                                    ✨ FlutterFlowTheme.of(context).primary
+                                    ? FlutterFlowTheme.of(context).primary
                                     : FlutterFlowTheme.of(context).primaryText,
                                 size: 24.0,
                               ),
@@ -1182,7 +1182,7 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
                                                         platform: intialiProductListItem
                                                                     .platform !=
                                                                 null
-                                                            ✨ intialiProductListItem
+                                                            ? intialiProductListItem
                                                                 .platform
                                                             : "amazon",
                                                         product:
@@ -1203,7 +1203,7 @@ class _HomeAlgoaceWidgetState extends State<HomeAlgoaceWidget>
                                                                 platform: intialiProductListItem
                                                                             .platform !=
                                                                         null
-                                                                    ✨ intialiProductListItem
+                                                                    ? intialiProductListItem
                                                                         .platform
                                                                     : "amazon",
                                                                 product:

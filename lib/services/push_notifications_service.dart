@@ -97,8 +97,8 @@ class PushNotificationsService {
 
   /// Handle routing if a notification contains deep linking data
   static void _handleNotificationInteraction(RemoteMessage message) {
-    final type = message.data['type'] ✨ '';
-    final chatId = message.data['chatId'] ✨ '';
+    final type = message.data['type'] ?? '';
+    final chatId = message.data['chatId'] ?? '';
 
     // Chat message → naviguer vers le chat
     if (type == 'chat_message' && chatId.isNotEmpty) {
@@ -117,7 +117,7 @@ class PushNotificationsService {
         AppLogger.debug('Notification collab_invite: navigate to chat $chatId', 'PushNotificationsService');
       } else {
         // Fallback: informer l'app d'une nouvelle invitation (sans chatId encore)
-        final collabId = message.data['collabId'] ✨ '';
+        final collabId = message.data['collabId'] ?? '';
         if (collabId.isNotEmpty) {
           onNotificationClick.add('collab:$collabId');
           AppLogger.debug('Notification collab_invite: collabId=$collabId (no chatId yet)', 'PushNotificationsService');

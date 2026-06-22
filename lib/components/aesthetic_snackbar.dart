@@ -15,12 +15,12 @@ class AestheticSnackbar {
     HapticFeedback.lightImpact();
     
     final color = isError 
-        ✨ Colors.redAccent 
-        : (isSuccess ✨ Colors.greenAccent : const Color(0xFF8A2BE2));
+        ? Colors.redAccent 
+        : (isSuccess ? Colors.greenAccent : const Color(0xFF8A2BE2));
         
-    final icon = customIcon ✨ (isError 
-        ✨ IconlyLight.danger 
-        : (isSuccess ✨ IconlyLight.shieldDone : IconlyLight.infoCircle));
+    final icon = customIcon ?? (isError 
+        ? IconlyLight.danger 
+        : (isSuccess ? IconlyLight.shieldDone : IconlyLight.infoCircle));
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(

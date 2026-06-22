@@ -142,7 +142,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       // Charger les favoris locaux depuis SharedPreferences
       try {
         final prefs = await SharedPreferences.getInstance();
-        final localFavorites = prefs.getStringList('local_favorite_titles') ✨ [];
+        final localFavorites = prefs.getStringList('local_favorite_titles') ?? [];
         if (mounted && localFavorites.isNotEmpty) {
           setState(() {
             _model.likedProductTitles.clear();
@@ -161,9 +161,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       // #FIX-7: migrer les favoris locaux vers Firebase si présents
       try {
         final prefs = await SharedPreferences.getInstance();
-        final localTitles = prefs.getStringList('local_favorite_titles') ✨ [];
+        final localTitles = prefs.getStringList('local_favorite_titles') ?? [];
         if (localTitles.isNotEmpty) {
-          final fbTitles = snap.docs.map((d) => d.data()['name'] as String? ✨ '').toSet();
+          final fbTitles = snap.docs.map((d) => d.data()['name'] as String? ?? '').toSet();
           final toMigrate = localTitles.where((t) => t.isNotEmpty && !fbTitles.contains(t)).toList();
           if (toMigrate.isNotEmpty) {
             final batch = FirebaseFirestore.instance.batch();
@@ -182,7 +182,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         setState(() {
           _model.likedProductTitles.clear();
           for (final doc in snap.docs) {
-            final name = doc.data()['name'] as String? ✨ '';
+            final name = doc.data()['name'] as String? ?? '';
             if (name.isNotEmpty) _model.likedProductTitles.add(name);
           }
         });
@@ -237,8 +237,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
         snapshot = await query.get(const GetOptions(source: Source.serverAndCache));
       } catch (firestoreError) {
-        AppLogger.debug('Erreur requête avec orderBy (index manquant?): $firestoreError', 'Debug');
-        AppLogger.debug('Fallback: chargement sans tri par popularité', 'Debug');
+        AppLogger.debug('?? Erreur requête avec orderBy (index manquant?): $firestoreError', 'Debug');
+        AppLogger.debug('?? Fallback: chargement sans tri par popularité', 'Debug');
 
         // Fallback: requête sans orderBy (ne nécessite pas d'index composite)
         Query fallbackQuery;
@@ -267,13 +267,13 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         final data = doc.data() as Map<String, dynamic>;
         return {
           'id': doc.id.hashCode,
-          'name': data['name'] ✨ data['product_title'] ✨ 'Produit',
-          'brand': data['brand'] ✨ '',
-          'price': _parsePrice(data['price'] ✨ data['product_price'] ✨ 0),
-          'image': data['image'] ✨ data['product_photo'] ✨ '',
-          'url': data['url'] ✨ data['product_url'] ✨ '',
-          'source': data['source'] ✨ 'Amazon',
-          'categories': (data['categories'] as List?)?.cast<String>() ✨ [],
+          'name': data['name'] ?? data['product_title'] ?? 'Produit',
+          'brand': data['brand'] ?? '',
+          'price': _parsePrice(data['price'] ?? data['product_price'] ?? 0),
+          'image': data['image'] ?? data['product_photo'] ?? '',
+          'url': data['url'] ?? data['product_url'] ?? '',
+          'source': data['source'] ?? 'Amazon',
+          'categories': (data['categories'] as List?)?.cast<String>() ?? [],
           'match': 0, // Pas de score de match en mode anonyme
         };
       }).toList();
@@ -286,9 +286,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         });
       }
 
-      AppLogger.debug('${products.length} produits populaires chargés (mode anonyme)', 'Debug');
+      AppLogger.debug('? ${products.length} produits populaires chargés (mode anonyme)', 'Debug');
     } catch (e, stackTrace) {
-      AppLogger.debug('Erreur chargement produits populaires: $e', 'Debug');
+      AppLogger.debug('? Erreur chargement produits populaires: $e', 'Debug');
       AppLogger.debug('Stack trace: $stackTrace', 'Debug');
 
       if (mounted) {
@@ -305,7 +305,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     if (price is int) return price.toDouble();
     if (price is String) {
       final cleaned = price.replaceAll(RegExp(r'[^\d.]'), '');
-      return double.tryParse(cleaned) ✨ 0.0;
+      return double.tryParse(cleaned) ?? 0.0;
     }
     return 0.0;
   }
@@ -335,10 +335,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       _cachedUserTags = userProfileTags;
 
       // Extraire et stocker le prénom
-      final firstName = userProfileTags?['firstName'] as String? ✨ '';
+      final firstName = userProfileTags?['firstName'] as String? ?? '';
       _model.setFirstName(firstName);
 
-      final tagsToUse = userProfileTags ✨ {};
+      final tagsToUse = userProfileTags ?? {};
 
       // Charger les sections thématiques EN ARRIÈRE-PLAN (ne bloque PAS les produits)
       if (_model.activeCategoryId == 'all' && userProfileTags != null) {
@@ -366,7 +366,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       // retournait 0 pour tous les IDs non numériques → l'anti-doublon ne fonctionnait pas
       final seenProductIds = prefs
           .getStringList('seen_home_product_ids_${_model.activeCategory}')
-          ✨ [];
+          ?? [];
 
       // FIX F4: context.tr('Pour toi', 'For you') utilise 'home' (genre strict) et non 'discovery' (aucun filtre)
       // 'discovery' est réservé à la page Inspirations/Tiktok
@@ -376,7 +376,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         userTags: tagsToUse,
         count: HomePinterestModel.productsPerPage,
         // BUG FIX: utiliser l'ID pour le filtre categorie (independant de la langue)
-        category: _model.activeCategoryId != 'all' ✨ _model.activeCategoryId : null,
+        category: _model.activeCategoryId != 'all' ? _model.activeCategoryId : null,
         excludeProductIds: seenProductIds,
         filteringMode: filterMode,
       );
@@ -389,20 +389,20 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           'id': product['id'],
           'name': validated['name'],
           'brand': validated['brand'],
-          'price': product['price'] ✨ 0,
+          'price': product['price'] ?? 0,
           'image': validated['image'],
           'url': (validated['url'] as String).isNotEmpty
-              ✨ validated['url']
+              ? validated['url']
               : ProductUrlService.generateProductUrl(product),
           'buyLinks': product['buyLinks'], // conserver pour le modal comparateur
-          'source': product['source'] ✨ 'Amazon',
-          'categories': product['categories'] ✨ [],
+          'source': product['source'] ?? 'Amazon',
+          'categories': product['categories'] ?? [],
           // FIX F5: Score normalisé sur base 400 (150 bonus + ~250 max bonus)
           // Avant: clamp(0,100) -> tous les bons produits à 100%, différenciation perdue
           'match': (() {
             final raw = product['_matchScore'] is int
-                ✨ (product['_matchScore'] as int).toDouble()
-                : (product['_matchScore'] is double ✨ product['_matchScore'] as double : 150.0);
+                ? (product['_matchScore'] as int).toDouble()
+                : (product['_matchScore'] is double ? product['_matchScore'] as double : 150.0);
             return ((raw / 400.0) * 100).clamp(0, 100).toInt();
           })(),
         };
@@ -410,10 +410,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
       // Trier : produits avec image en premier, puis par score
       products.sort((a, b) {
-        final aHasImage = (a['image']?.toString() ✨ '').isNotEmpty ✨ 0 : 1;
-        final bHasImage = (b['image']?.toString() ✨ '').isNotEmpty ✨ 0 : 1;
+        final aHasImage = (a['image']?.toString() ?? '').isNotEmpty ? 0 : 1;
+        final bHasImage = (b['image']?.toString() ?? '').isNotEmpty ? 0 : 1;
         if (aHasImage != bHasImage) return aHasImage.compareTo(bHasImage);
-        return ((b['match'] as int?) ✨ 0).compareTo((a['match'] as int?) ✨ 0);
+        return ((b['match'] as int?) ?? 0).compareTo((a['match'] as int?) ?? 0);
       });
 
       // Sauvegarder les nouveaux IDs dans le cache EN ARRIÈRE-PLAN
@@ -421,7 +421,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       Future.microtask(() async {
         final newSeenIds = <String>[...seenProductIds];
         for (var product in products) {
-          final productId = product['id']?.toString() ✨ '';
+          final productId = product['id']?.toString() ?? '';
           if (productId.isNotEmpty && !newSeenIds.contains(productId)) {
             newSeenIds.add(productId);
           }
@@ -447,7 +447,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           if (mounted) {
             final urls = products
                 .take(12)
-                .map((p) => p['image'] as String? ✨ '')
+                .map((p) => p['image'] as String? ?? '')
                 .toList();
             preloadImages(context, urls);
           }
@@ -494,15 +494,15 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
       // FIX F6: Utiliser le cache _cachedUserTags en priorité — évite un appel Firebase
       // à chaque scroll infini (économise ~50ms de latence par page supplémentaire)
-      final userProfileTags = _cachedUserTags ✨ await FirebaseDataService.loadUserProfileTags();
+      final userProfileTags = _cachedUserTags ?? await FirebaseDataService.loadUserProfileTags();
       final prefs = await SharedPreferences.getInstance();
       // FIX F1: IDs gardés en String directement — int.tryParse retournait 0 pour les IDs Firebase
-      final seenProductIds = prefs.getStringList('seen_home_product_ids_${_model.activeCategory}') ✨ [];
+      final seenProductIds = prefs.getStringList('seen_home_product_ids_${_model.activeCategory}') ?? [];
 
       final rawProducts = await ProductMatchingService.getPersonalizedProducts(
-        userTags: userProfileTags ✨ {},
+        userTags: userProfileTags ?? {},
         count: HomePinterestModel.productsPerPage,
-        category: _model.activeCategory != context.tr('Pour toi', 'For you') ✨ _model.activeCategory : null,
+        category: _model.activeCategory != context.tr('Pour toi', 'For you') ? _model.activeCategory : null,
         excludeProductIds: seenProductIds,
         filteringMode: 'home', // Mode HOME: strict sur sexe
       );
@@ -514,17 +514,17 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           'id': product['id'],
           'name': validated['name'],
           'brand': validated['brand'],
-          'price': product['price'] ✨ 0,
+          'price': product['price'] ?? 0,
           'image': validated['image'],
-          'url': (validated['url'] as String).isNotEmpty ✨ validated['url'] : ProductUrlService.generateProductUrl(product),
+          'url': (validated['url'] as String).isNotEmpty ? validated['url'] : ProductUrlService.generateProductUrl(product),
           'buyLinks': product['buyLinks'], // conserver pour le modal comparateur
-          'source': product['source'] ✨ 'Amazon',
-          'categories': product['categories'] ✨ [],
+          'source': product['source'] ?? 'Amazon',
+          'categories': product['categories'] ?? [],
           // FIX F5: Score normalisé /400 (base = 150 + ~250 bonus max)
           'match': (() {
             final raw = product['_matchScore'] is int
-                ✨ (product['_matchScore'] as int).toDouble()
-                : (product['_matchScore'] is double ✨ product['_matchScore'] as double : 150.0);
+                ? (product['_matchScore'] as int).toDouble()
+                : (product['_matchScore'] is double ? product['_matchScore'] as double : 150.0);
             return ((raw / 400.0) * 100).clamp(0, 100).toInt();
           })(),
         };
@@ -533,7 +533,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       // FIX F1: seenProductIds est List<String> — plus besoin de .toString()
       final newSeenIds = <String>[...seenProductIds];
       for (var product in products) {
-        final productId = product['id']?.toString() ✨ '';
+        final productId = product['id']?.toString() ?? '';
         if (productId.isNotEmpty && !newSeenIds.contains(productId)) {
           newSeenIds.add(productId);
         }
@@ -565,7 +565,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
   /// Toggle favorite — écrit dans users/{uid}/favorites (Firestore rules autorisent)
   Future<void> _toggleFavorite(Map<String, dynamic> product) async {
     final user = FirebaseAuth.instance.currentUser;
-    final productTitle = product['name'] ✨ product['title'] ✨ '';
+    final productTitle = product['name'] ?? product['title'] ?? '';
     final isCurrentlyLiked = _model.likedProductTitles.contains(productTitle);
 
     // Récupérer l'image
@@ -582,8 +582,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     // Convertir productId en int
     final productId = product['id'];
     int productIdInt = productId is int
-        ✨ productId
-        : int.tryParse(productId?.toString() ✨ '') ✨ productTitle.hashCode;
+        ? productId
+        : int.tryParse(productId?.toString() ?? '') ?? productTitle.hashCode;
 
     // Toggle état local immédiatement pour l'UI
     // PERF AXE 5: Mettre à jour le modèle PUIS notifier le ValueNotifier
@@ -595,7 +595,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     // Sauvegarder toujours en local
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localFavorites = prefs.getStringList('local_favorite_titles') ✨ [];
+      final localFavorites = prefs.getStringList('local_favorite_titles') ?? [];
       if (isCurrentlyLiked) {
         localFavorites.remove(productTitle);
       } else {
@@ -610,11 +610,11 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
             isCurrentlyLiked
-                ✨ 'Retiré des favoris (connectez-vous pour synchroniser)'
+                ? 'Retiré des favoris (connectez-vous pour synchroniser)'
                 : 'Ajouté aux favoris (connectez-vous pour synchroniser)',
             style: GoogleFonts.poppins(),
           ),
-          backgroundColor: isCurrentlyLiked ✨ Colors.grey[600] : const Color(0xFF10B981),
+          backgroundColor: isCurrentlyLiked ? Colors.grey[600] : const Color(0xFF10B981),
           duration: const Duration(seconds: 2),
           action: SnackBarAction(
             label: context.tr('Connexion', 'Sign in'),
@@ -645,15 +645,15 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         }
       } else {
         // Ajouter le favori
-        final productUrl = product['url'] ✨ ProductUrlService.generateProductUrl(product);
-        final brand = product['brand'] ✨ product['source'] ✨ '';
+        final productUrl = product['url'] ?? ProductUrlService.generateProductUrl(product);
+        final brand = product['brand'] ?? product['source'] ?? '';
 
         await favoritesRef.add({
           'id': productIdInt,
           'name': productTitle,
           'brand': brand,
           'image': productImage,
-          'price': product['price']?.toString() ✨ '',
+          'price': product['price']?.toString() ?? '',
           'url': productUrl,
           'createdAt': FieldValue.serverTimestamp(),
         });
@@ -687,33 +687,33 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     final categoryLower = category.toLowerCase();
 
     if (categoryLower.contains('tech') || categoryLower.contains('technologie')) {
-      return 'Tech';
+      return '?? Tech';
     } else if (categoryLower.contains('mode') || categoryLower.contains('fashion') || categoryLower.contains('vêtement')) {
-      return 'Mode';
+      return '?? Mode';
     } else if (categoryLower.contains('maison') || categoryLower.contains('home') || categoryLower.contains('déco')) {
-      return 'Maison';
+      return '?? Maison';
     } else if (categoryLower.contains('beauté') || categoryLower.contains('beauty') || categoryLower.contains('cosmétique')) {
-      return 'Beauté';
+      return '?? Beauté';
     } else if (categoryLower.contains('sport') || categoryLower.contains('fitness')) {
-      return 'Sport';
+      return '? Sport';
     } else if (categoryLower.contains('food') || categoryLower.contains('gastronomie') || categoryLower.contains('cuisine')) {
-      return 'Food';
+      return '?? Food';
     } else if (categoryLower.contains('bien-être') || categoryLower.contains('wellness') || categoryLower.contains('spa')) {
-      return 'Bien-être';
+      return '?? Bien-être';
     } else if (categoryLower.contains('art') || categoryLower.contains('créatif')) {
-      return 'Art';
+      return '?? Art';
     } else if (categoryLower.contains('gaming') || categoryLower.contains('jeux')) {
-      return 'Gaming';
+      return '?? Gaming';
     } else if (categoryLower.contains('lecture') || categoryLower.contains('livre')) {
-      return 'Lecture';
+      return '?? Lecture';
     } else if (categoryLower.contains('musique')) {
-      return 'Musique';
+      return '?? Musique';
     } else if (categoryLower.contains('voyage')) {
-      return 'Voyage';
+      return '?? Voyage';
     }
 
     // Par défaut
-    return '$category';
+    return '? $category';
   }
 
   @override
@@ -911,9 +911,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 duration: const Duration(milliseconds: 3000),
                 child: Text(
                   _model.isAnonymousMode
-                      ✨ 'Découvre ✨'
+                      ? 'Découvre ✨'
                       : (_model.firstName.isNotEmpty
-                          ✨ 'Salut ${_model.firstName} ! ✨'
+                          ? 'Salut ${_model.firstName} ! ✨'
                           : 'Accueil'),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
@@ -927,7 +927,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
               const SizedBox(height: 4),
               Text(
                 _model.isAnonymousMode
-                    ✨ 'Idées cadeaux populaires'
+                    ? 'Idées cadeaux populaires'
                     : 'Voici tes inspirations cadeaux',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
@@ -957,9 +957,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           Expanded(
             child: Text(
               _model.isAnonymousMode
-                  ✨ 'Mode découverte 🔍\nLes cadeaux les plus populaires du moment'
+                  ? 'Mode découverte 🔍\nLes cadeaux les plus populaires du moment'
                   : (_model.firstName.isNotEmpty
-                      ✨ 'Bienvenue ${_model.firstName} !\nVoici ta sélection personnalisée'
+                      ? 'Bienvenue ${_model.firstName} !\nVoici ta sélection personnalisée'
                       : 'Bienvenue !\nVoici ta sélection personnalisée'),
               style: GoogleFonts.poppins(
                 color: const Color(0xFF4B5563),
@@ -1022,11 +1022,11 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                   ),
                   decoration: BoxDecoration(
                     color: isActive
-                        ✨ violetColor
+                        ? violetColor
                         : violetColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(50),
                     boxShadow: isActive
-                        ✨ [
+                        ? [
                             BoxShadow(
                               color: violetColor.withOpacity(0.2),
                               blurRadius: 10,
@@ -1048,7 +1048,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: isActive ✨ Colors.white : violetColor,
+                          color: isActive ? Colors.white : violetColor,
                         ),
                       ),
                     ],
@@ -1110,11 +1110,11 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       ),
                       decoration: BoxDecoration(
                         color: isActive
-                            ✨ const Color(0xFFEC4899) // Rose
+                            ? const Color(0xFFEC4899) // Rose
                             : const Color(0xFFEC4899).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(50),
                         boxShadow: isActive
-                            ✨ [
+                            ? [
                                 BoxShadow(
                                   color: const Color(0xFFEC4899).withOpacity(0.2),
                                   blurRadius: 10,
@@ -1128,7 +1128,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: isActive ✨ Colors.white : const Color(0xFFEC4899),
+                          color: isActive ? Colors.white : const Color(0xFFEC4899),
                         ),
                       ),
                     ),
@@ -1147,9 +1147,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: _model.sections.map((section) {
-        final title = section['title'] as String? ✨ '';
-        final subtitle = section['subtitle'] as String? ✨ '';
-        final products = section['products'] as List<Map<String, dynamic>>? ✨ [];
+        final title = section['title'] as String? ?? '';
+        final subtitle = section['subtitle'] as String? ?? '';
+        final products = section['products'] as List<Map<String, dynamic>>? ?? [];
 
         if (products.isEmpty) return const SizedBox.shrink();
 
@@ -1309,7 +1309,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     border: Border.all(color: Colors.red[200]!, width: 1),
                   ),
                   child: Text(
-                    _model.errorDetails ✨ 'Erreur inconnue',
+                    _model.errorDetails ?? 'Erreur inconnue',
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       color: Colors.red[900],
@@ -1376,7 +1376,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 const SizedBox(height: 24),
                 Text(
                   filteredProducts.isEmpty && _model.products.isNotEmpty
-                      ✨ 'Oups, aucun produit !'
+                      ? 'Oups, aucun produit !'
                       : 'Oups, on a rien trouv !',
                   style: GoogleFonts.poppins(
                     color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold,
@@ -1386,7 +1386,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 const SizedBox(height: 12),
                 Text(
                   filteredProducts.isEmpty && _model.products.isNotEmpty
-                      ✨ "Essaie de changer de filtre d'événement ou de catégorie"
+                      ? "Essaie de changer de filtre d'événement ou de catégorie"
                       : "Essaie de changer de catégorie ou tire pour rafraichir",
                   style: GoogleFonts.poppins(
                     color: const Color(0xFF6B7280),
@@ -1457,9 +1457,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           return ValueListenableBuilder(
             valueListenable: _likedTitles,
             builder: (context, liked, _) {
-              final name = (product['name'] ✨ '') as String;
+              final name = (product['name'] ?? '') as String;
               return ProductCard(
-                key: ValueKey(product['id'] ✨ name),
+                key: ValueKey(product['id'] ?? name),
                 product: product,
                 isLiked: (liked as Set<String>).contains(name),
                 index: index,
@@ -1477,7 +1477,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
   }
 
   Widget _buildProductCard(Map<String, dynamic> product, int index) {
-    final isLiked = _model.likedProductTitles.contains(product['name'] ✨ '');
+    final isLiked = _model.likedProductTitles.contains(product['name'] ?? '');
 
     return Material(
         color: Colors.transparent,
@@ -1527,7 +1527,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     child: AspectRatio(
                       aspectRatio: [0.8, 1.25, 0.9, 1.1, 1.4, 0.75][index % 6],
                       child: ProductImage(
-                        imageUrl: (product['image'] as String? ✨ '').isNotEmpty ✨ product['image'] as String : (product['imageUrl'] as String? ✨ ''),
+                        imageUrl: (product['image'] as String? ?? '').isNotEmpty ? product['image'] as String : (product['imageUrl'] as String? ?? ''),
                         height: null,
                         fit: BoxFit.cover,
                         borderRadius: BorderRadius.zero,
@@ -1589,13 +1589,13 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     if (!_model.isAnonymousMode) return;
     if (_model.hasShownConnectionPrompt) return;
 
-    final productId = product['id'] as int? ✨ product['name'].hashCode;
+    final productId = product['id'] as int? ?? product['name'].hashCode;
 
     // Ajouter au Set (ne compte que si c'est un nouveau produit)
     final wasNew = _model.uniqueProductsViewed.add(productId);
 
     if (wasNew) {
-      AppLogger.debug('Mode anonyme: ${_model.uniqueProductsViewed.length} produits uniques vus', 'Debug');
+      AppLogger.debug('?? Mode anonyme: ${_model.uniqueProductsViewed.length} produits uniques vus', 'Debug');
 
       // Trigger aprs 10 produits UNIQUES vus
       if (_model.uniqueProductsViewed.length >= 10) {
@@ -1615,7 +1615,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     // Track product view in anonymous mode (produits uniques seulement)
     _trackProductView(product);
 
-    final isLiked = _model.likedProductTitles.contains(product['id']?.toString() ✨ '');
+    final isLiked = _model.likedProductTitles.contains(product['id']?.toString() ?? '');
 
     GlobalProductDetailModal.show(context, product, initialIsLiked: isLiked, onLikeToggled: () {
       _toggleFavorite(product);
@@ -1626,7 +1626,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
   Future<void> _showWishlistModal(Map<String, dynamic> product) async {
     // Vérifier si l'utilisateur est connecté
     final prefs = await SharedPreferences.getInstance();
-    final isAnonymous = prefs.getBool('anonymous_mode') ✨ false;
+    final isAnonymous = prefs.getBool('anonymous_mode') ?? false;
 
     if (isAnonymous || !loggedIn) {
       if (mounted) {
@@ -1692,7 +1692,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                             ),
                           ),
                           Text(
-                            product['name'] as String? ✨ '',
+                            product['name'] as String? ?? '',
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               color: const Color(0xFF6B7280),
@@ -1744,7 +1744,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     itemCount: wishlists.length,
                     itemBuilder: (context, index) {
                       final wishlist = wishlists[index];
-                      final giftCount = (wishlist['giftIds'] as List?)?.length ✨ 0;
+                      final giftCount = (wishlist['giftIds'] as List?)?.length ?? 0;
 
                       return ListTile(
                         leading: Container(
@@ -1761,7 +1761,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                           ),
                         ),
                         title: Text(
-                          wishlist['name'] as String? ✨ 'Wishlist',
+                          wishlist['name'] as String? ?? 'Wishlist',
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -1769,7 +1769,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                           ),
                         ),
                         subtitle: Text(
-                          '$giftCount cadeau${giftCount > 1 ✨ 's' : ''}',
+                          '$giftCount cadeau${giftCount > 1 ? 's' : ''}',
                           style: GoogleFonts.poppins(
                             fontSize: 13,
                             color: const Color(0xFF6B7280),
@@ -1958,7 +1958,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         );
       }
     } catch (e) {
-      AppLogger.debug('Erreur ajout wishlist: $e', 'Debug');
+      AppLogger.debug('? Erreur ajout wishlist: $e', 'Debug');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

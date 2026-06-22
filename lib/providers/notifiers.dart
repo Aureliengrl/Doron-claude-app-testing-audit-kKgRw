@@ -42,13 +42,13 @@ class FeedState {
     bool clearError = false,
   }) {
     return FeedState(
-      products: products ✨ this.products,
-      isLoading: isLoading ✨ this.isLoading,
-      isLoadingMore: isLoadingMore ✨ this.isLoadingMore,
-      category: category ✨ this.category,
-      errorMessage: clearError ✨ null : errorMessage ✨ this.errorMessage,
-      hasMore: hasMore ✨ this.hasMore,
-      page: page ✨ this.page,
+      products: products ?? this.products,
+      isLoading: isLoading ?? this.isLoading,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      category: category ?? this.category,
+      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+      hasMore: hasMore ?? this.hasMore,
+      page: page ?? this.page,
     );
   }
 }
@@ -176,18 +176,18 @@ class PeopleState {
     bool clearError = false,
   }) {
     return PeopleState(
-      people: people ✨ this.people,
-      giftsByPersonId: giftsByPersonId ✨ this.giftsByPersonId,
-      selectedPersonId: clearSelectedPerson ✨ null : selectedPersonId ✨ this.selectedPersonId,
-      isLoading: isLoading ✨ this.isLoading,
-      errorMessage: clearError ✨ null : errorMessage ✨ this.errorMessage,
+      people: people ?? this.people,
+      giftsByPersonId: giftsByPersonId ?? this.giftsByPersonId,
+      selectedPersonId: clearSelectedPerson ? null : selectedPersonId ?? this.selectedPersonId,
+      isLoading: isLoading ?? this.isLoading,
+      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
     );
   }
 
   /// Produits du destinataire sélectionné
   List<Map<String, dynamic>> get selectedPersonGifts {
     if (selectedPersonId == null) return [];
-    return giftsByPersonId[selectedPersonId] ✨ [];
+    return giftsByPersonId[selectedPersonId] ?? [];
   }
 
   /// Données du destinataire sélectionné
@@ -216,8 +216,8 @@ class PeopleNotifier extends StateNotifier<PeopleState> {
       final people = <Map<String, dynamic>>[];
       for (final person in rawPeople) {
         final personId = person['id'] as String;
-        final tags = (person['tags'] as Map<String, dynamic>?) ✨ {};
-        final meta = (person['meta'] as Map<String, dynamic>?) ✨ {};
+        final tags = (person['tags'] as Map<String, dynamic>?) ?? {};
+        final meta = (person['meta'] as Map<String, dynamic>?) ?? {};
 
         // Charger les cadeaux pour cette personne
         List<Map<String, dynamic>> gifts = [];
@@ -227,7 +227,7 @@ class PeopleNotifier extends StateNotifier<PeopleState> {
           gifts = await _generateFirstGifts(personId: personId, tags: tags);
         } else {
           final listData = await FirebaseDataService.loadLatestGiftListForPerson(personId);
-          gifts = (listData?['gifts'] as List? ✨ []).cast<Map<String, dynamic>>();
+          gifts = (listData?['gifts'] as List? ?? []).cast<Map<String, dynamic>>();
         }
 
         giftsByPersonId[personId] = gifts;
@@ -242,7 +242,7 @@ class PeopleNotifier extends StateNotifier<PeopleState> {
         people: people,
         giftsByPersonId: giftsByPersonId,
         isLoading: false,
-        selectedPersonId: people.isNotEmpty ✨ (people.first['id'] as String) : null,
+        selectedPersonId: people.isNotEmpty ? (people.first['id'] as String) : null,
       );
 
       AppLogger.info('👥 ${people.length} destinataires chargés', 'PeopleNotifier');
@@ -269,8 +269,8 @@ class PeopleNotifier extends StateNotifier<PeopleState> {
     );
     if (person.isEmpty) return;
 
-    final tags = (person['tags'] as Map<String, dynamic>?) ✨ {};
-    final existing = state.giftsByPersonId[personId] ✨ [];
+    final tags = (person['tags'] as Map<String, dynamic>?) ?? {};
+    final existing = state.giftsByPersonId[personId] ?? [];
     final excludeIds = existing.map((g) => g['id']).whereType<int>().toList();
 
     final newGifts = await ProductMatchingService.getPersonalizedProducts(
@@ -315,24 +315,24 @@ class PeopleNotifier extends StateNotifier<PeopleState> {
     } catch (e) {
       AppLogger.error('Erreur génération premiers cadeaux', 'PeopleNotifier', e);
       final listData = await FirebaseDataService.loadLatestGiftListForPerson(personId);
-      return (listData?['gifts'] as List? ✨ []).cast<Map<String, dynamic>>();
+      return (listData?['gifts'] as List? ?? []).cast<Map<String, dynamic>>();
     }
   }
 
   List<Map<String, dynamic>> _mapGifts(List<Map<String, dynamic>> rawGifts) {
     return rawGifts.map((product) {
       final matchRaw = product['_matchScore'];
-      final match = (matchRaw is int ✨ matchRaw : (matchRaw is double ✨ matchRaw.toInt() : 0)).clamp(0, 100);
+      final match = (matchRaw is int ? matchRaw : (matchRaw is double ? matchRaw.toInt() : 0)).clamp(0, 100);
       return {
         'id': product['id'],
-        'name': product['name'] ✨ 'Produit',
-        'brand': product['brand'] ✨ '',
-        'price': product['price'] ✨ 0,
-        'image': product['image'] ✨ product['imageUrl'] ✨ '',
+        'name': product['name'] ?? 'Produit',
+        'brand': product['brand'] ?? '',
+        'price': product['price'] ?? 0,
+        'image': product['image'] ?? product['imageUrl'] ?? '',
         'url': ProductUrlService.generateProductUrl(product),
         'buyLinks': product['buyLinks'], // conserver pour le modal comparateur
-        'source': product['source'] ✨ '',
-        'categories': product['categories'] ✨ [],
+        'source': product['source'] ?? '',
+        'categories': product['categories'] ?? [],
         'match': match,
       };
     }).toList();
@@ -356,7 +356,7 @@ class FavoritesNotifier extends StateNotifier<Set<String>> {
   Future<void> load() async {
     try {
       final favorites = await FirebaseDataService.loadFavorites();
-      final titles = favorites.map((f) => (f['name'] ✨ f['title'] ✨ '') as String).toSet();
+      final titles = favorites.map((f) => (f['name'] ?? f['title'] ?? '') as String).toSet();
       state = titles;
     } catch (e) {
       AppLogger.error('Erreur chargement favoris', 'FavoritesNotifier', e);

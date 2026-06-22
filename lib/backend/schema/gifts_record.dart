@@ -19,57 +19,57 @@ class GiftsRecord extends FirestoreRecord {
 
   // "name" field.
   String? _name;
-  String get name => _name ✨ '';
+  String get name => _name ?? '';
   bool hasName() => _name != null;
 
   // "brand" field.
   String? _brand;
-  String get brand => _brand ✨ '';
+  String get brand => _brand ?? '';
   bool hasBrand() => _brand != null;
 
   // "price" field.
   double? _price;
-  double get price => _price ✨ 0.0;
+  double get price => _price ?? 0.0;
   bool hasPrice() => _price != null;
 
   // "url" field.
   String? _url;
-  String get url => _url ✨ '';
+  String get url => _url ?? '';
   bool hasUrl() => _url != null;
 
   // "image" field.
   String? _image;
-  String get image => _image ✨ '';
+  String get image => _image ?? '';
   bool hasImage() => _image != null;
 
   // "description" field.
   String? _description;
-  String get description => _description ✨ '';
+  String get description => _description ?? '';
   bool hasDescription() => _description != null;
 
   // "categories" field.
   List<String>? _categories;
-  List<String> get categories => _categories ✨ const [];
+  List<String> get categories => _categories ?? const [];
   bool hasCategories() => _categories != null;
 
   // "tags" field.
   List<String>? _tags;
-  List<String> get tags => _tags ✨ const [];
+  List<String> get tags => _tags ?? const [];
   bool hasTags() => _tags != null;
 
   // "popularity" field.
   int? _popularity;
-  int get popularity => _popularity ✨ 0;
+  int get popularity => _popularity ?? 0;
   bool hasPopularity() => _popularity != null;
 
   // "source" field.
   String? _source;
-  String get source => _source ✨ '';
+  String get source => _source ?? '';
   bool hasSource() => _source != null;
 
   // "active" field.
   bool? _active;
-  bool get active => _active ✨ true;
+  bool get active => _active ?? true;
   bool hasActive() => _active != null;
 
   // "created_at" field.
@@ -79,22 +79,22 @@ class GiftsRecord extends FirestoreRecord {
 
   // "product_photo" field.
   String? _productPhoto;
-  String get productPhoto => _productPhoto ✨ '';
+  String get productPhoto => _productPhoto ?? '';
   bool hasProductPhoto() => _productPhoto != null;
 
   // "product_title" field.
   String? _productTitle;
-  String get productTitle => _productTitle ✨ '';
+  String get productTitle => _productTitle ?? '';
   bool hasProductTitle() => _productTitle != null;
 
   // "product_url" field.
   String? _productUrl;
-  String get productUrl => _productUrl ✨ '';
+  String get productUrl => _productUrl ?? '';
   bool hasProductUrl() => _productUrl != null;
 
   // "product_price" field.
   String? _productPrice;
-  String get productPrice => _productPrice ✨ '';
+  String get productPrice => _productPrice ?? '';
   bool hasProductPrice() => _productPrice != null;
 
   void _initializeFields() {

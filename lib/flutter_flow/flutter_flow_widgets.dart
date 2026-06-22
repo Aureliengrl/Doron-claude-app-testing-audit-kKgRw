@@ -79,16 +79,16 @@ class FFButtonWidget extends StatefulWidget {
 class _FFButtonWidgetState extends State<FFButtonWidget> {
   bool loading = false;
 
-  int get maxLines => widget.options.maxLines ✨ 1;
+  int get maxLines => widget.options.maxLines ?? 1;
   String? get text =>
-      widget.options.textStyle?.fontSize == 0 ✨ null : widget.text;
+      widget.options.textStyle?.fontSize == 0 ? null : widget.text;
 
   @override
   Widget build(BuildContext context) {
     Widget textWidget = loading
-        ✨ SizedBox(
+        ? SizedBox(
             width: widget.options.width == null
-                ✨ _getTextWidth(text, widget.options.textStyle, maxLines)
+                ? _getTextWidth(text, widget.options.textStyle, maxLines)
                 : null,
             child: Center(
               child: SizedBox(
@@ -96,24 +96,24 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
                 height: 23,
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    widget.options.textStyle?.color ✨ Colors.white,
+                    widget.options.textStyle?.color ?? Colors.white,
                   ),
                 ),
               ),
             ),
           )
         : AutoSizeText(
-            text ✨ '',
+            text ?? '',
             style:
-                text == null ✨ null : widget.options.textStyle?.withoutColor(),
+                text == null ? null : widget.options.textStyle?.withoutColor(),
             textAlign: widget.options.textAlign,
             maxLines: maxLines,
             overflow: TextOverflow.ellipsis,
           );
 
     final onPressed = widget.onPressed != null
-        ✨ (widget.showLoadingIndicator
-            ✨ () async {
+        ? (widget.showLoadingIndicator
+            ? () async {
                 if (loading) {
                   return;
                 }
@@ -135,7 +135,7 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
             widget.options.hoverBorderSide != null) {
           return RoundedRectangleBorder(
             borderRadius:
-                widget.options.borderRadius ✨ BorderRadius.circular(8),
+                widget.options.borderRadius ?? BorderRadius.circular(8),
             side: widget.options.hoverBorderSide!,
           );
         }
@@ -149,8 +149,8 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
           );
         }
         return RoundedRectangleBorder(
-          borderRadius: widget.options.borderRadius ✨ BorderRadius.circular(8),
-          side: widget.options.borderSide ✨ BorderSide.none,
+          borderRadius: widget.options.borderRadius ?? BorderRadius.circular(8),
+          side: widget.options.borderSide ?? BorderSide.none,
         );
       }),
       foregroundColor: MaterialStateProperty.resolveWith<Color?>((states) {
@@ -162,7 +162,7 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
             widget.options.hoverTextColor != null) {
           return widget.options.hoverTextColor;
         }
-        return widget.options.textStyle?.color ✨ Colors.white;
+        return widget.options.textStyle?.color ?? Colors.white;
       }),
       backgroundColor: MaterialStateProperty.resolveWith<Color?>((states) {
         if (states.contains(MaterialState.disabled) &&
@@ -179,7 +179,7 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
         if (states.contains(MaterialState.pressed)) {
           return widget.options.splashColor;
         }
-        return widget.options.hoverColor == null ✨ null : Colors.transparent;
+        return widget.options.hoverColor == null ? null : Colors.transparent;
       }),
       padding: MaterialStateProperty.all(
         widget.options.padding ??
@@ -190,7 +190,7 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
             widget.options.hoverElevation != null) {
           return widget.options.hoverElevation!;
         }
-        return widget.options.elevation ✨ 2.0;
+        return widget.options.elevation ?? 2.0;
       }),
       iconColor: MaterialStateProperty.resolveWith<Color?>((states) {
         if (states.contains(MaterialState.disabled) &&
@@ -219,15 +219,15 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
           width: widget.options.width,
           decoration: BoxDecoration(
             border: Border.fromBorderSide(
-              widget.options.borderSide ✨ BorderSide.none,
+              widget.options.borderSide ?? BorderSide.none,
             ),
             borderRadius:
-                widget.options.borderRadius ✨ BorderRadius.circular(8),
+                widget.options.borderRadius ?? BorderRadius.circular(8),
           ),
           child: IconButton(
             splashRadius: 1.0,
             icon: Padding(
-              padding: widget.options.iconPadding ✨ EdgeInsets.zero,
+              padding: widget.options.iconPadding ?? EdgeInsets.zero,
               child: icon,
             ),
             onPressed: onPressed,
@@ -240,13 +240,13 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
         width: widget.options.width,
         child: ElevatedButton.icon(
           icon: Padding(
-            padding: widget.options.iconPadding ✨ EdgeInsets.zero,
+            padding: widget.options.iconPadding ?? EdgeInsets.zero,
             child: icon,
           ),
           label: textWidget,
           onPressed: onPressed,
           style: style,
-          iconAlignment: widget.options.iconAlignment ✨ IconAlignment.start,
+          iconAlignment: widget.options.iconAlignment ?? IconAlignment.start,
         ),
       );
     }
@@ -298,7 +298,7 @@ extension _WithoutColorExtension on TextStyle {
 // Slightly hacky method of getting the layout width of the provided text.
 double? _getTextWidth(String? text, TextStyle? style, int maxLines) =>
     text != null
-        ✨ (TextPainter(
+        ? (TextPainter(
             text: TextSpan(text: text, style: style),
             textDirection: TextDirection.ltr,
             maxLines: maxLines,
@@ -363,8 +363,8 @@ class _FFFocusIndicatorState extends State<FFFocusIndicator> {
       duration: const Duration(milliseconds: 200),
       padding: widget.padding,
       decoration: BoxDecoration(
-        border: _hasFocus ✨ widget.border : null,
-        borderRadius: widget.borderRadius ✨ BorderRadius.circular(4),
+        border: _hasFocus ? widget.border : null,
+        borderRadius: widget.borderRadius ?? BorderRadius.circular(4),
       ),
       child: InkWell(
         splashColor: Colors.transparent,

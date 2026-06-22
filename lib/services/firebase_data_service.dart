@@ -39,7 +39,7 @@ class FirebaseDataService {
   /// ─────────────────────────────────────────────────────────────────────────
   static String _key(String base) {
     final uid = _auth.currentUser?.uid;
-    return uid != null ✨ '${uid}_$base' : 'guest_$base';
+    return uid != null ? '${uid}_$base' : 'guest_$base';
   }
 
   /// Efface le cache local de l'utilisateur courant.
@@ -161,7 +161,7 @@ class FirebaseDataService {
     // Sauvegarder localement TOUJOURS
     try {
       final prefs = await SharedPreferences.getInstance();
-      final profilesJson = prefs.getString(_key('gift_profiles')) ✨ '[]';
+      final profilesJson = prefs.getString(_key('gift_profiles')) ?? '[]';
       final profiles = (json.decode(profilesJson) as List).cast<Map<String, dynamic>>();
 
       // Générer un ID unique pour le profil
@@ -227,7 +227,7 @@ class FirebaseDataService {
     // Fallback : charger depuis SharedPreferences
     try {
       final prefs = await SharedPreferences.getInstance();
-      final profilesJson = prefs.getString(_key('gift_profiles')) ✨ '[]';
+      final profilesJson = prefs.getString(_key('gift_profiles')) ?? '[]';
       final profiles = (json.decode(profilesJson) as List)
           .map((e) => e as Map<String, dynamic>)
           .toList();
@@ -357,13 +357,13 @@ class FirebaseDataService {
 
   /// Ajoute un cadeau aux favoris (Firebase + locale SharedPreferences)
   static Future<void> addToFavorites(Map<String, dynamic> gift) async {
-    final giftId = gift['id']?.toString() ✨ const Uuid().v4();
+    final giftId = gift['id']?.toString() ?? const Uuid().v4();
     final giftWithId = {...gift, 'id': giftId};
 
     // ── Persistance locale (offline first) ──────────────────────────────────
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString(_key('favorites')) ✨ '[]';
+      final localJson = prefs.getString(_key('favorites')) ?? '[]';
       final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
       // Éviter les doublons
       localList.removeWhere((f) => f['id']?.toString() == giftId);
@@ -397,7 +397,7 @@ class FirebaseDataService {
     // ── Local ──────────────────────────────────────────────────────────────
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString(_key('favorites')) ✨ '[]';
+      final localJson = prefs.getString(_key('favorites')) ?? '[]';
       final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
       localList.removeWhere((f) => f['id']?.toString() == giftId);
       await prefs.setString(_key('favorites'), json.encode(localList));
@@ -427,7 +427,7 @@ class FirebaseDataService {
     List<Map<String, dynamic>> localFavorites = [];
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString(_key('favorites')) ✨ '[]';
+      final localJson = prefs.getString(_key('favorites')) ?? '[]';
       localFavorites = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
       AppLogger.success('Local favorites: ${localFavorites.length}', 'Firebase');
     } catch (e) {
@@ -516,8 +516,8 @@ class FirebaseDataService {
     final wishlistId = const Uuid().v4();
     final wishlistData = {
       'name': name,
-      'emoji': emoji ✨ '🎁',
-      'description': description ✨ '',
+      'emoji': emoji ?? '🎁',
+      'description': description ?? '',
       'personId': personId,
       'productIds': <String>[],
       'createdAt': DateTime.now().toIso8601String(),
@@ -526,7 +526,7 @@ class FirebaseDataService {
     // ── Local ──────────────────────────────────────────────────────────────
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString(_key('wishlists')) ✨ '[]';
+      final localJson = prefs.getString(_key('wishlists')) ?? '[]';
       final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
       localList.insert(0, {'id': wishlistId, ...wishlistData});
       await prefs.setString(_key('wishlists'), json.encode(localList));
@@ -558,7 +558,7 @@ class FirebaseDataService {
     List<Map<String, dynamic>> localWishlists = [];
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString(_key('wishlists')) ✨ '[]';
+      final localJson = prefs.getString(_key('wishlists')) ?? '[]';
       localWishlists = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
       if (personId != null) {
         localWishlists = localWishlists.where((w) => w['personId'] == personId).toList();
@@ -607,22 +607,22 @@ class FirebaseDataService {
     Map<String, dynamic> product,
   ) async {
     // Générer un ID stable basé sur le nom du produit (déterministe)
-    final productName = product['name'] ✨ product['title'] ✨ product['product_title'] ✨ '';
+    final productName = product['name'] ?? product['title'] ?? product['product_title'] ?? '';
     final existingId = product['id']?.toString();
     final productId = (existingId != null && existingId.isNotEmpty && existingId != 'null')
-        ✨ existingId
-        : (productName.isNotEmpty ✨ productName.hashCode.abs().toString() : const Uuid().v4());
+        ? existingId
+        : (productName.isNotEmpty ? productName.hashCode.abs().toString() : const Uuid().v4());
 
     // Normaliser le produit
     final normalizedProduct = {
       'id': productId,
       'type': 'product',
-      'name': productName.isNotEmpty ✨ productName : 'Produit',
-      'brand': product['brand'] ✨ product['platform'] ✨ product['source'] ✨ '',
-      'image': product['image'] ✨ product['imageUrl'] ✨ product['product_photo'] ✨ product['photo'] ✨ '',
-      'price': (product['price'] ✨ product['product_price'] ✨ '').toString(),
-      'url': product['url'] ✨ product['product_url'] ✨ product['link'] ✨ '',
-      'description': product['description'] ✨ product['reason'] ✨ '',
+      'name': productName.isNotEmpty ? productName : 'Produit',
+      'brand': product['brand'] ?? product['platform'] ?? product['source'] ?? '',
+      'image': product['image'] ?? product['imageUrl'] ?? product['product_photo'] ?? product['photo'] ?? '',
+      'price': (product['price'] ?? product['product_price'] ?? '').toString(),
+      'url': product['url'] ?? product['product_url'] ?? product['link'] ?? '',
+      'description': product['description'] ?? product['reason'] ?? '',
       'addedAt': DateTime.now().toIso8601String(),
     };
 
@@ -630,17 +630,17 @@ class FirebaseDataService {
     try {
       final prefs = await SharedPreferences.getInstance();
       // 1) Mettre à jour la liste de produits du cache
-      final localJson = prefs.getString(_key('wishlist_products_$wishlistId')) ✨ '[]';
+      final localJson = prefs.getString(_key('wishlist_products_$wishlistId')) ?? '[]';
       final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
       localList.removeWhere((p) => p['id']?.toString() == productId);
       localList.insert(0, normalizedProduct);
       await prefs.setString(_key('wishlist_products_$wishlistId'), json.encode(localList));
       // 2) Mettre à jour productCount dans le cache des wishlists
-      final wishlistsJson = prefs.getString(_key('wishlists')) ✨ '[]';
+      final wishlistsJson = prefs.getString(_key('wishlists')) ?? '[]';
       final wishlistsList = (json.decode(wishlistsJson) as List).cast<Map<String, dynamic>>();
       final idx = wishlistsList.indexWhere((w) => w['id']?.toString() == wishlistId);
       if (idx != -1) {
-        final current = (wishlistsList[idx]['productCount'] as int?) ✨ 0;
+        final current = (wishlistsList[idx]['productCount'] as int?) ?? 0;
         wishlistsList[idx]['productCount'] = current + 1;
         await prefs.setString(_key('wishlists'), json.encode(wishlistsList));
       }
@@ -717,7 +717,7 @@ class FirebaseDataService {
 
       final photoId = '${DateTime.now().millisecondsSinceEpoch}';
       final effectiveName =
-          productName?.isNotEmpty == true ✨ productName! : (caption ✨ '');
+          productName?.isNotEmpty == true ? productName! : (caption ?? '');
 
       // ── Item avec chemin local (affiché immédiatement) ──────────────────
       final photoItemLocal = {
@@ -725,8 +725,8 @@ class FirebaseDataService {
         'type': 'photo',
         'image': localImagePath,   // fichier local — CachedImageWidget le gère
         'name': effectiveName,
-        'caption': caption ✨ effectiveName,
-        'price': productPrice ✨ '',
+        'caption': caption ?? effectiveName,
+        'price': productPrice ?? '',
         'addedAt': DateTime.now().toIso8601String(),
         '_uploading': true,        // flag discret pour indicateur optionnel
       };
@@ -734,16 +734,16 @@ class FirebaseDataService {
       // ── Écriture locale IMMÉDIATE ────────────────────────────────────────
       try {
         final prefs = await SharedPreferences.getInstance();
-        final localJson = prefs.getString(_key('wishlist_products_$wishlistId')) ✨ '[]';
+        final localJson = prefs.getString(_key('wishlist_products_$wishlistId')) ?? '[]';
         final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
         localList.insert(0, photoItemLocal);
         await prefs.setString(_key('wishlist_products_$wishlistId'), json.encode(localList));
 
-        final wishlistsJson = prefs.getString(_key('wishlists')) ✨ '[]';
+        final wishlistsJson = prefs.getString(_key('wishlists')) ?? '[]';
         final wishlistsList = (json.decode(wishlistsJson) as List).cast<Map<String, dynamic>>();
         final idx = wishlistsList.indexWhere((w) => w['id']?.toString() == wishlistId);
         if (idx != -1) {
-          wishlistsList[idx]['productCount'] = ((wishlistsList[idx]['productCount'] as int?) ✨ 0) + 1;
+          wishlistsList[idx]['productCount'] = ((wishlistsList[idx]['productCount'] as int?) ?? 0) + 1;
           await prefs.setString(_key('wishlists'), json.encode(wishlistsList));
         }
       } catch (_) {}
@@ -784,7 +784,7 @@ class FirebaseDataService {
           // Mettre à jour le cache local
           try {
             final prefs = await SharedPreferences.getInstance();
-            final localJson = prefs.getString(_key('wishlist_products_$wishlistId')) ✨ '[]';
+            final localJson = prefs.getString(_key('wishlist_products_$wishlistId')) ?? '[]';
             final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
             final i = localList.indexWhere((p) => p['id']?.toString() == photoId);
             if (i != -1) {
@@ -818,7 +818,7 @@ class FirebaseDataService {
     // ── Local ──────────────────────────────────────────────────────────────
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString(_key('wishlist_products_$wishlistId')) ✨ '[]';
+      final localJson = prefs.getString(_key('wishlist_products_$wishlistId')) ?? '[]';
       final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
       localList.removeWhere((p) => p['id']?.toString() == productId);
       await prefs.setString(_key('wishlist_products_$wishlistId'), json.encode(localList));
@@ -848,9 +848,9 @@ class FirebaseDataService {
             .doc(wishlistId);
         await _firestore.runTransaction((txn) async {
           final snap = await txn.get(ref);
-          final current = (snap.data()?['productCount'] as num?)?.toInt() ✨ 0;
+          final current = (snap.data()?['productCount'] as num?)?.toInt() ?? 0;
           txn.update(ref, {
-            'productCount': current > 0 ✨ current - 1 : 0,
+            'productCount': current > 0 ? current - 1 : 0,
             'updatedAt': FieldValue.serverTimestamp(),
           });
         });
@@ -877,7 +877,7 @@ class FirebaseDataService {
     List<Map<String, dynamic>> localList = [];
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString(_key('wishlist_products_$wishlistId')) ✨ '[]';
+      final localJson = prefs.getString(_key('wishlist_products_$wishlistId')) ?? '[]';
       localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
     } catch (e) {
       AppLogger.error('Error loading wishlist products (local)', 'Firebase', e);
@@ -902,7 +902,7 @@ class FirebaseDataService {
         final prefs = await SharedPreferences.getInstance();
         final serializable = merged.map((p) => {
           ...p,
-          'addedAt': (p['addedAt'] is String) ✨ p['addedAt'] : DateTime.now().toIso8601String(),
+          'addedAt': (p['addedAt'] is String) ? p['addedAt'] : DateTime.now().toIso8601String(),
         }).toList();
         await prefs.setString(_key('wishlist_products_$wishlistId'), json.encode(serializable));
       } catch (_) {}
@@ -954,7 +954,7 @@ class FirebaseDataService {
           final prefs = await SharedPreferences.getInstance();
           final serializable = products.map((p) => {
             ...p,
-            'addedAt': (p['addedAt'] is String) ✨ p['addedAt'] : DateTime.now().toIso8601String(),
+            'addedAt': (p['addedAt'] is String) ? p['addedAt'] : DateTime.now().toIso8601String(),
           }).toList();
           await prefs.setString(_key('wishlist_products_$wishlistId'), json.encode(serializable));
         } catch (_) {}
@@ -973,7 +973,7 @@ class FirebaseDataService {
     // ── Local ──────────────────────────────────────────────────────────────
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString(_key('wishlists')) ✨ '[]';
+      final localJson = prefs.getString(_key('wishlists')) ?? '[]';
       final localList = (json.decode(localJson) as List).cast<Map<String, dynamic>>();
       localList.removeWhere((w) => w['id']?.toString() == wishlistId);
       await prefs.setString(_key('wishlists'), json.encode(localList));
@@ -1043,7 +1043,7 @@ class FirebaseDataService {
       final doc = await _firestore.collection('gifts').doc(giftId).get();
 
       if (doc.exists) {
-        return {'id': doc.id, ...doc.data() ✨ {}};
+        return {'id': doc.id, ...doc.data() ?? {}};
       }
     } catch (e) {
       AppLogger.error('Error loading gift', 'Firebase', e);
@@ -1061,9 +1061,9 @@ class FirebaseDataService {
       if (doc.exists) {
         final data = doc.data();
         return {
-          'fr': data?['fr'] ✨ '',
-          'en': data?['en'] ✨ '',
-          'es': data?['es'] ✨ '',
+          'fr': data?['fr'] ?? '',
+          'en': data?['en'] ?? '',
+          'es': data?['es'] ?? '',
         };
       }
     } catch (e) {
@@ -1080,7 +1080,7 @@ class FirebaseDataService {
       final translations = <String, String>{};
       for (var doc in snapshot.docs) {
         final data = doc.data();
-        translations[doc.id] = data[languageCode] ✨ '';
+        translations[doc.id] = data[languageCode] ?? '';
       }
 
       AppLogger.firebase('Loaded ${translations.length} translations for $languageCode');
@@ -1179,7 +1179,7 @@ class FirebaseDataService {
   /// Charge les tags du profil utilisateur.
   /// ✅ CACHE MÉMOIRE (TTL 5 min) — évite un aller-retour Firestore à chaque rechargement.
   static Future<Map<String, dynamic>?> loadUserProfileTags() async {
-    // ── Cache hit ✨ ──────────────────────────────────────────────────────────
+    // ── Cache hit ? ──────────────────────────────────────────────────────────
     if (_profileTagsCache != null && _profileTagsCacheTime != null) {
       final age = DateTime.now().difference(_profileTagsCacheTime!);
       if (age < _profileTagsTtl) {
@@ -1246,7 +1246,7 @@ class FirebaseDataService {
     // Sauvegarder localement
     try {
       final prefs = await SharedPreferences.getInstance();
-      final peopleJson = prefs.getString(_key('people')) ✨ '[]';
+      final peopleJson = prefs.getString(_key('people')) ?? '[]';
       final people = (json.decode(peopleJson) as List).cast<Map<String, dynamic>>();
 
       people.add({
@@ -1300,7 +1300,7 @@ class FirebaseDataService {
     try {
       // Charger la personne depuis le storage local
       final prefs = await SharedPreferences.getInstance();
-      final peopleJson = prefs.getString(_key('people')) ✨ '[]';
+      final peopleJson = prefs.getString(_key('people')) ?? '[]';
       final localPeople = (json.decode(peopleJson) as List)
           .map((e) => e as Map<String, dynamic>)
           .toList();
@@ -1326,7 +1326,7 @@ class FirebaseDataService {
           .doc(personId)
           .set({
         'tags': person['tags'],
-        'meta': person['meta'] ✨ {
+        'meta': person['meta'] ?? {
           'isPendingFirstGen': false,
           'createdAt': FieldValue.serverTimestamp(),
         },
@@ -1349,7 +1349,7 @@ class FirebaseDataService {
     List<Map<String, dynamic>> localPeople = [];
     try {
       final prefs = await SharedPreferences.getInstance();
-      final peopleJson = prefs.getString(_key('people')) ✨ '[]';
+      final peopleJson = prefs.getString(_key('people')) ?? '[]';
       localPeople = (json.decode(peopleJson) as List)
           .map((e) => e as Map<String, dynamic>)
           .toList();
@@ -1401,7 +1401,7 @@ class FirebaseDataService {
         // Construire un index Firebase par ID pour merger les champs de collaboration
         final fbById = <String, Map<String, dynamic>>{};
         for (final fb in firebasePeople) {
-          final id = fb['id']?.toString() ✨ '';
+          final id = fb['id']?.toString() ?? '';
           if (id.isNotEmpty) fbById[id] = fb;
         }
 
@@ -1409,7 +1409,7 @@ class FirebaseDataService {
         // (chatId, collabId, isShared sont écrits par CollaborationService APRÈS le save local)
         final localIds = <String>{};
         final merged = localPeople.map((local) {
-          final id = local['id']?.toString() ✨ '';
+          final id = local['id']?.toString() ?? '';
           if (id.isNotEmpty) localIds.add(id);
           final fb = fbById[id];
           if (fb == null) return local;
@@ -1421,12 +1421,12 @@ class FirebaseDataService {
               collabFields[key] = fb[key];
             }
           }
-          return collabFields.isEmpty ✨ local : {...local, ...collabFields};
+          return collabFields.isEmpty ? local : {...local, ...collabFields};
         }).toList();
 
         // Ajouter les personnes Firebase non présentes en local
         for (final fbPerson in firebasePeople) {
-          if (!localIds.contains(fbPerson['id']?.toString() ✨ '')) {
+          if (!localIds.contains(fbPerson['id']?.toString() ?? '')) {
             merged.add(fbPerson);
           }
         }
@@ -1462,7 +1462,7 @@ class FirebaseDataService {
     final seenNames = <String, Map<String, dynamic>>{};
 
     for (var person in people) {
-      final tags = person['tags'] as Map<String, dynamic>? ✨ {};
+      final tags = person['tags'] as Map<String, dynamic>? ?? {};
       // Extraire le nom depuis plusieurs clés possibles
       final name = (tags['name'] as String? ??
                    tags['personName'] as String? ??
@@ -1477,11 +1477,11 @@ class FirebaseDataService {
 
       // Si on a déjà vu ce nom, comparer les dates pour garder le plus récent
       if (seenNames.containsKey(name)) {
-        final existingMeta = seenNames[name]!['meta'] as Map<String, dynamic>? ✨ {};
-        final newMeta = person['meta'] as Map<String, dynamic>? ✨ {};
+        final existingMeta = seenNames[name]!['meta'] as Map<String, dynamic>? ?? {};
+        final newMeta = person['meta'] as Map<String, dynamic>? ?? {};
 
-        final existingDate = existingMeta['createdAt']?.toString() ✨ '';
-        final newDate = newMeta['createdAt']?.toString() ✨ '';
+        final existingDate = existingMeta['createdAt']?.toString() ?? '';
+        final newDate = newMeta['createdAt']?.toString() ?? '';
 
         // Garder le plus récent (date plus grande = plus récent)
         if (newDate.compareTo(existingDate) > 0) {
@@ -1503,8 +1503,8 @@ class FirebaseDataService {
   /// Trie les personnes par date de création (plus récent d'abord)
   static List<Map<String, dynamic>> _sortPeopleByDate(List<Map<String, dynamic>> people) {
     people.sort((a, b) {
-      final aMeta = a['meta'] as Map<String, dynamic>? ✨ {};
-      final bMeta = b['meta'] as Map<String, dynamic>? ✨ {};
+      final aMeta = a['meta'] as Map<String, dynamic>? ?? {};
+      final bMeta = b['meta'] as Map<String, dynamic>? ?? {};
 
       final aDate = aMeta['createdAt'];
       final bDate = bMeta['createdAt'];
@@ -1539,7 +1539,7 @@ class FirebaseDataService {
     // Charger depuis local storage d'abord
     try {
       final prefs = await SharedPreferences.getInstance();
-      final peopleJson = prefs.getString(_key('people')) ✨ '[]';
+      final peopleJson = prefs.getString(_key('people')) ?? '[]';
       final localPeople = (json.decode(peopleJson) as List)
           .map((e) => e as Map<String, dynamic>)
           .toList();
@@ -1591,7 +1591,7 @@ class FirebaseDataService {
       (p) => p['meta']?['isPendingFirstGen'] == true,
       orElse: () => {}, // Retourne map vide si non trouvé
     );
-    return person.isEmpty ✨ null : person;
+    return person.isEmpty ? null : person;
   }
 
   /// Met à jour le flag isPendingFirstGen d'une personne
@@ -1612,11 +1612,11 @@ class FirebaseDataService {
     // Mise à jour locale SharedPreferences
     try {
       final prefs = await SharedPreferences.getInstance();
-      final peopleJson = prefs.getString(_key('people')) ✨ '[]';
+      final peopleJson = prefs.getString(_key('people')) ?? '[]';
       final people = (json.decode(peopleJson) as List).cast<Map<String, dynamic>>();
       final index = people.indexWhere((p) => p['id'] == personId);
       if (index != -1) {
-        final currentMeta = Map<String, dynamic>.from(people[index]['meta'] ✨ {});
+        final currentMeta = Map<String, dynamic>.from(people[index]['meta'] ?? {});
         currentMeta.addAll(fields);
         people[index]['meta'] = currentMeta;
         await prefs.setString(_key('people'), json.encode(people));
@@ -1647,7 +1647,7 @@ class FirebaseDataService {
     // Suppression locale
     try {
       final prefs = await SharedPreferences.getInstance();
-      final peopleJson = prefs.getString(_key('people')) ✨ '[]';
+      final peopleJson = prefs.getString(_key('people')) ?? '[]';
       final people = (json.decode(peopleJson) as List).cast<Map<String, dynamic>>();
 
       people.removeWhere((p) => p['id'] == personId);
@@ -1688,13 +1688,13 @@ class FirebaseDataService {
     // de données entre comptes sur le même appareil.
     try {
       final prefs = await SharedPreferences.getInstance();
-      final listsJson = prefs.getString(_key('gift_lists_$personId')) ✨ '[]';
+      final listsJson = prefs.getString(_key('gift_lists_$personId')) ?? '[]';
       final lists = (json.decode(listsJson) as List).cast<Map<String, dynamic>>();
 
       lists.add({
         'id': listId,
         'personId': personId,
-        'name': listName ✨ 'Liste ${DateTime.now().day}/${DateTime.now().month}',
+        'name': listName ?? 'Liste ${DateTime.now().day}/${DateTime.now().month}',
         'gifts': gifts,
         'createdAt': DateTime.now().toIso8601String(),
       });
@@ -1717,7 +1717,7 @@ class FirebaseDataService {
           .collection('gift_lists')
           .doc(listId)
           .set({
-        'name': listName ✨ 'Liste ${DateTime.now().day}/${DateTime.now().month}',
+        'name': listName ?? 'Liste ${DateTime.now().day}/${DateTime.now().month}',
         'gifts': gifts,
         'createdAt': FieldValue.serverTimestamp(),
       });
@@ -1763,7 +1763,7 @@ class FirebaseDataService {
     // Fallback local (BUG 4 FIX: clé préfixée par uid)
     try {
       final prefs = await SharedPreferences.getInstance();
-      final listsJson = prefs.getString(_key('gift_lists_$personId')) ✨ '[]';
+      final listsJson = prefs.getString(_key('gift_lists_$personId')) ?? '[]';
       final lists = (json.decode(listsJson) as List)
           .map((e) => e as Map<String, dynamic>)
           .toList();
@@ -1781,7 +1781,7 @@ class FirebaseDataService {
     String personId,
   ) async {
     final lists = await loadGiftListsForPerson(personId);
-    return lists.isEmpty ✨ null : lists.first;
+    return lists.isEmpty ? null : lists.first;
   }
 
   /// Met à jour l'ordre des cadeaux dans la liste EXISTANTE d'une personne.
@@ -1794,7 +1794,7 @@ class FirebaseDataService {
     // ── Local (SharedPreferences) ──────────────────────────────────────────
     try {
       final prefs = await SharedPreferences.getInstance();
-      final listsJson = prefs.getString(_key('gift_lists_$personId')) ✨ '[]';
+      final listsJson = prefs.getString(_key('gift_lists_$personId')) ?? '[]';
       final lists = (json.decode(listsJson) as List).cast<Map<String, dynamic>>();
       if (lists.isNotEmpty) {
         lists.first['gifts'] = gifts; // update in place
@@ -1853,7 +1853,7 @@ class FirebaseDataService {
 
       // Liste existante, ajouter le cadeau
       final List<Map<String, dynamic>> gifts =
-          (currentList['gifts'] as List?)?.cast<Map<String, dynamic>>() ✨ [];
+          (currentList['gifts'] as List?)?.cast<Map<String, dynamic>>() ?? [];
 
       // Vérifier si le cadeau existe déjà (par ID ou nom)
       final giftId = gift['id'];
@@ -1876,7 +1876,7 @@ class FirebaseDataService {
       // Sauvegarder localement (BUG 4 FIX: clé préfixée par uid)
       try {
         final prefs = await SharedPreferences.getInstance();
-        final listsJson = prefs.getString(_key('gift_lists_$personId')) ✨ '[]';
+        final listsJson = prefs.getString(_key('gift_lists_$personId')) ?? '[]';
         final lists = (json.decode(listsJson) as List).cast<Map<String, dynamic>>();
 
         final listIndex = lists.indexWhere((l) => l['id'] == listId);
@@ -1927,7 +1927,7 @@ class FirebaseDataService {
       if (currentList == null) return;
 
       final List<Map<String, dynamic>> gifts =
-          (currentList['gifts'] as List?)?.cast<Map<String, dynamic>>() ✨ [];
+          (currentList['gifts'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       final idx = gifts.indexWhere((g) => g['id']?.toString() == giftId);
       if (idx == -1) return;
 
@@ -1937,7 +1937,7 @@ class FirebaseDataService {
       // ── Local ───────────────────────────────────────────────────────────
       try {
         final prefs = await SharedPreferences.getInstance();
-        final listsJson = prefs.getString(_key('gift_lists_$personId')) ✨ '[]';
+        final listsJson = prefs.getString(_key('gift_lists_$personId')) ?? '[]';
         final lists = (json.decode(listsJson) as List).cast<Map<String, dynamic>>();
         final li = lists.indexWhere((l) => l['id'] == listId);
         if (li != -1) {

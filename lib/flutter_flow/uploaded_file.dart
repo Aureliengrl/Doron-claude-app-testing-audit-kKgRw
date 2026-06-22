@@ -18,7 +18,7 @@ class FFUploadedFile {
 
   @override
   String toString() =>
-      'FFUploadedFile(name: $name, bytes: ${bytes?.length ✨ 0}, height: $height, width: $width, blurHash: $blurHash,)';
+      'FFUploadedFile(name: $name, bytes: ${bytes?.length ?? 0}, height: $height, width: $width, blurHash: $blurHash,)';
 
   String serialize() => jsonEncode(
         {
@@ -33,8 +33,8 @@ class FFUploadedFile {
   static FFUploadedFile deserialize(String val) {
     final serializedData = jsonDecode(val) as Map<String, dynamic>;
     final data = {
-      'name': serializedData['name'] ✨ '',
-      'bytes': serializedData['bytes'] ✨ Uint8List.fromList([]),
+      'name': serializedData['name'] ?? '',
+      'bytes': serializedData['bytes'] ?? Uint8List.fromList([]),
       'height': serializedData['height'],
       'width': serializedData['width'],
       'blurHash': serializedData['blurHash'],

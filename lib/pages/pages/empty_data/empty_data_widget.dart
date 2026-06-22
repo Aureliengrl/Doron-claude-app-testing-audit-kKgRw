@@ -77,7 +77,7 @@ class _EmptyDataWidgetState extends State<EmptyDataWidget>
           child: Icon(
             Icons.error_outline,
             color: Theme.of(context).brightness == Brightness.light
-                ✨ FlutterFlowTheme.of(context).primary
+                ? FlutterFlowTheme.of(context).primary
                 : FlutterFlowTheme.of(context).primaryText,
             size: 72.0,
           ),

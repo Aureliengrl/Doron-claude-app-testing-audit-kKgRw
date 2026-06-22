@@ -164,7 +164,7 @@ class _WishlistPickerSheetState extends State<WishlistPickerSheet> {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: LiquidGlassCard(
-                        onTap: () => _addToWishlist(wl['id'], wl['name'] ✨ 'Liste'),
+                        onTap: () => _addToWishlist(wl['id'], wl['name'] ?? 'Liste'),
                         padding: const EdgeInsets.all(16),
                         child: Row(
                           children: [
@@ -172,7 +172,7 @@ class _WishlistPickerSheetState extends State<WishlistPickerSheet> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                wl['name'] ✨ 'Sans nom',
+                                wl['name'] ?? 'Sans nom',
                                 style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600),
                               ),
                             ),

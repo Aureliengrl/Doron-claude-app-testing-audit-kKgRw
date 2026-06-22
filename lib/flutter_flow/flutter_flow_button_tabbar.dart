@@ -425,7 +425,7 @@ class _FlutterFlowButtonTabBarState extends State<FlutterFlowButtonTabBar>
 
   void _updateTabController() {
     final TabController? newController =
-        widget.controller ✨ DefaultTabController.maybeOf(context);
+        widget.controller ?? DefaultTabController.maybeOf(context);
     assert(() {
       if (newController == null) {
         throw FlutterError(
@@ -457,7 +457,7 @@ class _FlutterFlowButtonTabBarState extends State<FlutterFlowButtonTabBar>
 
   void _initIndicatorPainter() {
     _indicatorPainter = !_controllerIsValid
-        ✨ null
+        ? null
         : _IndicatorPainter(
             controller: _controller!,
             tabKeys: _tabKeys,
@@ -519,11 +519,11 @@ class _FlutterFlowButtonTabBarState extends State<FlutterFlowButtonTabBar>
     double paddingStart;
     switch (Directionality.of(context)) {
       case TextDirection.rtl:
-        paddingStart = widget.padding?.resolve(TextDirection.rtl).right ✨ 0;
+        paddingStart = widget.padding?.resolve(TextDirection.rtl).right ?? 0;
         tabCenter = _tabStripWidth - tabCenter;
         break;
       case TextDirection.ltr:
-        paddingStart = widget.padding?.resolve(TextDirection.ltr).left ✨ 0;
+        paddingStart = widget.padding?.resolve(TextDirection.ltr).left ?? 0;
         break;
     }
 
@@ -550,28 +550,28 @@ class _FlutterFlowButtonTabBarState extends State<FlutterFlowButtonTabBar>
 
   void _scrollToControllerValue() {
     final double? leadingPosition =
-        _currentIndex > 0 ✨ _tabCenteredScrollOffset(_currentIndex - 1) : null;
+        _currentIndex > 0 ? _tabCenteredScrollOffset(_currentIndex - 1) : null;
     final double middlePosition = _tabCenteredScrollOffset(_currentIndex);
     final double? trailingPosition = _currentIndex < maxTabIndex
-        ✨ _tabCenteredScrollOffset(_currentIndex + 1)
+        ? _tabCenteredScrollOffset(_currentIndex + 1)
         : null;
 
     final double index = _controller!.index.toDouble();
     final double value = _controller!.animation!.value;
     final double offset;
     if (value == index - 1.0) {
-      offset = leadingPosition ✨ middlePosition;
+      offset = leadingPosition ?? middlePosition;
     } else if (value == index + 1.0) {
-      offset = trailingPosition ✨ middlePosition;
+      offset = trailingPosition ?? middlePosition;
     } else if (value == index) {
       offset = middlePosition;
     } else if (value < index) {
       offset = leadingPosition == null
-          ✨ middlePosition
+          ? middlePosition
           : lerpDouble(middlePosition, leadingPosition, index - value)!;
     } else {
       offset = trailingPosition == null
-          ✨ middlePosition
+          ? middlePosition
           : lerpDouble(middlePosition, trailingPosition, value - index)!;
     }
 
@@ -663,7 +663,7 @@ class _FlutterFlowButtonTabBarState extends State<FlutterFlowButtonTabBar>
           boxShadow: widget.unselectedDecoration?.boxShadow,
           gradient: widget.unselectedDecoration?.gradient,
           borderRadius: widget.useToggleButtonStyle
-              ✨ null
+              ? null
               : BorderRadius.circular(widget.borderRadius),
         ),
         BoxDecoration(
@@ -673,7 +673,7 @@ class _FlutterFlowButtonTabBarState extends State<FlutterFlowButtonTabBar>
           boxShadow: widget.decoration?.boxShadow,
           gradient: widget.decoration?.gradient,
           borderRadius: widget.useToggleButtonStyle
-              ✨ null
+              ? null
               : BorderRadius.circular(widget.borderRadius),
         ),
         animationValue);
@@ -685,7 +685,7 @@ class _FlutterFlowButtonTabBarState extends State<FlutterFlowButtonTabBar>
         boxDecoration = boxDecoration.copyWith(
           border: Border(
             right: BorderSide(
-              color: widget.unselectedBorderColor ✨ Colors.transparent,
+              color: widget.unselectedBorderColor ?? Colors.transparent,
               width: widget.borderWidth / 2,
             ),
           ),
@@ -694,7 +694,7 @@ class _FlutterFlowButtonTabBarState extends State<FlutterFlowButtonTabBar>
         boxDecoration = boxDecoration.copyWith(
           border: Border(
             left: BorderSide(
-              color: widget.unselectedBorderColor ✨ Colors.transparent,
+              color: widget.unselectedBorderColor ?? Colors.transparent,
               width: widget.borderWidth / 2,
             ),
           ),
@@ -703,7 +703,7 @@ class _FlutterFlowButtonTabBarState extends State<FlutterFlowButtonTabBar>
         boxDecoration = boxDecoration.copyWith(
           border: Border.symmetric(
             vertical: BorderSide(
-              color: widget.unselectedBorderColor ✨ Colors.transparent,
+              color: widget.unselectedBorderColor ?? Colors.transparent,
               width: widget.borderWidth / 2,
             ),
           ),
@@ -715,12 +715,12 @@ class _FlutterFlowButtonTabBarState extends State<FlutterFlowButtonTabBar>
       key: _tabKeys[index],
       // padding for the buttons
       padding:
-          widget.useToggleButtonStyle ✨ EdgeInsets.zero : widget.buttonMargin,
+          widget.useToggleButtonStyle ? EdgeInsets.zero : widget.buttonMargin,
       child: TextButton(
         onPressed: () => _handleTap(index),
         style: ButtonStyle(
           elevation: MaterialStateProperty.all(
-              widget.useToggleButtonStyle ✨ 0 : widget.elevation),
+              widget.useToggleButtonStyle ? 0 : widget.elevation),
 
           /// give a pretty small minimum size
           minimumSize: MaterialStateProperty.all(const Size(10, 10)),
@@ -730,15 +730,15 @@ class _FlutterFlowButtonTabBarState extends State<FlutterFlowButtonTabBar>
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           shape: MaterialStateProperty.all(
             widget.useToggleButtonStyle
-                ✨ const RoundedRectangleBorder(
+                ? const RoundedRectangleBorder(
                     side: BorderSide.none,
                     borderRadius: BorderRadius.zero,
                   )
                 : RoundedRectangleBorder(
                     side: (widget.borderWidth == 0)
-                        ✨ BorderSide.none
+                        ? BorderSide.none
                         : BorderSide(
-                            color: borderColor ✨ Colors.transparent,
+                            color: borderColor ?? Colors.transparent,
                             width: widget.borderWidth,
                           ),
                     borderRadius: BorderRadius.circular(widget.borderRadius),
@@ -820,18 +820,18 @@ class _FlutterFlowButtonTabBarState extends State<FlutterFlowButtonTabBar>
         if (widget.useToggleButtonStyle) {
           tabBarTemp = Material(
             shape: widget.useToggleButtonStyle
-                ✨ RoundedRectangleBorder(
+                ? RoundedRectangleBorder(
                     side: (widget.borderWidth == 0)
-                        ✨ BorderSide.none
+                        ? BorderSide.none
                         : BorderSide(
-                            color: widget.borderColor ✨ Colors.transparent,
+                            color: widget.borderColor ?? Colors.transparent,
                             width: widget.borderWidth,
                             style: BorderStyle.solid,
                           ),
                     borderRadius: BorderRadius.circular(widget.borderRadius),
                   )
                 : null,
-            elevation: widget.useToggleButtonStyle ✨ widget.elevation : 0,
+            elevation: widget.useToggleButtonStyle ? widget.elevation : 0,
             clipBehavior: Clip.antiAliasWithSaveLayer,
             child: tabBarTemp,
           );

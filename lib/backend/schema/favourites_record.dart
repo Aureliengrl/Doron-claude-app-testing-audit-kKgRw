@@ -29,7 +29,7 @@ class FavouritesRecord extends FirestoreRecord {
 
   // "product" field.
   ProductsStruct? _product;
-  ProductsStruct get product => _product ✨ ProductsStruct();
+  ProductsStruct get product => _product ?? ProductsStruct();
   bool hasProduct() => _product != null;
 
   // "TimeStamp" field.
@@ -46,7 +46,7 @@ class FavouritesRecord extends FirestoreRecord {
     _uid = snapshotData['uid'] as DocumentReference?;
     _platform = snapshotData['platform'] as String?;
     _product = snapshotData['product'] is ProductsStruct
-        ✨ snapshotData['product']
+        ? snapshotData['product']
         : ProductsStruct.maybeFromMap(snapshotData['product']);
     _timeStamp = snapshotData['TimeStamp'] as DateTime?;
     _personId = snapshotData['personId'] as String?;

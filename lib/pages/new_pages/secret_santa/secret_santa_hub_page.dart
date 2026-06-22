@@ -156,7 +156,7 @@ class _SecretSantaHubPageState extends State<SecretSantaHubPage> {
                     left: (i * 47.0) % 380,
                     top: (i * 31.0) % 200,
                     child: Text(
-                      i % 2 == 0 ✨ '❄️' : '🎄',
+                      i % 2 == 0 ? '❄️' : '🎄',
                       style: TextStyle(fontSize: 14 + (i % 3) * 4.0),
                     ).animate(onPlay: (c) => c.repeat()).shimmer(
                       duration: Duration(milliseconds: 1800 + i * 300),
@@ -269,7 +269,7 @@ class _SecretSantaHubPageState extends State<SecretSantaHubPage> {
                   );
                 }
 
-                final groups = snap.data ✨ [];
+                final groups = snap.data ?? [];
 
                 if (groups.isEmpty) {
                   return Padding(
@@ -346,9 +346,9 @@ class _GroupCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final violet = const Color(0xFF8A2BE2);
     final statusColor = group.isOpen
-        ✨ const Color(0xFF10B981)
+        ? const Color(0xFF10B981)
         : group.isDrawn
-            ✨ const Color(0xFFF59E0B)
+            ? const Color(0xFFF59E0B)
             : const Color(0xFF8A2BE2);
 
     return GestureDetector(
@@ -406,7 +406,7 @@ class _GroupCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       // FIX-ISSUE4: null-safety sur budget (min/max peuvent être null)
                       if (group.budget.isNotEmpty && (group.budget['min'] != null || group.budget['max'] != null))
-                        Text('Budget : ${group.budget['min'] ✨ '✨'}€ – ${group.budget['max'] ✨ '✨'}€',
+                        Text('Budget : ${group.budget['min'] ?? '?'}€ – ${group.budget['max'] ?? '?'}€',
                             style: GoogleFonts.poppins(color: Colors.white38, fontSize: 12)),
                     ],
                   ),

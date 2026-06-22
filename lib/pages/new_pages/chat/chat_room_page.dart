@@ -62,7 +62,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
       if (doc.exists) {
         final data = doc.data()!;
-        final name = data['first_name'] as String? ✨ data['display_name'] as String? ✨ 'Utilisateur';
+        final name = data['first_name'] as String? ?? data['display_name'] as String? ?? 'Utilisateur';
         _senderNameCache[uid] = name;
         return name;
       }
@@ -100,7 +100,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   /// Returns effective chat data, falling back to loaded _chatDocData when widget.chatData is null.
-  Map<String, dynamic>? get _effectiveChatData => widget.chatData ✨ (_chatDocData.isNotEmpty ✨ _chatDocData : null);
+  Map<String, dynamic>? get _effectiveChatData => widget.chatData ?? (_chatDocData.isNotEmpty ? _chatDocData : null);
 
   /// Charge le profil de l'interlocuteur pour les chats directs (1-to-1)
   Future<void> _loadOtherUserIfDirect() async {
@@ -109,7 +109,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     if (isGroup) return;
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
     if (currentUid == null) return;
-    final participants = List<String>.from(chatData?['participants'] ✨ []);
+    final participants = List<String>.from(chatData?['participants'] ?? []);
     final otherUid = participants.firstWhere((id) => id != currentUid, orElse: () => '');
     if (otherUid.isEmpty) return;
     try {
@@ -164,7 +164,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     try {
       await FirebaseFirestore.instance.collection('chats').doc(widget.chatId).set({
         'typingUsers': {
-          user.uid: isTyping ✨ DateTime.now().millisecondsSinceEpoch : FieldValue.delete(),
+          user.uid: isTyping ? DateTime.now().millisecondsSinceEpoch : FieldValue.delete(),
         }
       }, SetOptions(merge: true));
     } catch (e) {
@@ -225,7 +225,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       await messageRef.set(messageData);
 
       final chatData = _effectiveChatData;
-      final participants = List<String>.from(chatData?['participants'] ✨ []);
+      final participants = List<String>.from(chatData?['participants'] ?? []);
       final Map<String, dynamic> unreadUpdate = {
         'lastMessage': text,
         'lastMessageTime': FieldValue.serverTimestamp(),
@@ -288,7 +288,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
       // Update chat last message
       final chatData = _effectiveChatData;
-      final participants = List<String>.from(chatData?['participants'] ✨ []);
+      final participants = List<String>.from(chatData?['participants'] ?? []);
       final Map<String, dynamic> unreadUpdate = {
         'lastMessage': '📸 Photo',
         'lastMessageTime': FieldValue.serverTimestamp(),
@@ -308,8 +308,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   @override
   Widget build(BuildContext context) {
     final chatData = _effectiveChatData;
-    final title = chatData?['name'] ✨ 'Chat';
-    final isGroup = chatData?['isGroup'] ✨ true;
+    final title = chatData?['name'] ?? 'Chat';
+    final isGroup = chatData?['isGroup'] ?? true;
 
     return Scaffold(
       backgroundColor: LiquidGlassTokens.pageDark,
@@ -333,15 +333,15 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   Widget _buildHeader(String title, bool isGroup) {
     // Pour un chat 1-to-1, utiliser les infos de l'interlocuteur chargé
     final displayName = !isGroup && _otherUserData != null
-        ✨ ((_otherUserData!['first_name'] as String?) ??
+        ? ((_otherUserData!['first_name'] as String?) ??
            (_otherUserData!['display_name'] as String?) ??
-           ((_otherUserData!['email'] as String? ✨ '').split('@').first.isNotEmpty
-               ✨ (_otherUserData!['email'] as String).split('@').first
+           ((_otherUserData!['email'] as String? ?? '').split('@').first.isNotEmpty
+               ? (_otherUserData!['email'] as String).split('@').first
                : null) ??
            title)
         : title;
     final photoUrl = !isGroup && _otherUserData != null
-        ✨ (_otherUserData!['photo_url'] as String? ✨ '')
+        ? (_otherUserData!['photo_url'] as String? ?? '')
         : '';
 
     return Container(
@@ -368,22 +368,22 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             height: 40,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: (!isGroup && photoUrl.isEmpty) ✨ RadialGradient(
+              gradient: (!isGroup && photoUrl.isEmpty) ? RadialGradient(
                 colors: [const Color(0xFFEC4899), const Color(0xFF9C27B0)],
-              ) : (isGroup ✨ RadialGradient(
+              ) : (isGroup ? RadialGradient(
                 colors: [const Color(0xFF8A2BE2), const Color(0xFF4A148C)],
               ) : null),
               image: (!isGroup && photoUrl.isNotEmpty)
-                  ✨ DecorationImage(
+                  ? DecorationImage(
                       image: CachedNetworkImageProvider(photoUrl),
                       fit: BoxFit.cover,
                     )
                   : null,
             ),
             child: (isGroup || photoUrl.isEmpty)
-                ✨ Center(
+                ? Center(
                     child: Icon(
-                      isGroup ✨ IconlyBold.user2 : IconlyLight.profile,
+                      isGroup ? IconlyBold.user2 : IconlyLight.profile,
                       color: Colors.white,
                       size: 20,
                     ),
@@ -394,8 +394,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           // S11 FIX: tapper sur avatar/nom pour acceder au profil de l'interlocuteur
           Expanded(
             child: GestureDetector(
-              onTap: !isGroup && _otherUserData != null ✨ () {
-                final participants = List<String>.from(_effectiveChatData?['participants'] ✨ []);
+              onTap: !isGroup && _otherUserData != null ? () {
+                final participants = List<String>.from(_effectiveChatData?['participants'] ?? []);
                 final currentUid = FirebaseAuth.instance.currentUser?.uid;
                 final otherUid = participants.firstWhere((id) => id != currentUid, orElse: () => '');
                 if (otherUid.isNotEmpty) context.push('/public-profile/$otherUid');
@@ -415,7 +415,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 ),
                 if (isGroup)
                   Text(
-                    '${(_effectiveChatData?['participants'] as List?)?.length ✨ 0} participants',
+                    '${(_effectiveChatData?['participants'] as List?)?.length ?? 0} participants',
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: Colors.white.withOpacity(0.6),
@@ -425,7 +425,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   // S3 FIX: afficher la presence en ligne dans le chat
                   StreamBuilder<DocumentSnapshot>(
                     stream: (() {
-                      final participants = List<String>.from(_effectiveChatData?['participants'] ✨ []);
+                      final participants = List<String>.from(_effectiveChatData?['participants'] ?? []);
                       final currentUid = FirebaseAuth.instance.currentUser?.uid;
                       final otherUid = participants.firstWhere((id) => id != currentUid, orElse: () => '');
                       if (otherUid.isEmpty) return const Stream<DocumentSnapshot>.empty();
@@ -433,7 +433,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     })(),
                     builder: (ctx, snap) {
                       if (!snap.hasData || !snap.data!.exists) return const SizedBox.shrink();
-                      final data = snap.data!.data() as Map<String, dynamic>? ✨ {};
+                      final data = snap.data!.data() as Map<String, dynamic>? ?? {};
                       final isOnline = data['isOnline'] == true;
                       final lastSeen = data['lastSeen'] as Timestamp?;
                       String statusText = '';
@@ -453,7 +453,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle),
                           ),
                           if (isOnline) const SizedBox(width: 4),
-                          Text(statusText, style: GoogleFonts.poppins(fontSize: 11, color: isOnline ✨ const Color(0xFF10B981) : Colors.white38)),
+                          Text(statusText, style: GoogleFonts.poppins(fontSize: 11, color: isOnline ? const Color(0xFF10B981) : Colors.white38)),
                         ],
                       );
                     },
@@ -511,8 +511,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           final chatData = _effectiveChatData;
           final isGroup = chatData?['isGroup'] == true;
           final otherName = !isGroup && _otherUserData != null
-              ✨ ((_otherUserData!['first_name'] as String?) ✨ (_otherUserData!['display_name'] as String?) ✨ 'votre ami')
-              : (chatData?['name'] as String? ✨ 'le groupe');
+              ? ((_otherUserData!['first_name'] as String?) ?? (_otherUserData!['display_name'] as String?) ?? 'votre ami')
+              : (chatData?['name'] as String? ?? 'le groupe');
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -548,7 +548,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           reverse: true,
           controller: _scrollController,
           padding: const EdgeInsets.all(20),
-          itemCount: messages.length + (hasMore ✨ 1 : 0),
+          itemCount: messages.length + (hasMore ? 1 : 0),
           itemBuilder: (context, index) {
             // "Charger plus" button at the top (last index in reversed list)
             if (index == messages.length) {
@@ -580,7 +580,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             final senderId = messageData['senderId'] as String?;
             final isMe = senderId == currentUser.uid;
             
-            final text = messageData['text'] as String? ✨ '';
+            final text = messageData['text'] as String? ?? '';
             final timestamp = messageData['timestamp'] as Timestamp?;
             final timeStr = _formatMessageTime(timestamp);
             
@@ -603,7 +603,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: Column(
-                crossAxisAlignment: isMe ✨ CrossAxisAlignment.end : CrossAxisAlignment.start,
+                crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
                   // S15 FIX: cache sender name - un seul fetch Firestore par UID (evite N appels par scroll)
                   if (!isMe && isGroup && senderId != null)
@@ -654,9 +654,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     required String? senderId,
     required Timestamp? timestamp,
   }) {
-    final msgId = messageData['id'] as String? ✨ '';
+    final msgId = messageData['id'] as String? ?? '';
     final replyToText = messageData['replyToText'] as String?;
-    final reactions = messageData['reactions'] as Map<String, dynamic>? ✨ {};
+    final reactions = messageData['reactions'] as Map<String, dynamic>? ?? {};
 
     return Dismissible(
       key: ValueKey(msgId),
@@ -677,12 +677,12 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         onLongPress: () => _showReactionAndOptions(msgId, text, isMe),
         onDoubleTap: () => _toggleHeartReaction(msgId),
         child: Column(
-          crossAxisAlignment: isMe ✨ CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             // Quoted message preview
             if (replyToText != null)
               Container(
-                margin: EdgeInsets.only(bottom: 4, left: isMe ✨ 0 : 16, right: isMe ✨ 16 : 0),
+                margin: EdgeInsets.only(bottom: 4, left: isMe ? 0 : 16, right: isMe ? 16 : 0),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.08),
@@ -699,7 +699,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
             // Message Body
             Row(
-              mainAxisAlignment: isMe ✨ MainAxisAlignment.end : MainAxisAlignment.start,
+              mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 if (messageData['type'] == 'product_card')
@@ -715,14 +715,14 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: isMe ✨ violetColor : Colors.white.withOpacity(0.12),
+                      color: isMe ? violetColor : Colors.white.withOpacity(0.12),
                       borderRadius: BorderRadius.only(
                         topLeft: const Radius.circular(20),
                         topRight: const Radius.circular(20),
-                        bottomLeft: Radius.circular(isMe ✨ 20 : 4),
-                        bottomRight: Radius.circular(isMe ✨ 4 : 20),
+                        bottomLeft: Radius.circular(isMe ? 20 : 4),
+                        bottomRight: Radius.circular(isMe ? 4 : 20),
                       ),
-                      border: isMe ✨ null : Border.all(
+                      border: isMe ? null : Border.all(
                         color: Colors.white.withOpacity(0.1),
                         width: 1,
                       ),
@@ -741,7 +741,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             // Reactions Display
             if (reactions.isNotEmpty)
               Container(
-                margin: EdgeInsets.only(top: 4, left: isMe ✨ 0 : 12, right: isMe ✨ 12 : 0),
+                margin: EdgeInsets.only(top: 4, left: isMe ? 0 : 12, right: isMe ? 12 : 0),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1A0030),
@@ -755,7 +755,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       final count = reactions.values.where((e) => e == emoji).length;
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 2),
-                        child: Text('$emoji ${count > 1 ✨ count : ""}'.trim(), style: const TextStyle(fontSize: 12)),
+                        child: Text('$emoji ${count > 1 ? count : ""}'.trim(), style: const TextStyle(fontSize: 12)),
                       );
                     }).toList(),
                   ],
@@ -766,8 +766,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             Padding(
               padding: EdgeInsets.only(
                 top: 4,
-                left: isMe ✨ 0 : 12,
-                right: isMe ✨ 12 : 0,
+                left: isMe ? 0 : 12,
+                right: isMe ? 12 : 0,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -782,14 +782,14 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   if (isMe) ...[
                     const SizedBox(width: 4),
                     Icon(
-                      isReadByOthers ✨ IconlyBold.shieldDone : Icons.check,
+                      isReadByOthers ? IconlyBold.shieldDone : Icons.check,
                       size: 14,
-                      color: isReadByOthers ✨ const Color(0xFF34D399) : Colors.white.withOpacity(0.4),
+                      color: isReadByOthers ? const Color(0xFF34D399) : Colors.white.withOpacity(0.4),
                     ),
                     if (isReadByOthers) ...[
                       const SizedBox(width: 4),
                       Builder(builder: (ctx) {
-                        final readStatuses = _chatDocData['readStatus'] as Map<String, dynamic>? ✨ {};
+                        final readStatuses = _chatDocData['readStatus'] as Map<String, dynamic>? ?? {};
                         final currentUser = FirebaseAuth.instance.currentUser;
                         final readByUids = readStatuses.keys.where((k) {
                           if (currentUser != null && k == currentUser.uid) return false;
@@ -805,7 +805,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             builder: (c, s) {
                               if (!s.hasData || !s.data!.exists) return const SizedBox();
                               final data = s.data!.data() as Map<String, dynamic>;
-                              final pUrl = data['photo_url'] as String? ✨ '';
+                              final pUrl = data['photo_url'] as String? ?? '';
                               return Container(
                                 margin: const EdgeInsets.only(left: 2),
                                 width: 12,
@@ -813,8 +813,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(color: LiquidGlassTokens.pageDark, width: 1),
-                                  image: pUrl.isNotEmpty ✨ DecorationImage(image: CachedNetworkImageProvider(pUrl), fit: BoxFit.cover) : null,
-                                  color: pUrl.isEmpty ✨ violetColor : null,
+                                  image: pUrl.isNotEmpty ? DecorationImage(image: CachedNetworkImageProvider(pUrl), fit: BoxFit.cover) : null,
+                                  color: pUrl.isEmpty ? violetColor : null,
                                 ),
                               );
                             },
@@ -834,7 +834,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   void _toggleHeartReaction(String msgId) {
     HapticFeedback.lightImpact();
-    final uid = FirebaseAuth.instance.currentUser?.uid ✨ '';
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     if (uid.isEmpty) return;
     FirebaseFirestore.instance.collection('chats').doc(widget.chatId).collection('messages').doc(msgId).set({'reactions': { uid: '❤️' }}, SetOptions(merge: true));
   }
@@ -1002,7 +1002,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       children: [
                         Text('Répondre à un message', style: GoogleFonts.poppins(fontSize: 12, color: violetColor, fontWeight: FontWeight.bold)),
                         Text(
-                          _replyingToMessage!['text'] as String? ✨ 'Image',
+                          _replyingToMessage!['text'] as String? ?? 'Image',
                           style: GoogleFonts.poppins(fontSize: 12, color: Colors.white70),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -1058,19 +1058,19 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: hasText
-                          ✨ const LinearGradient(
+                          ? const LinearGradient(
                               colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
                             )
                           : null,
-                      color: hasText ✨ null : Colors.white12,
+                      color: hasText ? null : Colors.white12,
                     ),
                     child: IconButton(
                       icon: Icon(
                         IconlyLight.send,
-                        color: hasText ✨ Colors.white : Colors.white30,
+                        color: hasText ? Colors.white : Colors.white30,
                         size: 20,
                       ),
-                      onPressed: hasText ✨ _sendMessage : null,
+                      onPressed: hasText ? _sendMessage : null,
                     ),
                   );
                 },
@@ -1128,7 +1128,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       future: FirebaseFirestore.instance.collection('wishlists').doc(pinnedId).get(),
       builder: (ctx, snap) {
         if (!snap.hasData) return const SizedBox.shrink();
-        final name = snap.data?.get('name') as String? ✨ 'Liste partagée';
+        final name = snap.data?.get('name') as String? ?? 'Liste partagée';
         return GestureDetector(
           onTap: () => context.push('/wishlist-details/$pinnedId'),
           child: Container(
@@ -1177,9 +1177,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       // (retourné par Navigator.pop dans MomentTypePage)
       if (result == null || !mounted) return;
 
-      final occasion = result['occasion'] as String? ✨ '';
-      final momentType = result['momentType'] as String? ✨ '';
-      final giftTypes = (result['giftTypes'] as List?)?.join(', ') ✨ '';
+      final occasion = result['occasion'] as String? ?? '';
+      final momentType = result['momentType'] as String? ?? '';
+      final giftTypes = (result['giftTypes'] as List?)?.join(', ') ?? '';
 
       // Envoyer un message récapitulatif dans le chat du groupe
       final currentUser = FirebaseAuth.instance.currentUser;
@@ -1204,8 +1204,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         'all': '🌟 Tout voir',
       };
 
-      final occasionLabel = occasionLabels[occasion] ✨ occasion;
-      final momentLabel = momentLabels[momentType] ✨ momentType;
+      final occasionLabel = occasionLabels[occasion] ?? occasion;
+      final momentLabel = momentLabels[momentType] ?? momentType;
 
       await FirebaseFirestore.instance
           .collection('chats')
@@ -1264,10 +1264,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           return await _getSenderName(uid);
         })(),
         builder: (ctx, snap) {
-          final name = snap.data ✨ '';
+          final name = snap.data ?? '';
           final typingText = othersTyping.length == 1
-              ✨ (name.isNotEmpty
-                  ✨ context.tr('$name écrit...', '$name is typing...')
+              ? (name.isNotEmpty
+                  ? context.tr('$name écrit...', '$name is typing...')
                   : context.tr('Quelqu\'un écrit...', 'Someone is typing...'))
               : context.tr('Plusieurs personnes écrivent...', 'Several people are typing...');
           return Row(
@@ -1321,11 +1321,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       product = {'name': jsonText};
     }
 
-    final imageUrl = product['image_url'] as String? ✨ product['imageUrl'] as String? ✨ product['image'] as String? ✨ '';
-    final title    = product['name']  as String? ✨ product['title']  as String? ✨ 'Produit';
-    final brand    = product['brand'] as String? ✨ '';
-    final price    = product['price']?.toString() ✨ '';
-    final url      = product['url']   as String? ✨ product['product_url'] as String? ✨ '';
+    final imageUrl = product['image_url'] as String? ?? product['imageUrl'] as String? ?? product['image'] as String? ?? '';
+    final title    = product['name']  as String? ?? product['title']  as String? ?? 'Produit';
+    final brand    = product['brand'] as String? ?? '';
+    final price    = product['price']?.toString() ?? '';
+    final url      = product['url']   as String? ?? product['product_url'] as String? ?? '';
 
     // Normalise le format pour GlobalProductDetailModal
     final normalizedProduct = {
@@ -1345,14 +1345,14 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       child: Container(
         constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         decoration: BoxDecoration(
-          color: isMe ✨ violetColor.withOpacity(0.85) : Colors.white.withOpacity(0.12),
+          color: isMe ? violetColor.withOpacity(0.85) : Colors.white.withOpacity(0.12),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
             topRight: const Radius.circular(20),
-            bottomLeft: Radius.circular(isMe ✨ 20 : 4),
-            bottomRight: Radius.circular(isMe ✨ 4 : 20),
+            bottomLeft: Radius.circular(isMe ? 20 : 4),
+            bottomRight: Radius.circular(isMe ? 4 : 20),
           ),
-          border: isMe ✨ null : Border.all(color: Colors.white.withOpacity(0.1)),
+          border: isMe ? null : Border.all(color: Colors.white.withOpacity(0.1)),
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -1456,9 +1456,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     } catch (_) {
       wishlist = {'name': jsonText};
     }
-    final emoji = wishlist['emoji'] as String? ✨ '\uD83C\uDF81';
-    final name = wishlist['name'] as String? ✨ 'Wishlist';
-    final productCount = wishlist['productCount'] as int? ✨ wishlist['product_count'] as int? ✨ 0;
+    final emoji = wishlist['emoji'] as String? ?? '\uD83C\uDF81';
+    final name = wishlist['name'] as String? ?? 'Wishlist';
+    final productCount = wishlist['productCount'] as int? ?? wishlist['product_count'] as int? ?? 0;
 
     return Container(
       constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
@@ -1466,7 +1466,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isMe
-              ✨ [const Color(0xFF8A2BE2), const Color(0xFF6A1FB0)]
+              ? [const Color(0xFF8A2BE2), const Color(0xFF6A1FB0)]
               : [Colors.white.withOpacity(0.12), Colors.white.withOpacity(0.08)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -1474,10 +1474,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         borderRadius: BorderRadius.only(
           topLeft: const Radius.circular(20),
           topRight: const Radius.circular(20),
-          bottomLeft: Radius.circular(isMe ✨ 20 : 4),
-          bottomRight: Radius.circular(isMe ✨ 4 : 20),
+          bottomLeft: Radius.circular(isMe ? 20 : 4),
+          bottomRight: Radius.circular(isMe ? 4 : 20),
         ),
-        border: isMe ✨ null : Border.all(color: Colors.white.withOpacity(0.1)),
+        border: isMe ? null : Border.all(color: Colors.white.withOpacity(0.1)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1509,7 +1509,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  context.isEn ✨ '$productCount product${productCount != 1 ✨ 's' : ''}' : '$productCount produit${productCount != 1 ✨ 's' : ''}' ,
+                  context.isEn ? '$productCount product${productCount != 1 ? 's' : ''}' : '$productCount produit${productCount != 1 ? 's' : ''}' ,
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     color: Colors.white.withOpacity(0.6),
@@ -1686,10 +1686,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     itemCount: favs.length,
                     itemBuilder: (context, index) {
                       final data = favs[index].data() as Map<String, dynamic>;
-                      final imageUrl = data['image_url'] as String? ✨ data['imageUrl'] as String? ✨ '';
-                      final name = data['name'] as String? ✨ data['title'] as String? ✨ 'Produit';
-                      final brand = data['brand'] as String? ✨ '';
-                      final price = data['price']?.toString() ✨ '';
+                      final imageUrl = data['image_url'] as String? ?? data['imageUrl'] as String? ?? '';
+                      final name = data['name'] as String? ?? data['title'] as String? ?? 'Produit';
+                      final brand = data['brand'] as String? ?? '';
+                      final price = data['price']?.toString() ?? '';
 
                       return GestureDetector(
                         onTap: () {
@@ -1718,7 +1718,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(12),
                                 child: imageUrl.isNotEmpty
-                                    ✨ CachedNetworkImage(
+                                    ? CachedNetworkImage(
                                         imageUrl: imageUrl,
                                         width: 56,
                                         height: 56,
@@ -1858,9 +1858,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     itemCount: wishlists.length,
                     itemBuilder: (context, index) {
                       final wl = wishlists[index];
-                      final emoji = wl['emoji'] as String? ✨ '\uD83C\uDF81';
-                      final name = wl['name'] as String? ✨ 'Wishlist';
-                      final productCount = wl['productCount'] as int? ✨ wl['product_count'] as int? ✨ 0;
+                      final emoji = wl['emoji'] as String? ?? '\uD83C\uDF81';
+                      final name = wl['name'] as String? ?? 'Wishlist';
+                      final productCount = wl['productCount'] as int? ?? wl['product_count'] as int? ?? 0;
 
                       return GestureDetector(
                         onTap: () {
@@ -1913,7 +1913,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     Text(
-                                      '$productCount produit${productCount != 1 ✨ 's' : ''}',
+                                      '$productCount produit${productCount != 1 ? 's' : ''}',
                                       style: GoogleFonts.poppins(
                                         fontSize: 12,
                                         color: Colors.white54,
@@ -1961,7 +1961,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       });
       // S5 FIX: incrementer unreadCount pour les autres participants (partage produit/wishlist)
       final chatDataForTyped = _effectiveChatData;
-      final participantsForTyped = List<String>.from(chatDataForTyped?['participants'] ✨ []);
+      final participantsForTyped = List<String>.from(chatDataForTyped?['participants'] ?? []);
       final Map<String, dynamic> typedUpdate = {
         'lastMessage': previewText,
         'lastMessageTime': FieldValue.serverTimestamp(),

@@ -22,21 +22,21 @@ class OpenAiResponseStruct extends FFFirebaseStruct {
 
   // "followupquestion" field.
   String? _followupquestion;
-  String get followupquestion => _followupquestion ✨ '';
+  String get followupquestion => _followupquestion ?? '';
   set followupquestion(String? val) => _followupquestion = val;
 
   bool hasFollowupquestion() => _followupquestion != null;
 
   // "finalproductquery" field.
   String? _finalproductquery;
-  String get finalproductquery => _finalproductquery ✨ '';
+  String get finalproductquery => _finalproductquery ?? '';
   set finalproductquery(String? val) => _finalproductquery = val;
 
   bool hasFinalproductquery() => _finalproductquery != null;
 
   // "usersAnswer" field.
   String? _usersAnswer;
-  String get usersAnswer => _usersAnswer ✨ '';
+  String get usersAnswer => _usersAnswer ?? '';
   set usersAnswer(String? val) => _usersAnswer = val;
 
   bool hasUsersAnswer() => _usersAnswer != null;
@@ -49,7 +49,7 @@ class OpenAiResponseStruct extends FFFirebaseStruct {
       );
 
   static OpenAiResponseStruct? maybeFromMap(dynamic data) => data is Map
-      ✨ OpenAiResponseStruct.fromMap(data.cast<String, dynamic>())
+      ? OpenAiResponseStruct.fromMap(data.cast<String, dynamic>())
       : null;
 
   Map<String, dynamic> toMap() => {
@@ -167,7 +167,7 @@ void addOpenAiResponseStructData(
 
   final mergeFields = openAiResponse.firestoreUtilData.create || clearFields;
   firestoreData
-      .addAll(mergeFields ✨ mergeNestedFields(nestedData) : nestedData);
+      .addAll(mergeFields ? mergeNestedFields(nestedData) : nestedData);
 }
 
 Map<String, dynamic> getOpenAiResponseFirestoreData(
@@ -183,7 +183,7 @@ Map<String, dynamic> getOpenAiResponseFirestoreData(
   openAiResponse.firestoreUtilData.fieldValues
       .forEach((k, v) => firestoreData[k] = v);
 
-  return forFieldValue ✨ mergeNestedFields(firestoreData) : firestoreData;
+  return forFieldValue ? mergeNestedFields(firestoreData) : firestoreData;
 }
 
 List<Map<String, dynamic>> getOpenAiResponseListFirestoreData(

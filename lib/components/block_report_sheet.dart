@@ -65,10 +65,10 @@ class _BlockReportSheetState extends State<BlockReportSheet> {
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(
-        ok ✨ 'Utilisateur bloqu\u00e9' : 'Erreur lors du blocage',
+        ok ? 'Utilisateur bloqu\u00e9' : 'Erreur lors du blocage',
         style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
       ),
-      backgroundColor: ok ✨ _violet : Colors.red,
+      backgroundColor: ok ? _violet : Colors.red,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       duration: const Duration(seconds: 2),
@@ -82,10 +82,10 @@ class _BlockReportSheetState extends State<BlockReportSheet> {
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(
-        ok ✨ 'Signalement envoy\u00e9' : 'Erreur lors du signalement',
+        ok ? 'Signalement envoy\u00e9' : 'Erreur lors du signalement',
         style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
       ),
-      backgroundColor: ok ✨ Colors.orange : Colors.red,
+      backgroundColor: ok ? Colors.orange : Colors.red,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       duration: const Duration(seconds: 2),
@@ -116,7 +116,7 @@ class _BlockReportSheetState extends State<BlockReportSheet> {
           ),
           // Title
           Text(
-            _showReasons ✨ 'Signaler @${widget.handle}' : 'Options',
+            _showReasons ? 'Signaler @${widget.handle}' : 'Options',
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.bold,

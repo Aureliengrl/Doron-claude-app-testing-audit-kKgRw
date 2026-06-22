@@ -298,33 +298,33 @@ class GiftResultsModel {
       }
 
       // Extraire les informations du destinataire
-      final recipient = onboardingAnswers['recipient'] as String? ✨ 'Personne';
-      final occasion = onboardingAnswers['occasion'] as String? ✨ 'Occasion spéciale';
+      final recipient = onboardingAnswers['recipient'] as String? ?? 'Personne';
+      final occasion = onboardingAnswers['occasion'] as String? ?? 'Occasion spéciale';
 
       // Extraire le nom réel si présent (ex: "Marie" depuis le quiz)
-      final personName = onboardingAnswers['personName'] as String? ✨ '';
+      final personName = onboardingAnswers['personName'] as String? ?? '';
 
       // Déterminer le nom d'affichage (prénom réel ou relation)
-      String displayName = personName.isNotEmpty ✨ personName : recipient;
+      String displayName = personName.isNotEmpty ? personName : recipient;
 
       // Si le displayName contient des emojis ou préfixes, les nettoyer
       if (displayName.startsWith('👩') || displayName.startsWith('👨') ||
           displayName.startsWith('Ma ') || displayName.startsWith('Mon ')) {
         // Extraire juste la relation
         if (recipient.contains('mère')) {
-          displayName = personName.isNotEmpty ✨ personName : 'Maman';
+          displayName = personName.isNotEmpty ? personName : 'Maman';
         } else if (recipient.contains('père')) {
-          displayName = personName.isNotEmpty ✨ personName : 'Papa';
+          displayName = personName.isNotEmpty ? personName : 'Papa';
         } else if (recipient.contains('partenaire') || recipient.contains('conjoint')) {
-          displayName = personName.isNotEmpty ✨ personName : 'Partenaire';
+          displayName = personName.isNotEmpty ? personName : 'Partenaire';
         } else if (recipient.contains('enfant')) {
-          displayName = personName.isNotEmpty ✨ personName : 'Enfant';
+          displayName = personName.isNotEmpty ? personName : 'Enfant';
         } else if (recipient.contains('ami')) {
-          displayName = personName.isNotEmpty ✨ personName : 'Ami(e)';
+          displayName = personName.isNotEmpty ? personName : 'Ami(e)';
         } else if (recipient.contains('collègue')) {
-          displayName = personName.isNotEmpty ✨ personName : 'Collègue';
+          displayName = personName.isNotEmpty ? personName : 'Collègue';
         } else if (recipient.contains('Grand-parent')) {
-          displayName = personName.isNotEmpty ✨ personName : 'Grand-parent';
+          displayName = personName.isNotEmpty ? personName : 'Grand-parent';
         }
       }
 
@@ -353,12 +353,12 @@ class GiftResultsModel {
       // 2. Sauvegarder UNIQUEMENT les cadeaux sélectionnés (likés ❤️)
       //    Si aucun sélectionné → sauvegarder tous (comportement de repli)
       final giftsToSave = likedGifts.isNotEmpty
-          ✨ giftResults
+          ? giftResults
               .where((g) {
                 final idRaw = g['id'];
                 final giftId = idRaw is int
-                    ✨ idRaw
-                    : (int.tryParse(idRaw.toString()) ✨ -1);
+                    ? idRaw
+                    : (int.tryParse(idRaw.toString()) ?? -1);
                 return likedGifts.contains(giftId);
               })
               .toList()

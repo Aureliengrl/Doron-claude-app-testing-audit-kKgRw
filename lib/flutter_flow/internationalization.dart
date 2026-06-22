@@ -22,26 +22,26 @@ class FFLocalizations {
       _prefs.setString(_kLocaleStorageKey, locale);
   static Locale? getStoredLocale() {
     final locale = _prefs.getString(_kLocaleStorageKey);
-    return locale != null && locale.isNotEmpty ✨ createLocale(locale) : null;
+    return locale != null && locale.isNotEmpty ? createLocale(locale) : null;
   }
 
   String get languageCode => locale.toString();
   String? get languageShortCode =>
       _languagesWithShortCode.contains(locale.toString())
-          ✨ '${locale.toString()}_short'
+          ? '${locale.toString()}_short'
           : null;
   int get languageIndex => languages().contains(languageCode)
-      ✨ languages().indexOf(languageCode)
+      ? languages().indexOf(languageCode)
       : 0;
 
   String getText(String key) =>
-      (kTranslationsMap[key] ✨ {})[locale.toString()] ✨ '';
+      (kTranslationsMap[key] ?? {})[locale.toString()] ?? '';
 
   String getVariableText({
     String? frText = '',
     String? enText = '',
   }) =>
-      [frText, enText][languageIndex] ✨ '';
+      [frText, enText][languageIndex] ?? '';
 
   static const Set<String> _languagesWithShortCode = {
     'ar',
@@ -128,7 +128,7 @@ class FFLocalizationsDelegate extends LocalizationsDelegate<FFLocalizations> {
 }
 
 Locale createLocale(String language) => language.contains('_')
-    ✨ Locale.fromSubtags(
+    ? Locale.fromSubtags(
         languageCode: language.split('_').first,
         scriptCode: language.split('_').last,
       )
@@ -138,7 +138,7 @@ bool _isSupportedLocale(Locale locale) {
   final language = locale.toString();
   return FFLocalizations.languages().contains(
     language.endsWith('_')
-        ✨ language.substring(0, language.length - 1)
+        ? language.substring(0, language.length - 1)
         : language,
   );
 }

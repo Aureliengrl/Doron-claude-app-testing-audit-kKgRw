@@ -65,7 +65,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
           children: [
             _buildHeader(),
             Expanded(
-              child: _isLoading ✨ _buildLoading() : _buildContent(),
+              child: _isLoading ? _buildLoading() : _buildContent(),
             ),
           ],
         ),
@@ -145,7 +145,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
                 Padding(
                   padding: const EdgeInsets.only(left: 56),
                   child: Text(
-                    '${_wishlists.length} liste${_wishlists.length > 1 ✨ 's' : ''} de souhaits',
+                    '${_wishlists.length} liste${_wishlists.length > 1 ? 's' : ''} de souhaits',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: Colors.white.withOpacity(0.85),
@@ -227,7 +227,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
         },
         itemBuilder: (context, index) {
           final wishlist = _wishlists[index];
-          final productCount = _wishlistCounts[wishlist['id']] ✨ 0;
+          final productCount = _wishlistCounts[wishlist['id']] ?? 0;
 
           return Container(
             key: ValueKey(wishlist['id']),
@@ -301,7 +301,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
       [const Color(0xFF3B82F6), const Color(0xFF2563EB)],
     ];
     final gradientColors = colors[index % colors.length];
-    final isPublic = wishlist['isPublic'] as bool? ✨ false;
+    final isPublic = wishlist['isPublic'] as bool? ?? false;
     final wishlistId = wishlist['id'] as String;
 
     return Padding(
@@ -344,7 +344,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        wishlist['name'] ✨ 'Sans nom',
+                        wishlist['name'] ?? 'Sans nom',
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -375,7 +375,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '$productCount produit${productCount > 1 ✨ 's' : ''}',
+                            '$productCount produit${productCount > 1 ? 's' : ''}',
                             style: GoogleFonts.poppins(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -388,7 +388,7 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
                               color: isPublic
-                                  ✨ const Color(0xFF10B981).withOpacity(0.1)
+                                  ? const Color(0xFF10B981).withOpacity(0.1)
                                   : Colors.grey.withOpacity(0.15),
                               borderRadius: BorderRadius.circular(20),
                             ),
@@ -396,17 +396,17 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
-                                  isPublic ✨ IconlyLight.lock : IconlyBold.lock,
+                                  isPublic ? IconlyLight.lock : IconlyBold.lock,
                                   size: 11,
-                                  color: isPublic ✨ const Color(0xFF10B981) : Colors.grey[500],
+                                  color: isPublic ? const Color(0xFF10B981) : Colors.grey[500],
                                 ),
                                 const SizedBox(width: 3),
                                 Text(
-                                  isPublic ✨ 'Publique' : 'Privée',
+                                  isPublic ? 'Publique' : 'Privée',
                                   style: GoogleFonts.poppins(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
-                                    color: isPublic ✨ const Color(0xFF10B981) : Colors.grey[500],
+                                    color: isPublic ? const Color(0xFF10B981) : Colors.grey[500],
                                   ),
                                 ),
                               ],
@@ -430,21 +430,21 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: Text(
                           newIsPublic
-                              ✨ '🔓 Liste rendue publique'
+                              ? '🔓 Liste rendue publique'
                               : '🔐 Liste rendue privée',
                           style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                         ),
-                        backgroundColor: newIsPublic ✨ const Color(0xFF10B981) : Colors.grey[700],
+                        backgroundColor: newIsPublic ? const Color(0xFF10B981) : Colors.grey[700],
                         behavior: SnackBarBehavior.floating,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         duration: const Duration(seconds: 2),
                       ));
                     }
                   },
-                  tooltip: isPublic ✨ 'Rendre privée' : 'Rendre publique',
+                  tooltip: isPublic ? 'Rendre privée' : 'Rendre publique',
                   icon: Icon(
-                    isPublic ✨ IconlyLight.lock : IconlyLight.lock,
-                    color: isPublic ✨ const Color(0xFF10B981) : Colors.grey[400],
+                    isPublic ? IconlyLight.lock : IconlyLight.lock,
+                    color: isPublic ? const Color(0xFF10B981) : Colors.grey[400],
                     size: 22,
                   ),
                 ),

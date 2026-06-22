@@ -32,7 +32,7 @@ class RakutenApiService implements AbstractMarketApi {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return _normalizeResults(data['results'] ✨ []);
+        return _normalizeResults(data['results'] ?? []);
       } else {
         AppLogger.debug('❌ Erreur API Rakuten: ${response.statusCode}', 'RakutenAPI');
       }
@@ -74,13 +74,13 @@ class RakutenApiService implements AbstractMarketApi {
 
   Map<String, dynamic> _normalizeSingleProduct(Map<String, dynamic> raw) {
     return {
-      'id': raw['id']?.toString() ✨ 'rakuten_${DateTime.now().millisecondsSinceEpoch}',
+      'id': raw['id']?.toString() ?? 'rakuten_${DateTime.now().millisecondsSinceEpoch}',
       'type': 'product',
-      'name': raw['title'] ✨ raw['name'] ✨ 'Produit Rakuten',
-      'brand': raw['brand'] ✨ raw['merchant'] ✨ 'Rakuten',
-      'price': raw['price']?.toString() ✨ '',
-      'imageUrl': raw['image_url'] ✨ raw['photo'] ✨ '',
-      'url': raw['affiliate_url'] ✨ raw['url'] ✨ '',
+      'name': raw['title'] ?? raw['name'] ?? 'Produit Rakuten',
+      'brand': raw['brand'] ?? raw['merchant'] ?? 'Rakuten',
+      'price': raw['price']?.toString() ?? '',
+      'imageUrl': raw['image_url'] ?? raw['photo'] ?? '',
+      'url': raw['affiliate_url'] ?? raw['url'] ?? '',
       'source': 'Rakuten', // Pour savoir de quelle API cela provient
       'timestamp': DateTime.now().toIso8601String(),
     };

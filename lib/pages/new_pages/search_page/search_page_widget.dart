@@ -357,7 +357,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
 
     return StreamBuilder<QuerySnapshot>(
       stream: uid.isNotEmpty
-          ✨ FirebaseFirestore.instance
+          ? FirebaseFirestore.instance
               .collection('chats')
               .where('participants', arrayContains: uid)
               .snapshots()
@@ -370,7 +370,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
             final counts = data['unreadCount'] as Map<String, dynamic>?;
             if (counts != null && counts.containsKey(uid)) {
               final c = counts[uid];
-              unread += (c is int ✨ c : (c is num ✨ c.toInt() : 0));
+              unread += (c is int ? c : (c is num ? c.toInt() : 0));
             }
           }
         }
@@ -424,7 +424,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                       ),
                       child: Center(
                         child: Text(
-                          unread > 99 ✨ '99+' : '$unread',
+                          unread > 99 ? '99+' : '$unread',
                           style: GoogleFonts.poppins(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
@@ -523,7 +523,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
 
           final profile = _model.profiles[index - 1];
           final profileId = profile['id'];
-          final int profileIdInt = profileId is int ✨ profileId : (profileId as String).hashCode;
+          final int profileIdInt = profileId is int ? profileId : (profileId as String).hashCode;
           final isSelected = _model.selectedProfileId == profileIdInt;
 
           return Padding(
@@ -652,7 +652,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                               shape: BoxShape.circle,
                               border: Border.all(
                                 color: isSelected
-                                    ✨ Color(int.parse(profile['color']
+                                    ? Color(int.parse(profile['color']
                                         .toString()
                                         .replaceAll('#', '0xFF')))
                                     : Colors.white,
@@ -661,18 +661,18 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                               boxShadow: [
                                 BoxShadow(
                                   color: isSelected
-                                      ✨ Color(int.parse(profile['color']
+                                      ? Color(int.parse(profile['color']
                                               .toString()
                                               .replaceAll('#', '0xFF')))
                                           .withOpacity(0.6)
                                       : Colors.black.withOpacity(0.1),
-                                  blurRadius: isSelected ✨ 20 : 12,
+                                  blurRadius: isSelected ? 20 : 12,
                                   offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
                             transform: isSelected
-                                ✨ Matrix4.identity().scaled(1.05)
+                                ? Matrix4.identity().scaled(1.05)
                                 : Matrix4.identity(),
                             child: Center(
                               child: Text(
@@ -706,9 +706,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                         profile['name'] as String,
                         style: GoogleFonts.poppins(
                           fontSize: 13,
-                          fontWeight: isSelected ✨ FontWeight.bold : FontWeight.w600,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                           color: isSelected
-                              ✨ Color(int.parse(
+                              ? Color(int.parse(
                                   profile['color'].toString().replaceAll('#', '0xFF')))
                               : Colors.white,
                           shadows: [
@@ -833,15 +833,15 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                       _buildProfileActionButton(
                         // FIX C8: label change si collab déjà active
                         icon: (profile['isShared'] == true || profile['chatId'] != null)
-                            ✨ IconlyBold.addUser
+                            ? IconlyBold.addUser
                             : IconlyLight.addUser,
                         label: (profile['isShared'] == true || profile['chatId'] != null)
-                            ✨ context.tr('Ma collab', 'My collab')
+                            ? context.tr('Ma collab', 'My collab')
                             : context.tr('Collaborer', 'Collaborate'),
                         onTap: () {
                            // #FIX-9: ne pas ouvrir si aucun cadeau ajouté
-                           final profileId = profile['id']?.toString() ✨ profile['personId']?.toString() ✨ '';
-                           final giftsList = _model.personGifts[profileId] ✨ [];
+                           final profileId = profile['id']?.toString() ?? profile['personId']?.toString() ?? '';
+                           final giftsList = _model.personGifts[profileId] ?? [];
                            if (giftsList.isEmpty) {
                              HapticFeedback.lightImpact();
                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -866,7 +866,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                              ),
                            ).then((chatId) {
                              if (chatId != null && mounted) {
-                               final personId = profile['id']?.toString() ✨ '';
+                               final personId = profile['id']?.toString() ?? '';
                                setState(() {
                                  profile['chatId'] = chatId;
                                  profile['isShared'] = true;
@@ -1005,7 +1005,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
           children: [
             for (int i = 0; i < products.length; i++)
               SharedProductCard(
-                key: ValueKey(products[i]['id']?.toString() ✨ 'product_$i'),
+                key: ValueKey(products[i]['id']?.toString() ?? 'product_$i'),
                 product: products[i],
                 index: i + 1,
               ),
@@ -1055,7 +1055,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
     final isLiked = _model.likedProducts.contains(product['id']);
 
     final idRaw = product['id'];
-    final productId = idRaw is int ✨ idRaw : (int.tryParse(idRaw.toString()) ✨ 0);
+    final productId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0);
 
     GlobalProductDetailModal.show(
       context,
@@ -1209,7 +1209,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
 
     final personId = currentProf['id'] as String;
     final personName = currentProf['name'] as String;
-    final productName = product['name'] as String? ✨ 'Produit';
+    final productName = product['name'] as String? ?? 'Produit';
 
     try {
       // Ajouter le cadeau directement à la liste de la personne
@@ -1219,7 +1219,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
       );
 
         if (success) {
-          _showSnackBar('$productName ajouté aux cadeaux de $personName');
+          _showSnackBar('? $productName ajouté aux cadeaux de $personName');
 
           // Recharger les données pour mettre à jour l'affichage
           await _model.loadProfiles();
@@ -1242,7 +1242,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
         content: Row(
           children: [
             Icon(
-              isError ✨ Icons.error_outline : Icons.check_circle,
+              isError ? Icons.error_outline : Icons.check_circle,
               color: Colors.white,
               size: 20,
             ),
@@ -1255,7 +1255,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
             ),
           ],
         ),
-        backgroundColor: isError ✨ Colors.red : const Color(0xFF8A2BE2),
+        backgroundColor: isError ? Colors.red : const Color(0xFF8A2BE2),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         duration: const Duration(seconds: 3),
@@ -1275,7 +1275,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
   }
   void _showProfileAvatarOptions(BuildContext context, Map<String, dynamic> profile) {
     HapticFeedback.mediumImpact();
-    final name = profile['name'] as String? ✨ 'Personne';
+    final name = profile['name'] as String? ?? 'Personne';
     // Chercher si ce profil a un uid Firebase (personne réelle vs profil local)
     final uid = profile['uid'] as String?;
 
@@ -1316,7 +1316,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                       profile['isShared'] = true;
                     });
                     context.push('/chat-room/$chatId', extra: {
-                      'name': context.tr('Cadeaux pour ', 'Gifts for ') + (profile['name'] as String? ✨ ''),
+                      'name': context.tr('Cadeaux pour ', 'Gifts for ') + (profile['name'] as String? ?? ''),
                       'isGroup': true,
                     });
                   }
@@ -1392,8 +1392,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
   /// â”€ Stocke dans : users/{uid}/people/{personId}/gift_lists/   (même endroit que les autres cadeaux)
   /// â”€ NE passe plus par les wishlists albums (comportement précédent incorrect)
   Future<void> _addPhotoForPerson(Map<String, dynamic> profile) async {
-    final personId = profile['id']?.toString() ✨ '';
-    final personName = (profile['name'] as String?) ✨ 'Personne';
+    final personId = profile['id']?.toString() ?? '';
+    final personName = (profile['name'] as String?) ?? 'Personne';
     if (personId.isEmpty) return;
 
     // â”€â”€ 1. Choix de la source image â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1513,7 +1513,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
     final photoGiftLocal = {
       'id': photoId,
       'type': 'photo',
-      'name': productName.isNotEmpty ✨ productName : 'Photo',
+      'name': productName.isNotEmpty ? productName : 'Photo',
       'image': picked.path,    // chemin local â€” affiché immédiatement
       'price': productPrice,
       'caption': productName,
@@ -1559,7 +1559,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
           if (mounted) {
             setState(() {
               final idx = _model.personGifts[personId]
-                  ?.indexWhere((g) => g['id'] == photoId) ✨ -1;
+                  ?.indexWhere((g) => g['id'] == photoId) ?? -1;
               if (idx != -1) {
                 _model.personGifts[personId]![idx] = {
                   ..._model.personGifts[personId]![idx],

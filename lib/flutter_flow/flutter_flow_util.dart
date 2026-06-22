@@ -34,7 +34,7 @@ export 'internationalization.dart' show FFLocalizations;
 export 'nav/nav.dart';
 
 T valueOrDefault<T>(T? value, T defaultValue) =>
-    (value is String && value.isEmpty) || value == null ✨ defaultValue : value;
+    (value is String && value.isEmpty) || value == null ? defaultValue : value;
 
 void _setTimeagoLocales() {
   timeago.setLocaleMessages('fr', timeago.FrMessages());
@@ -67,7 +67,7 @@ Color colorFromCssString(String color, {Color? defaultColor}) {
   try {
     return fromCssColor(color);
   } catch (_) {}
-  return defaultColor ✨ Colors.black;
+  return defaultColor ?? Colors.black;
 }
 
 enum FormatType {
@@ -138,7 +138,7 @@ String formatNumber(
     case FormatType.custom:
       final hasLocale = locale != null && locale.isNotEmpty;
       formattedValue =
-          NumberFormat(format, hasLocale ✨ locale : null).format(value);
+          NumberFormat(format, hasLocale ? locale : null).format(value);
   }
 
   if (formattedValue.isEmpty) {
@@ -147,7 +147,7 @@ String formatNumber(
 
   if (currency != null) {
     final currencySymbol = currency.isNotEmpty
-        ✨ currency
+        ? currency
         : NumberFormat.simpleCurrency().format(0.0).substring(0, 1);
     formattedValue = '$currencySymbol$formattedValue';
   }
@@ -207,8 +207,8 @@ dynamic getJsonField(
   final value = field.first.value;
   if (isForList) {
     return value is! Iterable
-        ✨ [value]
-        : (value is List ✨ value : value.toList());
+        ? [value]
+        : (value is List ? value : value.toList());
   }
   return value;
 }
@@ -258,7 +258,7 @@ const kTextValidatorWebsiteRegex =
     r'(https?:\/\/)?(www\.)[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,10}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)|(https?:\/\/)?(www\.)?(?!ww)[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,10}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)';
 
 extension FFTextEditingControllerExt on TextEditingController? {
-  String get text => this == null ✨ '' : this!.text;
+  String get text => this == null ? '' : this!.text;
   set text(String newText) => this?.text = newText;
 }
 
@@ -266,7 +266,7 @@ extension IterableExt<T> on Iterable<T> {
   List<T> sortedList<S extends Comparable>(
       {S Function(T)? keyOf, bool desc = false}) {
     final sortedAscending = toList()
-      ..sort(keyOf == null ✨ null : ((a, b) => keyOf(a).compareTo(keyOf(b))));
+      ..sort(keyOf == null ? null : ((a, b) => keyOf(a).compareTo(keyOf(b))));
     if (desc) {
       return sortedAscending.reversed.toList();
     }
@@ -323,7 +323,7 @@ void showSnackbar(
 extension FFStringExt on String {
   String maybeHandleOverflow({int? maxChars, String replacement = ''}) =>
       maxChars != null && length > maxChars
-          ✨ replaceRange(maxChars, null, replacement)
+          ? replaceRange(maxChars, null, replacement)
           : this;
 
   String toCapitalization(TextCapitalization textCapitalization) {
@@ -354,7 +354,7 @@ extension MapFilterExtensions<T> on Map<String, T?> {
 
 extension MapListContainsExt on List<dynamic> {
   bool containsMap(dynamic map) => map is Map
-      ✨ any((e) => e is Map && const DeepCollectionEquality().equals(e, map))
+      ? any((e) => e is Map && const DeepCollectionEquality().equals(e, map))
       : contains(map);
 }
 
@@ -362,7 +362,7 @@ extension ListDivideExt<T extends Widget> on Iterable<T> {
   Iterable<MapEntry<int, Widget>> get enumerate => toList().asMap().entries;
 
   List<Widget> divide(Widget t, {bool Function(int)? filterFn}) => isEmpty
-      ✨ []
+      ? []
       : (enumerate
           .map((e) => [e.value, if (filterFn == null || filterFn(e.key)) t])
           .expand((i) => i)
@@ -466,6 +466,6 @@ extension ListUniqueExt<T> on Iterable<T> {
 }
 
 String getCurrentRoute(BuildContext context) =>
-    context.mounted ✨ MyApp.of(context).getRoute() : '';
+    context.mounted ? MyApp.of(context).getRoute() : '';
 List<String> getCurrentRouteStack(BuildContext context) =>
-    context.mounted ✨ MyApp.of(context).getRouteStack() : [];
+    context.mounted ? MyApp.of(context).getRouteStack() : [];

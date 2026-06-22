@@ -10,7 +10,7 @@ import '/services/store_finder_service.dart';
 import '/utils/app_logger.dart';
 
 /// Bottom sheet montrant les magasins physiques proches
-/// pour un produit donnï¿½ (selon sa marque).
+/// pour un produit donné (selon sa marque).
 class StoreFinderBottomSheet extends StatefulWidget {
   final String productName;
   final String brand;
@@ -24,7 +24,7 @@ class StoreFinderBottomSheet extends StatefulWidget {
   @override
   State<StoreFinderBottomSheet> createState() => _StoreFinderBottomSheetState();
 
-  /// Ouvre le bottom sheet depuis n'importe oï¿½.
+  /// Ouvre le bottom sheet depuis n'importe où.
   static Future<void> show(
     BuildContext context, {
     required String productName,
@@ -50,7 +50,7 @@ class _StoreFinderBottomSheetState extends State<StoreFinderBottomSheet> {
   bool _isLoading = true;
   String? _error;
   List<Map<String, dynamic>> _stores = [];
-  String _statusText = 'Localisation en coursï¿½';
+  String _statusText = 'Localisation en cours…';
 
   @override
   void initState() {
@@ -60,20 +60,20 @@ class _StoreFinderBottomSheetState extends State<StoreFinderBottomSheet> {
 
   Future<void> _loadStores() async {
     try {
-      // 1. Vï¿½rif permissions GPS
+      // 1. Vérif permissions GPS
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
       if (permission == LocationPermission.deniedForever) {
         setState(() {
-          _error = 'Localisation dï¿½sactivï¿½e dans les paramï¿½tres.';
+          _error = 'Localisation désactivée dans les paramètres.';
           _isLoading = false;
         });
         return;
       }
 
-      setState(() => _statusText = 'Recherche autour de vousï¿½');
+      setState(() => _statusText = 'Recherche autour de vous…');
 
       // 2. Position GPS
       final pos = await Geolocator.getCurrentPosition(
@@ -93,7 +93,7 @@ class _StoreFinderBottomSheetState extends State<StoreFinderBottomSheet> {
         _isLoading = false;
       });
     } catch (e) {
-      AppLogger.debug('StoreFinderBottomSheet: $e', 'Stores');
+      AppLogger.debug('? StoreFinderBottomSheet: $e', 'Stores');
       setState(() {
         _error = 'Impossible de trouver votre position.';
         _isLoading = false;
@@ -249,7 +249,7 @@ class _StoreFinderBottomSheetState extends State<StoreFinderBottomSheet> {
                 size: 56, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
-              'Aucun magasin trouvï¿½ prï¿½s de vous.',
+              'Aucun magasin trouvé près de vous.',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                   fontSize: 15, color: const Color(0xFF6B7280)),
@@ -270,7 +270,7 @@ class _StoreFinderBottomSheetState extends State<StoreFinderBottomSheet> {
 
   Widget _buildStoreCard(Map<String, dynamic> store) {
     final isOpen = store['isOpenNow'] as bool?;
-    final distance = store['distanceText'] as String? âœ¨ '';
+    final distance = store['distanceText'] as String? ?? '';
     final rating = store['rating'] as num?;
 
     return Container(
@@ -319,7 +319,7 @@ class _StoreFinderBottomSheetState extends State<StoreFinderBottomSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        store['name'] as String? âœ¨ '',
+                        store['name'] as String? ?? '',
                         style: GoogleFonts.poppins(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -327,7 +327,7 @@ class _StoreFinderBottomSheetState extends State<StoreFinderBottomSheet> {
                         ),
                       ),
                       Text(
-                        store['address'] as String? âœ¨ '',
+                        store['address'] as String? ?? '',
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: const Color(0xFF6B7280),
@@ -343,23 +343,23 @@ class _StoreFinderBottomSheetState extends State<StoreFinderBottomSheet> {
                                 horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
                               color: isOpen == true
-                                  âœ¨ const Color(0xFF10B981).withOpacity(0.1)
+                                  ? const Color(0xFF10B981).withOpacity(0.1)
                                   : Colors.red.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
                               isOpen == true
-                                  âœ¨ 'Ouvert'
+                                  ? 'Ouvert'
                                   : isOpen == false
-                                      âœ¨ 'Fermï¿½'
+                                      ? 'Fermé'
                                       : 'Horaires inconnus',
                               style: GoogleFonts.poppins(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: isOpen == true
-                                    âœ¨ const Color(0xFF10B981)
+                                    ? const Color(0xFF10B981)
                                     : isOpen == false
-                                        âœ¨ Colors.red
+                                        ? Colors.red
                                         : Colors.grey,
                               ),
                             ),

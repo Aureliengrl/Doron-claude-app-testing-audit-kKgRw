@@ -8,7 +8,7 @@ class FirstTimeService {
   /// Vérifie si c'est la première fois que l'utilisateur lance l'app
   static Future<bool> isFirstTime() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_keyFirstTime) ✨ true;
+    return prefs.getBool(_keyFirstTime) ?? true;
   }
 
   /// Marque l'app comme "déjà utilisée"
@@ -20,7 +20,7 @@ class FirstTimeService {
   /// Vérifie si l'onboarding a été complété
   static Future<bool> hasCompletedOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_keyCompletedOnboarding) ✨ false;
+    return prefs.getBool(_keyCompletedOnboarding) ?? false;
   }
 
   /// Marque l'onboarding comme complété

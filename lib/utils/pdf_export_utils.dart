@@ -18,8 +18,8 @@ class PdfExportUtils {
 
       // Charger une police personnalisée si nécessaire, sinon utiliser la police par défaut
 
-      final profileName = profile['name'] ✨ 'Quelqu\'un';
-      final occasion = profile['occasion'] ✨ 'une occasion spéciale';
+      final profileName = profile['name'] ?? 'Quelqu\'un';
+      final occasion = profile['occasion'] ?? 'une occasion spéciale';
 
       pdf.addPage(
         pw.MultiPage(
@@ -102,7 +102,7 @@ class PdfExportUtils {
     // Créer des rangées de 2 colonnes
     for (int i = 0; i < products.length; i += 2) {
       final product1 = products[i] as Map<String, dynamic>;
-      final product2 = i + 1 < products.length ✨ products[i + 1] as Map<String, dynamic> : null;
+      final product2 = i + 1 < products.length ? products[i + 1] as Map<String, dynamic> : null;
 
       rows.add(
         pw.Row(
@@ -124,9 +124,9 @@ class PdfExportUtils {
   }
 
   static pw.Widget _buildProductItem(Map<String, dynamic> product) {
-    final name = product['name'] ✨ 'Produit sans nom';
-    final brand = product['brand_or_store'] ✨ product['brand'] ✨ '';
-    final price = product['price'] != null ✨ '${product['price']} €' : '';
+    final name = product['name'] ?? 'Produit sans nom';
+    final brand = product['brand_or_store'] ?? product['brand'] ?? '';
+    final price = product['price'] != null ? '${product['price']} €' : '';
 
     return pw.Container(
       padding: const pw.EdgeInsets.all(12),
