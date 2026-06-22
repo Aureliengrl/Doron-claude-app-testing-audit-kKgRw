@@ -68,6 +68,12 @@ post_install do |installer|
       # Supprimer SWIFT_OPTIMIZATION_LEVEL pour éviter les conflits
       # Xcode va utiliser les valeurs par défaut appropriées
       config.build_settings.delete 'SWIFT_OPTIMIZATION_LEVEL'
+
+      # Force Swift 5.0 et désactive la vérification stricte de concurrence (Xcode 16)
+      config.build_settings['SWIFT_VERSION'] = '5.0'
+      config.build_settings['SWIFT_STRICT_CONCURRENCY'] = 'minimal'
+      config.build_settings['GCC_TREAT_WARNINGS_AS_ERRORS'] = 'NO'
+      config.build_settings['SWIFT_TREAT_WARNINGS_AS_ERRORS'] = 'NO'
     end
   end
 
