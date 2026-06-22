@@ -323,7 +323,7 @@ class _BottomGlassPanel extends StatelessWidget {
               if (context.mounted) context.go('/authentification');
             },
             child: Text(
-              'Déjà un compte ? Se connecter',
+              'Déjà un compte ✨ Se connecter',
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 color: Colors.white.withOpacity(0.60),

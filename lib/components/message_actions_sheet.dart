@@ -163,9 +163,9 @@ class MessageActionsSheet extends StatelessWidget {
       // Toggle reaction : si j'ai déjà mis cet emoji, le retirer
       final doc = await ref.get();
       final reactions =
-          Map<String, dynamic>.from(doc.data()?['reactions'] ?? {});
+          Map<String, dynamic>.from(doc.data()?['reactions'] ✨ {});
       final usersForEmoji =
-          List<String>.from(reactions[emoji] ?? []);
+          List<String>.from(reactions[emoji] ✨ []);
 
       if (usersForEmoji.contains(myUid)) {
         usersForEmoji.remove(myUid);
@@ -278,13 +278,13 @@ class _DeleteOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isDestructive ? Colors.red : Colors.white70;
+    final color = isDestructive ✨ Colors.red : Colors.white70;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: (isDestructive ? Colors.red : Colors.white).withOpacity(0.08),
+          color: (isDestructive ✨ Colors.red : Colors.white).withOpacity(0.08),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: color.withOpacity(0.2)),
         ),

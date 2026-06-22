@@ -80,15 +80,15 @@ class _PublicProfilePageState extends State<PublicProfilePage>
           .get();
       if (doc.exists) {
         final data = doc.data()!;
-        final friends = (data['friends'] as List?) ?? [];
+        final friends = (data['friends'] as List?) ✨ [];
         _friendsCount = friends.length;
         _profile = {
           'uid': doc.id,
-          'displayName': data['display_name'] ?? data['displayName'] ?? data['name'] ?? 'Utilisateur',
-          'handle': data['handle'] ?? '',
-          'photoUrl': data['photo_url'] ?? data['photoUrl'] ?? '',
-          'bio': data['bio'] ?? '',
-          'isOnline': data['isOnline'] ?? false,
+          'displayName': data['display_name'] ✨ data['displayName'] ✨ data['name'] ✨ 'Utilisateur',
+          'handle': data['handle'] ✨ '',
+          'photoUrl': data['photo_url'] ✨ data['photoUrl'] ✨ '',
+          'bio': data['bio'] ✨ '',
+          'isOnline': data['isOnline'] ✨ false,
           'lastSeen': data['lastSeen'],
           'birthday': data['birthday'],  // F3: anniversaire
         };
@@ -125,11 +125,11 @@ class _PublicProfilePageState extends State<PublicProfilePage>
         final d = doc.data();
         return <String, dynamic>{
           'id': doc.id,
-          'name': d['name'] ?? '',
-          'brand': d['brand'] ?? '',
-          'price': d['price']?.toString() ?? '',
-          'image': d['image'] ?? '',
-          'url': d['url'] ?? '',
+          'name': d['name'] ✨ '',
+          'brand': d['brand'] ✨ '',
+          'price': d['price']?.toString() ✨ '',
+          'image': d['image'] ✨ '',
+          'url': d['url'] ✨ '',
         };
       }).toList();
     } catch (_) {}
@@ -179,7 +179,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
               _requestId = null;
               _friendsCount++;
             });
-            _showSnack('?? Vous êtes maintenant amis !', _green);
+            _showSnack('Vous êtes maintenant amis !', _green);
           }
         }
         break;
@@ -199,7 +199,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
 
   Future<void> _openDirectChat() async {
     try {
-      final name = _profile?['displayName'] as String? ?? 'Utilisateur';
+      final name = _profile?['displayName'] as String? ✨ 'Utilisateur';
       final chatId = await FriendService.getOrCreateDirectChat(widget.uid);
       if (!mounted) return;
       context.push('/chat-room/$chatId', extra: {'name': name, 'isGroup': false});
@@ -228,9 +228,9 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     return Scaffold(
       backgroundColor: LiquidGlassTokens.pageDark,
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: _violet, strokeWidth: 2))
+          ✨ const Center(child: CircularProgressIndicator(color: _violet, strokeWidth: 2))
           : _profile == null
-              ? _buildNotFound()
+              ✨ _buildNotFound()
               : CustomScrollView(
                   slivers: [
                     _buildAppBar(),
@@ -244,10 +244,10 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   // ââ€â‚¬ââ€â‚¬ââ€â‚¬ App Bar (identique au profil perso) ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬
 
   Widget _buildAppBar() {
-    final displayName = _profile?['displayName'] as String? ?? 'Utilisateur';
-    final handle = _profile?['handle'] as String? ?? '';
-    final photoUrl = _profile?['photoUrl'] as String? ?? '';
-    final bio = _profile?['bio'] as String? ?? '';
+    final displayName = _profile?['displayName'] as String? ✨ 'Utilisateur';
+    final handle = _profile?['handle'] as String? ✨ '';
+    final photoUrl = _profile?['photoUrl'] as String? ✨ '';
+    final bio = _profile?['bio'] as String? ✨ '';
 
     return SliverToBoxAdapter(
       child: ClipRRect(
@@ -298,7 +298,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                           IconButton(
                             icon: const Icon(IconlyLight.moreCircle, color: Colors.white),
                             onPressed: () {
-                              final h = _profile?['handle'] as String? ?? _profile?['displayName'] as String? ?? '';
+                              final h = _profile?['handle'] as String? ✨ _profile?['displayName'] as String? ✨ '';
                               BlockReportSheet.show(context, uid: widget.uid, handle: h);
                             },
                           ),
@@ -327,7 +327,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                               ),
                               child: ClipOval(
                                 child: photoUrl.isNotEmpty
-                                    ? CachedNetworkImage(
+                                    ✨ CachedNetworkImage(
                                         imageUrl: photoUrl,
                                         fit: BoxFit.cover,
                                         cacheKey: 'pub_profile_' + photoUrl,
@@ -416,14 +416,14 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                         padding: const EdgeInsets.only(top: 4),
                         child: Row(
                           children: [
-                            Text(isToday ? 'ðŸŽ‚' : 'ðŸŽˆ', style: const TextStyle(fontSize: 14)),
+                            Text(isToday ✨ 'ðŸŽ‚' : 'ðŸŽˆ', style: const TextStyle(fontSize: 14)),
                             const SizedBox(width: 4),
                             Text(
-                              isToday ? "C'est son anniversaire aujourd'hui !" : 'Anniv: $day ${months[month]}',
+                              isToday ✨ "C'est son anniversaire aujourd'hui !" : 'Anniv: $day ${months[month]}',
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
-                                color: isToday ? const Color(0xFFEC4899) : Colors.white54,
-                                fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                                color: isToday ✨ const Color(0xFFEC4899) : Colors.white54,
+                                fontWeight: isToday ✨ FontWeight.bold : FontWeight.normal,
                               ),
                             ),
                           ],
@@ -467,7 +467,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     return Container(
       color: _violet.withOpacity(0.3),
       child: displayName.isNotEmpty
-          ? Center(
+          ✨ Center(
               child: Text(
                 displayName[0].toUpperCase(),
                 style: GoogleFonts.poppins(
@@ -506,10 +506,10 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     return LiquidGlassCard(
       blur: LiquidGlassTokens.blurLight,
       padding: const EdgeInsets.symmetric(vertical: 8),
-      onTap: _isFriendActionLoading ? null : _onFriendButtonPressed,
+      onTap: _isFriendActionLoading ✨ null : _onFriendButtonPressed,
       child: Center(
         child: _isFriendActionLoading
-            ? const SizedBox(
+            ✨ const SizedBox(
                 width: 18,
                 height: 18,
                 child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
@@ -625,9 +625,9 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 
   Widget _buildWishlistCard(Map<String, dynamic> wishlist) {
-    final name = wishlist['name'] as String? ?? 'Wishlist';
-    final emoji = wishlist['emoji'] as String? ?? '??';
-    final productCount = (wishlist['productCount'] as int?) ?? 0;
+    final name = wishlist['name'] as String? ✨ 'Wishlist';
+    final emoji = wishlist['emoji'] as String? ✨ '✨';
+    final productCount = (wishlist['productCount'] as int?) ✨ 0;
     final coverUrl = wishlist['coverPhoto'] as String?;
 
     return GestureDetector(
@@ -686,7 +686,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                               color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis),
-                      Text('$productCount produit${productCount != 1 ? 's' : ''}',
+                      Text('$productCount produit${productCount != 1 ✨ 's' : ''}',
                           style: GoogleFonts.poppins(color: Colors.white60, fontSize: 11)),
                     ],
                   ),

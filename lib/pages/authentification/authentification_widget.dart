@@ -116,7 +116,7 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
           ],
         ),
         content: Text(
-          detail.length > 200 ? '${detail.substring(0, 200)}…' : detail,
+          detail.length > 200 ✨ '${detail.substring(0, 200)}…' : detail,
           style: GoogleFonts.poppins(color: Colors.white70, fontSize: 13),
         ),
         actions: [
@@ -273,7 +273,7 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
                     _buildAuthButton(
                       onTap: _signInWithGoogle,
                       iconWidget: kIsWeb
-                          ? const Icon(Icons.g_mobiledata, size: 26, color: Color(0xFF4285F4))
+                          ✨ const Icon(Icons.g_mobiledata, size: 26, color: Color(0xFF4285F4))
                           : Image.asset('assets/images/googleg_standard_color_64px.png', width: 22, height: 22),
                       label: 'Continuer avec Google',
                       backgroundColor: Colors.white,
@@ -363,7 +363,7 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(16),
-          border: borderColor != null ? Border.all(color: borderColor, width: 1) : null,
+          border: borderColor != null ✨ Border.all(color: borderColor, width: 1) : null,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.15),

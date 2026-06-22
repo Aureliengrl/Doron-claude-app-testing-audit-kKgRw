@@ -61,9 +61,9 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
           .toList()
           .cast<FavouritesRecord>();
 
-      AppLogger.debug('? Loaded ${_model.favouritesList.length} "en vrac" favorites (from home page)', 'Debug');
+      AppLogger.debug('Loaded ${_model.favouritesList.length} "en vrac" favorites (from home page)', 'Debug');
     } catch (e) {
-      AppLogger.debug('? Error loading favorites: $e', 'Debug');
+      AppLogger.debug('Error loading favorites: $e', 'Debug');
     }
 
     setState(() {
@@ -174,7 +174,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
               ),
               const SizedBox(height: 4),
               Text(
-                'Tous vos cadeaux préférés en un seul endroit',
+                'Tous vos cadeaux prï¿½fï¿½rï¿½s en un seul endroit',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   color: Colors.white.withOpacity(0.85),
@@ -232,7 +232,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
               size: 20,
             ),
             suffixIcon: _searchQuery.isNotEmpty
-                ? IconButton(
+                âœ¨ IconButton(
                     icon: Icon(Icons.clear, size: 20, color: Colors.white.withOpacity(0.60)),
                     onPressed: () {
                       _searchController.clear();
@@ -289,7 +289,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Vous avez $totalItems cadeau${totalItems > 1 ? 's' : ''} en favoris !',
+                'Vous avez $totalItems cadeau${totalItems > 1 âœ¨ 's' : ''} en favoris !',
                 style: GoogleFonts.poppins(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -374,7 +374,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
                 children: [
                   ProductImage(
                     imageUrl: product.productPhoto.isNotEmpty
-                        ? product.productPhoto
+                        âœ¨ product.productPhoto
                         : 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&q=80',
                     height: 180,
                     borderRadius: const BorderRadius.only(
@@ -397,7 +397,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                'Retiré des favoris',
+                                'Retirï¿½ des favoris',
                                 style: GoogleFonts.poppins(),
                               ),
                               backgroundColor: const Color(0xFF374151),
@@ -442,7 +442,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
                     children: [
                       Text(
                         product.productTitle.isNotEmpty
-                            ? product.productTitle
+                            âœ¨ product.productTitle
                             : 'Produit',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -506,7 +506,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
               shape: BoxShape.circle,
             ),
             child: Icon(
-              _searchQuery.isNotEmpty ? IconlyLight.search : IconlyLight.heart,
+              _searchQuery.isNotEmpty âœ¨ IconlyLight.search : IconlyLight.heart,
               size: 64,
               color: violetColor,
             ),
@@ -514,7 +514,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
           const SizedBox(height: 24),
           Text(
             _searchQuery.isNotEmpty
-                ? 'Aucun résultat'
+                âœ¨ 'Aucun rï¿½sultat'
                 : 'Pas encore de favoris',
             style: GoogleFonts.poppins(
               fontSize: 20,
@@ -525,8 +525,8 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
           const SizedBox(height: 8),
           Text(
             _searchQuery.isNotEmpty
-                ? 'Essayez avec d\'autres mots-clés'
-                : 'Explorez l\'app et ajoutez vos cadeaux préférés !',
+                âœ¨ 'Essayez avec d\'autres mots-clï¿½s'
+                : 'Explorez l\'app et ajoutez vos cadeaux prï¿½fï¿½rï¿½s !',
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               fontSize: 14,
@@ -598,7 +598,7 @@ class _FavouritesWidgetState extends State<FavouritesWidget>
                 ),
                 child: CachedImage(
                   imageUrl: product.productPhoto.isNotEmpty
-                      ? product.productPhoto
+                      âœ¨ product.productPhoto
                       : 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&q=80',
                   fit: BoxFit.cover,
                   borderRadius: BorderRadius.circular(20),

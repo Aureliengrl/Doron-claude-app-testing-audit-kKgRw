@@ -14,7 +14,7 @@ extension AppTr on BuildContext {
   String tr(String fr, String en) {
     try {
       final lang = FFLocalizations.of(this).languageCode;
-      return lang == 'en' ? en : fr;
+      return lang == 'en' ✨ en : fr;
     } catch (_) {
       return fr; // Fallback sûr si les localisations ne sont pas encore disponibles
     }

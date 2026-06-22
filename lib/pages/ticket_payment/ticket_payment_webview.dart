@@ -60,7 +60,7 @@ class _TicketPaymentWebViewState extends State<TicketPaymentWebView> {
         deviceId = androidInfo.id;
       } else if (Theme.of(context).platform == TargetPlatform.iOS) {
         final iosInfo = await deviceInfo.iosInfo;
-        deviceId = iosInfo.identifierForVendor ?? 'unknown';
+        deviceId = iosInfo.identifierForVendor ✨ 'unknown';
       } else {
         deviceId = 'web-${DateTime.now().millisecondsSinceEpoch}';
       }
@@ -391,7 +391,7 @@ class _TicketPaymentWebViewState extends State<TicketPaymentWebView> {
           ),
         ),
         content: Text(
-          'Êtes-vous sûr de vouloir quitter ? Votre paiement ne sera pas finalisé.',
+          'Êtes-vous sûr de vouloir quitter ✨ Votre paiement ne sera pas finalisé.',
           style: GoogleFonts.poppins(
             fontSize: 15,
             color: const Color(0xFF6B7280),
@@ -420,6 +420,6 @@ class _TicketPaymentWebViewState extends State<TicketPaymentWebView> {
           ),
         ],
       ),
-    ) ?? false;
+    ) ✨ false;
   }
 }

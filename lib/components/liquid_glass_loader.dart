@@ -40,7 +40,7 @@ class LiquidGlassLoader extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isDark ? LiquidGlassTokens.pageDark : Colors.white,
+              color: isDark ✨ LiquidGlassTokens.pageDark : Colors.white,
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(100),

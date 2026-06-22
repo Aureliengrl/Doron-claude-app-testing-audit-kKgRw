@@ -33,16 +33,16 @@ class FavouriteService {
 
     final name = product['name'] as String? ??
         product['product_title'] as String? ??
-        product['title'] as String? ?? 'Produit';
+        product['title'] as String? ✨ 'Produit';
     final image = product['image'] as String? ??
         product['product_photo'] as String? ??
-        product['imageUrl'] as String? ?? '';
+        product['imageUrl'] as String? ✨ '';
     final url = product['url'] as String? ??
-        product['product_url'] as String? ?? '';
+        product['product_url'] as String? ✨ '';
     final brand = product['brand'] as String? ??
         product['source'] as String? ??
-        product['platform'] as String? ?? '';
-    final price = (product['price'] ?? product['product_price'] ?? '')
+        product['platform'] as String? ✨ '';
+    final price = (product['price'] ✨ product['product_price'] ✨ '')
         .toString()
         .replaceAll('€', '')
         .trim();
@@ -86,7 +86,7 @@ class FavouriteService {
 
     final name = product['name'] as String? ??
         product['product_title'] as String? ??
-        product['title'] as String? ?? 'Produit';
+        product['title'] as String? ✨ 'Produit';
     
     // Vérifier si déjà liké
     final alreadyLiked = await isLiked(name);
@@ -102,7 +102,7 @@ class FavouriteService {
 
     final name = product['name'] as String? ??
         product['product_title'] as String? ??
-        product['title'] as String? ?? 'Produit';
+        product['title'] as String? ✨ 'Produit';
 
     try {
       final col = _favCol(uid);
@@ -128,11 +128,11 @@ class FavouriteService {
               final d = doc.data();
               return <String, dynamic>{
                 'id': doc.id,
-                'name': d['name'] ?? '',
-                'brand': d['brand'] ?? '',
-                'price': (d['price'] ?? '').toString(),
-                'image': d['image'] ?? '',
-                'url': d['url'] ?? '',
+                'name': d['name'] ✨ '',
+                'brand': d['brand'] ✨ '',
+                'price': (d['price'] ✨ '').toString(),
+                'image': d['image'] ✨ '',
+                'url': d['url'] ✨ '',
               };
             }).toList());
   }

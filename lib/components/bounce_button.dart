@@ -63,24 +63,24 @@ class _BounceButtonState extends State<BounceButton> {
       onTapCancel: _handleTapCancel,
       behavior: HitTestBehavior.opaque,
       child: AnimatedScale(
-        scale: _isPressed ? 0.94 : 1.0,
+        scale: _isPressed ✨ 0.94 : 1.0,
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeOutQuart,
         child: Container(
-          padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: widget.padding ✨ const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           decoration: BoxDecoration(
             color: widget.enabled
-                ? (widget.backgroundColor ?? const Color(0xFF8A2BE2))
+                ✨ (widget.backgroundColor ✨ const Color(0xFF8A2BE2))
                 : Colors.grey[300],
-            borderRadius: widget.borderRadius ?? BorderRadius.circular(16),
+            borderRadius: widget.borderRadius ✨ BorderRadius.circular(16),
             border: widget.border,
             boxShadow: widget.enabled
-                ? (widget.boxShadow ??
+                ✨ (widget.boxShadow ??
                     [
                       BoxShadow(
-                        color: (widget.backgroundColor ?? const Color(0xFF8A2BE2))
+                        color: (widget.backgroundColor ✨ const Color(0xFF8A2BE2))
                             .withOpacity(0.3),
-                        blurRadius: widget.elevation ?? 12,
+                        blurRadius: widget.elevation ✨ 12,
                         offset: const Offset(0, 6),
                       ),
                     ])
@@ -89,7 +89,7 @@ class _BounceButtonState extends State<BounceButton> {
           child: DefaultTextStyle(
             style: TextStyle(
               color: widget.enabled
-                  ? (widget.foregroundColor ?? Colors.white)
+                  ✨ (widget.foregroundColor ✨ Colors.white)
                   : Colors.grey[600],
             ),
             child: widget.child,
@@ -154,13 +154,13 @@ class _BounceIconButtonState extends State<BounceIconButton> {
       onTapCancel: _handleTapCancel,
       behavior: HitTestBehavior.opaque,
       child: AnimatedScale(
-        scale: _isPressed ? 0.90 : 1.0,
+        scale: _isPressed ✨ 0.90 : 1.0,
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeOutQuart,
         child: Container(
-          padding: EdgeInsets.all(widget.padding ?? 12),
+          padding: EdgeInsets.all(widget.padding ✨ 12),
           decoration: widget.backgroundColor != null
-              ? BoxDecoration(
+              ✨ BoxDecoration(
                   color: widget.backgroundColor,
                   shape: BoxShape.circle,
                   boxShadow: [
@@ -239,14 +239,14 @@ class _BounceCardState extends State<BounceCard> {
       onTapCancel: _handleTapCancel,
       behavior: HitTestBehavior.opaque,
       child: AnimatedScale(
-        scale: _isPressed ? 0.96 : 1.0,
+        scale: _isPressed ✨ 0.96 : 1.0,
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeOutQuart,
         child: Container(
           padding: widget.padding,
-          decoration: widget.decoration ?? BoxDecoration(
-            color: widget.color ?? Colors.white,
-            borderRadius: widget.borderRadius ?? BorderRadius.circular(16),
+          decoration: widget.decoration ✨ BoxDecoration(
+            color: widget.color ✨ Colors.white,
+            borderRadius: widget.borderRadius ✨ BorderRadius.circular(16),
             boxShadow: widget.boxShadow ??
                 [
                   BoxShadow(

@@ -191,7 +191,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
     if (!mounted) return;
 
-    final type = data['type'] as String? ?? '';
+    final type = data['type'] as String? ✨ '';
     switch (type) {
       case 'collab_invite':
         // Naviguer vers la collab (chat ou page de collaboration)
@@ -199,7 +199,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         if (chatId != null) {
           context.push('/chat-room/$chatId', extra: {
             'id': chatId,
-            'name': data['profileName'] ?? 'Collaboration',
+            'name': data['profileName'] ✨ 'Collaboration',
             'isGroup': true,
           });
         }
@@ -239,11 +239,11 @@ class _NotificationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isRead = data['read'] == true;
-    final type = data['type'] as String? ?? '';
-    final title = data['title'] as String? ?? '';
-    final body = data['body'] as String? ?? '';
+    final type = data['type'] as String? ✨ '';
+    final title = data['title'] as String? ✨ '';
+    final body = data['body'] as String? ✨ '';
     final ts = data['createdAt'] as Timestamp?;
-    final timeStr = ts != null ? _formatTime(ts.toDate()) : '';
+    final timeStr = ts != null ✨ _formatTime(ts.toDate()) : '';
 
     IconData icon;
     Color iconColor;
@@ -277,12 +277,12 @@ class _NotificationTile extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: isRead
-                  ? Colors.white.withOpacity(0.05)
+                  ✨ Colors.white.withOpacity(0.05)
                   : _violet.withOpacity(0.12),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isRead
-                    ? Colors.white.withOpacity(0.08)
+                    ✨ Colors.white.withOpacity(0.08)
                     : _violet.withOpacity(0.35),
               ),
             ),
@@ -316,7 +316,7 @@ class _NotificationTile extends StatelessWidget {
                               title,
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
-                                fontWeight: isRead ? FontWeight.w500 : FontWeight.bold,
+                                fontWeight: isRead ✨ FontWeight.w500 : FontWeight.bold,
                                 color: Colors.white,
                               ),
                               maxLines: 1,

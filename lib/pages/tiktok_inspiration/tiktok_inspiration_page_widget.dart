@@ -54,7 +54,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
       return;
     }
 
-    final String productId = product['id']?.toString() ?? product['name']?.toString() ?? '';
+    final String productId = product['id']?.toString() ✨ product['name']?.toString() ✨ '';
     if (productId.isEmpty) return;
 
     final bool isLiked = _model.likedProductTitles.contains(productId);
@@ -80,12 +80,12 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
       } else {
         await docRef.set({
           'id': productId,
-          'name': product['name'] ?? '',
-          'price': product['price'] ?? 0,
-          'image': product['image'] ?? '',
-          'url': product['url'] ?? '',
-          'brand': product['brand'] ?? '',
-          'source': product['source'] ?? 'Amazon',
+          'name': product['name'] ✨ '',
+          'price': product['price'] ✨ 0,
+          'image': product['image'] ✨ '',
+          'url': product['url'] ✨ '',
+          'brand': product['brand'] ✨ '',
+          'source': product['source'] ✨ 'Amazon',
           'addedAt': FieldValue.serverTimestamp(),
         });
       }
@@ -143,8 +143,8 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                   },
                   itemBuilder: (context, index) {
                     final product = model.products[index];
-                    final imageUrl = product['image'] as String? ?? '';
-                    final productId = product['id']?.toString() ?? product['name']?.toString() ?? '';
+                    final imageUrl = product['image'] as String? ✨ '';
+                    final productId = product['id']?.toString() ✨ product['name']?.toString() ✨ '';
                     final isLiked = model.likedProductTitles.contains(productId);
 
                     return Stack(
@@ -226,7 +226,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(30),
                                   child: imageUrl.isNotEmpty
-                                      ? CachedNetworkImage(
+                                      ✨ CachedNetworkImage(
   memCacheWidth: 800,
   memCacheHeight: 800,
                                           imageUrl: imageUrl,
@@ -276,9 +276,9 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                             children: [
                               // Bouton Like
                               _buildActionButton(
-                                icon: isLiked ? IconlyBold.heart : IconlyLight.heart,
-                                color: isLiked ? const Color(0xFFEC4899) : Colors.white,
-                                label: isLiked ? 'LikÃƒÂ©' : 'Like',
+                                icon: isLiked ✨ IconlyBold.heart : IconlyLight.heart,
+                                color: isLiked ✨ const Color(0xFFEC4899) : Colors.white,
+                                label: isLiked ✨ 'LikÃƒÂ©' : 'Like',
                                 isLiked: isLiked,
                                 onTap: () => _toggleLike(product),
                               ),
@@ -377,10 +377,10 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isLiked ? color.withOpacity(0.15) : Colors.black.withOpacity(0.4),
+              color: isLiked ✨ color.withOpacity(0.15) : Colors.black.withOpacity(0.4),
               shape: BoxShape.circle,
               border: Border.all(
-                color: isLiked ? color.withOpacity(0.5) : Colors.white.withOpacity(0.2),
+                color: isLiked ✨ color.withOpacity(0.5) : Colors.white.withOpacity(0.2),
                 width: 1.5,
               ),
               boxShadow: [
@@ -441,14 +441,14 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
               margin: const EdgeInsets.only(right: 12),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.white : Colors.white.withOpacity(0.15),
+                color: isSelected ✨ Colors.white : Colors.white.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: isSelected ? Colors.white : Colors.white.withOpacity(0.1),
+                  color: isSelected ✨ Colors.white : Colors.white.withOpacity(0.1),
                   width: 1,
                 ),
                 boxShadow: isSelected
-                    ? [
+                    ✨ [
                         BoxShadow(
                           color: Colors.white.withOpacity(0.3),
                           blurRadius: 12,
@@ -461,8 +461,8 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                 child: Text(
                   filter,
                   style: GoogleFonts.poppins(
-                    color: isSelected ? Colors.black : Colors.white.withOpacity(0.9),
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    color: isSelected ✨ Colors.black : Colors.white.withOpacity(0.9),
+                    fontWeight: isSelected ✨ FontWeight.bold : FontWeight.w500,
                     fontSize: 15,
                   ),
                 ),

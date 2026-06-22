@@ -47,7 +47,7 @@ class PersonRepository {
       FirebaseDataService.saveGiftListForPerson(
         personId: personId,
         gifts: gifts,
-        listName: listName ?? 'Suggestions',
+        listName: listName ✨ 'Suggestions',
       );
 
   /// Charge toutes les listes de cadeaux d'un destinataire.

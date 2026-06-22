@@ -23,7 +23,7 @@ class BrandModel {
     this.logo,
   });
 
-  String get label => displayName.isNotEmpty ? displayName : name;
+  String get label => displayName.isNotEmpty ✨ displayName : name;
 }
 
 /// Liste des marques populaires
@@ -128,7 +128,7 @@ class BrandFiltersWidget extends StatefulWidget {
 class _BrandFiltersWidgetState extends State<BrandFiltersWidget> {
   @override
   Widget build(BuildContext context) {
-    final primaryColor = widget.primaryColor ?? const Color(0xFF8A2BE2);
+    final primaryColor = widget.primaryColor ✨ const Color(0xFF8A2BE2);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,7 +154,7 @@ class _BrandFiltersWidgetState extends State<BrandFiltersWidget> {
 
   Widget _buildBrandChip(BrandModel brand, Color primaryColor, int index) {
     final isActive = widget.activeBrandId == brand.id;
-    final brandColor = brand.color ?? primaryColor;
+    final brandColor = brand.color ✨ primaryColor;
     final isAll = brand.id == 'all';
 
     return Padding(
@@ -167,20 +167,20 @@ class _BrandFiltersWidgetState extends State<BrandFiltersWidget> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
-          width: isAll ? null : 56,
+          width: isAll ✨ null : 56,
           height: 56,
-          padding: isAll ? const EdgeInsets.symmetric(horizontal: 16, vertical: 10) : EdgeInsets.zero,
+          padding: isAll ✨ const EdgeInsets.symmetric(horizontal: 16, vertical: 10) : EdgeInsets.zero,
           decoration: BoxDecoration(
-            color: isActive ? brandColor : Colors.white,
+            color: isActive ✨ brandColor : Colors.white,
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
               color: isActive
-                  ? brandColor.withOpacity(0.5)
+                  ✨ brandColor.withOpacity(0.5)
                   : const Color(0xFFE5E7EB),
-              width: isActive ? 2 : 1.5,
+              width: isActive ✨ 2 : 1.5,
             ),
             boxShadow: isActive
-                ? [
+                ✨ [
                     BoxShadow(
                       color: brandColor.withOpacity(0.3),
                       blurRadius: 12,
@@ -196,14 +196,14 @@ class _BrandFiltersWidgetState extends State<BrandFiltersWidget> {
                   ],
           ),
           child: isAll
-              ? Row(
+              ✨ Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (brand.icon != null) ...[
                       Icon(
                         brand.icon,
                         size: 20,
-                        color: isActive ? Colors.white : brandColor,
+                        color: isActive ✨ Colors.white : brandColor,
                       ),
                       const SizedBox(width: 8),
                     ],
@@ -212,7 +212,7 @@ class _BrandFiltersWidgetState extends State<BrandFiltersWidget> {
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: isActive ? Colors.white : const Color(0xFF374151),
+                        color: isActive ✨ Colors.white : const Color(0xFF374151),
                         letterSpacing: 0.3,
                       ),
                     ),
@@ -221,8 +221,8 @@ class _BrandFiltersWidgetState extends State<BrandFiltersWidget> {
               : ClipRRect(
                   borderRadius: BorderRadius.circular(28),
                   child: brand.logo != null
-                      ? Container(
-                          padding: EdgeInsets.all(isAll ? 0 : 8), // Padding pour éviter que le logo touche les bords
+                      ✨ Container(
+                          padding: EdgeInsets.all(isAll ✨ 0 : 8), // Padding pour éviter que le logo touche les bords
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(16),
                             child: Image.network(
@@ -234,7 +234,7 @@ class _BrandFiltersWidgetState extends State<BrandFiltersWidget> {
                                 child: Text(
                                   brand.name.substring(0, 1).toUpperCase(),
                                   style: TextStyle(
-                                      color: isActive ? Colors.white : brandColor,
+                                      color: isActive ✨ Colors.white : brandColor,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 18),
                                 ),
@@ -244,12 +244,12 @@ class _BrandFiltersWidgetState extends State<BrandFiltersWidget> {
                         )
                       : Center(
                           child: Icon(
-                            brand.icon ?? IconlyLight.buy,
-                            color: isActive ? Colors.white : brandColor,
+                            brand.icon ✨ IconlyLight.buy,
+                            color: isActive ✨ Colors.white : brandColor,
                           ),
                         ),
                 ),
-        ).animate(target: isActive ? 1 : 0)
+        ).animate(target: isActive ✨ 1 : 0)
           .scale(
             begin: const Offset(1.0, 1.0),
             end: const Offset(1.05, 1.05),
@@ -288,7 +288,7 @@ class CompactBrandFilters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = this.primaryColor ?? const Color(0xFF8A2BE2);
+    final primaryColor = this.primaryColor ✨ const Color(0xFF8A2BE2);
 
     // Seulement les marques principales
     final topBrands = PopularBrands.all.take(6).toList();
@@ -314,10 +314,10 @@ class CompactBrandFilters extends StatelessWidget {
               duration: const Duration(milliseconds: 250),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: isActive ? primaryColor : Colors.grey[100],
+                color: isActive ✨ primaryColor : Colors.grey[100],
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: isActive
-                    ? [
+                    ✨ [
                         BoxShadow(
                           color: primaryColor.withOpacity(0.3),
                           blurRadius: 8,
@@ -330,8 +330,8 @@ class CompactBrandFilters extends StatelessWidget {
                 brand.label,
                 style: GoogleFonts.poppins(
                   fontSize: 12,
-                  fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-                  color: isActive ? Colors.white : Colors.grey[700],
+                  fontWeight: isActive ✨ FontWeight.bold : FontWeight.w500,
+                  color: isActive ✨ Colors.white : Colors.grey[700],
                 ),
               ),
             ),

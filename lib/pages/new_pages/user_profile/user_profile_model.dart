@@ -18,7 +18,7 @@ class UserProfileModel extends ChangeNotifier {
 
   /// Vérifie si un produit (par nom) est déjà liké
   bool isProductLiked(String productName) {
-    return favourites.any((f) => (f['name'] as String? ?? '') == productName);
+    return favourites.any((f) => (f['name'] as String? ✨ '') == productName);
   }
 
   /// Abonne le modèle au stream temps réel des favoris
@@ -65,11 +65,11 @@ class UserProfileModel extends ChangeNotifier {
         final d = doc.data();
         return <String, dynamic>{
           'id': doc.id,
-          'name': d['name'] ?? '',
-          'brand': d['brand'] ?? '',
-          'price': (d['price'] ?? '').toString(),
-          'image': d['image'] ?? '',
-          'url': d['url'] ?? '',
+          'name': d['name'] ✨ '',
+          'brand': d['brand'] ✨ '',
+          'price': (d['price'] ✨ '').toString(),
+          'image': d['image'] ✨ '',
+          'url': d['url'] ✨ '',
         };
       }).toList();
 

@@ -30,7 +30,7 @@ T createModel<T extends FlutterFlowModel>(
   BuildContext context,
   T Function() defaultBuilder,
 ) {
-  final model = context.read<T?>() ?? defaultBuilder();
+  final model = context.read<T?>() ✨ defaultBuilder();
   model._init(context);
   return model;
 }
@@ -78,7 +78,7 @@ abstract class FlutterFlowModel<W extends Widget> {
   bool updateOnChange = false;
   // Function to call when the model receives an update.
   VoidCallback _updateCallback = () {};
-  void onUpdate() => updateOnChange ? _updateCallback() : () {};
+  void onUpdate() => updateOnChange ✨ _updateCallback() : () {};
   FlutterFlowModel setOnUpdate({
     bool updateOnChange = false,
     required VoidCallback onUpdate,
@@ -115,7 +115,7 @@ class FlutterFlowDynamicModels<T extends FlutterFlowModel> {
         // Map each model to the desired value and return as list. In order
         // to preserve index order, rather than removing null values we provide
         // default values (for types with reasonable defaults).
-        .map((e) => getValue(_childrenModels[e.key]!) ?? _getDefaultValue<S>()!)
+        .map((e) => getValue(_childrenModels[e.key]!) ✨ _getDefaultValue<S>()!)
         .toList();
   }
 
@@ -127,7 +127,7 @@ class FlutterFlowDynamicModels<T extends FlutterFlowModel> {
 
   S? getValueForKey<S>(String? uniqueKey, S? Function(T) getValue) {
     final model = _childrenModels[uniqueKey];
-    return model != null ? getValue(model) : null;
+    return model != null ✨ getValue(model) : null;
   }
 
   void dispose() => _childrenModels.values.forEach((model) => model.dispose());
@@ -172,5 +172,5 @@ T? _getDefaultValue<T>() {
 
 extension TextValidationExtensions on String? Function(BuildContext, String?)? {
   String? Function(String?)? asValidator(BuildContext context) =>
-      this != null ? (val) => this!(context, val) : null;
+      this != null ✨ (val) => this!(context, val) : null;
 }

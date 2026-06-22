@@ -13,9 +13,9 @@ class AuthentificationModel extends FlutterFlowModel<AuthentificationWidget> {
   // State field(s) for TabBar widget.
   TabController? tabBarController;
   int get tabBarCurrentIndex =>
-      tabBarController != null ? tabBarController!.index : 0;
+      tabBarController != null âœ¨ tabBarController!.index : 0;
   int get tabBarPreviousIndex =>
-      tabBarController != null ? tabBarController!.previousIndex : 0;
+      tabBarController != null âœ¨ tabBarController!.previousIndex : 0;
 
   // State field(s) for display_name widget.
   FocusNode? displayNameFocusNode;
@@ -31,7 +31,7 @@ class AuthentificationModel extends FlutterFlowModel<AuthentificationWidget> {
 
     if (val.length < 3) {
       return FFLocalizations.of(context).getText(
-        'w8fxlbwz' /* Au moins 3 caractères */,
+        'w8fxlbwz' /* Au moins 3 caractï¿½res */,
       );
     }
 
@@ -52,20 +52,20 @@ class AuthentificationModel extends FlutterFlowModel<AuthentificationWidget> {
     }
 
     if (val.length < 3) {
-      return 'Au moins 3 caractères';
+      return 'Au moins 3 caractï¿½res';
     }
 
-    // Vérifier que le username ne contient que des lettres, chiffres, - et _
+    // Vï¿½rifier que le username ne contient que des lettres, chiffres, - et _
     if (!RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(val)) {
       return 'Uniquement lettres, chiffres, - et _';
     }
 
-    // Éviter le "@" s'il a été tapé
+    // ï¿½viter le "@" s'il a ï¿½tï¿½ tapï¿½
     if (val.startsWith('@')) {
       return 'Ne pas inclure le @';
     }
 
-    // L'erreur d'unicité sera gérée séparément
+    // L'erreur d'unicitï¿½ sera gï¿½rï¿½e sï¿½parï¿½ment
     if (usernameError != null) {
       return usernameError;
     }
@@ -163,13 +163,13 @@ class AuthentificationModel extends FlutterFlowModel<AuthentificationWidget> {
     return null;
   }
 
-  /// Vérifie si le username est unique dans Firestore
+  /// Vï¿½rifie si le username est unique dans Firestore
   Future<bool> checkUsernameAvailability(String username) async {
     try {
       isCheckingUsername = true;
       usernameError = null;
 
-      // Rechercher dans la collection users si le handle existe déjà
+      // Rechercher dans la collection users si le handle existe dï¿½jï¿½
       final querySnapshot = await FirebaseFirestore.instance
           .collection('users')
           .where('searchName', isEqualTo: username.toLowerCase().replaceAll('@', ''))
@@ -179,23 +179,23 @@ class AuthentificationModel extends FlutterFlowModel<AuthentificationWidget> {
       isCheckingUsername = false;
 
       if (querySnapshot.docs.isNotEmpty) {
-        usernameError = 'Ce nom d\'utilisateur existe déjà';
+        usernameError = 'Ce nom d\'utilisateur existe dï¿½jï¿½';
         return false;
       }
 
       return true;
     } catch (e) {
-      AppLogger.debug('? Erreur vérification username: $e', 'Debug');
+      AppLogger.debug('Erreur vï¿½rification username: $e', 'Debug');
       isCheckingUsername = false;
       
-      // FIX IGNITION: Firestore bloque l'accès non-authentifié à Users. 
-      // Si c'est un permission-denied généré avant la création du compte e-mail,
-      // on bypass l'erreur au lieu de bloquer faussement le formulaire en "Déjà pris".
+      // FIX IGNITION: Firestore bloque l'accï¿½s non-authentifiï¿½ ï¿½ Users. 
+      // Si c'est un permission-denied gï¿½nï¿½rï¿½ avant la crï¿½ation du compte e-mail,
+      // on bypass l'erreur au lieu de bloquer faussement le formulaire en "Dï¿½jï¿½ pris".
       if (e.toString().contains('permission-denied')) {
         return true; 
       }
       
-      usernameError = 'Erreur de vérification';
+      usernameError = 'Erreur de vï¿½rification';
       return false;
     }
   }

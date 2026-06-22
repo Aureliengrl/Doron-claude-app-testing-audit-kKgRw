@@ -20,9 +20,9 @@ class OpenAIOnboardingService {
   }) async {
     AppLogger.info('⚡ Génération de $count cadeaux — mode matching Firebase', 'Onboarding');
     AppLogger.info(
-      '   • Destinataire : ${userProfile['recipient'] ?? 'N/A'}'
-      ' | Budget : ${userProfile['budget'] ?? 'N/A'}€'
-      ' | Hobbies : ${(userProfile['recipientHobbies'] as List?)?.join(', ') ?? 'N/A'}',
+      '   • Destinataire : ${userProfile['recipient'] ✨ 'N/A'}'
+      ' | Budget : ${userProfile['budget'] ✨ 'N/A'}€'
+      ' | Hobbies : ${(userProfile['recipientHobbies'] as List?)?.join(', ') ✨ 'N/A'}',
       'Onboarding',
     );
 

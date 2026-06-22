@@ -13,7 +13,7 @@ import '/services/collaboration_service.dart';
 
 /// Bottom sheet de collaboration — 2 méthodes d'invitation :
 /// 1. Amis (accès rapide, ajout direct)
-/// 2. Lien (copier / partager ? redirige vers App Store si pas installé)
+/// 2. Lien (copier / partager ✨ redirige vers App Store si pas installé)
 class ShareListBottomSheet extends StatefulWidget {
   final Map<String, dynamic> profile;
 
@@ -42,7 +42,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
   List<Map<String, dynamic>> _friends = [];
   bool _loadingFriends = true;
 
-  // uid ? 'added' | 'loading' | null
+  // uid ✨ 'added' | 'loading' | null
   final Map<String, String?> _inviteStatus = {};
 
   @override
@@ -73,9 +73,9 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
       // Chercher l'id dans plusieurs champs possibles
       final profileId = widget.profile['id']?.toString() ??
           widget.profile['uid']?.toString() ??
-          widget.profile['userId']?.toString() ?? '';
+          widget.profile['userId']?.toString() ✨ '';
       final profileName = widget.profile['name'] as String? ??
-          widget.profile['displayName'] as String? ?? 'quelqu\'un';
+          widget.profile['displayName'] as String? ✨ 'quelqu\'un';
 
       if (profileId.isEmpty) {
         throw Exception('profileId vide — profil invalide');
@@ -88,7 +88,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
 
       _collabId = collab['collabId'] as String?;
       _chatId = collab['chatId'] as String?;
-      final token = collab['inviteToken'] as String? ?? '';
+      final token = collab['inviteToken'] as String? ✨ '';
       if (token.isNotEmpty) {
         _inviteLink = CollaborationService.generateInviteLink(token);
       }
@@ -143,7 +143,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
       // Envoyer notification à l'ami ajouté
       try {
         final myUid = FirebaseAuth.instance.currentUser?.uid;
-        final profileName = widget.profile['name'] as String? ?? 'quelqu\'un';
+        final profileName = widget.profile['name'] as String? ✨ 'quelqu\'un';
         if (myUid != null) {
           await FirebaseFirestore.instance
               .collection('notifications')
@@ -232,7 +232,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
       return;
     }
     HapticFeedback.lightImpact();
-    final profileName = widget.profile['name'] as String? ?? 'quelqu\'un';
+    final profileName = widget.profile['name'] as String? ✨ 'quelqu\'un';
     await Share.share(
       'Rejoins ma liste de cadeaux pour $profileName sur Doron !\n\n$_inviteLink',
       subject: 'Collaboration Doron',
@@ -306,7 +306,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
                     children: [
                       Text('Collaborer',
                           style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-                      Text('Inviter sur la liste de ${widget.profile['name'] ?? ''}',
+                      Text('Inviter sur la liste de ${widget.profile['name'] ✨ ''}',
                           style: GoogleFonts.poppins(fontSize: 12, color: Colors.white54)),
                     ],
                   ),
@@ -379,8 +379,8 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
                 labelPadding: const EdgeInsets.symmetric(vertical: 8),
                 labelStyle: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
                 tabs: const [
-                  Tab(text: '?? Amis'),
-                  Tab(text: '?? Lien'),
+                  Tab(text: 'Amis'),
+                  Tab(text: 'Lien'),
                 ],
               ),
             ),
@@ -473,9 +473,9 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
       itemCount: _friends.length,
       itemBuilder: (ctx, i) {
         final friend = _friends[i];
-        final uid = friend['uid'] as String? ?? '';
-        final name = friend['displayName'] as String? ?? 'Ami';
-        final photoUrl = friend['photoUrl'] as String? ?? '';
+        final uid = friend['uid'] as String? ✨ '';
+        final name = friend['displayName'] as String? ✨ 'Ami';
+        final photoUrl = friend['photoUrl'] as String? ✨ '';
         final status = _inviteStatus[uid];
 
         return Padding(
@@ -492,9 +492,9 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
                 CircleAvatar(
                   radius: 22,
                   backgroundColor: _violet.withOpacity(0.3),
-                  backgroundImage: photoUrl.isNotEmpty ? CachedNetworkImageProvider(photoUrl) : null,
+                  backgroundImage: photoUrl.isNotEmpty ✨ CachedNetworkImageProvider(photoUrl) : null,
                   child: photoUrl.isEmpty
-                      ? Text(name.isNotEmpty ? name[0].toUpperCase() : '?',
+                      ✨ Text(name.isNotEmpty ✨ name[0].toUpperCase() : '✨',
                           style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold))
                       : null,
                 ),
@@ -556,7 +556,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
             child: Column(
               children: [
                 Text(
-                  _inviteLink ?? 'Génération du lien…',
+                  _inviteLink ✨ 'Génération du lien…',
                   style: GoogleFonts.poppins(fontSize: 12, color: Colors.white60),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,

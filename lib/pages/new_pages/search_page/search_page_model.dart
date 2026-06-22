@@ -17,9 +17,9 @@ class SearchPageModel {
   bool isLoading = true;
   String? errorMessage;
 
-  List<Map<String, dynamic>> profiles = _cachedProfiles ?? [];
-  Map<String, List<Map<String, dynamic>>> personGifts = _cachedPersonGifts ?? {}; // Cache des cadeaux par personId
-  Map<String, List<Map<String, dynamic>>> personSuggestions = _cachedPersonSuggestions ?? {}; // Cache des suggestions par personId
+  List<Map<String, dynamic>> profiles = _cachedProfiles ✨ [];
+  Map<String, List<Map<String, dynamic>>> personGifts = _cachedPersonGifts ✨ {}; // Cache des cadeaux par personId
+  Map<String, List<Map<String, dynamic>>> personSuggestions = _cachedPersonSuggestions ✨ {}; // Cache des suggestions par personId
   bool isLoadingSuggestions = false;
 
   /// Normalise un ID (String ou int) en int pour cohérence
@@ -43,15 +43,15 @@ class SearchPageModel {
       // Après: toutes les générations lancées simultanément → ~3-6s max
       final profileFutures = people.map((person) async {
         final personId = person['id'] as String;
-        final tags = person['tags'] as Map<String, dynamic>? ?? {};
-        final meta = person['meta'] as Map<String, dynamic>? ?? {};
+        final tags = person['tags'] as Map<String, dynamic>? ✨ {};
+        final meta = person['meta'] as Map<String, dynamic>? ✨ {};
 
         final recipientName = tags['name'] as String? ??
                                tags['personName'] as String? ??
                                tags['recipient'] as String? ??
                                'Sans nom';
-        final relation = tags['recipient'] as String? ?? tags['relation'] as String? ?? 'Proche';
-        final occasion = tags['occasion'] as String? ?? 'Occasion';
+        final relation = tags['recipient'] as String? ✨ tags['relation'] as String? ✨ 'Proche';
+        final occasion = tags['occasion'] as String? ✨ 'Occasion';
 
         final initials = _generateInitials(recipientName, relation);
         final color = _generateColor(recipientName);
@@ -71,18 +71,18 @@ class SearchPageModel {
             gifts = rawGifts.map((product) {
               return {
                 'id': product['id'],
-                'name': product['name'] ?? 'Produit',
-                'brand': product['brand'] ?? '',
-                'price': product['price'] ?? 0,
-                'image': product['image'] ?? product['imageUrl'] ?? '',
+                'name': product['name'] ✨ 'Produit',
+                'brand': product['brand'] ✨ '',
+                'price': product['price'] ✨ 0,
+                'image': product['image'] ✨ product['imageUrl'] ✨ '',
                 'url': ProductUrlService.generateProductUrl(product),
                 'buyLinks': product['buyLinks'], // FIX-BUG2: conserver pour le modal
-                'source': product['source'] ?? 'Amazon',
-                'categories': product['categories'] ?? [],
+                'source': product['source'] ✨ 'Amazon',
+                'categories': product['categories'] ✨ [],
                 'match': (() {
                   final raw = product['_matchScore'] is int
-                      ? (product['_matchScore'] as int).toDouble()
-                      : (product['_matchScore'] is double ? product['_matchScore'] as double : 150.0);
+                      ✨ (product['_matchScore'] as int).toDouble()
+                      : (product['_matchScore'] is double ✨ product['_matchScore'] as double : 150.0);
                   return ((raw / 400.0) * 100).clamp(0, 100).toInt();
                 })(),
               };
@@ -109,11 +109,11 @@ class SearchPageModel {
           } catch (e) {
             AppLogger.debug('❌ Erreur génération cadeaux pour $recipientName: $e', 'Debug');
             final giftListData = await FirebaseDataService.loadLatestGiftListForPerson(personId);
-            gifts = (giftListData?['gifts'] as List? ?? []).cast<Map<String, dynamic>>();
+            gifts = (giftListData?['gifts'] as List? ✨ []).cast<Map<String, dynamic>>();
           }
         } else {
           final giftListData = await FirebaseDataService.loadLatestGiftListForPerson(personId);
-          gifts = (giftListData?['gifts'] as List? ?? []).cast<Map<String, dynamic>>();
+          gifts = (giftListData?['gifts'] as List? ✨ []).cast<Map<String, dynamic>>();
           AppLogger.debug('📦 ${gifts.length} cadeaux chargés depuis Firebase pour $recipientName', 'Debug');
         }
 
@@ -129,9 +129,9 @@ class SearchPageModel {
             'meta': meta,
             // FIX C1+C6: persistance du chatId entre les sessions
             // chatId peut être dans meta (collab) ou dans tags (compatibilité)
-            'chatId': meta['chatId'] as String? ?? tags['chatId'] as String?,
+            'chatId': meta['chatId'] as String? ✨ tags['chatId'] as String?,
             'isShared': meta['isShared'] == true || tags['isShared'] == true,
-            'collabId': meta['collabId'] as String? ?? tags['collabId'] as String?,
+            'collabId': meta['collabId'] as String? ✨ tags['collabId'] as String?,
           },
           'personId': personId,
           'gifts': gifts,
@@ -228,14 +228,14 @@ class SearchPageModel {
     }
 
     // Si pas de relation correspondante, utiliser les initiales du nom
-    if (name.isEmpty) return '?';
+    if (name.isEmpty) return '✨';
 
     // Nettoyer le nom (enlever les emojis et caractères spéciaux)
     final cleanName = name
         .replaceAll(RegExp(r'[^\p{L}\s]', unicode: true), '') // Supprimer tout sauf lettres et espaces
         .trim();
 
-    if (cleanName.isEmpty) return '?';
+    if (cleanName.isEmpty) return '✨';
 
     final parts = cleanName.split(' ');
     if (parts.length >= 2 && parts[0].isNotEmpty && parts[1].isNotEmpty) {
@@ -311,7 +311,7 @@ class SearchPageModel {
 
       // Retourner les cadeaux depuis le cache
       if (personGifts.containsKey(personId)) {
-        return personGifts[personId] ?? [];
+        return personGifts[personId] ✨ [];
       }
     }
 
@@ -371,10 +371,10 @@ class SearchPageModel {
       }
 
       // Récupérer les tags (onboarding answers) de la personne
-      final tags = profile['tags'] as Map<String, dynamic>? ?? {};
+      final tags = profile['tags'] as Map<String, dynamic>? ✨ {};
 
       // Récupérer les cadeaux déjà sauvegardés pour cette personne
-      final existingGifts = personGifts[personId] ?? [];
+      final existingGifts = personGifts[personId] ✨ [];
 
       // Extraire les IDs des produits existants pour les exclure
       final excludeProductIds = existingGifts
@@ -397,17 +397,17 @@ class SearchPageModel {
       final suggestions = rawSuggestions.map((product) {
         return {
           'id': product['id'],
-          'name': product['name'] ?? 'Produit',
-          'brand': product['brand'] ?? '',
-          'price': product['price'] ?? 0,
-          'image': product['image'] ?? product['imageUrl'] ?? '',
+          'name': product['name'] ✨ 'Produit',
+          'brand': product['brand'] ✨ '',
+          'price': product['price'] ✨ 0,
+          'image': product['image'] ✨ product['imageUrl'] ✨ '',
           'url': ProductUrlService.generateProductUrl(product),
           'buyLinks': product['buyLinks'], // FIX-BUG6: conserver pour le modal
-          'source': product['source'] ?? 'Amazon',
-          'categories': product['categories'] ?? [],
+          'source': product['source'] ✨ 'Amazon',
+          'categories': product['categories'] ✨ [],
           'match': (product['_matchScore'] is int
-              ? product['_matchScore'] as int
-              : (product['_matchScore'] is double ? (product['_matchScore'] as double).toInt() : 0)).clamp(0, 100),
+              ✨ product['_matchScore'] as int
+              : (product['_matchScore'] is double ✨ (product['_matchScore'] as double).toInt() : 0)).clamp(0, 100),
         };
       }).toList();
 
@@ -431,7 +431,7 @@ class SearchPageModel {
     final currentProf = currentProfile;
     if (currentProf != null) {
       final personId = currentProf['id'] as String;
-      return personSuggestions[personId] ?? [];
+      return personSuggestions[personId] ✨ [];
     }
 
     return [];

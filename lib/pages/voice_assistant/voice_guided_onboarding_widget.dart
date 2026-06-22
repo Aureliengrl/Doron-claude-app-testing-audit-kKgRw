@@ -114,13 +114,13 @@ class _VoiceGuidedOnboardingWidgetState
                               },
                               child: AnimatedContainer(
                                 duration: const Duration(milliseconds: 300),
-                                width: model.isListening ? 160 : 140,
-                                height: model.isListening ? 160 : 140,
+                                width: model.isListening ✨ 160 : 140,
+                                height: model.isListening ✨ 160 : 140,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   gradient: LinearGradient(
                                     colors: model.isListening
-                                        ? [pinkColor, violetColor]
+                                        ✨ [pinkColor, violetColor]
                                         : [
                                             violetColor.withOpacity(0.2),
                                             violetColor.withOpacity(0.1),
@@ -129,7 +129,7 @@ class _VoiceGuidedOnboardingWidgetState
                                     end: Alignment.bottomRight,
                                   ),
                                   boxShadow: model.isListening
-                                      ? [
+                                      ✨ [
                                           BoxShadow(
                                             color: pinkColor.withOpacity(0.4),
                                             blurRadius: 30,
@@ -139,7 +139,7 @@ class _VoiceGuidedOnboardingWidgetState
                                       : [],
                                 ),
                                 child: Icon(
-                                  model.isListening ? IconlyBold.voice : IconlyLight.voice,
+                                  model.isListening ✨ IconlyBold.voice : IconlyLight.voice,
                                   size: 60,
                                   color: Colors.white,
                                 ),
@@ -152,7 +152,7 @@ class _VoiceGuidedOnboardingWidgetState
                           Center(
                             child: Text(
                               model.isListening
-                                  ? 'En écoute...'
+                                  ✨ 'En écoute...'
                                   : 'Appuyez pour parler',
                               style: GoogleFonts.poppins(
                                 fontSize: 16,
@@ -173,19 +173,19 @@ class _VoiceGuidedOnboardingWidgetState
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: model.currentTranscript.isNotEmpty
-                                    ? violetColor.withOpacity(0.3)
+                                    ✨ violetColor.withOpacity(0.3)
                                     : Colors.transparent,
                                 width: 2,
                               ),
                             ),
                             child: Text(
                               model.currentTranscript.isEmpty
-                                  ? 'Votre réponse apparaîtra ici...'
+                                  ✨ 'Votre réponse apparaîtra ici...'
                                   : model.currentTranscript,
                               style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 color: model.currentTranscript.isEmpty
-                                    ? const Color(0xFF9CA3AF)
+                                    ✨ const Color(0xFF9CA3AF)
                                     : const Color(0xFF111827),
                                 height: 1.5,
                               ),
@@ -328,7 +328,7 @@ class _VoiceGuidedOnboardingWidgetState
             width: double.infinity,
             child: ElevatedButton(
               onPressed: model.currentTranscript.trim().isEmpty
-                  ? null
+                  ✨ null
                   : () {
                       HapticFeedback.mediumImpact();
                       _model.validateAnswer(context);
@@ -346,7 +346,7 @@ class _VoiceGuidedOnboardingWidgetState
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    model.isLastQuestion ? 'Terminer' : 'Continuer',
+                    model.isLastQuestion ✨ 'Terminer' : 'Continuer',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -355,7 +355,7 @@ class _VoiceGuidedOnboardingWidgetState
                   ),
                   const SizedBox(width: 8),
                   Icon(
-                    model.isLastQuestion ? Icons.check : Icons.arrow_forward,
+                    model.isLastQuestion ✨ Icons.check : Icons.arrow_forward,
                     color: Colors.white,
                     size: 20,
                   ),

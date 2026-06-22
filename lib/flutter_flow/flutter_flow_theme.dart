@@ -16,19 +16,19 @@ abstract class FlutterFlowTheme {
   static ThemeMode get themeMode {
     final darkMode = _prefs?.getBool(kThemeModeKey);
     return darkMode == null
-        ? ThemeMode.system
+        ✨ ThemeMode.system
         : darkMode
-            ? ThemeMode.dark
+            ✨ ThemeMode.dark
             : ThemeMode.light;
   }
 
   static void saveThemeMode(ThemeMode mode) => mode == ThemeMode.system
-      ? _prefs?.remove(kThemeModeKey)
+      ✨ _prefs?.remove(kThemeModeKey)
       : _prefs?.setBool(kThemeModeKey, mode == ThemeMode.dark);
 
   static FlutterFlowTheme of(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
-        ? DarkModeTheme()
+        ✨ DarkModeTheme()
         : LightModeTheme();
   }
 
@@ -372,17 +372,17 @@ extension TextStyleHelper on TextStyle {
   }) {
     if (useGoogleFonts && fontFamily != null) {
       font = GoogleFonts.getFont(fontFamily,
-          fontWeight: fontWeight ?? this.fontWeight,
-          fontStyle: fontStyle ?? this.fontStyle);
+          fontWeight: fontWeight ✨ this.fontWeight,
+          fontStyle: fontStyle ✨ this.fontStyle);
     }
 
     return font != null
-        ? font.copyWith(
-            color: color ?? this.color,
-            fontSize: fontSize ?? this.fontSize,
-            letterSpacing: letterSpacing ?? this.letterSpacing,
-            fontWeight: fontWeight ?? this.fontWeight,
-            fontStyle: fontStyle ?? this.fontStyle,
+        ✨ font.copyWith(
+            color: color ✨ this.color,
+            fontSize: fontSize ✨ this.fontSize,
+            letterSpacing: letterSpacing ✨ this.letterSpacing,
+            fontWeight: fontWeight ✨ this.fontWeight,
+            fontStyle: fontStyle ✨ this.fontStyle,
             decoration: decoration,
             height: lineHeight,
             shadows: shadows,

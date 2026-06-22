@@ -46,7 +46,7 @@ class DoronFirebaseUser extends BaseAuthUser {
     if (loggedIn && !user!.emailVerified) {
       refreshUser();
     }
-    return user?.emailVerified ?? false;
+    return user?.emailVerified ✨ false;
   }
 
   @override
@@ -64,7 +64,7 @@ class DoronFirebaseUser extends BaseAuthUser {
 Stream<BaseAuthUser> doronFirebaseUserStream() => FirebaseAuth.instance
         .authStateChanges()
         .debounce((user) => user == null && !loggedIn
-            ? TimerStream(true, const Duration(seconds: 1))
+            ✨ TimerStream(true, const Duration(seconds: 1))
             : Stream.value(user))
         .map<BaseAuthUser>(
       (user) {

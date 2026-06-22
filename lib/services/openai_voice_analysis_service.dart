@@ -5,9 +5,9 @@ import '/environment_values.dart';
 
 /// Service pour analyser les transcriptions vocales avec OpenAI (GPT-4o).
 ///
-/// Ce service est actif — il effectue de vrais appels API OpenAI pour
-/// transformer une transcription vocale en profil structuré (tags Doron).
-/// La clé API est lue depuis les variables d'environnement (assets).
+/// Ce service est actif ï¿½ il effectue de vrais appels API OpenAI pour
+/// transformer une transcription vocale en profil structurï¿½ (tags Doron).
+/// La clï¿½ API est lue depuis les variables d'environnement (assets).
 class OpenAIVoiceAnalysisService {
   static const String _apiUrl = 'https://api.openai.com/v1/chat/completions';
 
@@ -19,11 +19,11 @@ class OpenAIVoiceAnalysisService {
     return key;
   }
 
-  /// Dernière erreur pour affichage diagnostique
+  /// Derniï¿½re erreur pour affichage diagnostique
   static String _lastErrorMessage = '';
   static String get lastErrorMessage => _lastErrorMessage;
 
-  /// Analyse une transcription vocale et extrait un profil structuré (tags Doron).
+  /// Analyse une transcription vocale et extrait un profil structurï¿½ (tags Doron).
   static Future<Map<String, dynamic>?> analyzeVoiceTranscript(
     String transcript,
   ) async {
@@ -35,7 +35,7 @@ class OpenAIVoiceAnalysisService {
       return null;
     }
 
-    AppLogger.info('?? Analyzing voice transcript (${transcript.length} chars)', 'VoiceAnalysis');
+    AppLogger.info('Analyzing voice transcript (${transcript.length} chars)', 'VoiceAnalysis');
 
     try {
       final prompt = _buildAnalysisPrompt(transcript);
@@ -45,7 +45,7 @@ class OpenAIVoiceAnalysisService {
 
       final parsed = _parseOpenAIResponse(rawResponse);
       if (parsed == null) {
-        _lastErrorMessage = 'Impossible de parser la réponse OpenAI';
+        _lastErrorMessage = 'Impossible de parser la rï¿½ponse OpenAI';
         return null;
       }
 
@@ -60,22 +60,22 @@ class OpenAIVoiceAnalysisService {
 
   /// Construit le prompt pour l'analyse vocale avec les TAGS OFFICIELS DORON
   static String _buildAnalysisPrompt(String transcript) {
-    return '''Tu es un assistant spécialisé dans l\'analyse de descriptions de personnes pour des recommandations de cadeaux.
-Tu dois extraire les informations et les convertir en TAGS OFFICIELS du système DORON.
+    return '''Tu es un assistant spï¿½cialisï¿½ dans l\'analyse de descriptions de personnes pour des recommandations de cadeaux.
+Tu dois extraire les informations et les convertir en TAGS OFFICIELS du systï¿½me DORON.
 
 TRANSCRIPTION VOCALE DE L\'UTILISATEUR:
 "$transcript"
 
-TÂCHE:
-Analyse cette transcription et génère les TAGS OFFICIELS au format JSON STRICT.
+Tï¿½CHE:
+Analyse cette transcription et gï¿½nï¿½re les TAGS OFFICIELS au format JSON STRICT.
 
-FORMAT DE RÉPONSE REQUIS (JSON uniquement, sans texte supplémentaire):
+FORMAT DE Rï¿½PONSE REQUIS (JSON uniquement, sans texte supplï¿½mentaire):
 {
-  "recipientType": "Maman | Papa | Amie | Ami | Copine | Copain | Frère | Sœur | Grand-mère | Grand-père | Collègue | Patron | Autre",
-  "recipientName": "Prénom si mentionné, sinon null",
+  "recipientType": "Maman | Papa | Amie | Ami | Copine | Copain | Frï¿½re | Sï¿½ur | Grand-mï¿½re | Grand-pï¿½re | Collï¿½gue | Patron | Autre",
+  "recipientName": "Prï¿½nom si mentionnï¿½, sinon null",
   "budget": nombre (le maximum en euros),
   "age": nombre ou null,
-  "gender": "Femme | Homme | Non spécifié",
+  "gender": "Femme | Homme | Non spï¿½cifiï¿½",
   "genderTag": "gender_femme | gender_homme | gender_mixte",
   "categoryTags": ["cat_tendances", "cat_tech", "cat_mode", "cat_maison", "cat_beaute", "cat_food"],
   "budgetTag": "budget_0_50 | budget_50_100 | budget_100_200 | budget_200+",
@@ -83,17 +83,17 @@ FORMAT DE RÉPONSE REQUIS (JSON uniquement, sans texte supplémentaire):
   "personalityTags": ["perso_creatif", "perso_actif", "perso_cool", "perso_bienveillant", "perso_ambitieux", "perso_romantique", "perso_aventurier", "perso_intellectuel", "perso_sociable", "perso_zen"],
   "passionTags": ["passion_sport", "passion_cuisine", "passion_voyages", "passion_photo", "passion_jeuxvideo", "passion_lecture", "passion_musique", "passion_mode", "passion_tech"],
   "giftTypeTags": ["type_mode_accessoires", "type_bien_etre", "type_sport_outdoor", "type_gastronomie", "type_culture", "type_high_tech"],
-  "occasion": "Anniversaire | Noël | Fête des mères | Fête des pères | Mariage | Saint-Valentin | Autre | non spécifié",
+  "occasion": "Anniversaire | Noï¿½l | Fï¿½te des mï¿½res | Fï¿½te des pï¿½res | Mariage | Saint-Valentin | Autre | non spï¿½cifiï¿½",
   "specialNotes": "Notes additionnelles importantes"
 }
 
-RÈGLES STRICTES POUR LES TAGS:
+Rï¿½GLES STRICTES POUR LES TAGS:
 1. genderTag: TOUJOURS 1 seul tag parmi gender_femme, gender_homme, gender_mixte
-2. budgetTag: TOUJOURS 1 seul tag calculé selon le budget
-3. categoryTags: LISTE de 1 à 3 catégories principales
+2. budgetTag: TOUJOURS 1 seul tag calculï¿½ selon le budget
+3. categoryTags: LISTE de 1 ï¿½ 3 catï¿½gories principales
 4. styleTags, personalityTags, passionTags, giftTypeTags: LISTES (plusieurs possibles)
 
-Réponds UNIQUEMENT avec le JSON, sans texte avant ou après.''';
+Rï¿½ponds UNIQUEMENT avec le JSON, sans texte avant ou aprï¿½s.''';
   }
 
   /// Appelle l'API OpenAI GPT-4o
@@ -104,7 +104,7 @@ Réponds UNIQUEMENT avec le JSON, sans texte avant ou après.''';
         'messages': [
           {
             'role': 'system',
-            'content': 'Tu es un expert en analyse de données pour recommandations de cadeaux. Tu réponds toujours en JSON valide.',
+            'content': 'Tu es un expert en analyse de donnï¿½es pour recommandations de cadeaux. Tu rï¿½ponds toujours en JSON valide.',
           },
           {'role': 'user', 'content': prompt},
         ],
@@ -130,22 +130,22 @@ Réponds UNIQUEMENT avec le JSON, sans texte avant ou après.''';
 
       switch (response.statusCode) {
         case 401:
-          _lastErrorMessage = 'Clé API invalide ou expirée (401)';
+          _lastErrorMessage = 'Clï¿½ API invalide ou expirï¿½e (401)';
         case 429:
-          _lastErrorMessage = 'Limite de requêtes dépassée (429)';
+          _lastErrorMessage = 'Limite de requï¿½tes dï¿½passï¿½e (429)';
         default:
           _lastErrorMessage = 'Erreur HTTP ${response.statusCode}';
       }
       AppLogger.error(_lastErrorMessage, 'VoiceAnalysis');
       return null;
     } catch (e) {
-      _lastErrorMessage = 'Erreur réseau: ${e.runtimeType}';
+      _lastErrorMessage = 'Erreur rï¿½seau: ${e.runtimeType}';
       AppLogger.error('OpenAI call failed', 'VoiceAnalysis', e);
       return null;
     }
   }
 
-  /// Parse la réponse JSON d'OpenAI (enlève le markdown si présent)
+  /// Parse la rï¿½ponse JSON d'OpenAI (enlï¿½ve le markdown si prï¿½sent)
   static Map<String, dynamic>? _parseOpenAIResponse(String response) {
     try {
       String cleaned = response.trim();
@@ -161,75 +161,75 @@ Réponds UNIQUEMENT avec le JSON, sans texte avant ou après.''';
 
   /// Convertit l'analyse OpenAI en format compatible avec [ProductMatchingService]
   static Map<String, dynamic> convertToGiftProfile(Map<String, dynamic> analysis) {
-    final genderTag = analysis['genderTag'] as String? ?? '';
+    final genderTag = analysis['genderTag'] as String? âœ¨ '';
     final gender = genderTag.contains('femme')
-        ? 'Femme'
+        âœ¨ 'Femme'
         : genderTag.contains('homme')
-            ? 'Homme'
-            : 'Non spécifié';
+            âœ¨ 'Homme'
+            : 'Non spï¿½cifiï¿½';
 
-    final categoryTags = (analysis['categoryTags'] as List?)?.cast<String>() ?? [];
+    final categoryTags = (analysis['categoryTags'] as List?)?.cast<String>() âœ¨ [];
     final preferredCategories = categoryTags.map((tag) {
       if (tag.contains('tendances')) return 'Tendances';
       if (tag.contains('tech')) return 'Tech';
       if (tag.contains('mode')) return 'Mode';
       if (tag.contains('maison')) return 'Maison';
-      if (tag.contains('beaute')) return 'Beauté';
+      if (tag.contains('beaute')) return 'Beautï¿½';
       if (tag.contains('food')) return 'Food';
       return tag;
     }).toList();
 
-    final styleTags = (analysis['styleTags'] as List?)?.cast<String>() ?? [];
-    final style = _styleFromTag(styleTags.isNotEmpty ? styleTags.first : '');
+    final styleTags = (analysis['styleTags'] as List?)?.cast<String>() âœ¨ [];
+    final style = _styleFromTag(styleTags.isNotEmpty âœ¨ styleTags.first : '');
 
-    final passionTags = (analysis['passionTags'] as List?)?.cast<String>() ?? [];
+    final passionTags = (analysis['passionTags'] as List?)?.cast<String>() âœ¨ [];
     final interests = passionTags.map((tag) => tag.replaceFirst('passion_', '')).toList();
 
-    final personalityTags = (analysis['personalityTags'] as List?)?.cast<String>() ?? [];
+    final personalityTags = (analysis['personalityTags'] as List?)?.cast<String>() âœ¨ [];
     final personality = personalityTags.isNotEmpty
-        ? personalityTags.first.replaceFirst('perso_', '')
+        âœ¨ personalityTags.first.replaceFirst('perso_', '')
         : null;
 
     return {
       'gender': gender,
       'recipientGender': gender,
-      'budget': (analysis['budget'] ?? 100).toString(),
+      'budget': (analysis['budget'] âœ¨ 100).toString(),
       'preferredCategories': preferredCategories,
       'style': style,
       'interests': interests,
       'personality': personality,
-      'recipient': analysis['recipientType'] ?? 'Autre',
-      'recipientAge': analysis['age']?.toString() ?? '',
-      'occasion': analysis['occasion'] ?? 'non spécifié',
+      'recipient': analysis['recipientType'] âœ¨ 'Autre',
+      'recipientAge': analysis['age']?.toString() âœ¨ '',
+      'occasion': analysis['occasion'] âœ¨ 'non spï¿½cifiï¿½',
       'sourceType': 'voice',
       'rawTranscript': '',
     };
   }
 
   static String _styleFromTag(String tag) {
-    if (tag.contains('elegant')) return 'Élégant';
+    if (tag.contains('elegant')) return 'ï¿½lï¿½gant';
     if (tag.contains('tendance')) return 'Tendance';
     if (tag.contains('minimaliste')) return 'Minimaliste';
     if (tag.contains('classique')) return 'Classique';
-    if (tag.contains('decontracte')) return 'Décontracté';
+    if (tag.contains('decontracte')) return 'Dï¿½contractï¿½';
     if (tag.contains('sportif')) return 'Sportif';
     if (tag.contains('vintage')) return 'Vintage';
     return 'Moderne';
   }
 
-  /// Génère un résumé textuel de l'analyse
+  /// Gï¿½nï¿½re un rï¿½sumï¿½ textuel de l'analyse
   static String generateSummary(Map<String, dynamic> analysis) {
-    final recipient = analysis['recipientType'] ?? 'cette personne';
+    final recipient = analysis['recipientType'] âœ¨ 'cette personne';
     final name = analysis['recipientName'];
     final age = analysis['age'];
     final budget = analysis['budget'];
     final occasion = analysis['occasion'];
 
     final buffer = StringBuffer();
-    buffer.write(name != null && name.toString().isNotEmpty ? 'Pour $name' : 'Pour $recipient');
+    buffer.write(name != null && name.toString().isNotEmpty âœ¨ 'Pour $name' : 'Pour $recipient');
     if (age != null) buffer.write(', $age ans');
-    if (occasion != null && occasion != 'non spécifié') buffer.write('\nOccasion: $occasion');
-    if (budget != null) buffer.write('\nBudget: jusqu\'à ${budget}€');
+    if (occasion != null && occasion != 'non spï¿½cifiï¿½') buffer.write('\nOccasion: $occasion');
+    if (budget != null) buffer.write('\nBudget: jusqu\'ï¿½ ${budget}ï¿½');
     return buffer.toString();
   }
 }

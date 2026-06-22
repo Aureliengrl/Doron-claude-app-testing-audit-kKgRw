@@ -34,4 +34,4 @@ abstract class BaseAuthUser {
 }
 
 BaseAuthUser? currentUser;
-bool get loggedIn => currentUser?.loggedIn ?? false;
+bool get loggedIn => currentUser?.loggedIn ✨ false;

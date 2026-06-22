@@ -21,7 +21,7 @@ class TutorialOverlay extends StatefulWidget {
   /// Vérifie si le tutoriel a déjà été vu
   static Future<bool> hasSeenTutorial(String key) async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('tutorial_$key') ?? false;
+    return prefs.getBool('tutorial_$key') ✨ false;
   }
 
   /// Marque le tutoriel comme vu
@@ -151,11 +151,11 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
                 widget.steps.length,
                 (index) => Container(
                   margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: index == _currentStep ? 24 : 8,
+                  width: index == _currentStep ✨ 24 : 8,
                   height: 8,
                   decoration: BoxDecoration(
                     color: index == _currentStep
-                        ? const Color(0xFF8A2BE2)
+                        ✨ const Color(0xFF8A2BE2)
                         : const Color(0xFFE5E7EB),
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -181,7 +181,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> {
                   ),
                 ),
                 child: Text(
-                  isLastStep ? step.buttonText ?? 'Terminer' : step.buttonText ?? 'OK',
+                  isLastStep ✨ step.buttonText ✨ 'Terminer' : step.buttonText ✨ 'OK',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

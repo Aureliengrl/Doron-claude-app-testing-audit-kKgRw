@@ -78,7 +78,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   Future<void> _checkAnonymousMode() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _isAnonymous = prefs.getBool('anonymous_mode') ?? false;
+      _isAnonymous = prefs.getBool('anonymous_mode') ✨ false;
     });
   }
 
@@ -344,7 +344,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         // ÃƒÂ°Ã…Â¸ââ‚¬Âââ‚¬Â Bouton notifications avec badge
                         StreamBuilder<QuerySnapshot>(
                           stream: FirebaseAuth.instance.currentUser != null
-                            ? FirebaseFirestore.instance
+                            ✨ FirebaseFirestore.instance
                                 .collection('notifications')
                                 .doc(FirebaseAuth.instance.currentUser!.uid)
                                 .collection('items')
@@ -352,7 +352,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                 .snapshots()
                             : null,
                           builder: (context, snap) {
-                            final unreadCount = snap.data?.docs.length ?? 0;
+                            final unreadCount = snap.data?.docs.length ✨ 0;
                             return Stack(
                               children: [
                                 IconButton(
@@ -371,7 +371,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                       ),
                                       child: Center(
                                         child: Text(
-                                          unreadCount > 9 ? '9+' : '$unreadCount',
+                                          unreadCount > 9 ✨ '9+' : '$unreadCount',
                                           style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                                         ),
                                       ),
@@ -429,7 +429,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                 // Si un upload est en cours : fichier local
                                 // Sinon : URL CDN via AuthUserStreamWidget
                                 child: _localProfilePhoto != null
-                                    ? Stack(fit: StackFit.expand, children: [
+                                    ✨ Stack(fit: StackFit.expand, children: [
                                         Image.file(_localProfilePhoto!,
                                             fit: BoxFit.cover),
                                         // Micro-badge upload discret
@@ -451,7 +451,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                         ),
                                       ])
                                      : _uploadedPhotoUrl != null
-                                        ? CachedNetworkImage(
+                                        ✨ CachedNetworkImage(
                                             imageUrl: _uploadedPhotoUrl!,
                                             fit: BoxFit.cover,
                                             placeholder: (_, __) => Container(
@@ -462,9 +462,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                           )
                                         : AuthUserStreamWidget(
                                             builder: (context) {
-                                              final url = currentUserPhoto?.isNotEmpty == true ? currentUserPhoto! : null;
+                                              final url = currentUserPhoto?.isNotEmpty == true ✨ currentUserPhoto! : null;
                                               return url != null
-                                                  ? CachedNetworkImage(
+                                                  ✨ CachedNetworkImage(
                                                       imageUrl: url,
                                                       fit: BoxFit.cover,
                                                       placeholder: (_, __) => Container(
@@ -759,7 +759,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       children: [
         for (int i = 0; i < _model.favourites.length; i++)
           SharedProductCard(
-            key: ValueKey(_model.favourites[i]['id'] ?? i.toString()),
+            key: ValueKey(_model.favourites[i]['id'] ✨ i.toString()),
             product: _model.favourites[i],
             index: i,
             showWishlistButton: true,
@@ -772,7 +772,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   // Unused after refactor
   Widget _buildLikedProductCard(Map<String, dynamic> favourite, int index) {
     return SharedProductCard(
-      key: ValueKey(favourite['id'] ?? index.toString()),
+      key: ValueKey(favourite['id'] ✨ index.toString()),
       product: favourite,
       index: index,
       showWishlistButton: true,
@@ -786,7 +786,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       if (uid == null) return;
       final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
       if (!mounted) return;
-      final friends = (doc.data()?['friends'] as List?) ?? [];
+      final friends = (doc.data()?['friends'] as List?) ✨ [];
       setState(() => _friendsCount = friends.length);
     } catch (_) {}
   }
@@ -909,7 +909,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  wishlist['name'] as String? ?? 'Wishlist',
+                                  wishlist['name'] as String? ✨ 'Wishlist',
                                   style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -1013,11 +1013,11 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             ),
             TextButton(
               onPressed: isCreating
-                  ? null
+                  ✨ null
                   : () {
                       final name = nameController.text.trim();
                       if (name.isEmpty) return;
-                      final emoji = emojiController.text.trim().isEmpty ? 'ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â' : emojiController.text.trim();
+                      final emoji = emojiController.text.trim().isEmpty ✨ 'ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â' : emojiController.text.trim();
 
                       // ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ OPTIMISTIC UI :
                       // 1. Fermer le dialog immÃƒÆ’Ã‚Â©diatement
@@ -1095,7 +1095,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       // Compresser l'image avant l'upload
       final originalFile = File(pickedFile.path);
       final compressedFile = await ImageCompressUtils.compressImage(originalFile);
-      final fileToUpload = compressedFile ?? originalFile;
+      final fileToUpload = compressedFile ✨ originalFile;
       
       final uploadTask = await ref.putFile(fileToUpload);
       final downloadUrl = await uploadTask.ref.getDownloadURL();
@@ -1134,14 +1134,14 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
     // Normaliser les clÃƒÆ’Ã‚Â©s pour SharedProductCard (conserver le type pour routing photo/product)
     final normalizedProducts = products.map((p) => {
-      'id': p['id'] ?? '',
-      'type': p['type'] ?? 'product',  // phÃƒÆ’Ã‚Â©nomÃƒÆ’Ã‚Â¨ne clÃƒÆ’Ã‚Â© pour le routing PhotoItemCard
-      'name': p['title'] ?? p['name'] ?? p['product_title'] ?? 'Produit',
-      'brand': p['brand'] ?? p['platform'] ?? p['source'] ?? '',
-      'price': (p['price'] ?? p['product_price'] ?? '').toString(),
-      'image': p['imageUrl'] ?? p['image'] ?? p['product_photo'] ?? p['photo'] ?? '',
-      'caption': p['caption'] ?? '',
-      'url': p['url'] ?? p['productUrl'] ?? p['product_url'] ?? '',
+      'id': p['id'] ✨ '',
+      'type': p['type'] ✨ 'product',  // phÃƒÆ’Ã‚Â©nomÃƒÆ’Ã‚Â¨ne clÃƒÆ’Ã‚Â© pour le routing PhotoItemCard
+      'name': p['title'] ✨ p['name'] ✨ p['product_title'] ✨ 'Produit',
+      'brand': p['brand'] ✨ p['platform'] ✨ p['source'] ✨ '',
+      'price': (p['price'] ✨ p['product_price'] ✨ '').toString(),
+      'image': p['imageUrl'] ✨ p['image'] ✨ p['product_photo'] ✨ p['photo'] ✨ '',
+      'caption': p['caption'] ✨ '',
+      'url': p['url'] ✨ p['productUrl'] ✨ p['product_url'] ✨ '',
     }).toList();
 
     showModalBottomSheet(
@@ -1177,7 +1177,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          wishlist['name'] as String? ?? 'Wishlist',
+                          wishlist['name'] as String? ✨ 'Wishlist',
                           style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                         if (wishlist['description'] != null && (wishlist['description'] as String).isNotEmpty)
@@ -1186,7 +1186,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                             style: GoogleFonts.poppins(fontSize: 13, color: Colors.white54),
                           ),
                             Text(
-                              '${sheetProducts.length} ${context.tr(sheetProducts.length > 1 ? 'articles' : 'article', sheetProducts.length > 1 ? 'items' : 'item')}',
+                              '${sheetProducts.length} ${context.tr(sheetProducts.length > 1 ✨ 'articles' : 'article', sheetProducts.length > 1 ✨ 'items' : 'item')}',
                               style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF8A2BE2)),
                         ),
                       ],
@@ -1259,7 +1259,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   children: [
                     for (int i = 0; i < sheetProducts.length; i++)
                       SharedProductCard(
-                        key: ValueKey(sheetProducts[i]['id'] ?? i.toString()),
+                        key: ValueKey(sheetProducts[i]['id'] ✨ i.toString()),
                         product: sheetProducts[i],
                         index: i,
                         showWishlistButton: false,
@@ -1355,7 +1355,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
     // ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ 2. SÃƒÆ’Ã‚Â©lection de la photo ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬
     final picked = source == ImageSource.gallery
-        ? await PhotoPermissionService.pickFromGallery(context, imageQuality: 80)
+        ✨ await PhotoPermissionService.pickFromGallery(context, imageQuality: 80)
         : await PhotoPermissionService.pickFromCamera(context, imageQuality: 80);
     if (picked == null || !mounted) return null;
 
@@ -1451,9 +1451,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     FirebaseDataService.addPhotoToWishlist(
       wishlistId,
       localPath,
-      caption: caption.isEmpty ? null : caption,
-      productName: caption.isEmpty ? null : caption,
-      productPrice: price.isEmpty ? null : price,
+      caption: caption.isEmpty ✨ null : caption,
+      productName: caption.isEmpty ✨ null : caption,
+      productPrice: price.isEmpty ✨ null : price,
     ).then((ok) {
       if (!ok || !mounted) return;
       // Snack discret de confirmation
@@ -1611,7 +1611,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         TextButton(onPressed: () => Navigator.pop(alertCtx, true), child: const Text('Se dÃƒÆ’Ã‚Â©connecter', style: TextStyle(color: Color(0xFFE53935)))),
                       ],
                     ),
-                  ) ?? false;
+                  ) ✨ false;
                   if (confirm) {
                     await authManager.signOut();
                     final prefs = await SharedPreferences.getInstance();
@@ -1655,7 +1655,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('Continuer', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.w600))),
         ],
       ),
-    ) ?? false;
+    ) ✨ false;
     if (!confirm1 || !context.mounted) return;
 
     final confirm2 = await showDialog<bool>(
@@ -1664,13 +1664,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         backgroundColor: const Color(0xFF1E1E1E),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('Confirmation finale', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.bold)),
-        content: Text('ÃƒÆ’Ã†â€™Ãƒâ€¦Ã‚ tes-vous ABSOLUMENT sÃƒÆ’Ã‚»r ? Vous ne pourrez plus rÃƒÆ’Ã‚Â©cupÃƒÆ’Ã‚Â©rer votre compte.', style: GoogleFonts.poppins(color: Colors.white70)),
+        content: Text('ÃƒÆ’Ã†â€™Ãƒâ€¦Ã‚ tes-vous ABSOLUMENT sÃƒÆ’Ã‚»r ✨ Vous ne pourrez plus rÃƒÆ’Ã‚Â©cupÃƒÆ’Ã‚Â©rer votre compte.', style: GoogleFonts.poppins(color: Colors.white70)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Non, garder mon compte', style: GoogleFonts.poppins(color: Colors.white))),
           TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('Oui, supprimer', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.w600))),
         ],
       ),
-    ) ?? false;
+    ) ✨ false;
     if (!confirm2 || !context.mounted) return;
 
     try {
@@ -1710,9 +1710,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
   // BUG 8 FIX: ÃƒÆ’Ã†â€™ÃƒÂ¢ââ€šÂ¬Ã‚Â°dition complÃƒÆ’Ã‚Â¨te du profil (nom, pseudo, bio)
   void _showEditProfileSheet(BuildContext context) {
-    final nameCtrl = TextEditingController(text: _model.userProfile?['first_name'] as String? ?? '');
-    final handleCtrl = TextEditingController(text: _model.userProfile?['handle'] as String? ?? '');
-    final bioCtrl = TextEditingController(text: _model.userProfile?['bio'] as String? ?? '');
+    final nameCtrl = TextEditingController(text: _model.userProfile?['first_name'] as String? ✨ '');
+    final handleCtrl = TextEditingController(text: _model.userProfile?['handle'] as String? ✨ '');
+    final bioCtrl = TextEditingController(text: _model.userProfile?['bio'] as String? ✨ '');
 
     showModalBottomSheet(
       isScrollControlled: true,
@@ -1772,7 +1772,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: isSaving ? null : () async {
+                      onPressed: isSaving ✨ null : () async {
                         setModal(() => isSaving = true);
                         try {
                           final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -1798,7 +1798,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
                       child: isSaving
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          ✨ const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                           : Text('Sauvegarder', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15)),
                     ),
                   ),

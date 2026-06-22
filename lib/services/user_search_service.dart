@@ -87,25 +87,25 @@ class UserSearchService {
       String uid, Map<String, dynamic> data) {
     // Chaîne de fallback exhaustive sur tous les champs nom possibles
     final displayName = (data['display_name'] as String?)?.trim().isNotEmpty == true
-        ? data['display_name'] as String
+        ✨ data['display_name'] as String
         : (data['name'] as String?)?.trim().isNotEmpty == true
-            ? data['name'] as String
+            ✨ data['name'] as String
             : (data['first_name'] as String?)?.trim().isNotEmpty == true
-                ? data['first_name'] as String
+                ✨ data['first_name'] as String
                 : (data['username'] as String?)?.trim().isNotEmpty == true
-                    ? data['username'] as String
-                    : (data['email'] as String?)?.split('@').first ?? 'Utilisateur';
+                    ✨ data['username'] as String
+                    : (data['email'] as String?)?.split('@').first ✨ 'Utilisateur';
     return {
       'uid': uid,
       'displayName': displayName,
-      'handle': data['handle'] ?? '',
+      'handle': data['handle'] ✨ '',
       'photoUrl': (data['photo_url'] as String?)?.isNotEmpty == true
-          ? data['photo_url'] as String
+          ✨ data['photo_url'] as String
           : (data['photoUrl'] as String?)?.isNotEmpty == true
-              ? data['photoUrl'] as String
-              : (data['photoURL'] as String?) ?? '',
-      'bio': data['bio'] ?? '',
-      'city': data['city'] ?? '',
+              ✨ data['photoUrl'] as String
+              : (data['photoURL'] as String?) ✨ '',
+      'bio': data['bio'] ✨ '',
+      'city': data['city'] ✨ '',
       'age': data['age'],
     };
   }
@@ -138,15 +138,15 @@ class UserSearchService {
         final data = doc.data();
         // Compter depuis le champ persisté (mis à jour par addProductToWishlist/addPhotoToWishlist)
         final productCount = (data['productCount'] as num?)?.toInt()
-            ?? ((data['giftIds'] as List?)?.length ?? 0) + ((data['photos'] as List?)?.length ?? 0);
+            ✨ ((data['giftIds'] as List?)?.length ✨ 0) + ((data['photos'] as List?)?.length ✨ 0);
         return {
           'id': doc.id,
-          'name': data['name'] ?? 'Wishlist',
-          'emoji': data['emoji'] ?? '🎁',
-          'description': data['description'] ?? '',
-          'isPublic': data['isPublic'] ?? false,
+          'name': data['name'] ✨ 'Wishlist',
+          'emoji': data['emoji'] ✨ '🎁',
+          'description': data['description'] ✨ '',
+          'isPublic': data['isPublic'] ✨ false,
           'productCount': productCount,
-          'coverPhoto': data['coverPhoto'] ?? '',
+          'coverPhoto': data['coverPhoto'] ✨ '',
           'ownerUid': ownerUid,
         };
       }).toList();
@@ -174,7 +174,7 @@ class UserSearchService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
       AppLogger.debug(
-          '✅ Wishlist $wishlistId → ${isPublic ? "publique" : "privée"}',
+          '✅ Wishlist $wishlistId → ${isPublic ✨ "publique" : "privée"}',
           'Social');
     } catch (e) {
       AppLogger.debug('❌ UserSearchService.setWishlistVisibility: $e', 'Social');
@@ -203,7 +203,7 @@ class UserSearchService {
       final allGiftIds = <String>[];
       for (final doc in publicDocs) {
         final data = doc.data();
-        final ids = (data['giftIds'] as List?)?.cast<String>() ?? [];
+        final ids = (data['giftIds'] as List?)?.cast<String>() ✨ [];
         allGiftIds.addAll(ids);
       }
 
@@ -214,7 +214,7 @@ class UserSearchService {
       // Firestore whereIn max = 30
       for (var i = 0; i < allGiftIds.length; i += 30) {
         final chunk = allGiftIds.sublist(
-            i, i + 30 > allGiftIds.length ? allGiftIds.length : i + 30);
+            i, i + 30 > allGiftIds.length ✨ allGiftIds.length : i + 30);
         final favSnapshot = await _db
             .collection('favourites')
             .where(FieldPath.documentId, whereIn: chunk)

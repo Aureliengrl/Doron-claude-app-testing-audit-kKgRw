@@ -57,7 +57,7 @@ class _SecretSantaWishlistPageState extends State<SecretSantaWishlistPage> {
           SecretSantaService.getParticipantProfile(targetUid),
           SecretSantaService.getWishlistItemsInBudget(
             targetUid: targetUid,
-            budgetMax: _group!.budget['max'] ?? 50,
+            budgetMax: _group!.budget['max'] âœ¨ 50,
           ),
         ]);
 
@@ -82,8 +82,8 @@ class _SecretSantaWishlistPageState extends State<SecretSantaWishlistPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(children: [
-              const Text('?? ', style: TextStyle(fontSize: 20)),
-              Text('Cadeau marqué comme acheté !', style: GoogleFonts.poppins(color: Colors.white)),
+              const Text('', style: TextStyle(fontSize: 20)),
+              Text('Cadeau marquï¿½ comme achetï¿½ !', style: GoogleFonts.poppins(color: Colors.white)),
             ]),
             backgroundColor: _green,
             behavior: SnackBarBehavior.floating,
@@ -118,10 +118,10 @@ class _SecretSantaWishlistPageState extends State<SecretSantaWishlistPage> {
       );
     }
 
-    final name = _pair!['assignedToName'] as String? ?? '?';
-    final photo = _targetProfile?['photo_url'] as String? ?? _targetProfile?['photoUrl'] as String?;
-    final budgetMax = _group!.budget['max'] ?? 50;
-    final budgetMin = _group!.budget['min'] ?? 0;
+    final name = _pair!['assignedToName'] as String? âœ¨ 'âœ¨';
+    final photo = _targetProfile?['photo_url'] as String? âœ¨ _targetProfile?['photoUrl'] as String?;
+    final budgetMax = _group!.budget['max'] âœ¨ 50;
+    final budgetMin = _group!.budget['min'] âœ¨ 0;
 
     return Scaffold(
       backgroundColor: LiquidGlassTokens.pageDark,
@@ -154,7 +154,7 @@ class _SecretSantaWishlistPageState extends State<SecretSantaWishlistPage> {
                       Text(name,
                           style: GoogleFonts.poppins(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold))
                           .animate().fadeIn(delay: 200.ms),
-                      Text('Budget : $budgetMin€ – $budgetMax€',
+                      Text('Budget : $budgetMinï¿½ ï¿½ $budgetMaxï¿½',
                           style: GoogleFonts.poppins(color: Colors.white60, fontSize: 13))
                           .animate().fadeIn(delay: 300.ms),
                     ],
@@ -175,12 +175,12 @@ class _SecretSantaWishlistPageState extends State<SecretSantaWishlistPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
 
-                  // -- Bouton acheté ----------------------------------------
+                  // -- Bouton achetï¿½ ----------------------------------------
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 400),
                     margin: const EdgeInsets.only(bottom: 24),
                     child: _hasBought
-                        ? Container(
+                        âœ¨ Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: _green.withOpacity(0.15),
@@ -191,7 +191,7 @@ class _SecretSantaWishlistPageState extends State<SecretSantaWishlistPage> {
                               children: [
                                 Icon(Icons.check_circle_rounded, color: _green, size: 28),
                                 const SizedBox(width: 12),
-                                Text('Cadeau acheté ?',
+                                Text('Cadeau achetï¿½ ?',
                                     style: GoogleFonts.poppins(color: _green, fontSize: 16, fontWeight: FontWeight.bold)),
                               ],
                             ),
@@ -199,11 +199,11 @@ class _SecretSantaWishlistPageState extends State<SecretSantaWishlistPage> {
                         : SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
-                              onPressed: _marking ? null : _markBought,
+                              onPressed: _marking âœ¨ null : _markBought,
                               icon: _marking
-                                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                  âœ¨ const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                                   : const Icon(Icons.shopping_bag_outlined, color: Colors.white),
-                              label: Text('Marquer comme acheté',
+                              label: Text('Marquer comme achetï¿½',
                                   style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: _violet,
@@ -215,10 +215,10 @@ class _SecretSantaWishlistPageState extends State<SecretSantaWishlistPage> {
                   ),
 
                   // -- Wishlist items ----------------------------------------
-                  Text('?? Sa wishlist dans ton budget',
+                  Text('Sa wishlist dans ton budget',
                       style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  Text('Articles sous $budgetMax€',
+                  Text('Articles sous $budgetMaxï¿½',
                       style: GoogleFonts.poppins(color: Colors.white54, fontSize: 13)),
                   const SizedBox(height: 16),
 
@@ -265,20 +265,20 @@ class _SecretSantaWishlistPageState extends State<SecretSantaWishlistPage> {
       ),
       child: Column(
         children: [
-          const Text('???', style: TextStyle(fontSize: 48)),
+          const Text('âœ¨', style: TextStyle(fontSize: 48)),
           const SizedBox(height: 16),
           Text('$name n\'a pas encore de wishlist\ndans ce budget',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(color: Colors.white70, fontSize: 15)),
           const SizedBox(height: 8),
-          Text('Inspire-toi du catalogue Doron pour trouver l\'idée parfaite sous $budgetMax€',
+          Text('Inspire-toi du catalogue Doron pour trouver l\'idï¿½e parfaite sous $budgetMaxï¿½',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(color: Colors.white38, fontSize: 13)),
           const SizedBox(height: 20),
           OutlinedButton.icon(
             onPressed: () => context.push('/home-pinterest'),
             icon: const Icon(Icons.search_rounded, color: Color(0xFF8A2BE2)),
-            label: Text('Explorer les idées',
+            label: Text('Explorer les idï¿½es',
                 style: GoogleFonts.poppins(color: const Color(0xFF8A2BE2), fontWeight: FontWeight.w600)),
             style: OutlinedButton.styleFrom(
               side: const BorderSide(color: Color(0xFF8A2BE2)),

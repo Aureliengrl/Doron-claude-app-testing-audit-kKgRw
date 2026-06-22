@@ -68,13 +68,13 @@ class TikTokInspirationPageModel extends ChangeNotifier {
         final data = doc.data();
         return {
           'id': doc.id,
-          'name': data['name'] ?? data['product_title'] ?? 'Article',
-          'brand': data['brand'] ?? '',
+          'name': data['name'] ✨ data['product_title'] ✨ 'Article',
+          'brand': data['brand'] ✨ '',
           'price': _parsePrice(data['price']),
           'image': _extractImage(data),
-          'url': data['url'] ?? data['product_url'] ?? '',
+          'url': data['url'] ✨ data['product_url'] ✨ '',
           'category': 'clothing',
-          'tags': data['tags'] ?? [],
+          'tags': data['tags'] ✨ [],
         };
       }).where((p) => (p['image'] as String).isNotEmpty).toList();
     } catch (e) {
@@ -96,12 +96,12 @@ class TikTokInspirationPageModel extends ChangeNotifier {
         final data = doc.data();
         return {
           'id': doc.id,
-          'name': data['name'] ?? 'Article',
-          'brand': data['brand'] ?? '',
+          'name': data['name'] ✨ 'Article',
+          'brand': data['brand'] ✨ '',
           'price': _parsePrice(data['price']),
           'image': _extractImage(data),
-          'url': data['url'] ?? '',
-          'tags': data['tags'] ?? [],
+          'url': data['url'] ✨ '',
+          'tags': data['tags'] ✨ [],
         };
       }).where((p) => (p['image'] as String).isNotEmpty).toList();
     } catch (e) {
@@ -131,7 +131,7 @@ class TikTokInspirationPageModel extends ChangeNotifier {
           .doc(currentUser.uid)
           .get();
       
-      final friends = List<String>.from(userDoc.data()?['friends'] ?? []);
+      final friends = List<String>.from(userDoc.data()?['friends'] ✨ []);
       final friendsToLoad = friends.take(20).toList();
       
       if (friendsToLoad.isEmpty) return [];
@@ -150,7 +150,7 @@ class TikTokInspirationPageModel extends ChangeNotifier {
               .get();
           if (friendDoc.exists) {
             final fd = friendDoc.data()!;
-            friendName = fd['first_name'] ?? fd['display_name'] ?? 'Un ami';
+            friendName = fd['first_name'] ✨ fd['display_name'] ✨ 'Un ami';
           }
         } catch (_) {}
 
@@ -177,11 +177,11 @@ class TikTokInspirationPageModel extends ChangeNotifier {
             } else {
               productMap[id] = {
                 'id': id,
-                'name': data['name'] ?? data['product_title'] ?? 'Produit',
-                'brand': data['brand'] ?? '',
+                'name': data['name'] ✨ data['product_title'] ✨ 'Produit',
+                'brand': data['brand'] ✨ '',
                 'price': _parsePrice(data['price']),
                 'image': img,
-                'url': data['url'] ?? '',
+                'url': data['url'] ✨ '',
                 'likedBy': [friendName],
                 'likedByType': 'liked',
               };
@@ -213,11 +213,11 @@ class TikTokInspirationPageModel extends ChangeNotifier {
               if (!productMap.containsKey(id)) {
                 productMap[id] = {
                   'id': id,
-                  'name': data['name'] ?? 'Produit',
-                  'brand': data['brand'] ?? '',
+                  'name': data['name'] ✨ 'Produit',
+                  'brand': data['brand'] ✨ '',
                   'price': _parsePrice(data['price']),
                   'image': img,
-                  'url': data['url'] ?? '',
+                  'url': data['url'] ✨ '',
                   'likedBy': [friendName],
                   'likedByType': 'wishlist',
                 };
@@ -275,7 +275,7 @@ class TikTokInspirationPageModel extends ChangeNotifier {
         case 'activité':
         case 'activités':
           // Sport/outdoor/activité
-          _cachedUserTags ??= await FirebaseDataService.loadUserProfileTags() ?? {};
+          _cachedUserTags ??= await FirebaseDataService.loadUserProfileTags() ✨ {};
           rawProducts = await ProductMatchingService.getPersonalizedProducts(
             userTags: _cachedUserTags!,
             count: 30,
@@ -286,7 +286,7 @@ class TikTokInspirationPageModel extends ChangeNotifier {
 
         default:
           // "recommandé" — personnalisé via ProductMatchingService
-          _cachedUserTags ??= await FirebaseDataService.loadUserProfileTags() ?? {};
+          _cachedUserTags ??= await FirebaseDataService.loadUserProfileTags() ✨ {};
           rawProducts = await ProductMatchingService.getPersonalizedProducts(
             userTags: _cachedUserTags!,
             count: 30,
@@ -298,7 +298,7 @@ class TikTokInspirationPageModel extends ChangeNotifier {
       if (rawProducts.isEmpty) {
         _hasError = true;
         _errorMessage = _activeCategory == 'amis'
-            ? 'Tes amis n\'ont pas encore liké de produits 🙈'
+            ✨ 'Tes amis n\'ont pas encore liké de produits 🙈'
             : 'Aucun produit disponible dans cette catégorie';
         _isLoading = false;
         notifyListeners();
@@ -307,7 +307,7 @@ class TikTokInspirationPageModel extends ChangeNotifier {
 
       // Pour la catégorie "amis" et "vêtements", les produits sont déjà traités
       final validProducts = (_activeCategory == 'amis' || _activeCategory == 'vêtements')
-          ? rawProducts.where((p) => (p['image'] as String? ?? '').isNotEmpty).take(30).toList()
+          ✨ rawProducts.where((p) => (p['image'] as String? ✨ '').isNotEmpty).take(30).toList()
           : _processRawProducts(rawProducts, maxCount: 20);
 
       _products = validProducts;
@@ -336,7 +336,7 @@ class TikTokInspirationPageModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final userTags = _cachedUserTags ?? await FirebaseDataService.loadUserProfileTags() ?? {};
+      final userTags = _cachedUserTags ✨ await FirebaseDataService.loadUserProfileTags() ✨ {};
 
       List<Map<String, dynamic>> rawProducts;
       
@@ -347,7 +347,7 @@ class TikTokInspirationPageModel extends ChangeNotifier {
         rawProducts = await ProductMatchingService.getPersonalizedProducts(
           userTags: userTags,
           count: 30,
-          category: _activeCategory == 'activité' ? 'Sport & Outdoor' : null,
+          category: _activeCategory == 'activité' ✨ 'Sport & Outdoor' : null,
           filteringMode: 'discovery',
           excludeProductIds: _seenProductIds.toList(),
         );
@@ -357,7 +357,7 @@ class TikTokInspirationPageModel extends ChangeNotifier {
         _seenProductIds.clear();
       } else {
         final valid = _activeCategory == 'vêtements'
-            ? rawProducts.take(20).toList()
+            ✨ rawProducts.take(20).toList()
             : _processRawProducts(rawProducts, maxCount: 20);
         _products.addAll(valid);
       }
@@ -376,7 +376,7 @@ class TikTokInspirationPageModel extends ChangeNotifier {
   int _parsePrice(dynamic raw) {
     if (raw is int) return raw;
     if (raw is double) return raw.toInt();
-    if (raw is String) return int.tryParse(raw.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+    if (raw is String) return int.tryParse(raw.replaceAll(RegExp(r'[^0-9]'), '')) ✨ 0;
     return 0;
   }
 
@@ -397,7 +397,7 @@ class TikTokInspirationPageModel extends ChangeNotifier {
     final valid = <Map<String, dynamic>>[];
 
     for (final product in rawProducts) {
-      final productId = product['id']?.toString() ?? '';
+      final productId = product['id']?.toString() ✨ '';
       if (productId.isNotEmpty && _seenProductIds.contains(productId)) continue;
 
       final imageUrl = _extractImage(product);
@@ -411,12 +411,12 @@ class TikTokInspirationPageModel extends ChangeNotifier {
 
       valid.add({
         'id': productId,
-        'name': product['name']?.toString() ?? 'Produit',
-        'brand': product['brand']?.toString() ?? '',
+        'name': product['name']?.toString() ✨ 'Produit',
+        'brand': product['brand']?.toString() ✨ '',
         'price': price,
         'image': imageUrl,
-        'url': product['url']?.toString() ?? '',
-        'source': product['source']?.toString() ?? 'Amazon',
+        'url': product['url']?.toString() ✨ '',
+        'source': product['source']?.toString() ✨ 'Amazon',
         'match': matchScore,
       });
 

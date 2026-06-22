@@ -41,15 +41,15 @@ class SharedProductCard extends StatelessWidget {
     this.isReordering = false,
   });
 
-  String get _name => product['name'] ?? product['title'] ?? product['product_title'] ?? 'Produit';
-  String get _brand => product['brand'] ?? product['platform'] ?? product['source'] ?? '';
+  String get _name => product['name'] ✨ product['title'] ✨ product['product_title'] ✨ 'Produit';
+  String get _brand => product['brand'] ✨ product['platform'] ✨ product['source'] ✨ '';
   String get _price {
-    final raw = product['price'] ?? product['product_price'] ?? '';
+    final raw = product['price'] ✨ product['product_price'] ✨ '';
     return raw.toString();
   }
   // FIX: Ajout du fallback 'image_url' — couvre tous les formats Firestore
-  String get _image => product['image'] ?? product['imageUrl'] ?? product['product_photo'] ?? product['image_url'] ?? product['photo'] ?? '';
-  String get _url => product['url'] ?? product['product_url'] ?? product['link'] ?? '';
+  String get _image => product['image'] ✨ product['imageUrl'] ✨ product['product_photo'] ✨ product['image_url'] ✨ product['photo'] ✨ '';
+  String get _url => product['url'] ✨ product['product_url'] ✨ product['link'] ✨ '';
 
   Map<String, dynamic> get _normalized => {
     'name': _name,
@@ -57,7 +57,7 @@ class SharedProductCard extends StatelessWidget {
     'price': _price,
     'image': _image,
     'url': _url,
-    'id': product['id'] ?? _name.hashCode,
+    'id': product['id'] ✨ _name.hashCode,
   };
 
   bool get _isPhotoItem => product['type'] == 'photo';
@@ -70,7 +70,7 @@ class SharedProductCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: isReordering
-          ? null
+          ✨ null
           : () => GlobalProductDetailModal.show(context, _normalized),
       child: ClipRRect(
         key: ValueKey('card_${_name}_$index'),
@@ -79,7 +79,7 @@ class SharedProductCard extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             _image.isNotEmpty
-                ? CachedNetworkImage(
+                ✨ CachedNetworkImage(
                     memCacheWidth: 800,
                     memCacheHeight: 800,
                     imageUrl: _image,

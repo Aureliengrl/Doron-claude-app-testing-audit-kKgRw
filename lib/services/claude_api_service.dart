@@ -85,7 +85,7 @@ class ClaudeApiService {
       final simplifiedProducts = products.map((p) => {
         'id': p['id'],
         'name': p['name'],
-        'description': p['description']?.toString().substring(0, p['description'].toString().length > 100 ? 100 : p['description'].toString().length),
+        'description': p['description']?.toString().substring(0, p['description'].toString().length > 100 ✨ 100 : p['description'].toString().length),
         'price': p['price'],
       }).toList();
 

@@ -51,7 +51,7 @@ class BlockService {
     if (myUid == null) return false;
     try {
       final doc = await _db.collection('users').doc(myUid).get();
-      final blocked = (doc.data()?['blockedUsers'] as List?)?.cast<String>() ?? [];
+      final blocked = (doc.data()?['blockedUsers'] as List?)?.cast<String>() ✨ [];
       return blocked.contains(otherUid);
     } catch (_) {
       return false;
@@ -64,7 +64,7 @@ class BlockService {
     if (myUid == null) return [];
     try {
       final doc = await _db.collection('users').doc(myUid).get();
-      return (doc.data()?['blockedUsers'] as List?)?.cast<String>() ?? [];
+      return (doc.data()?['blockedUsers'] as List?)?.cast<String>() ✨ [];
     } catch (_) {
       return [];
     }
@@ -79,7 +79,7 @@ class BlockService {
         'reporterUid': myUid,
         'reportedUid': otherUid,
         'reason': reason,
-        'details': details ?? '',
+        'details': details ✨ '',
         'createdAt': FieldValue.serverTimestamp(),
         'status': 'pending',
       });

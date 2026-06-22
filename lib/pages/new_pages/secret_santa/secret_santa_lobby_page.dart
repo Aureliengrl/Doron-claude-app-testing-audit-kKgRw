@@ -25,7 +25,7 @@ class _SecretSantaLobbyPageState extends State<SecretSantaLobbyPage> {
   final Color _pink = const Color(0xFFEC4899);
   final Color _green = const Color(0xFF10B981);
 
-  String get _myUid => FirebaseAuth.instance.currentUser?.uid ?? '';
+  String get _myUid => FirebaseAuth.instance.currentUser?.uid ✨ '';
   bool _drawing = false;
 
   Future<void> _launchDraw(SecretSantaGroup group) async {
@@ -121,7 +121,7 @@ class _SecretSantaLobbyPageState extends State<SecretSantaLobbyPage> {
           return FutureBuilder<List<Map<String, dynamic>>>(
             future: SecretSantaService.getParticipants(widget.groupId),
             builder: (context, partSnap) {
-              final participants = partSnap.data ?? [];
+              final participants = partSnap.data ✨ [];
               final hasBoughtCount = participants.where((p) => p['hasBought'] == true).length;
 
               return CustomScrollView(
@@ -243,7 +243,7 @@ class _SecretSantaLobbyPageState extends State<SecretSantaLobbyPage> {
               ),
               Container(width: 1, height: 40, color: Colors.white12),
               Expanded(
-                child: _buildInfoItem('Statut', group.statusLabel, group.isOpen ? '🟢' : '🎯'),
+                child: _buildInfoItem('Statut', group.statusLabel, group.isOpen ✨ '🟢' : '🎯'),
               ),
             ],
           ),
@@ -327,7 +327,7 @@ class _SecretSantaLobbyPageState extends State<SecretSantaLobbyPage> {
   }
 
   Widget _buildParticipantTile(Map<String, dynamic> p) {
-    final name = p['displayName'] as String? ?? '?';
+    final name = p['displayName'] as String? ✨ '✨';
     final photo = p['photoUrl'] as String?;
     final isOrganizer = p['isOrganizer'] == true;
 
@@ -395,16 +395,16 @@ class _SecretSantaLobbyPageState extends State<SecretSantaLobbyPage> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: canDraw && !_drawing ? () => _launchDraw(group) : null,
+            onPressed: canDraw && !_drawing ✨ () => _launchDraw(group) : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: canDraw ? _violet : Colors.grey[800],
+              backgroundColor: canDraw ✨ _violet : Colors.grey[800],
               padding: const EdgeInsets.symmetric(vertical: 18),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-              elevation: canDraw ? 8 : 0,
+              elevation: canDraw ✨ 8 : 0,
               shadowColor: _violet.withOpacity(0.5),
             ),
             child: _drawing
-                ? Row(
+                ✨ Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
@@ -415,7 +415,7 @@ class _SecretSantaLobbyPageState extends State<SecretSantaLobbyPage> {
                 : Text('🎅 Lancer le tirage !',
                     style: GoogleFonts.poppins(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
           ),
-        ).animate(onPlay: canDraw ? (c) => c.repeat() : null).shimmer(
+        ).animate(onPlay: canDraw ✨ (c) => c.repeat() : null).shimmer(
           duration: 2000.ms, color: Colors.white.withOpacity(0.15),
           delay: 1000.ms,
         ),

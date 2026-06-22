@@ -17,8 +17,8 @@ import '/components/block_report_sheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-/// Page Amis — 3 onglets : Mes amis / Rechercher / Demandes re�ues
-/// ─ Chaque r�sultat de recherche affiche le statut exact (none/pending/friend)
+/// Page Amis — 3 onglets : Mes amis / Rechercher / Demandes re�ues
+/// ─ Chaque r�sultat de recherche affiche le statut exact (none/pending/friend)
 /// ─ Clic sur profil → /public-profile/:uid (PublicProfilePage)
 class FriendsPage extends StatefulWidget {
   const FriendsPage({super.key});
@@ -43,7 +43,7 @@ class _FriendsPageState extends State<FriendsPage>
   List<Map<String, dynamic>> _searchResults = [];
   bool _isSearching = false;
   String _lastQuery = '';
-  // Cache des statuts d'amiti� pour les r�sultats de recherche
+  // Cache des statuts d'amiti� pour les r�sultats de recherche
   final Map<String, ({FriendshipStatus status, String? requestId})> _statusCache = {};
   final Set<String> _loadingStatuses = {};
 
@@ -51,12 +51,12 @@ class _FriendsPageState extends State<FriendsPage>
   List<String> _searchHistory = [];
   static const String _historyKey = 'friends_search_history';
 
-  // Onglet Demandes — stream temps r�el
+  // Onglet Demandes — stream temps r�el
   Stream<List<Map<String, dynamic>>>? _requestsStream;
   List<Map<String, dynamic>> _pendingRequests = [];
   final Set<String> _processingRequestIds = {};
 
-  // Invitations de collaboration re�ues
+  // Invitations de collaboration re�ues
   Stream<List<Map<String, dynamic>>>? _collabInvitesStream;
   List<Map<String, dynamic>> _pendingCollabInvites = [];
   final Set<String> _processingCollabIds = {};
@@ -71,13 +71,13 @@ class _FriendsPageState extends State<FriendsPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    // Stream temps r�el des demandes d'amis re�ues
+    // Stream temps r�el des demandes d'amis re�ues
     _requestsStream = FriendService.getPendingRequestsStream();
-    // Stream des invitations de collaboration re�ues
+    // Stream des invitations de collaboration re�ues
     _collabInvitesStream = CollaborationService.getMyPendingCollabInvitesStream();
     // Charger l'historique de recherche
     _loadSearchHistory();
-    // Pr�charger les suggestions en arri�re-plan
+    // Pr�charger les suggestions en arri�re-plan
     _loadSuggestions();
   }
 
@@ -93,7 +93,7 @@ class _FriendsPageState extends State<FriendsPage>
   Future<void> _loadSearchHistory() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final history = prefs.getStringList(_historyKey) ?? [];
+      final history = prefs.getStringList(_historyKey) ✨ [];
       if (mounted) setState(() => _searchHistory = history);
     } catch (_) {}
   }
@@ -103,8 +103,8 @@ class _FriendsPageState extends State<FriendsPage>
     try {
       final prefs = await SharedPreferences.getInstance();
       final history = List<String>.from(_searchHistory);
-      history.remove(query.trim()); // �viter doublon
-      history.insert(0, query.trim()); // plus r�cent en premier
+      history.remove(query.trim()); // �viter doublon
+      history.insert(0, query.trim()); // plus r�cent en premier
       if (history.length > 10) history.removeLast();
       await prefs.setStringList(_historyKey, history);
       if (mounted) setState(() => _searchHistory = history);
@@ -141,9 +141,9 @@ class _FriendsPageState extends State<FriendsPage>
           _suggestionsLoading = false;
           _suggestionsLoaded = true;
         });
-        // Charger les statuts d'amiti� pour les suggestions
+        // Charger les statuts d'amiti� pour les suggestions
         for (final s in suggestions) {
-          final uid = s['uid'] as String? ?? '';
+          final uid = s['uid'] as String? ✨ '';
           if (uid.isNotEmpty && !_statusCache.containsKey(uid)) {
             _loadFriendshipStatus(uid);
           }
@@ -172,11 +172,11 @@ class _FriendsPageState extends State<FriendsPage>
       final results = await UserSearchService.searchUsers(query.trim());
       if (mounted) {
         setState(() { _searchResults = results; _isSearching = false; });
-        // Sauvegarder dans l'historique si des r�sultats
+        // Sauvegarder dans l'historique si des r�sultats
         if (results.isNotEmpty) _saveToHistory(query.trim());
-        // Charger les statuts en arri�re-plan
+        // Charger les statuts en arri�re-plan
         for (final r in results) {
-          final uid = r['uid'] as String? ?? '';
+          final uid = r['uid'] as String? ✨ '';
           if (uid.isNotEmpty && !_statusCache.containsKey(uid)) {
             _loadFriendshipStatus(uid);
           }
@@ -188,8 +188,8 @@ class _FriendsPageState extends State<FriendsPage>
     }
   }
 
-  // BUG 12 FIX: _loadingStatuses est maintenant modifi� dans setState()
-  // pour d�clencher correctement les rebuilds (affichage/masquage des spinners).
+  // BUG 12 FIX: _loadingStatuses est maintenant modifi� dans setState()
+  // pour d�clencher correctement les rebuilds (affichage/masquage des spinners).
   Future<void> _loadFriendshipStatus(String uid) async {
     if (mounted) setState(() => _loadingStatuses.add(uid));
     try {
@@ -211,7 +211,7 @@ class _FriendsPageState extends State<FriendsPage>
   }
 
   // ─── Demandes ───────────────────────────────────────────────────────────
-  // Les demandes sont g�r�es via _requestsStream (StreamBuilder) — pas de chargement manuel.
+  // Les demandes sont g�r�es via _requestsStream (StreamBuilder) — pas de chargement manuel.
 
   Future<void> _acceptRequest(String requestId, String fromUid) async {
     setState(() => _processingRequestIds.add(requestId));
@@ -222,7 +222,7 @@ class _FriendsPageState extends State<FriendsPage>
         _processingRequestIds.remove(requestId);
         if (ok) _pendingRequests.removeWhere((r) => r['requestId'] == requestId);
       });
-      _showSnack(ok ? '?? Vous �tes maintenant amis !' : '❌ Erreur', ok ? _green : Colors.red);
+      _showSnack(ok ✨ 'Vous �tes maintenant amis !' : '❌ Erreur', ok ✨ _green : Colors.red);
       if (ok) {
         // Invalider le cache pour cet uid
         _statusCache.remove(fromUid);
@@ -253,9 +253,9 @@ class _FriendsPageState extends State<FriendsPage>
           _processingCollabIds.remove(inviteId);
           _pendingCollabInvites.removeWhere((i) => i['inviteId'] == inviteId);
         });
-        _showSnack('?? Tu as rejoint la liste !', _green);
+        _showSnack('Tu as rejoint la liste !', _green);
         final chatId = result['chatId'] as String?;
-        final profileName = result['profileName'] as String? ?? 'la liste';
+        final profileName = result['profileName'] as String? ✨ 'la liste';
         if (chatId != null) {
           context.push('/chat-room/$chatId', extra: {
             'name': 'Cadeaux pour $profileName',
@@ -294,7 +294,7 @@ class _FriendsPageState extends State<FriendsPage>
           _statusCache[uid] = (status: FriendshipStatus.pendingSent, requestId: requestId);
         }
       });
-      if (requestId != null) _showSnack('✅ Demande envoy�e !', _green);
+      if (requestId != null) _showSnack('✅ Demande envoy�e !', _green);
     }
   }
 
@@ -307,7 +307,7 @@ class _FriendsPageState extends State<FriendsPage>
         _loadingStatuses.remove(uid);
         if (ok) _statusCache[uid] = (status: FriendshipStatus.none, requestId: null);
       });
-      if (ok) _showSnack('Demande annul�e', Colors.grey);
+      if (ok) _showSnack('Demande annul�e', Colors.grey);
     }
   }
 
@@ -321,7 +321,7 @@ class _FriendsPageState extends State<FriendsPage>
         if (ok) _statusCache[uid] = (status: FriendshipStatus.friends, requestId: null);
       });
       if (ok) {
-        _showSnack('?? Vous �tes maintenant amis !', _green);
+        _showSnack('Vous �tes maintenant amis !', _green);
       }
     }
   }
@@ -423,7 +423,7 @@ class _FriendsPageState extends State<FriendsPage>
                     },
                     style: GoogleFonts.poppins(color: Colors.white, fontSize: 15),
                     decoration: InputDecoration(
-                      hintText: 'Rechercher par @pseudo ou pr�nom…',
+                      hintText: 'Rechercher par @pseudo ou pr�nom…',
                       hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 14),
                       border: InputBorder.none,
                     ),
@@ -449,7 +449,7 @@ class _FriendsPageState extends State<FriendsPage>
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: _requestsStream,
       builder: (context, snap) {
-        // Mettre � jour la liste locale avec les donn�es du stream
+        // Mettre � jour la liste locale avec les donn�es du stream
         if (snap.hasData && mounted) _pendingRequests = snap.data!;
         final pendingCount = _pendingRequests.length;
         return Padding(
@@ -469,13 +469,13 @@ class _FriendsPageState extends State<FriendsPage>
             labelStyle: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
             unselectedLabelStyle: GoogleFonts.poppins(fontSize: 13),
             tabs: [
-              const Tab(text: '?? Amis'),
-              const Tab(text: '?? Rechercher'),
+              const Tab(text: 'Amis'),
+              const Tab(text: 'Rechercher'),
               Tab(
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    Text('?? Demandes', style: GoogleFonts.poppins(fontSize: 13)),
+                    Text('Demandes', style: GoogleFonts.poppins(fontSize: 13)),
                     if (pendingCount > 0)
                       Positioned(
                         top: -6,
@@ -508,7 +508,7 @@ class _FriendsPageState extends State<FriendsPage>
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator(color: _violet, strokeWidth: 2));
         }
-        final friends = snapshot.data ?? [];
+        final friends = snapshot.data ✨ [];
         if (friends.isEmpty) {
           return Center(
             child: Column(
@@ -535,10 +535,10 @@ class _FriendsPageState extends State<FriendsPage>
   }
 
   Widget _buildFriendTile(Map<String, dynamic> friend) {
-    final photoUrl = friend['photoUrl'] as String? ?? '';
-    final name = friend['displayName'] as String? ?? 'Utilisateur';
-    final handle = friend['handle'] as String? ?? '';
-    final uid = friend['uid'] as String? ?? friend['id'] as String? ?? '';
+    final photoUrl = friend['photoUrl'] as String? ✨ '';
+    final name = friend['displayName'] as String? ✨ 'Utilisateur';
+    final handle = friend['handle'] as String? ✨ '';
+    final uid = friend['uid'] as String? ✨ friend['id'] as String? ✨ '';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -565,9 +565,9 @@ class _FriendsPageState extends State<FriendsPage>
                       CircleAvatar(
                         radius: 26,
                         backgroundColor: _violet.withOpacity(0.3),
-                        backgroundImage: photoUrl.isNotEmpty ? CachedNetworkImageProvider(photoUrl) : null,
+                        backgroundImage: photoUrl.isNotEmpty ✨ CachedNetworkImageProvider(photoUrl) : null,
                         child: photoUrl.isEmpty
-                            ? Text(name[0].toUpperCase(),
+                            ✨ Text(name[0].toUpperCase(),
                                 style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white))
                             : null,
                       ),
@@ -575,7 +575,7 @@ class _FriendsPageState extends State<FriendsPage>
                         stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
                         builder: (ctx, snap) {
                           if (!snap.hasData || !snap.data!.exists) return const SizedBox.shrink();
-                          final data = snap.data!.data() as Map<String, dynamic>? ?? {};
+                          final data = snap.data!.data() as Map<String, dynamic>? ✨ {};
                           if (data['isOnline'] != true) return const SizedBox.shrink();
                           return Positioned(
                             bottom: 2,
@@ -681,7 +681,7 @@ class _FriendsPageState extends State<FriendsPage>
                 const SizedBox(width: 4),
                 // Menu bloquer/signaler
                 GestureDetector(
-                  onTap: () => BlockReportSheet.show(context, uid: uid, handle: handle.isNotEmpty ? handle : name),
+                  onTap: () => BlockReportSheet.show(context, uid: uid, handle: handle.isNotEmpty ✨ handle : name),
                   child: const Padding(
                     padding: EdgeInsets.all(4),
                     child: Icon(IconlyLight.moreCircle, color: Colors.white38, size: 20),
@@ -723,7 +723,7 @@ class _FriendsPageState extends State<FriendsPage>
           children: [
             const Icon(IconlyLight.profile, size: 64, color: Colors.white24),
             const SizedBox(height: 16),
-            Text('Aucun utilisateur trouv�', style: GoogleFonts.poppins(fontSize: 16, color: Colors.white38)),
+            Text('Aucun utilisateur trouv�', style: GoogleFonts.poppins(fontSize: 16, color: Colors.white38)),
           ],
         ),
       );
@@ -784,7 +784,7 @@ class _FriendsPageState extends State<FriendsPage>
                   children: [
                     const Icon(IconlyLight.search, size: 48, color: Colors.white24),
                     const SizedBox(height: 12),
-                    Text('Cherche par @pseudo ou pr�nom',
+                    Text('Cherche par @pseudo ou pr�nom',
                         style: GoogleFonts.poppins(fontSize: 14, color: Colors.white38)),
                   ],
                 ),
@@ -793,7 +793,7 @@ class _FriendsPageState extends State<FriendsPage>
 
           if (!_suggestionsLoading && _suggestions.isNotEmpty)
             ..._suggestions
-                .where((s) => !_dismissedSuggestions.contains(s['uid'] as String? ?? ''))
+                .where((s) => !_dismissedSuggestions.contains(s['uid'] as String? ✨ ''))
                 .map((s) => _buildSuggestionTile(s)),
         ],
       ),
@@ -814,15 +814,15 @@ class _FriendsPageState extends State<FriendsPage>
   }
 
   Widget _buildSuggestionTile(Map<String, dynamic> suggestion) {
-    final uid = suggestion['uid'] as String? ?? '';
-    final name = suggestion['displayName'] as String? ?? 'Utilisateur';
-    final handle = suggestion['handle'] as String? ?? '';
-    final photoUrl = suggestion['photoUrl'] as String? ?? '';
-    final source = suggestion['source'] as String? ?? '';
-    final mutualCount = suggestion['mutualCount'] as int? ?? 0;
+    final uid = suggestion['uid'] as String? ✨ '';
+    final name = suggestion['displayName'] as String? ✨ 'Utilisateur';
+    final handle = suggestion['handle'] as String? ✨ '';
+    final photoUrl = suggestion['photoUrl'] as String? ✨ '';
+    final source = suggestion['source'] as String? ✨ '';
+    final mutualCount = suggestion['mutualCount'] as int? ✨ 0;
 
     final statusInfo = _statusCache[uid];
-    final status = statusInfo?.status ?? FriendshipStatus.none;
+    final status = statusInfo?.status ✨ FriendshipStatus.none;
     final requestId = statusInfo?.requestId;
 
     String sourceLabel;
@@ -831,7 +831,7 @@ class _FriendsPageState extends State<FriendsPage>
       sourceLabel = 'Dans vos contacts';
       sourceIcon = IconlyLight.user2;
     } else if (mutualCount > 0) {
-      sourceLabel = '$mutualCount ami${mutualCount > 1 ? 's' : ''} en commun';
+      sourceLabel = '$mutualCount ami${mutualCount > 1 ✨ 's' : ''} en commun';
       sourceIcon = IconlyLight.user2;
     } else {
       sourceLabel = 'Suggestion';
@@ -855,9 +855,9 @@ class _FriendsPageState extends State<FriendsPage>
               CircleAvatar(
                 radius: 24,
                 backgroundColor: _violet.withOpacity(0.3),
-                backgroundImage: photoUrl.isNotEmpty ? CachedNetworkImageProvider(photoUrl) : null,
+                backgroundImage: photoUrl.isNotEmpty ✨ CachedNetworkImageProvider(photoUrl) : null,
                 child: photoUrl.isEmpty
-                    ? Text(name[0].toUpperCase(),
+                    ✨ Text(name[0].toUpperCase(),
                         style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white))
                     : null,
               ),
@@ -967,7 +967,7 @@ class _FriendsPageState extends State<FriendsPage>
         children: [
           const Icon(IconlyLight.timeCircle, size: 18, color: Colors.white54),
           const SizedBox(width: 8),
-          Text('Recherches r�centes',
+          Text('Recherches r�centes',
               style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white54)),
           const Spacer(),
           GestureDetector(
@@ -1029,13 +1029,13 @@ class _FriendsPageState extends State<FriendsPage>
     );
   }
 
-  // BUG 7 FIX: m�thode morte supprim�e (_buildSearchHistoryList n'�tait jamais appel�e).
+  // BUG 7 FIX: m�thode morte supprim�e (_buildSearchHistoryList n'�tait jamais appel�e).
 
   Widget _buildSearchResultTile(Map<String, dynamic> profile) {
-    final photoUrl = profile['photoUrl'] as String? ?? '';
-    final name = profile['displayName'] as String? ?? 'Utilisateur';
-    final handle = profile['handle'] as String? ?? '';
-    final uid = profile['uid'] as String? ?? '';
+    final photoUrl = profile['photoUrl'] as String? ✨ '';
+    final name = profile['displayName'] as String? ✨ 'Utilisateur';
+    final handle = profile['handle'] as String? ✨ '';
+    final uid = profile['uid'] as String? ✨ '';
     final cached = _statusCache[uid];
     final isLoadingStatus = _loadingStatuses.contains(uid);
 
@@ -1062,9 +1062,9 @@ class _FriendsPageState extends State<FriendsPage>
                     CircleAvatar(
                       radius: 26,
                       backgroundColor: _pink.withOpacity(0.3),
-                      backgroundImage: photoUrl.isNotEmpty ? CachedNetworkImageProvider(photoUrl) : null,
+                      backgroundImage: photoUrl.isNotEmpty ✨ CachedNetworkImageProvider(photoUrl) : null,
                       child: photoUrl.isEmpty
-                          ? Text(name[0].toUpperCase(),
+                          ✨ Text(name[0].toUpperCase(),
                               style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white))
                           : null,
                     ),
@@ -1135,7 +1135,7 @@ class _FriendsPageState extends State<FriendsPage>
           label: 'En attente… (annuler)',
           icon: Icons.hourglass_top_rounded,
           color: Colors.grey.shade600,
-          onTap: cached.requestId != null ? () => _cancelRequest(uid, cached.requestId!) : null,
+          onTap: cached.requestId != null ✨ () => _cancelRequest(uid, cached.requestId!) : null,
         );
 
       case FriendshipStatus.pendingReceived:
@@ -1146,7 +1146,7 @@ class _FriendsPageState extends State<FriendsPage>
                 label: context.tr('Accepter', 'Accept'),
                 icon: Icons.check_rounded,
                 gradient: [_green, const Color(0xFF059669)],
-                onTap: cached.requestId != null ? () => _acceptFromSearch(uid, cached.requestId!) : null,
+                onTap: cached.requestId != null ✨ () => _acceptFromSearch(uid, cached.requestId!) : null,
               ),
             ),
             const SizedBox(width: 8),
@@ -1155,7 +1155,7 @@ class _FriendsPageState extends State<FriendsPage>
                 label: context.tr('Refuser', 'Decline'),
                 icon: Icons.close_rounded,
                 color: Colors.red.shade700,
-                onTap: cached.requestId != null ? () async {
+                onTap: cached.requestId != null ✨ () async {
                   await FriendService.declineRequest(cached.requestId!);
                   if (mounted) setState(() => _statusCache[uid] = (status: FriendshipStatus.none, requestId: null));
                 } : null,
@@ -1203,8 +1203,8 @@ class _FriendsPageState extends State<FriendsPage>
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
-          gradient: gradient != null ? LinearGradient(colors: gradient) : null,
-          color: gradient == null ? (color ?? Colors.grey.shade700) : null,
+          gradient: gradient != null ✨ LinearGradient(colors: gradient) : null,
+          color: gradient == null ✨ (color ✨ Colors.grey.shade700) : null,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
@@ -1224,7 +1224,7 @@ class _FriendsPageState extends State<FriendsPage>
   Widget _buildPendingRequests() {
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: _requestsStream,
-      initialData: const [], // ← FIX: �vite le spinner infini
+      initialData: const [], // ← FIX: �vite le spinner infini
       builder: (context, friendSnap) {
         // Erreur sur le stream
         if (friendSnap.hasError) {
@@ -1250,22 +1250,22 @@ class _FriendsPageState extends State<FriendsPage>
                     _requestsStream = FriendService.getPendingRequestsStream();
                     _collabInvitesStream = CollaborationService.getMyPendingCollabInvitesStream();
                   }),
-                  child: Text('R�essayer', style: GoogleFonts.poppins(color: _violet)),
+                  child: Text('R�essayer', style: GoogleFonts.poppins(color: _violet)),
                 ),
               ],
             ),
           );
         }
-        // Stream collab s�par� — ne bloque PAS l'affichage des demandes d'amis
+        // Stream collab s�par� — ne bloque PAS l'affichage des demandes d'amis
         return StreamBuilder<List<Map<String, dynamic>>>(
           stream: _collabInvitesStream,
           initialData: const [], // Valeur initiale vide pour ne pas bloquer
           builder: (context, collabSnap) {
 
-            final friendRequests = friendSnap.data ?? [];
-            final collabInvites = collabSnap.data ?? [];
+            final friendRequests = friendSnap.data ✨ [];
+            final collabInvites = collabSnap.data ✨ [];
 
-            // Mettre � jour les listes locales
+            // Mettre � jour les listes locales
             _pendingRequests = friendRequests;
             _pendingCollabInvites = collabInvites;
 
@@ -1278,7 +1278,7 @@ class _FriendsPageState extends State<FriendsPage>
                     const SizedBox(height: 20),
                     Text('Aucune demande en attente', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white54)),
                     const SizedBox(height: 8),
-                    Text('Les demandes d\'amis et collaborations appara�tront ici', style: GoogleFonts.poppins(fontSize: 14, color: Colors.white30)),
+                    Text('Les demandes d\'amis et collaborations appara�tront ici', style: GoogleFonts.poppins(fontSize: 14, color: Colors.white30)),
                   ],
                 ),
               );
@@ -1329,11 +1329,11 @@ class _FriendsPageState extends State<FriendsPage>
   }
 
   Widget _buildPendingRequestTile(Map<String, dynamic> request) {
-    final requestId = request['requestId'] as String? ?? '';
-    final fromUid = request['fromUid'] as String? ?? '';
-    final name = request['displayName'] as String? ?? 'Utilisateur';
-    final handle = request['handle'] as String? ?? '';
-    final photoUrl = request['photoUrl'] as String? ?? '';
+    final requestId = request['requestId'] as String? ✨ '';
+    final fromUid = request['fromUid'] as String? ✨ '';
+    final name = request['displayName'] as String? ✨ 'Utilisateur';
+    final handle = request['handle'] as String? ✨ '';
+    final photoUrl = request['photoUrl'] as String? ✨ '';
     final isProcessing = _processingRequestIds.contains(requestId);
 
     return Padding(
@@ -1355,9 +1355,9 @@ class _FriendsPageState extends State<FriendsPage>
               child: CircleAvatar(
                 radius: 26,
                 backgroundColor: _violet.withOpacity(0.3),
-                backgroundImage: photoUrl.isNotEmpty ? CachedNetworkImageProvider(photoUrl) : null,
+                backgroundImage: photoUrl.isNotEmpty ✨ CachedNetworkImageProvider(photoUrl) : null,
                 child: photoUrl.isEmpty
-                    ? Text(name[0].toUpperCase(),
+                    ✨ Text(name[0].toUpperCase(),
                         style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white))
                     : null,
               ),
@@ -1427,10 +1427,10 @@ class _FriendsPageState extends State<FriendsPage>
   }
 
   Widget _buildCollabInviteTile(Map<String, dynamic> invite) {
-    final inviteId = invite['inviteId'] as String? ?? '';
-    final fromName = invite['fromName'] as String? ?? 'Quelqu\'un';
-    final fromPhotoUrl = invite['fromPhotoUrl'] as String? ?? '';
-    final profileName = invite['profileName'] as String? ?? 'une liste';
+    final inviteId = invite['inviteId'] as String? ✨ '';
+    final fromName = invite['fromName'] as String? ✨ 'Quelqu\'un';
+    final fromPhotoUrl = invite['fromPhotoUrl'] as String? ✨ '';
+    final profileName = invite['profileName'] as String? ✨ 'une liste';
     final isProcessing = _processingCollabIds.contains(inviteId);
     const amber = Color(0xFFF59E0B);
 
@@ -1450,9 +1450,9 @@ class _FriendsPageState extends State<FriendsPage>
             CircleAvatar(
               radius: 26,
               backgroundColor: amber.withOpacity(0.3),
-              backgroundImage: fromPhotoUrl.isNotEmpty ? CachedNetworkImageProvider(fromPhotoUrl) : null,
+              backgroundImage: fromPhotoUrl.isNotEmpty ✨ CachedNetworkImageProvider(fromPhotoUrl) : null,
               child: fromPhotoUrl.isEmpty
-                  ? Text(fromName[0].toUpperCase(),
+                  ✨ Text(fromName[0].toUpperCase(),
                       style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white))
                   : null,
             ),
@@ -1463,7 +1463,7 @@ class _FriendsPageState extends State<FriendsPage>
                 children: [
                   Text(fromName, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
                   const SizedBox(height: 2),
-                  Text('t\'invite � collaborer sur', style: GoogleFonts.poppins(fontSize: 11, color: Colors.white54)),
+                  Text('t\'invite � collaborer sur', style: GoogleFonts.poppins(fontSize: 11, color: Colors.white54)),
                   const SizedBox(height: 2),
                   Row(
                     children: [

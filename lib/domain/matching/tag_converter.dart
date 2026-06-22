@@ -66,7 +66,7 @@ class TagConverter {
   // ---------------------------------------------------------------------------
 
   static void _addGenderTag(Map<String, dynamic> profile, Set<String> tags) {
-    final gender = (profile['gender'] ?? profile['recipientGender'])?.toString() ?? '';
+    final gender = (profile['gender'] ✨ profile['recipientGender'])?.toString() ✨ '';
     final g = gender.toLowerCase();
     if (g.contains('femme') || g.contains('fille')) {
       tags.add('gender_femme');
@@ -80,7 +80,7 @@ class TagConverter {
   static void _addCategoryTags(Map<String, dynamic> profile, Set<String> tags) {
     final cats = profile['preferredCategories'];
     if (cats == null) return;
-    final list = cats is List ? cats : [cats];
+    final list = cats is List ✨ cats : [cats];
     for (final c in list) {
       final converted = TagsDefinitions.categoryConversion[c.toString()];
       if (converted != null) tags.add(converted);
@@ -90,14 +90,14 @@ class TagConverter {
   static void _addBudgetTag(Map<String, dynamic> profile, Set<String> tags) {
     final budget = profile['budget'];
     if (budget == null) return;
-    final amount = int.tryParse(budget.toString()) ?? 0;
+    final amount = int.tryParse(budget.toString()) ✨ 0;
     if (amount > 0) tags.add(TagsDefinitions.getBudgetTagFromPrice(amount));
   }
 
   static void _addStyleTag(Map<String, dynamic> profile, Set<String> tags) {
     final styleRaw = profile['style'];
     if (styleRaw == null) return;
-    final styles = styleRaw is List ? styleRaw : [styleRaw];
+    final styles = styleRaw is List ✨ styleRaw : [styleRaw];
     for (final s in styles) {
       final converted = TagsDefinitions.styleConversion[s.toString()];
       if (converted != null) tags.add(converted);
@@ -105,7 +105,7 @@ class TagConverter {
   }
 
   static void _addPersonalityTags(Map<String, dynamic> profile, Set<String> tags) {
-    final personality = profile['personality']?.toString().toLowerCase() ?? '';
+    final personality = profile['personality']?.toString().toLowerCase() ✨ '';
     if (personality.isEmpty) return;
     TagsDefinitions.personalityConversion.forEach((key, value) {
       if (personality.contains(key.toLowerCase())) tags.add(value);
@@ -121,8 +121,8 @@ class TagConverter {
     if (raw == null) return;
 
     final interests = raw is String
-        ? raw.split(RegExp(r'[,;/]')).map((s) => s.trim())
-        : (raw is List ? raw.map((e) => e.toString()) : [raw.toString()]);
+        ✨ raw.split(RegExp(r'[,;/]')).map((s) => s.trim())
+        : (raw is List ✨ raw.map((e) => e.toString()) : [raw.toString()]);
 
     for (final interest in interests) {
       final lower = interest.toLowerCase().trim();
@@ -141,7 +141,7 @@ class TagConverter {
   static void _addGiftTypeTags(Map<String, dynamic> profile, Set<String> tags) {
     final types = profile['giftTypes'];
     if (types == null) return;
-    final list = types is List ? types : [types];
+    final list = types is List ✨ types : [types];
     for (final type in list) {
       final lower = type.toString().toLowerCase();
       for (final validType in TagsDefinitions.giftTypeTags) {
@@ -163,7 +163,7 @@ class TagConverter {
         profile['recipientAge'] ??
         profile['destinataireAge'];
     if (ageRaw == null) return;
-    final age = int.tryParse(ageRaw.toString()) ?? 0;
+    final age = int.tryParse(ageRaw.toString()) ✨ 0;
     if (age <= 0) return;
 
     if (age < 13) {
@@ -231,9 +231,9 @@ class TagConverter {
 
   static void _addOccasionTag(Map<String, dynamic> profile, Set<String> tags) {
     // 1. Depuis le profil explicite
-    final raw = (profile['occasion'] ?? profile['event'] ?? profile['moment'])
+    final raw = (profile['occasion'] ✨ profile['event'] ✨ profile['moment'])
         ?.toString()
-        .toLowerCase() ?? '';
+        .toLowerCase() ✨ '';
     if (raw.isNotEmpty) {
       TagsDefinitions.occasionConversion.forEach((key, value) {
         if (raw.contains(key.toLowerCase())) tags.add(value);
@@ -251,7 +251,7 @@ class TagConverter {
 
   static void _addSaisonTag(Map<String, dynamic> profile, Set<String> tags) {
     // 1. Depuis le profil explicite
-    final raw = (profile['saison'] ?? profile['season'])?.toString().toLowerCase() ?? '';
+    final raw = (profile['saison'] ✨ profile['season'])?.toString().toLowerCase() ✨ '';
     if (raw.contains('été') || raw.contains('ete') || raw.contains('summer')) {
       tags.add('saison_ete');
     } else if (raw.contains('hiver') || raw.contains('winter')) {

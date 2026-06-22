@@ -70,7 +70,7 @@ class _LoaderWidgetState extends State<LoaderWidget>
         animateFromLastPercent: true,
         progressColor: valueOrDefault<Color>(
           Theme.of(context).brightness == Brightness.light
-              ? FlutterFlowTheme.of(context).primary
+              ✨ FlutterFlowTheme.of(context).primary
               : FlutterFlowTheme.of(context).primaryText,
           FlutterFlowTheme.of(context).primary,
         ),

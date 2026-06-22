@@ -63,22 +63,22 @@ class _OnboardingGiftsResultWidgetState
     final personId = goRouterState.uri.queryParameters['personId'];
     _returnTo = goRouterState.uri.queryParameters['returnTo'];
 
-    // ?? NOUVEAU: Récupérer les données passées via extra (assistant vocal)
+    // ✨ NOUVEAU: Récupérer les données passées via extra (assistant vocal)
     final extraData = goRouterState.extra;
-    AppLogger.debug('?? Extra data détecté: ${extraData != null ? "OUI" : "NON"}', 'Debug');
+    AppLogger.debug('Extra data détecté: ${extraData != null ✨ "OUI" : "NON"}', 'Debug');
 
     if (extraData != null && extraData is Map<String, dynamic>) {
-      AppLogger.debug('? Profil vocal reçu via extra: ${extraData.keys.join(", ")}', 'Debug');
+      AppLogger.debug('Profil vocal reçu via extra: ${extraData.keys.join(", ")}', 'Debug');
       _model.setVoiceProfile(extraData);
     }
 
     if (personId != null) {
       _model.setPersonId(personId);
-      AppLogger.debug('? PersonId détecté: $personId', 'Debug');
+      AppLogger.debug('PersonId détecté: $personId', 'Debug');
     }
 
     if (_returnTo != null) {
-      AppLogger.debug('? ReturnTo détecté: $_returnTo', 'Debug');
+      AppLogger.debug('ReturnTo détecté: $_returnTo', 'Debug');
     }
 
     _loadGifts();
@@ -96,20 +96,20 @@ class _OnboardingGiftsResultWidgetState
     try {
       Map<String, dynamic>? profileForGeneration;
 
-      // ?? PRIORITÉ 1: Si profil vocal existe (assistant vocal), l'utiliser
+      // ✨ PRIORITÉ 1: Si profil vocal existe (assistant vocal), l'utiliser
       if (_model.voiceProfile != null) {
-        AppLogger.debug('?? Utilisation du profil vocal pour génération', 'Debug');
+        AppLogger.debug('Utilisation du profil vocal pour génération', 'Debug');
         profileForGeneration = _model.voiceProfile;
-        AppLogger.debug('? Profil vocal: ${profileForGeneration!.keys.join(", ")}', 'Debug');
+        AppLogger.debug('Profil vocal: ${profileForGeneration!.keys.join(", ")}', 'Debug');
       }
-      // ?? PRIORITÉ 2: Si un personId est spécifié, charger les tags de la personne
+      // ✨ PRIORITÉ 2: Si un personId est spécifié, charger les tags de la personne
       else if (_model.personId != null) {
-        AppLogger.debug('?? Chargement direct par ID: ${_model.personId}', 'Debug');
+        AppLogger.debug('Chargement direct par ID: ${_model.personId}', 'Debug');
 
         final person = await FirebaseDataService.loadPersonById(_model.personId!);
 
         if (person == null) {
-          AppLogger.debug('? Person not found! Looking for ID: ${_model.personId}', 'Debug');
+          AppLogger.debug('Person not found! Looking for ID: ${_model.personId}', 'Debug');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -144,29 +144,29 @@ class _OnboardingGiftsResultWidgetState
 
         _model.setPersonTags(personTags);
         profileForGeneration = personTags;
-        AppLogger.debug('? Tags de personne chargés: ${personTags.keys.join(", ")}', 'Debug');
+        AppLogger.debug('Tags de personne chargés: ${personTags.keys.join(", ")}', 'Debug');
       }
-      // ?? PRIORITÉ 3: Ancienne méthode (compatibilité)
+      // ✨ PRIORITÉ 3: Ancienne méthode (compatibilité)
       else {
-        AppLogger.debug('?? Chargement du profil onboarding (mode compatibilité)', 'Debug');
+        AppLogger.debug('Chargement du profil onboarding (mode compatibilité)', 'Debug');
         final userProfile = await FirebaseDataService.loadOnboardingAnswers();
         _model.setUserProfile(userProfile);
         profileForGeneration = userProfile;
       }
 
       if (profileForGeneration == null || profileForGeneration.isEmpty) {
-        AppLogger.debug('?? Aucun profil trouvé pour la génération - utilisation du mode découverte', 'Debug');
+        AppLogger.debug('Aucun profil trouvé pour la génération - utilisation du mode découverte', 'Debug');
         profileForGeneration = {};
       }
 
       // ----------------------------------------------------------------
-      // ?? NOUVELLE LOGIQUE : Charger les wishlists Doron si handle connu
+      // ✨ NOUVELLE LOGIQUE : Charger les wishlists Doron si handle connu
       // ----------------------------------------------------------------
       List<Map<String, dynamic>> wishlistGifts = [];
-      final personHandle = (profileForGeneration['username'] ?? profileForGeneration['personIdentifier'] ?? '').toString().replaceAll('@', '').trim().toLowerCase();
+      final personHandle = (profileForGeneration['username'] ✨ profileForGeneration['personIdentifier'] ✨ '').toString().replaceAll('@', '').trim().toLowerCase();
 
       if (personHandle.isNotEmpty) {
-        AppLogger.debug('?? Recherche compte Doron pour handle: @$personHandle', 'Debug');
+        AppLogger.debug('Recherche compte Doron pour handle: @$personHandle', 'Debug');
         try {
           // Trouver l'UID par le handle
           final userQuery = await FirebaseFirestore.instance
@@ -177,7 +177,7 @@ class _OnboardingGiftsResultWidgetState
 
           if (userQuery.docs.isNotEmpty) {
             final targetUid = userQuery.docs.first.id;
-            AppLogger.debug('? Compte Doron trouvé: $targetUid', 'Debug');
+            AppLogger.debug('Compte Doron trouvé: $targetUid', 'Debug');
 
             // Charger ses wishlists
             final wishlistsSnap = await FirebaseFirestore.instance
@@ -199,16 +199,16 @@ class _OnboardingGiftsResultWidgetState
 
               for (final p in productsSnap.docs) {
                 final data = p.data();
-                final imageUrl = data['imageUrl'] ?? data['image'] ?? data['product_photo'] ?? data['photo'] ?? '';
+                final imageUrl = data['imageUrl'] ✨ data['image'] ✨ data['product_photo'] ✨ data['photo'] ✨ '';
                 if (imageUrl.toString().startsWith('http')) {
                   wishlistGifts.add({
                     'id': p.id,
-                    'name': data['title'] ?? data['name'] ?? data['product_title'] ?? 'Cadeau wishlist',
-                    'brand': data['brand'] ?? data['platform'] ?? data['source'] ?? '@$personHandle',
-                    'price': data['price'] ?? data['product_price'] ?? 0,
+                    'name': data['title'] ✨ data['name'] ✨ data['product_title'] ✨ 'Cadeau wishlist',
+                    'brand': data['brand'] ✨ data['platform'] ✨ data['source'] ✨ '@$personHandle',
+                    'price': data['price'] ✨ data['product_price'] ✨ 0,
                     'image': imageUrl,
-                    'url': data['url'] ?? data['productUrl'] ?? data['product_url'] ?? '',
-                    'categories': data['categories'] ?? [],
+                    'url': data['url'] ✨ data['productUrl'] ✨ data['product_url'] ✨ '',
+                    'categories': data['categories'] ✨ [],
                     'match': 95, // Score élevé car vient de sa vraie wishlist
                     'fromWishlist': true, // Badge spécial
                     'wishlistOwner': '@$personHandle',
@@ -216,12 +216,12 @@ class _OnboardingGiftsResultWidgetState
                 }
               }
             }
-            AppLogger.debug('? ${wishlistGifts.length} produits récupérés depuis les wishlists Doron de @$personHandle', 'Debug');
+            AppLogger.debug('${wishlistGifts.length} produits récupérés depuis les wishlists Doron de @$personHandle', 'Debug');
           } else {
-            AppLogger.debug('?? Aucun compte Doron trouvé pour @$personHandle  fallback classique', 'Debug');
+            AppLogger.debug('Aucun compte Doron trouvé pour @$personHandle  fallback classique', 'Debug');
           }
         } catch (e) {
-          AppLogger.debug('?? Erreur récupération wishlists Doron (non bloquant): $e', 'Debug');
+          AppLogger.debug('Erreur récupération wishlists Doron (non bloquant): $e', 'Debug');
         }
       }
       // ----------------------------------------------------------------
@@ -229,13 +229,13 @@ class _OnboardingGiftsResultWidgetState
       // Charger les IDs des produits déjà vus pour refresh intelligent
       final prefs = await SharedPreferences.getInstance();
       final seenProductIds = prefs.getStringList('seen_gift_product_ids')
-          ?.map((s) => int.tryParse(s) ?? 0).toList() ?? [];
+          ?.map((s) => int.tryParse(s) ✨ 0).toList() ✨ [];
 
-      // ?? Générer les cadeaux via ProductMatchingService
+      // ✨ Générer les cadeaux via ProductMatchingService
       final rawGifts = await ProductMatchingService.getPersonalizedProducts(
-        userTags: profileForGeneration ?? {},
+        userTags: profileForGeneration ✨ {},
         count: 50,
-        excludeProductIds: forceRefresh ? seenProductIds : null,
+        excludeProductIds: forceRefresh ✨ seenProductIds : null,
         filteringMode: "person",
       );
 
@@ -249,18 +249,18 @@ class _OnboardingGiftsResultWidgetState
         }
         final matchScore = product['_matchScore'];
         final matchScoreInt = matchScore is int
-            ? matchScore
-            : (matchScore is double ? matchScore.toInt() : 0);
+            ✨ matchScore
+            : (matchScore is double ✨ matchScore.toInt() : 0);
         return {
           'id': product['id'],
-          'name': product['name'] ?? 'Produit',
-          'brand': product['brand'] ?? 'Amazon',
-          'price': product['price'] ?? 0,
+          'name': product['name'] ✨ 'Produit',
+          'brand': product['brand'] ✨ 'Amazon',
+          'price': product['price'] ✨ 0,
           'image': imageUrl,
           // FIX-URL: ProductUrlService cherche buyLinks[0].url en priorité (vraie URL directe)
           'url': ProductUrlService.generateProductUrl(product),
           'buyLinks': product['buyLinks'], // conserver pour le modal comparateur
-          'categories': product['categories'] ?? [],
+          'categories': product['categories'] ✨ [],
           'match': matchScoreInt.clamp(0, 100),
           'fromWishlist': false,
         };
@@ -269,12 +269,12 @@ class _OnboardingGiftsResultWidgetState
         final hasImage = product['image'] != null &&
                          product['image'].toString().isNotEmpty &&
                          product['image'].toString().startsWith('http');
-        if (!hasImage) AppLogger.debug('?? Produit "${product['name']}" filtré: pas d\'image valide', 'Debug');
+        if (!hasImage) AppLogger.debug('Produit "${product['name']}" filtré: pas d\'image valide', 'Debug');
         return hasImage;
       })
       .toList();
 
-      // ?? Fusionner : wishlists Doron en PREMIER, puis IA
+      // ✨ Fusionner : wishlists Doron en PREMIER, puis IA
       final gifts = [...wishlistGifts, ...aiGifts];
 
       // Mettre à jour le cache des produits vus
@@ -291,7 +291,7 @@ class _OnboardingGiftsResultWidgetState
         await prefs.setStringList('seen_gift_product_ids', newSeenIds);
       }
 
-      AppLogger.debug('?? gifts total: {gifts.length}', 'Debug');
+      AppLogger.debug('gifts total: {gifts.length}', 'Debug');
 
       if (mounted) {
         setState(() {
@@ -303,7 +303,7 @@ class _OnboardingGiftsResultWidgetState
         });
       }
 
-      // ?? AUTO-SAUVEGARDE si premi\u00e8re g\u00e9n\u00e9ration
+      // ✨ AUTO-SAUVEGARDE si premi\u00e8re g\u00e9n\u00e9ration
       if (_model.personId != null && gifts.isNotEmpty) {
         try {
           final people = await FirebaseDataService.loadPeople();
@@ -313,33 +313,33 @@ class _OnboardingGiftsResultWidgetState
           );
           final isPendingFirstGen = person['meta']?['isPendingFirstGen'] == true;
           if (isPendingFirstGen && !forceRefresh) {
-            AppLogger.debug('?? Auto-sauvegarde: première génération détectée', 'Debug');
+            AppLogger.debug('Auto-sauvegarde: première génération détectée', 'Debug');
             final listName = 'Liste ${DateTime.now().day}/${DateTime.now().month}';
             final listId = await FirebaseDataService.saveGiftListForPerson(
               personId: _model.personId!,
               gifts: gifts,
               listName: listName,
             );
-            AppLogger.debug('? ${gifts.length} cadeaux auto-sauvegardés (liste: $listId)', 'Debug');
+            AppLogger.debug('${gifts.length} cadeaux auto-sauvegardés (liste: $listId)', 'Debug');
             await FirebaseDataService.updatePersonPendingFlag(_model.personId!, false);
             await FirebaseDataService.setCurrentPersonContext(_model.personId!);
           }
         } catch (e) {
-          AppLogger.debug('?? Erreur auto-sauvegarde (non-bloquant): $e', 'Debug');
+          AppLogger.debug('Erreur auto-sauvegarde (non-bloquant): $e', 'Debug');
         }
       }
     } catch (e) {
-      AppLogger.debug('? Erreur chargement cadeaux: $e', 'Debug');
+      AppLogger.debug('Erreur chargement cadeaux: $e', 'Debug');
       String errorMessage = 'Erreur de génération des cadeaux';
       String errorDetails = e.toString();
       if (errorDetails.contains('SocketException') || errorDetails.contains('Network')) {
-        errorMessage = '?? Pas de connexion internet';
+        errorMessage = 'Pas de connexion internet';
         errorDetails = 'Vérifie ta connexion internet et réessaye.';
       } else if (errorDetails.contains('firebase')) {
-        errorMessage = '?? Erreur Firebase';
+        errorMessage = 'Erreur Firebase';
         errorDetails = 'Impossible de charger les produits. Réessaye plus tard.';
       } else {
-        errorMessage = '?? Erreur de chargement';
+        errorMessage = 'Erreur de chargement';
         errorDetails = 'Une erreur est survenue. Réessaye.';
       }
       if (mounted) {
@@ -359,7 +359,7 @@ class _OnboardingGiftsResultWidgetState
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       }
     } catch (e) {
-      AppLogger.debug('? Erreur ouverture URL: $e', 'Debug');
+      AppLogger.debug('Erreur ouverture URL: $e', 'Debug');
     }
   }
 
@@ -398,11 +398,11 @@ class _OnboardingGiftsResultWidgetState
                   // Contenu
                   Expanded(
                     child: _model.isLoading
-                        ? _buildLoader()
+                        ✨ _buildLoader()
                         : _model.errorMessage != null
-                            ? _buildErrorState()
+                            ✨ _buildErrorState()
                             : _model.gifts.isEmpty
-                                ? _buildEmptyState()
+                                ✨ _buildEmptyState()
                                 : _buildGiftsList(),
                   ),
 
@@ -440,7 +440,7 @@ class _OnboardingGiftsResultWidgetState
 
   Widget _buildHeader() {
     final personHandle = _model.personTags != null
-        ? ((_model.personTags!['username'] ?? _model.personTags!['personIdentifier'] ?? '') as String)
+        ✨ ((_model.personTags!['username'] ✨ _model.personTags!['personIdentifier'] ✨ '') as String)
             .replaceAll('@', '').trim()
         : '';
     final hasWishlistGifts = _model.gifts.any((g) => g['fromWishlist'] == true);
@@ -456,7 +456,7 @@ class _OnboardingGiftsResultWidgetState
                 onPressed: () {
                   if (!mounted) return;
                   if (_returnTo != null && _returnTo!.isNotEmpty) {
-                    AppLogger.debug('?? Retour vers: $_returnTo', 'Debug');
+                    AppLogger.debug('Retour vers: $_returnTo', 'Debug');
                     context.go(_returnTo!);
                   } else {
                     context.go('/search-page');
@@ -464,11 +464,11 @@ class _OnboardingGiftsResultWidgetState
                 },
                 icon: Icon(
                   _returnTo != null && _returnTo!.isNotEmpty
-                      ? Icons.arrow_back
+                      ✨ Icons.arrow_back
                       : Icons.close,
                   color: violetColor,
                 ),
-                tooltip: _returnTo != null && _returnTo!.isNotEmpty ? 'Retour' : 'Fermer',
+                tooltip: _returnTo != null && _returnTo!.isNotEmpty ✨ 'Retour' : 'Fermer',
               ),
               Icon(Icons.auto_awesome, color: violetColor, size: 32),
               const SizedBox(width: 12),
@@ -486,12 +486,12 @@ class _OnboardingGiftsResultWidgetState
                     ),
                     Text(
                       hasWishlistGifts && personHandle.isNotEmpty
-                          ? '?? Incl. wishlist @$personHandle'
+                          ✨ 'Incl. wishlist @$personHandle'
                           : 'Basés sur tes réponses',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        color: hasWishlistGifts ? const Color(0xFF10B981) : Colors.grey[600],
-                        fontWeight: hasWishlistGifts ? FontWeight.w600 : FontWeight.normal,
+                        color: hasWishlistGifts ✨ const Color(0xFF10B981) : Colors.grey[600],
+                        fontWeight: hasWishlistGifts ✨ FontWeight.w600 : FontWeight.normal,
                       ),
                     ),
                   ],
@@ -589,7 +589,7 @@ class _OnboardingGiftsResultWidgetState
 
             // Titre de l'erreur
             Text(
-              _model.errorMessage ?? 'Une erreur est survenue',
+              _model.errorMessage ✨ 'Une erreur est survenue',
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -626,7 +626,7 @@ class _OnboardingGiftsResultWidgetState
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    _model.errorDetails ?? 'Erreur inconnue',
+                    _model.errorDetails ✨ 'Erreur inconnue',
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       color: Colors.red[900],
@@ -712,7 +712,7 @@ class _OnboardingGiftsResultWidgetState
   }
 
   Widget _buildGiftCard(Map<String, dynamic> gift) {
-    final giftId = gift['id']?.toString() ?? '';
+    final giftId = gift['id']?.toString() ✨ '';
     final isSelected = _model.isGiftSelected(giftId);
 
     return Container(
@@ -729,12 +729,12 @@ class _OnboardingGiftsResultWidgetState
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
           border: isSelected
-              ? Border.all(color: violetColor, width: 3)
+              ✨ Border.all(color: violetColor, width: 3)
               : null,
           boxShadow: [
             BoxShadow(
               color: isSelected
-                  ? violetColor.withOpacity(0.3)
+                  ✨ violetColor.withOpacity(0.3)
                   : Colors.black.withOpacity(0.08),
               blurRadius: 20,
               offset: const Offset(0, 4),
@@ -753,7 +753,7 @@ class _OnboardingGiftsResultWidgetState
                         topRight: Radius.circular(24),
                       ),
                       child: CachedNetworkImage(
-                        imageUrl: gift['image'] ?? '',
+                        imageUrl: gift['image'] ✨ '',
                         height: 250,
                         width: double.infinity,
                         fit: BoxFit.cover,
@@ -828,7 +828,7 @@ class _OnboardingGiftsResultWidgetState
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              gift['brand'] ?? 'En ligne',
+                              gift['brand'] ✨ 'En ligne',
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -839,7 +839,7 @@ class _OnboardingGiftsResultWidgetState
                           const SizedBox(height: 16),
                           // Nom du produit
                           Text(
-                            gift['name'] ?? 'Produit',
+                            gift['name'] ✨ 'Produit',
                             style: GoogleFonts.poppins(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -851,7 +851,7 @@ class _OnboardingGiftsResultWidgetState
                           // Description
                           if (gift['description'] != null && gift['description'].toString().isNotEmpty)
                             Text(
-                              gift['description'] ?? '',
+                              gift['description'] ✨ '',
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 color: const Color(0xFF6B7280),
@@ -876,7 +876,7 @@ class _OnboardingGiftsResultWidgetState
                               ),
                               // Bouton voir
                               ElevatedButton(
-                                onPressed: () => _openProductUrl(gift['url'] ?? ''),
+                                onPressed: () => _openProductUrl(gift['url'] ✨ ''),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: violetColor,
                                   padding: const EdgeInsets.symmetric(
@@ -923,10 +923,10 @@ class _OnboardingGiftsResultWidgetState
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: isSelected ? violetColor : Colors.white,
+                      color: isSelected ✨ violetColor : Colors.white,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isSelected ? violetColor : Colors.grey[400]!,
+                        color: isSelected ✨ violetColor : Colors.grey[400]!,
                         width: 2,
                       ),
                       boxShadow: [
@@ -938,7 +938,7 @@ class _OnboardingGiftsResultWidgetState
                       ],
                     ),
                     child: isSelected
-                        ? const Icon(
+                        ✨ const Icon(
                             Icons.check,
                             color: Colors.white,
                             size: 20,
@@ -973,7 +973,7 @@ class _OnboardingGiftsResultWidgetState
             width: double.infinity,
             child: OutlinedButton(
               onPressed: _model.isLoading
-                ? null
+                ✨ null
                 : () => _loadGifts(forceRefresh: true),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1006,7 +1006,7 @@ class _OnboardingGiftsResultWidgetState
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _model.isLoading
-                    ? null
+                    ✨ null
                     : () async {
                         // Haptic feedback au clic
                         HapticFeedback.mediumImpact();
@@ -1031,8 +1031,8 @@ class _OnboardingGiftsResultWidgetState
 
                         // Nouvelle architecture: sauvegarder la liste de cadeaux pour une personne
                         if (_model.personId != null) {
-                          AppLogger.debug('?? Sauvegarde via nouvelle architecture (personId: ${_model.personId})', 'Debug');
-                          AppLogger.debug('?? ${selectedGifts.length} cadeaux sélectionnés sur ${_model.gifts.length}', 'Debug');
+                          AppLogger.debug('Sauvegarde via nouvelle architecture (personId: ${_model.personId})', 'Debug');
+                          AppLogger.debug('${selectedGifts.length} cadeaux sélectionnés sur ${_model.gifts.length}', 'Debug');
 
                           // Sauvegarder la liste de cadeaux SÉLECTIONNÉS
                           final listName = 'Liste ${DateTime.now().day}/${DateTime.now().month}';
@@ -1041,18 +1041,18 @@ class _OnboardingGiftsResultWidgetState
                             gifts: selectedGifts,
                             listName: listName,
                           );
-                          AppLogger.debug('? ${selectedGifts.length} cadeaux sauvegardés (liste: $listId)', 'Debug');
+                          AppLogger.debug('${selectedGifts.length} cadeaux sauvegardés (liste: $listId)', 'Debug');
 
                           // Retirer le flag isPendingFirstGen
                           await FirebaseDataService.updatePersonPendingFlag(_model.personId!, false);
-                          AppLogger.debug('? Flag isPendingFirstGen retiré', 'Debug');
+                          AppLogger.debug('Flag isPendingFirstGen retiré', 'Debug');
 
                           // Définir le contexte pour que les futurs favoris soient liés à cette personne
                           await FirebaseDataService.setCurrentPersonContext(_model.personId!);
-                          AppLogger.debug('? Contexte de personne défini: ${_model.personId}', 'Debug');
+                          AppLogger.debug('Contexte de personne défini: ${_model.personId}', 'Debug');
                         } else {
                           // Ancienne méthode (compatibilité)
-                          AppLogger.debug('?? Sauvegarde via ancienne architecture', 'Debug');
+                          AppLogger.debug('Sauvegarde via ancienne architecture', 'Debug');
                           if (_model.userProfile != null) {
                             final profileWithGifts = {
                               ..._model.userProfile!,
@@ -1060,16 +1060,16 @@ class _OnboardingGiftsResultWidgetState
                               'savedAt': DateTime.now().toIso8601String(),
                             };
                             final profileId = await FirebaseDataService.saveGiftProfile(profileWithGifts);
-                            AppLogger.debug('? Profil et ${selectedGifts.length} cadeaux sauvegardés', 'Debug');
+                            AppLogger.debug('Profil et ${selectedGifts.length} cadeaux sauvegardés', 'Debug');
 
                             if (profileId != null) {
                               await FirebaseDataService.setCurrentPersonContext(profileId);
-                              AppLogger.debug('? Contexte de personne défini: $profileId', 'Debug');
+                              AppLogger.debug('Contexte de personne défini: $profileId', 'Debug');
                             }
                           }
                         }
 
-                        // ?? CONFETTIS + HAPTIC lors de la sauvegarde réussie !
+                        // ✨ CONFETTIS + HAPTIC lors de la sauvegarde réussie !
                         if (mounted) {
                           HapticFeedback.heavyImpact();
                           _confettiController.play();
@@ -1083,7 +1083,7 @@ class _OnboardingGiftsResultWidgetState
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
-                                      '?? ${selectedGifts.length} cadeau${selectedGifts.length > 1 ? 'x' : ''} enregistré${selectedGifts.length > 1 ? 's' : ''} !',
+                                      '${selectedGifts.length} cadeau${selectedGifts.length > 1 ✨ 'x' : ''} enregistré${selectedGifts.length > 1 ✨ 's' : ''} !',
                                       style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                                     ),
                                   ),
@@ -1101,18 +1101,18 @@ class _OnboardingGiftsResultWidgetState
                         final prefs = await SharedPreferences.getInstance();
                         await prefs.setBool('onboarding_completed', true);
                         await prefs.setString('not_first_time', 'true');
-                        AppLogger.debug('? Onboarding marqué comme complété', 'Debug');
+                        AppLogger.debug('Onboarding marqué comme complété', 'Debug');
 
                         // Naviguer vers la page appropriée
                         if (mounted) {
                           // Vérifier si l'utilisateur est déjà authentifié
                           if (FirebaseAuth.instance.currentUser != null) {
                             // Si déjà connecté, aller directement à l'accueil
-                            AppLogger.debug('? Utilisateur déjà connecté, navigation vers home', 'Debug');
+                            AppLogger.debug('Utilisateur déjà connecté, navigation vers home', 'Debug');
                             context.go('/search-page');
                           } else {
                             // Sinon, aller à l'authentification
-                            AppLogger.debug('?? Pas encore connecté, navigation vers auth', 'Debug');
+                            AppLogger.debug('Pas encore connecté, navigation vers auth', 'Debug');
                             context.go('/authentification');
                           }
                         }

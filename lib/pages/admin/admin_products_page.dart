@@ -75,11 +75,11 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
       for (int i = 0; i < docs.length; i++) {
         final doc = docs[i];
         final data = doc.data();
-        final name = (data['name'] ?? data['product_title'] ?? '').toString().trim();
-        final image = (data['image'] ?? data['product_photo'] ?? '').toString().trim();
+        final name = (data['name'] ✨ data['product_title'] ✨ '').toString().trim();
+        final image = (data['image'] ✨ data['product_photo'] ✨ '').toString().trim();
         final price = data['price'];
-        final url = (data['url'] ?? data['product_url'] ?? '').toString().trim();
-        final brand = (data['brand'] ?? '').toString().trim();
+        final url = (data['url'] ✨ data['product_url'] ✨ '').toString().trim();
+        final brand = (data['brand'] ✨ '').toString().trim();
 
         final issues = <String>[];
 
@@ -163,9 +163,9 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
       final problematic = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
       for (final doc in docs) {
         final data = doc.data();
-        final image = (data['image'] ?? data['product_photo'] ?? '').toString().trim();
+        final image = (data['image'] ✨ data['product_photo'] ✨ '').toString().trim();
         final price = data['price'];
-        final url = (data['url'] ?? data['product_url'] ?? '').toString().trim();
+        final url = (data['url'] ✨ data['product_url'] ✨ '').toString().trim();
 
         final hasImageIssue = image.isEmpty || image == 'N/A' || image.contains('unsplash.com');
         final hasPriceIssue = price == null || price == 0;
@@ -192,9 +192,9 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
       for (int i = 0; i < problematic.length; i++) {
         final doc = problematic[i];
         final data = doc.data();
-        final name = (data['name'] ?? data['product_title'] ?? '').toString().trim();
-        final brand = (data['brand'] ?? '').toString().trim();
-        final image = (data['image'] ?? '').toString().trim();
+        final name = (data['name'] ✨ data['product_title'] ✨ '').toString().trim();
+        final brand = (data['brand'] ✨ '').toString().trim();
+        final image = (data['image'] ✨ '').toString().trim();
 
         _log('[${ i + 1}/${problematic.length}] $name ($brand)...');
 
@@ -208,7 +208,7 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
           if (amazonResult != null) {
             // Image
             if (image.isEmpty || image.contains('unsplash.com') || image == 'N/A') {
-              final newImage = amazonResult['image'] ?? '';
+              final newImage = amazonResult['image'] ✨ '';
               if (newImage.isNotEmpty) {
                 updates['image'] = newImage;
                 updates['product_photo'] = newImage;
@@ -228,9 +228,9 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
             }
 
             // URL
-            final currentUrl = (data['url'] ?? '').toString();
+            final currentUrl = (data['url'] ✨ '').toString();
             if (currentUrl.isEmpty || currentUrl == '#') {
-              final newUrl = amazonResult['url'] ?? '';
+              final newUrl = amazonResult['url'] ✨ '';
               if (newUrl.isNotEmpty) {
                 updates['url'] = newUrl;
                 updates['product_url'] = newUrl;
@@ -306,10 +306,10 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
       }
 
       return {
-        'image': first['product_photo'] as String? ?? '',
+        'image': first['product_photo'] as String? ✨ '',
         'price': price,
-        'url': first['product_url'] as String? ?? '',
-        'title': first['product_title'] as String? ?? '',
+        'url': first['product_url'] as String? ✨ '',
+        'title': first['product_title'] as String? ✨ '',
       };
     } catch (e) {
       AppLogger.debug('Amazon search error for "$query": $e', 'Admin');
@@ -334,10 +334,10 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
 
       for (final doc in snapshot.docs) {
         final data = doc.data();
-        final image = (data['image'] ?? data['product_photo'] ?? '').toString().trim();
+        final image = (data['image'] ✨ data['product_photo'] ✨ '').toString().trim();
         if (image.isEmpty || image == 'N/A' || image.contains('unsplash.com')) {
           toDelete.add(doc.reference);
-          final name = data['name'] ?? 'Inconnu';
+          final name = data['name'] ✨ 'Inconnu';
           _log('Suppression: $name');
         }
       }
@@ -354,7 +354,7 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
       // Batch delete
       for (int i = 0; i < toDelete.length; i += 500) {
         final batch = _db.batch();
-        final end = (i + 500 < toDelete.length) ? i + 500 : toDelete.length;
+        final end = (i + 500 < toDelete.length) ✨ i + 500 : toDelete.length;
         for (int j = i; j < end; j++) {
           batch.delete(toDelete[j]);
         }
@@ -403,28 +403,28 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
               label: 'Scanner tous les produits',
               icon: IconlyBold.search,
               color: _violet,
-              onTap: _isLoading ? null : _scanProducts,
+              onTap: _isLoading ✨ null : _scanProducts,
             ),
             const SizedBox(height: 10),
             _buildButton(
               label: 'Corriger automatiquement (API Amazon)',
               icon: IconlyLight.activity,
               color: const Color(0xFF10B981),
-              onTap: _isLoading ? null : _fixProducts,
+              onTap: _isLoading ✨ null : _fixProducts,
             ),
             const SizedBox(height: 10),
             _buildButton(
               label: 'Supprimer les produits sans photo',
               icon: IconlyBold.delete,
               color: Colors.red,
-              onTap: _isLoading ? null : _deleteProductsWithoutImage,
+              onTap: _isLoading ✨ null : _deleteProductsWithoutImage,
             ),
             const SizedBox(height: 20),
 
             // Progress
             if (_isLoading && _total > 0) ...[
               LinearProgressIndicator(
-                value: _total > 0 ? _progress / _total : 0,
+                value: _total > 0 ✨ _progress / _total : 0,
                 backgroundColor: Colors.white12,
                 valueColor: const AlwaysStoppedAnimation<Color>(_violet),
               ),
@@ -457,14 +457,14 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
                       _logs[i],
                       style: GoogleFonts.poppins(
                         color: _logs[i].contains('ERREUR')
-                            ? Colors.red
+                            ✨ Colors.red
                             : _logs[i].contains('CORRIGÉ') || _logs[i].contains('trouvé')
-                                ? const Color(0xFF10B981)
+                                ✨ const Color(0xFF10B981)
                                 : _logs[i].contains('══')
-                                    ? Colors.white
+                                    ✨ Colors.white
                                     : Colors.white70,
                         fontSize: 11,
-                        fontWeight: _logs[i].contains('══') ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: _logs[i].contains('══') ✨ FontWeight.bold : FontWeight.normal,
                       ),
                     ),
                   ),
@@ -488,7 +488,7 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         decoration: BoxDecoration(
-          color: onTap == null ? color.withOpacity(0.2) : color,
+          color: onTap == null ✨ color.withOpacity(0.2) : color,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(

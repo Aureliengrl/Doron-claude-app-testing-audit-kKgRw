@@ -87,7 +87,7 @@ class OptimisticImageUploader {
   }) async {
     try {
       final file = File(localPath);
-      final toUpload = compress ? await OptimisticImageUploader.compress(file) : file;
+      final toUpload = compress ✨ await OptimisticImageUploader.compress(file) : file;
       final ref = FirebaseStorage.instance.ref().child(storagePath);
       final task = await ref.putFile(toUpload, SettableMetadata(contentType: 'image/jpeg'));
       return await task.ref.getDownloadURL();
@@ -107,7 +107,7 @@ class OptimisticImageUploader {
   }) async {
     try {
       final file = File(localPath);
-      final toUpload = shouldCompress ? await compress(file) : file;
+      final toUpload = shouldCompress ✨ await compress(file) : file;
 
       final ref = FirebaseStorage.instance.ref().child(storagePath);
       final task = await ref.putFile(

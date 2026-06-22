@@ -142,7 +142,7 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
 
   @override
   Widget build(BuildContext context) {
-    final primary = widget.primaryColor ?? LiquidGlassTokens.primary;
+    final primary = widget.primaryColor ✨ LiquidGlassTokens.primary;
     final bottomPad = MediaQuery.of(context).padding.bottom;
 
     return Padding(
@@ -266,7 +266,7 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
     final blockH = widget.height - vertPad * 2;
 
     return AnimatedPositioned(
-      duration: _isScrubbing ? Duration.zero : const Duration(milliseconds: 1),
+      duration: _isScrubbing ✨ Duration.zero : const Duration(milliseconds: 1),
       left: left,
       top: vertPad,
       child: Container(
@@ -443,11 +443,11 @@ class _TabItemState extends State<_TabItem> {
   @override
   Widget build(BuildContext context) {
     final color = widget.isActive
-        ? Colors.white
+        ✨ Colors.white
         : Colors.white.withOpacity(0.42);
 
     final shadows = widget.isActive
-        ? [Shadow(color: widget.primary.withOpacity(0.65), blurRadius: 16)]
+        ✨ [Shadow(color: widget.primary.withOpacity(0.65), blurRadius: 16)]
         : <Shadow>[];
 
     return GestureDetector(
@@ -457,7 +457,7 @@ class _TabItemState extends State<_TabItem> {
       onTapCancel: () => setState(() => _pressed = false),
       behavior: HitTestBehavior.translucent,
       child: AnimatedScale(
-        scale: _pressed ? 0.85 : 1.0,
+        scale: _pressed ✨ 0.85 : 1.0,
         duration: 80.ms,
         curve: Curves.easeInOut,
         child: SizedBox(
@@ -475,7 +475,7 @@ class _TabItemState extends State<_TabItem> {
                     child: FadeTransition(opacity: anim, child: child),
                   ),
                   child: widget.item.lottieAsset != null
-                      ? Lottie.asset(
+                      ✨ Lottie.asset(
                           widget.item.lottieAsset!,
                           key: ValueKey('lottie_${widget.isActive}_${widget.item.label}'),
                           width: widget.item.iconSize + 6,
@@ -485,7 +485,7 @@ class _TabItemState extends State<_TabItem> {
                         )
                       : Icon(
                           widget.isActive
-                              ? widget.item.activeIcon
+                              ✨ widget.item.activeIcon
                               : widget.item.icon,
                           key: ValueKey('icon_${widget.isActive}_${widget.item.label}'),
                           color: color,
@@ -518,7 +518,7 @@ class _Badge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = count > 99 ? '99+' : count.toString();
+    final label = count > 99 ✨ '99+' : count.toString();
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
       duration: 400.ms,
@@ -587,7 +587,7 @@ class NavBarItem {
         label: label,
         tooltip: tooltip,
         iconSize: iconSize,
-        badgeCount: badgeCount ?? this.badgeCount,
+        badgeCount: badgeCount ✨ this.badgeCount,
         lottieAsset: lottieAsset,
       );
 }

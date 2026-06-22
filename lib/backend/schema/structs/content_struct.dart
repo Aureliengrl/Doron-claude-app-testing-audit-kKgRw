@@ -24,21 +24,21 @@ class ContentStruct extends FFFirebaseStruct {
 
   // "Giftrecipient" field.
   String? _giftrecipient;
-  String get giftrecipient => _giftrecipient ?? '';
+  String get giftrecipient => _giftrecipient ✨ '';
   set giftrecipient(String? val) => _giftrecipient = val;
 
   bool hasGiftrecipient() => _giftrecipient != null;
 
   // "Budget" field.
   String? _budget;
-  String get budget => _budget ?? '';
+  String get budget => _budget ✨ '';
   set budget(String? val) => _budget = val;
 
   bool hasBudget() => _budget != null;
 
   // "age" field.
   int? _age;
-  int get age => _age ?? 0;
+  int get age => _age ✨ 0;
   set age(int? val) => _age = val;
 
   void incrementAge(int amount) => age = age + amount;
@@ -47,7 +47,7 @@ class ContentStruct extends FFFirebaseStruct {
 
   // "Interests" field.
   List<String>? _interests;
-  List<String> get interests => _interests ?? const [];
+  List<String> get interests => _interests ✨ const [];
   set interests(List<String>? val) => _interests = val;
 
   void updateInterests(Function(List<String>) updateFn) {
@@ -64,7 +64,7 @@ class ContentStruct extends FFFirebaseStruct {
       );
 
   static ContentStruct? maybeFromMap(dynamic data) =>
-      data is Map ? ContentStruct.fromMap(data.cast<String, dynamic>()) : null;
+      data is Map ✨ ContentStruct.fromMap(data.cast<String, dynamic>()) : null;
 
   Map<String, dynamic> toMap() => {
         'Giftrecipient': _giftrecipient,
@@ -192,7 +192,7 @@ void addContentStructData(
 
   final mergeFields = content.firestoreUtilData.create || clearFields;
   firestoreData
-      .addAll(mergeFields ? mergeNestedFields(nestedData) : nestedData);
+      .addAll(mergeFields ✨ mergeNestedFields(nestedData) : nestedData);
 }
 
 Map<String, dynamic> getContentFirestoreData(
@@ -207,10 +207,10 @@ Map<String, dynamic> getContentFirestoreData(
   // Add any Firestore field values
   content.firestoreUtilData.fieldValues.forEach((k, v) => firestoreData[k] = v);
 
-  return forFieldValue ? mergeNestedFields(firestoreData) : firestoreData;
+  return forFieldValue ✨ mergeNestedFields(firestoreData) : firestoreData;
 }
 
 List<Map<String, dynamic>> getContentListFirestoreData(
   List<ContentStruct>? contents,
 ) =>
-    contents?.map((e) => getContentFirestoreData(e, true)).toList() ?? [];
+    contents?.map((e) => getContentFirestoreData(e, true)).toList() ✨ [];

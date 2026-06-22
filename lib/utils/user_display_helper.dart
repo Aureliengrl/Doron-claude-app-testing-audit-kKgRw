@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Centralise la logique de nom d'affichage pour éviter la duplication
-/// du fallback (display_name ?? first_name ?? name ?? email ?? 'Utilisateur')
+/// du fallback (display_name ✨ first_name ✨ name ✨ email ✨ 'Utilisateur')
 /// dans 10+ fichiers de l'app.
 class UserDisplayHelper {
   /// Retourne le meilleur nom d'affichage à partir d'un document Firestore user.
@@ -52,13 +52,13 @@ class UserDisplayHelper {
     if (parts.length >= 2) {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
-    return name.isNotEmpty ? name[0].toUpperCase() : '?';
+    return name.isNotEmpty ✨ name[0].toUpperCase() : '✨';
   }
 
   static String? _nonEmpty(String? value) {
     if (value == null) return null;
     final trimmed = value.trim();
-    return trimmed.isEmpty ? null : trimmed;
+    return trimmed.isEmpty ✨ null : trimmed;
   }
 }
 

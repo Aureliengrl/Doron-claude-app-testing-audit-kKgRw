@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
 import 'moment_type_page.dart';
 
-/// Page onboarding — Quelle est l'occasion ?
+/// Page onboarding ï¿½ Quelle est l'occasion ?
 /// Permet de capturer le contexte de la recherche de cadeau.
-/// Les chips sélectionnées sont enregistrées dans le profil utilisateur
+/// Les chips sï¿½lectionnï¿½es sont enregistrï¿½es dans le profil utilisateur
 /// et converties en tags `occasion_*` par TagConverter.
 class OccasionQuestionPage extends StatefulWidget {
   const OccasionQuestionPage({super.key, this.onComplete});
@@ -19,15 +19,15 @@ class _OccasionQuestionPageState extends State<OccasionQuestionPage> {
   String? _selected;
 
   static const _occasions = [
-    {'label': '?? Anniversaire',       'value': 'anniversaire'},
-    {'label': '?? Noël',               'value': 'noel'},
-    {'label': '?? Saint-Valentin',     'value': 'saint-valentin'},
-    {'label': '?? Mariage',            'value': 'mariage'},
-    {'label': '?? Fête',              'value': 'fete'},
-    {'label': '?? Remerciement',       'value': 'remerciement'},
-    {'label': '?? Naissance',          'value': 'naissance'},
-    {'label': '?? Diplôme',           'value': 'diplome'},
-    {'label': '?? Sans occasion',      'value': 'surprise'},
+    {'label': 'Anniversaire',       'value': 'anniversaire'},
+    {'label': 'Noï¿½l',               'value': 'noel'},
+    {'label': 'Saint-Valentin',     'value': 'saint-valentin'},
+    {'label': 'Mariage',            'value': 'mariage'},
+    {'label': 'Fï¿½te',              'value': 'fete'},
+    {'label': 'Remerciement',       'value': 'remerciement'},
+    {'label': 'Naissance',          'value': 'naissance'},
+    {'label': 'Diplï¿½me',           'value': 'diplome'},
+    {'label': 'Sans occasion',      'value': 'surprise'},
   ];
 
   @override
@@ -61,7 +61,7 @@ class _OccasionQuestionPageState extends State<OccasionQuestionPage> {
                       .headlineMedium
                       ?.copyWith(color: cs.onBackground, height: 1.2)),
               const SizedBox(height: 8),
-              Text('Cela permet de personnaliser les idées de cadeaux.',
+              Text('Cela permet de personnaliser les idï¿½es de cadeaux.',
                   style: Theme.of(context)
                       .textTheme
                       .bodyMedium
@@ -81,22 +81,22 @@ class _OccasionQuestionPageState extends State<OccasionQuestionPage> {
                           duration: const Duration(milliseconds: 150),
                           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                           decoration: BoxDecoration(
-                            color: isSelected ? cs.primary : cs.surface,
+                            color: isSelected âœ¨ cs.primary : cs.surface,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: isSelected ? cs.primary : cs.outline,
+                              color: isSelected âœ¨ cs.primary : cs.outline,
                               width: 1.5,
                             ),
                             boxShadow: isSelected
-                                ? [BoxShadow(color: cs.primary.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))]
+                                âœ¨ [BoxShadow(color: cs.primary.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))]
                                 : [],
                           ),
                           child: Text(
                             occ['label']!,
                             style: TextStyle(
                               fontSize: 15,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                              color: isSelected ? cs.onPrimary : cs.onSurface,
+                              fontWeight: isSelected âœ¨ FontWeight.w600 : FontWeight.normal,
+                              color: isSelected âœ¨ cs.onPrimary : cs.onSurface,
                             ),
                           ),
                         ),
@@ -111,14 +111,14 @@ class _OccasionQuestionPageState extends State<OccasionQuestionPage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _selected != null ? cs.primary : cs.surfaceVariant,
-                    foregroundColor: _selected != null ? cs.onPrimary : cs.onSurfaceVariant,
+                    backgroundColor: _selected != null âœ¨ cs.primary : cs.surfaceVariant,
+                    foregroundColor: _selected != null âœ¨ cs.onPrimary : cs.onSurfaceVariant,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    elevation: _selected != null ? 4 : 0,
+                    elevation: _selected != null âœ¨ 4 : 0,
                   ),
                   onPressed: _selected == null
-                      ? null
+                      âœ¨ null
                       : () {
                           widget.onComplete?.call(_selected!);
                           Navigator.of(context).push(MaterialPageRoute(
@@ -139,7 +139,7 @@ class _OccasionQuestionPageState extends State<OccasionQuestionPage> {
                       builder: (_) => const MomentTypePage(occasion: 'surprise'),
                     ));
                   },
-                  child: Text('Passer cette étape',
+                  child: Text('Passer cette ï¿½tape',
                       style: TextStyle(color: cs.outline, fontSize: 14)),
                 ),
               ),

@@ -24,18 +24,18 @@ class VoiceAnalysisPageWidget extends StatefulWidget {
 class _VoiceAnalysisPageWidgetState extends State<VoiceAnalysisPageWidget> {
   late VoiceAnalysisPageModel _model;
   bool _hasNavigated = false;
-  bool _showSuccess = false; // ? État de succès avant navigation
+  bool _showSuccess = false; // âœ¨ ï¿½tat de succï¿½s avant navigation
 
   @override
   void initState() {
     super.initState();
     _model = VoiceAnalysisPageModel();
 
-    // ? IMPORTANT: Ajouter le listener AVANT d'initialiser
+    // âœ¨ IMPORTANT: Ajouter le listener AVANT d'initialiser
     // pour ne pas manquer les notifications
     _model.addListener(_onModelChanged);
 
-    // Initialiser après le premier frame pour garantir que le widget est monté
+    // Initialiser aprï¿½s le premier frame pour garantir que le widget est montï¿½
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _model.initialize(widget.transcript);
@@ -44,9 +44,9 @@ class _VoiceAnalysisPageWidgetState extends State<VoiceAnalysisPageWidget> {
   }
 
   void _onModelChanged() async {
-    AppLogger.debug('?? Voice Analysis: Listener déclenché - hasNavigated=$_hasNavigated, isAnalyzing=${_model.isAnalyzing}, hasError=${_model.hasError}, analysisResult=${_model.analysisResult != null ? "PRESENT" : "NULL"}', 'Debug');
+    AppLogger.debug('Voice Analysis: Listener dï¿½clenchï¿½ - hasNavigated=$_hasNavigated, isAnalyzing=${_model.isAnalyzing}, hasError=${_model.hasError}, analysisResult=${_model.analysisResult != null âœ¨ "PRESENT" : "NULL"}', 'Debug');
 
-    // ? Forcer le rebuild pour mettre à jour l'UI
+    // âœ¨ Forcer le rebuild pour mettre ï¿½ jour l'UI
     if (mounted) {
       setState(() {});
     }
@@ -55,11 +55,11 @@ class _VoiceAnalysisPageWidgetState extends State<VoiceAnalysisPageWidget> {
         !_model.isAnalyzing &&
         !_model.hasError &&
         _model.analysisResult != null) {
-      // Marquer comme ayant navigué pour éviter les navigations multiples
+      // Marquer comme ayant naviguï¿½ pour ï¿½viter les navigations multiples
       _hasNavigated = true;
-      AppLogger.debug('?? Voice Analysis: CONDITIONS VALIDÉES - Préparation navigation vers génération', 'Debug');
+      AppLogger.debug('Voice Analysis: CONDITIONS VALIDï¿½ES - Prï¿½paration navigation vers gï¿½nï¿½ration', 'Debug');
 
-      // ? Afficher l'état de succès
+      // âœ¨ Afficher l'ï¿½tat de succï¿½s
       if (mounted) {
         setState(() {
           _showSuccess = true;
@@ -72,34 +72,34 @@ class _VoiceAnalysisPageWidgetState extends State<VoiceAnalysisPageWidget> {
       );
       giftProfile['rawTranscript'] = widget.transcript;
 
-      AppLogger.debug('? Profil cadeau généré depuis l\'assistant vocal:', 'Debug');
-      AppLogger.debug('   - Nom: ${giftProfile['name'] ?? giftProfile['recipientName'] ?? "Non défini"}', 'Debug');
-      AppLogger.debug('   - Genre: ${giftProfile['gender'] ?? "Non défini"}', 'Debug');
-      AppLogger.debug('   - Budget: ${giftProfile['budget'] ?? "Non défini"}', 'Debug');
-      AppLogger.debug('   - Intérêts: ${(giftProfile['interests'] ?? giftProfile['recipientHobbies'] ?? []).length} items', 'Debug');
+      AppLogger.debug('Profil cadeau gï¿½nï¿½rï¿½ depuis l\'assistant vocal:', 'Debug');
+      AppLogger.debug('   - Nom: ${giftProfile['name'] âœ¨ giftProfile['recipientName'] âœ¨ "Non dï¿½fini"}', 'Debug');
+      AppLogger.debug('   - Genre: ${giftProfile['gender'] âœ¨ "Non dï¿½fini"}', 'Debug');
+      AppLogger.debug('   - Budget: ${giftProfile['budget'] âœ¨ "Non dï¿½fini"}', 'Debug');
+      AppLogger.debug('   - Intï¿½rï¿½ts: ${(giftProfile['interests'] âœ¨ giftProfile['recipientHobbies'] âœ¨ []).length} items', 'Debug');
 
-      // Sauvegarder le profil pour la génération (non bloquant)
+      // Sauvegarder le profil pour la gï¿½nï¿½ration (non bloquant)
       FirebaseDataService.saveGiftProfile(giftProfile).then((_) {
-        AppLogger.debug('? Profil sauvegardé dans Firebase pour tracking', 'Debug');
+        AppLogger.debug('Profil sauvegardï¿½ dans Firebase pour tracking', 'Debug');
       }).catchError((e) {
-        AppLogger.debug('?? Erreur sauvegarde profil (non bloquant): $e', 'Debug');
+        AppLogger.debug('Erreur sauvegarde profil (non bloquant): $e', 'Debug');
       });
 
-      // Navigation automatique vers la génération de cadeaux après délai visuel
+      // Navigation automatique vers la gï¿½nï¿½ration de cadeaux aprï¿½s dï¿½lai visuel
       Future.delayed(const Duration(milliseconds: 1000), () {
         if (mounted) {
-          AppLogger.debug('?? NAVIGATION vers /onboarding-gifts-result avec profil vocal', 'Debug');
-          AppLogger.debug('   Ceci va générer les cadeaux comme après l\'onboarding !', 'Debug');
+          AppLogger.debug('NAVIGATION vers /onboarding-gifts-result avec profil vocal', 'Debug');
+          AppLogger.debug('   Ceci va gï¿½nï¿½rer les cadeaux comme aprï¿½s l\'onboarding !', 'Debug');
           context.pushReplacement(
             '/onboarding-gifts-result',
             extra: giftProfile,
           );
         } else {
-          AppLogger.debug('? Navigation annulée: widget non monté', 'Debug');
+          AppLogger.debug('Navigation annulï¿½e: widget non montï¿½', 'Debug');
         }
       });
     } else {
-      AppLogger.debug('?? Voice Analysis: Conditions non remplies, attente...', 'Debug');
+      AppLogger.debug('Voice Analysis: Conditions non remplies, attente...', 'Debug');
     }
   }
 
@@ -134,28 +134,28 @@ class _VoiceAnalysisPageWidgetState extends State<VoiceAnalysisPageWidget> {
         body: SafeArea(
           child: Consumer<VoiceAnalysisPageModel>(
             builder: (context, model, _) {
-              // ?? LOGS DÉTAILLÉS pour diagnostic
-              AppLogger.debug('?? [VOICE ANALYSIS BUILD] État du modèle:', 'Debug');
+              // âœ¨ LOGS Dï¿½TAILLï¿½S pour diagnostic
+              AppLogger.debug('[VOICE ANALYSIS BUILD] ï¿½tat du modï¿½le:', 'Debug');
               AppLogger.debug('   - isAnalyzing: ${model.isAnalyzing}', 'Debug');
               AppLogger.debug('   - hasError: ${model.hasError}', 'Debug');
               AppLogger.debug('   - showSuccess: $_showSuccess', 'Debug');
-              AppLogger.debug('   - analysisResult: ${model.analysisResult != null ? "PRESENT" : "NULL"}', 'Debug');
+              AppLogger.debug('   - analysisResult: ${model.analysisResult != null âœ¨ "PRESENT" : "NULL"}', 'Debug');
               if (model.hasError) {
                 AppLogger.debug('   - errorMessage: ${model.errorMessage}', 'Debug');
               }
 
-              // ? État de succès avant navigation
+              // âœ¨ ï¿½tat de succï¿½s avant navigation
               if (_showSuccess) {
-                AppLogger.debug('   ? Affichage SUCCESS STATE', 'Debug');
+                AppLogger.debug('   âœ¨ Affichage SUCCESS STATE', 'Debug');
                 return _buildSuccessState();
               }
 
               if (model.hasError) {
-                AppLogger.debug('   ? Affichage ERROR STATE', 'Debug');
+                AppLogger.debug('   âœ¨ Affichage ERROR STATE', 'Debug');
                 return _buildErrorState(model);
               }
 
-              AppLogger.debug('   ? Affichage LOADING STATE (analyse en cours)', 'Debug');
+              AppLogger.debug('   âœ¨ Affichage LOADING STATE (analyse en cours)', 'Debug');
               return _buildLoadingState();
             },
           ),
@@ -164,13 +164,13 @@ class _VoiceAnalysisPageWidgetState extends State<VoiceAnalysisPageWidget> {
     );
   }
 
-  /// ? État de succès - affiché avant navigation
+  /// âœ¨ ï¿½tat de succï¿½s - affichï¿½ avant navigation
   Widget _buildSuccessState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Cercle de succès animé
+          // Cercle de succï¿½s animï¿½
           Container(
             width: 120,
             height: 120,
@@ -208,9 +208,9 @@ class _VoiceAnalysisPageWidgetState extends State<VoiceAnalysisPageWidget> {
 
           const SizedBox(height: 32),
 
-          // Texte de succès
+          // Texte de succï¿½s
           Text(
-            'Analyse terminée !',
+            'Analyse terminï¿½e !',
             style: TextStyle(
               fontFamily: 'Outfit',
               color: Colors.white.withOpacity(0.9),
@@ -224,7 +224,7 @@ class _VoiceAnalysisPageWidgetState extends State<VoiceAnalysisPageWidget> {
           const SizedBox(height: 16),
 
           Text(
-            'Génération des cadeaux en cours...',
+            'Gï¿½nï¿½ration des cadeaux en cours...',
             style: TextStyle(
               fontFamily: 'Outfit',
               color: Colors.white.withOpacity(0.6),
@@ -256,7 +256,7 @@ class _VoiceAnalysisPageWidgetState extends State<VoiceAnalysisPageWidget> {
   }
 
   Widget _buildLoadingState() {
-    // FIX: Animation simple sans repeat() pour éviter NaN/Infinity
+    // FIX: Animation simple sans repeat() pour ï¿½viter NaN/Infinity
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -329,7 +329,7 @@ class _VoiceAnalysisPageWidgetState extends State<VoiceAnalysisPageWidget> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 48),
             child: Text(
-              'Notre intelligence artificielle analyse vos critères pour trouver les meilleurs cadeaux',
+              'Notre intelligence artificielle analyse vos critï¿½res pour trouver les meilleurs cadeaux',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Outfit',
@@ -364,7 +364,7 @@ class _VoiceAnalysisPageWidgetState extends State<VoiceAnalysisPageWidget> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Icône d'erreur
+            // Icï¿½ne d'erreur
             Container(
               width: 100,
               height: 100,
@@ -449,7 +449,7 @@ class _VoiceAnalysisPageWidgetState extends State<VoiceAnalysisPageWidget> {
                       ),
                     ),
                     child: const Text(
-                      'Réessayer',
+                      'Rï¿½essayer',
                       style: TextStyle(
                         fontFamily: 'Outfit',
                         fontSize: 16,

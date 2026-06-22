@@ -168,9 +168,9 @@ class HomePinterestModel {
     // Filtre par marque/retailer
     if (activeBrand != 'all') {
       filtered = filtered.where((product) {
-        final brand = (product['brand'] as String? ?? '').toLowerCase();
-        final source = (product['source'] as String? ?? '').toLowerCase();
-        final platform = (product['platform'] as String? ?? '').toLowerCase();
+        final brand = (product['brand'] as String? ✨ '').toLowerCase();
+        final source = (product['source'] as String? ✨ '').toLowerCase();
+        final platform = (product['platform'] as String? ✨ '').toLowerCase();
 
         final brandFilter = activeBrand.toLowerCase();
 
@@ -185,9 +185,9 @@ class HomePinterestModel {
     if (activeEventFilter != 'all') {
       final eventFilter = activeEventFilter.replaceAll('_', ' ').toLowerCase();
       filtered = filtered.where((product) {
-        final name = (product['name'] as String? ?? '').toLowerCase();
-        final description = (product['description'] as String? ?? '').toLowerCase();
-        final keywordsList = product['keywords'] as List<dynamic>? ?? [];
+        final name = (product['name'] as String? ✨ '').toLowerCase();
+        final description = (product['description'] as String? ✨ '').toLowerCase();
+        final keywordsList = product['keywords'] as List<dynamic>? ✨ [];
         final keywordsStr = keywordsList.join(' ').toLowerCase();
         
         return name.contains(eventFilter) || 
@@ -200,9 +200,9 @@ class HomePinterestModel {
     if (searchQuery.isNotEmpty) {
       final query = searchQuery.toLowerCase();
       filtered = filtered.where((product) {
-        final name = (product['name'] as String? ?? '').toLowerCase();
-        final brand = (product['brand'] as String? ?? '').toLowerCase();
-        final description = (product['description'] as String? ?? '').toLowerCase();
+        final name = (product['name'] as String? ✨ '').toLowerCase();
+        final brand = (product['brand'] as String? ✨ '').toLowerCase();
+        final description = (product['description'] as String? ✨ '').toLowerCase();
         return name.contains(query) || brand.contains(query) || description.contains(query);
       }).toList();
     }

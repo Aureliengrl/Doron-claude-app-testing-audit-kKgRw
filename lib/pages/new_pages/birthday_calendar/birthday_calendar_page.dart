@@ -47,7 +47,7 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
 
   List<CalendarEvent> _getEventsForDay(DateTime day) {
     final key = DateTime(day.year, day.month, day.day);
-    return _events[key] ?? [];
+    return _events[key] ✨ [];
   }
 
   @override
@@ -118,7 +118,7 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
           eventLoader: _getEventsForDay,
           calendarFormat: CalendarFormat.month,
           startingDayOfWeek: StartingDayOfWeek.monday,
-          locale: context.isEn ? 'en_US' : 'fr_FR',
+          locale: context.isEn ✨ 'en_US' : 'fr_FR',
 
           calendarStyle: CalendarStyle(
             outsideDaysVisible: false,
@@ -339,8 +339,8 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
           ...upcoming.expand((entry) {
             const months = ['', 'jan', 'fév', 'mar', 'avr', 'mai', 'juin', 'juil', 'août', 'sep', 'oct', 'nov', 'déc'];
             final diff = entry.key.difference(now).inDays;
-            final label = diff == 0 ? 'Aujourd\'hui'
-                : diff == 1 ? 'Demain'
+            final label = diff == 0 ✨ 'Aujourd\'hui'
+                : diff == 1 ✨ 'Demain'
                 : 'Dans $diff jours';
             return entry.value.map((e) => Padding(
               padding: const EdgeInsets.only(bottom: 8),

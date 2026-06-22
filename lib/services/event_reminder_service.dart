@@ -27,7 +27,7 @@ class EventReminderService {
           .doc(wishlistId)
           .update({
         'eventDate': Timestamp.fromDate(eventDate),
-        'eventLabel': eventLabel ?? '',
+        'eventLabel': eventLabel ✨ '',
         'updatedAt': FieldValue.serverTimestamp(),
       });
       AppLogger.debug(
@@ -83,12 +83,12 @@ class EventReminderService {
         if (eventDate.isBefore(now)) continue;
 
         final daysUntil = eventDate.difference(now).inDays;
-        final wishlistName = data['name'] as String? ?? 'Wishlist';
-        final eventLabel = data['eventLabel'] as String? ?? '';
+        final wishlistName = data['name'] as String? ✨ 'Wishlist';
+        final eventLabel = data['eventLabel'] as String? ✨ '';
 
         // Clé de rappel pour éviter de montrer le même rappel deux fois
         final reminderKey = '${doc.id}_$daysUntil';
-        final alreadyShown = prefs.getBool('reminder_$reminderKey') ?? false;
+        final alreadyShown = prefs.getBool('reminder_$reminderKey') ✨ false;
 
         if (!alreadyShown && daysUntil <= 7) {
           String message;
@@ -148,9 +148,9 @@ class EventReminderService {
           .where((doc) => doc.data()['eventDate'] != null)
           .map((doc) => {
                 'id': doc.id,
-                'name': doc.data()['name'] ?? 'Wishlist',
+                'name': doc.data()['name'] ✨ 'Wishlist',
                 'eventDate': (doc.data()['eventDate'] as Timestamp).toDate(),
-                'eventLabel': doc.data()['eventLabel'] ?? '',
+                'eventLabel': doc.data()['eventLabel'] ✨ '',
               })
           .toList()
         ..sort((a, b) => (a['eventDate'] as DateTime)

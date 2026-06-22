@@ -10,7 +10,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '/components/liquid_glass.dart';
 import '/utils/user_display_helper.dart';
 
-/// Page d'information d'un chat � membres, actions, m�dias.
+/// Page d'information d'un chat � membres, actions, m�dias.
 class ChatInfoPage extends StatefulWidget {
   final String chatId;
   final Map<String, dynamic> chatData;
@@ -40,7 +40,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
   void initState() {
     super.initState();
     _isGroup = widget.chatData['isGroup'] == true;
-    _chatName = widget.chatData['name'] as String? ?? 'Chat';
+    _chatName = widget.chatData['name'] as String? ✨ 'Chat';
     _nameController.text = _chatName;
     _loadMembers();
   }
@@ -53,7 +53,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
 
   Future<void> _loadMembers() async {
     final participants =
-        List<String>.from(widget.chatData['participants'] ?? []);
+        List<String>.from(widget.chatData['participants'] ✨ []);
     final members = <Map<String, dynamic>>[];
 
     for (final uid in participants) {
@@ -81,7 +81,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Groupe renomm�', style: GoogleFonts.poppins()),
+            content: Text('Groupe renomm�', style: GoogleFonts.poppins()),
             backgroundColor: _violet,
           ),
         );
@@ -142,7 +142,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
             _buildHeader(),
             Expanded(
               child: _isLoading
-                  ? const Center(
+                  ✨ const Center(
                       child: CircularProgressIndicator(color: _violet))
                   : ListView(
                       padding: const EdgeInsets.all(20),
@@ -231,7 +231,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 12),
           child: Text(
-            '${_members.length} membre${_members.length > 1 ? 's' : ''}',
+            '${_members.length} membre${_members.length > 1 ✨ 's' : ''}',
             style: GoogleFonts.poppins(
               color: Colors.white70,
               fontSize: 14,
@@ -243,13 +243,13 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
           final member = _members[i];
           final isMe =
               member['uid'] == FirebaseAuth.instance.currentUser?.uid;
-          final photoUrl = member['photoUrl'] as String? ?? '';
+          final photoUrl = member['photoUrl'] as String? ✨ '';
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: GestureDetector(
               onTap: isMe
-                  ? null
+                  ✨ null
                   : () => context
                       .push('/public-profile/${member['uid']}'),
               child: Container(
@@ -269,7 +269,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
                         shape: BoxShape.circle,
                         color: Colors.grey[800],
                         image: photoUrl.isNotEmpty
-                            ? DecorationImage(
+                            ✨ DecorationImage(
                                 image:
                                     CachedNetworkImageProvider(photoUrl),
                                 fit: BoxFit.cover,
@@ -277,7 +277,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
                             : null,
                       ),
                       child: photoUrl.isEmpty
-                          ? Center(
+                          ✨ Center(
                               child: Text(
                                 UserDisplayHelper.getInitials(member),
                                 style: GoogleFonts.poppins(
@@ -293,7 +293,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${member['displayName']}${isMe ? ' (vous)' : ''}',
+                            '${member['displayName']}${isMe ✨ ' (vous)' : ''}',
                             style: GoogleFonts.poppins(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,

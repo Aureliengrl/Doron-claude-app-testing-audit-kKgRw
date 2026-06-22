@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
 
-/// Page onboarding — Quel type de cadeau cherchez-vous ?
-/// 3 options principales : objet physique, expérience, bon cadeau.
-/// Cette information enrichit le profil avec des types de cadeaux préférés.
+/// Page onboarding ï¿½ Quel type de cadeau cherchez-vous ?
+/// 3 options principales : objet physique, expï¿½rience, bon cadeau.
+/// Cette information enrichit le profil avec des types de cadeaux prï¿½fï¿½rï¿½s.
 class MomentTypePage extends StatefulWidget {
   const MomentTypePage({super.key, this.onComplete, this.occasion});
   static const routeName = '/moment-type';
@@ -20,23 +20,23 @@ class _MomentTypePageState extends State<MomentTypePage> {
 
   static const _options = <Map<String, Object>>[
     {
-      'icon': '??',
-      'title': 'Un objet à offrir',
-      'subtitle': 'Quelque chose de concret, emballé, livré.',
+      'icon': 'âœ¨',
+      'title': 'Un objet ï¿½ offrir',
+      'subtitle': 'Quelque chose de concret, emballï¿½, livrï¿½.',
       'value': 'product',
       'types': ['type_mode_accessoires', 'type_high_tech', 'type_beaute_soins', 'type_maison_deco'],
     },
     {
-      'icon': '?',
-      'title': 'Une expérience',
-      'subtitle': 'Spa, cours, sortie, aventure, dégustation.',
+      'icon': 'âœ¨',
+      'title': 'Une expï¿½rience',
+      'subtitle': 'Spa, cours, sortie, aventure, dï¿½gustation.',
       'value': 'experience',
       'types': ['type_voyage_aventure', 'type_bien_etre', 'type_gastronomie', 'type_culture'],
     },
     {
-      'icon': '??',
+      'icon': 'âœ¨',
       'title': 'Un bon cadeau',
-      'subtitle': 'Flexible, carte, abonnement, crédit.',
+      'subtitle': 'Flexible, carte, abonnement, crï¿½dit.',
       'value': 'voucher',
       'types': ['type_culture', 'type_musique_audio', 'type_livres_bd'],
     },
@@ -92,15 +92,15 @@ class _MomentTypePageState extends State<MomentTypePage> {
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? cs.primary.withOpacity(0.08)
+                              âœ¨ cs.primary.withOpacity(0.08)
                               : cs.surface,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: isSelected ? cs.primary : cs.outline,
-                            width: isSelected ? 2 : 1,
+                            color: isSelected âœ¨ cs.primary : cs.outline,
+                            width: isSelected âœ¨ 2 : 1,
                           ),
                           boxShadow: isSelected
-                              ? [BoxShadow(color: cs.primary.withOpacity(0.15), blurRadius: 12, offset: const Offset(0, 4))]
+                              âœ¨ [BoxShadow(color: cs.primary.withOpacity(0.15), blurRadius: 12, offset: const Offset(0, 4))]
                               : [const BoxShadow(color: Color(0x0A000000), blurRadius: 6)],
                         ),
                         child: Row(
@@ -110,7 +110,7 @@ class _MomentTypePageState extends State<MomentTypePage> {
                               height: 52,
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? cs.primary.withOpacity(0.15)
+                                    âœ¨ cs.primary.withOpacity(0.15)
                                     : cs.surfaceVariant,
                                 borderRadius: BorderRadius.circular(14),
                               ),
@@ -128,7 +128,7 @@ class _MomentTypePageState extends State<MomentTypePage> {
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
-                                      color: isSelected ? cs.primary : cs.onSurface,
+                                      color: isSelected âœ¨ cs.primary : cs.onSurface,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
@@ -153,14 +153,14 @@ class _MomentTypePageState extends State<MomentTypePage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _selected != null ? cs.primary : cs.surfaceVariant,
-                    foregroundColor: _selected != null ? cs.onPrimary : cs.onSurfaceVariant,
+                    backgroundColor: _selected != null âœ¨ cs.primary : cs.surfaceVariant,
+                    foregroundColor: _selected != null âœ¨ cs.onPrimary : cs.onSurfaceVariant,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    elevation: _selected != null ? 4 : 0,
+                    elevation: _selected != null âœ¨ 4 : 0,
                   ),
                   onPressed: _selected == null
-                      ? null
+                      âœ¨ null
                       : () {
                           final selectedOpt = _options.firstWhere(
                               (o) => o['value'] == _selected);
@@ -172,7 +172,7 @@ class _MomentTypePageState extends State<MomentTypePage> {
                             'occasion': widget.occasion,
                           });
                         },
-                  child: const Text('Voir les idées ?',
+                  child: const Text('Voir les idï¿½es ?',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),

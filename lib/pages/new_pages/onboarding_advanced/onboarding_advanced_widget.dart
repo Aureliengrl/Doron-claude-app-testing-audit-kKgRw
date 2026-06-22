@@ -58,15 +58,15 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
     final profile = await FirebaseDataService.loadPersonById(personId);
     if (profile != null && mounted) {
       setState(() {
-        _model.answers['personName'] = profile['name'] ?? '';
-        _model.answers['personIdentifier'] = profile['identifier'] ?? profile['personIdentifier'] ?? '';
-        _model.answers['location'] = profile['location'] ?? '';
-        _model.answers['giftTypes'] = List<String>.from(profile['giftTypes'] ?? []);
-        _model.answers['personGender'] = profile['gender'] ?? '';
-        _model.answers['personAge'] = profile['age'] ?? '';
-        _model.answers['occasion'] = profile['occasion'] ?? '';
-        _model.answers['recipientPersonality'] = List<String>.from(profile['recipientPersonality'] ?? []);
-        _model.answers['budgetTier'] = profile['budgetTier'] ?? profile['budget'] ?? '';
+        _model.answers['personName'] = profile['name'] âœ¨ '';
+        _model.answers['personIdentifier'] = profile['identifier'] âœ¨ profile['personIdentifier'] âœ¨ '';
+        _model.answers['location'] = profile['location'] âœ¨ '';
+        _model.answers['giftTypes'] = List<String>.from(profile['giftTypes'] âœ¨ []);
+        _model.answers['personGender'] = profile['gender'] âœ¨ '';
+        _model.answers['personAge'] = profile['age'] âœ¨ '';
+        _model.answers['occasion'] = profile['occasion'] âœ¨ '';
+        _model.answers['recipientPersonality'] = List<String>.from(profile['recipientPersonality'] âœ¨ []);
+        _model.answers['budgetTier'] = profile['budgetTier'] âœ¨ profile['budget'] âœ¨ '';
         _isLoadingMode = false;
       });
     }
@@ -88,9 +88,9 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
         _onboardingMode = mode;
         _isLoadingMode = false;
       });
-      AppLogger.debug('?? Mode onboarding chargé: $_onboardingMode', 'Debug');
+      AppLogger.debug('Mode onboarding chargï¿½: $_onboardingMode', 'Debug');
     } catch (e) {
-      AppLogger.debug('?? Erreur chargement mode: $e', 'Debug');
+      AppLogger.debug('Erreur chargement mode: $e', 'Debug');
       setState(() {
         _isLoadingMode = false;
       });
@@ -118,19 +118,19 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
       );
     }
 
-    // Lire les paramètres de query
+    // Lire les paramï¿½tres de query
     final skipUserQuestions = GoRouterState.of(context).uri.queryParameters['skipUserQuestions'] == 'true';
     final onlyUserQuestions = GoRouterState.of(context).uri.queryParameters['onlyUserQuestions'] == 'true';
     final returnTo = GoRouterState.of(context).uri.queryParameters['returnTo'];
-    // Mode express activé par défaut (seulement 7 questions essentielles)
-    // Pour revenir au mode complet, passer expressMode=false en paramètre
+    // Mode express activï¿½ par dï¿½faut (seulement 7 questions essentielles)
+    // Pour revenir au mode complet, passer expressMode=false en paramï¿½tre
     final expressMode = GoRouterState.of(context).uri.queryParameters['expressMode'] != 'false';
 
     final steps = _model.getSteps(
       skipUserQuestions: skipUserQuestions,
       onlyUserQuestions: onlyUserQuestions,
       expressMode: expressMode,
-      onboardingMode: _onboardingMode, // Passer le mode chargé
+      onboardingMode: _onboardingMode, // Passer le mode chargï¿½
     );
     final currentStepData = steps[_model.currentStep];
     final progress = (_model.currentStep + 1) / steps.length;
@@ -198,7 +198,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Analyse des millions de combinaisons\ngrace à notre ? Scan IA',
+                        'Analyse des millions de combinaisons\ngrace ï¿½ notre âœ¨ Scan IA',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           color: Colors.white70,
@@ -368,7 +368,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
   }
 
   Widget _buildWelcomeScreen(Map<String, dynamic> stepData) {
-    final useLogo = stepData['useLogo'] as bool? ?? false;
+    final useLogo = stepData['useLogo'] as bool? âœ¨ false;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -380,8 +380,8 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
             return Transform.scale(
               scale: value,
               child: useLogo
-                  ? Image.asset(
-                      'assets/images/doron_logo.png', // Logo DORÕN (vague)
+                  âœ¨ Image.asset(
+                      'assets/images/doron_logo.png', // Logo DORï¿½N (vague)
                       width: 150,
                       height: 150,
                       errorBuilder: (context, error, stackTrace) {
@@ -485,16 +485,16 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
 
   Widget _buildTextInputScreen(Map<String, dynamic> stepData) {
     final field = stepData['field'] as String;
-    final placeholder = stepData['placeholder'] as String? ?? '';
-    final currentValue = _model.answers[field] as String? ?? '';
+    final placeholder = stepData['placeholder'] as String? âœ¨ '';
+    final currentValue = _model.answers[field] as String? âœ¨ '';
 
     // FIX Bug 1: Utiliser un ScrollController pour s'assurer que le champ soit visible
     // quand le clavier s'ouvre
     final scrollController = ScrollController();
 
-    // Déclencher le scroll automatique après le build pour montrer le champ
+    // Dï¿½clencher le scroll automatique aprï¿½s le build pour montrer le champ
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Petit délai pour laisser le clavier s'ouvrir
+      // Petit dï¿½lai pour laisser le clavier s'ouvrir
       Future.delayed(const Duration(milliseconds: 300), () {
         if (scrollController.hasClients) {
           scrollController.animateTo(
@@ -508,7 +508,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
 
     return SingleChildScrollView(
       controller: scrollController,
-      // Padding réduit en haut, plus de padding en bas pour le clavier
+      // Padding rï¿½duit en haut, plus de padding en bas pour le clavier
       padding: EdgeInsets.only(
         top: 16,
         bottom: MediaQuery.of(context).viewInsets.bottom + 60,
@@ -516,18 +516,18 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          // Espace réduit en haut (au lieu de 15% de l'écran)
+          // Espace rï¿½duit en haut (au lieu de 15% de l'ï¿½cran)
           const SizedBox(height: 20),
           Text(
             stepData['icon'] as String,
-            style: const TextStyle(fontSize: 60), // Taille réduite pour gagner de l'espace
+            style: const TextStyle(fontSize: 60), // Taille rï¿½duite pour gagner de l'espace
           ),
           const SizedBox(height: 20),
           Text(
             stepData['question'] as String,
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              fontSize: 24, // Taille réduite pour s'adapter au clavier
+              fontSize: 24, // Taille rï¿½duite pour s'adapter au clavier
               fontWeight: FontWeight.bold,
               color: violetColor,
             ),
@@ -593,7 +593,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
             ),
           ),
         ),
-        // Espace supplémentaire en bas pour s'assurer que le champ reste visible
+        // Espace supplï¿½mentaire en bas pour s'assurer que le champ reste visible
         const SizedBox(height: 60),
         ],
       ),
@@ -634,14 +634,14 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
             final field = fieldData['field'] as String;
             final label = fieldData['label'] as String;
             final placeholder = fieldData['placeholder'] as String;
-            final required = fieldData['required'] as bool? ?? false;
+            final required = fieldData['required'] as bool? âœ¨ false;
             final hint = fieldData['hint'] as String;
             final isHandle = field == 'personIdentifier';
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
               child: isHandle
-                  ? _buildHandleAutocompleteField(
+                  âœ¨ _buildHandleAutocompleteField(
                       field: field,
                       label: label,
                       placeholder: placeholder,
@@ -670,7 +670,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
     required bool required,
     required String hint,
   }) {
-    final currentValue = _model.answers[field] as String? ?? '';
+    final currentValue = _model.answers[field] as String? âœ¨ '';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -688,11 +688,11 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: required ? violetColor : Colors.white.withOpacity(0.12),
+                color: required âœ¨ violetColor : Colors.white.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                required ? 'REQUIS' : 'OPTIONNEL',
+                required âœ¨ 'REQUIS' : 'OPTIONNEL',
                 style: GoogleFonts.poppins(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
@@ -746,7 +746,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
     );
   }
 
-  // Cache pour l'utilisateur Doron trouvé
+  // Cache pour l'utilisateur Doron trouvï¿½
   Map<String, dynamic>? _foundDoronUser;
   String _lastSearchedHandle = '';
   List<Map<String, dynamic>> _handleSuggestions = [];
@@ -762,7 +762,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
     return StatefulBuilder(
       builder: (context, setLocal) {
         final controller = TextEditingController(
-          text: _model.answers[field] as String? ?? '',
+          text: _model.answers[field] as String? âœ¨ '',
         );
         controller.selection = TextSelection.fromPosition(
           TextPosition(offset: controller.text.length),
@@ -805,7 +805,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
               onChanged: (raw) async {
                 final value = raw.replaceAll('@', '').trim().toLowerCase();
                 _model.answers[field] = value;
-                // Réinitialiser l'utilisateur trouvé si handle change
+                // Rï¿½initialiser l'utilisateur trouvï¿½ si handle change
                 if (value != _lastSearchedHandle) {
                   setLocal(() {
                     _foundDoronUser = null;
@@ -827,9 +827,9 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                           _handleSuggestions = query.docs
                               .map((d) => {
                                     'uid': d.id,
-                                    'handle': d['handle'] ?? d['handle_lower'] ?? '',
-                                    'displayName': d['display_name'] ?? d['displayName'] ?? '',
-                                    'photoUrl': d['photo_url'] ?? d['photoUrl'] ?? '',
+                                    'handle': d['handle'] âœ¨ d['handle_lower'] âœ¨ '',
+                                    'displayName': d['display_name'] âœ¨ d['displayName'] âœ¨ '',
+                                    'photoUrl': d['photo_url'] âœ¨ d['photoUrl'] âœ¨ '',
                                   })
                               .toList();
                           _isSearchingHandle = false;
@@ -862,7 +862,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                   fontSize: 18,
                 ),
                 suffixIcon: _isSearchingHandle
-                    ? const Padding(
+                    âœ¨ const Padding(
                         padding: EdgeInsets.all(12),
                         child: SizedBox(
                           width: 18,
@@ -874,7 +874,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                         ),
                       )
                     : _foundDoronUser != null
-                        ? const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 22)
+                        âœ¨ const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 22)
                         : null,
                 filled: true,
                 fillColor: Colors.white.withOpacity(0.10),
@@ -886,16 +886,16 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide(
                     color: _foundDoronUser != null
-                        ? const Color(0xFF10B981)
+                        âœ¨ const Color(0xFF10B981)
                         : Colors.white.withOpacity(0.18),
-                    width: _foundDoronUser != null ? 2 : 1,
+                    width: _foundDoronUser != null âœ¨ 2 : 1,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide(
                     color: _foundDoronUser != null
-                        ? const Color(0xFF10B981)
+                        âœ¨ const Color(0xFF10B981)
                         : violetColor,
                     width: 2,
                   ),
@@ -931,7 +931,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                         ),
                       ),
                       subtitle: (user['displayName'] as String).isNotEmpty
-                          ? Text(
+                          âœ¨ Text(
                               user['displayName'] as String,
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
@@ -953,7 +953,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 ),
               ),
             ],
-            // Badge de confirmation du compte trouvé
+            // Badge de confirmation du compte trouvï¿½
             if (_foundDoronUser != null) ...[
               const SizedBox(height: 8),
               Container(
@@ -969,7 +969,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '? Compte Doron trouvé — ses wishlists seront incluses !',
+                        'Compte Doron trouvï¿½ ï¿½ ses wishlists seront incluses !',
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           color: const Color(0xFF10B981),
@@ -1011,14 +1011,14 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
               );
             });
           },
-          borderRadius: BorderRadius.circular(isWrap || isGrid ? 20 : 32),
+          borderRadius: BorderRadius.circular(isWrap || isGrid âœ¨ 20 : 32),
           child: Container(
-            width: isWrap || isGrid ? null : double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: isWrap ? 20 : 20, vertical: isWrap ? 14 : (isGrid ? 0 : 20)),
-            alignment: isGrid ? Alignment.center : null,
+            width: isWrap || isGrid âœ¨ null : double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: isWrap âœ¨ 20 : 20, vertical: isWrap âœ¨ 14 : (isGrid âœ¨ 0 : 20)),
+            alignment: isGrid âœ¨ Alignment.center : null,
             decoration: BoxDecoration(
               gradient: isSelected
-                  ? LinearGradient(
+                  âœ¨ LinearGradient(
                       colors: [
                         violetColor,
                         violetColor.withValues(alpha: 0.8),
@@ -1030,19 +1030,19 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                         Colors.white.withValues(alpha: 0.07),
                       ],
                     ),
-              borderRadius: BorderRadius.circular(isWrap || isGrid ? 20 : 32),
+              borderRadius: BorderRadius.circular(isWrap || isGrid âœ¨ 20 : 32),
               border: Border.all(
-                color: isSelected ? Colors.white.withValues(alpha: 0.35) : Colors.white.withValues(alpha: 0.18),
-                width: isSelected ? 1.5 : 1,
+                color: isSelected âœ¨ Colors.white.withValues(alpha: 0.35) : Colors.white.withValues(alpha: 0.18),
+                width: isSelected âœ¨ 1.5 : 1,
               ),
             ),
             child: Text(
               option,
-              textAlign: isGrid ? TextAlign.center : TextAlign.left,
+              textAlign: isGrid âœ¨ TextAlign.center : TextAlign.left,
               style: GoogleFonts.poppins(
-                fontSize: isWrap ? 15 : (isGrid ? 14 : 17),
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.9),
+                fontSize: isWrap âœ¨ 15 : (isGrid âœ¨ 14 : 17),
+                fontWeight: isSelected âœ¨ FontWeight.w600 : FontWeight.w500,
+                color: isSelected âœ¨ Colors.white : Colors.white.withValues(alpha: 0.9),
               ),
             ),
           ),
@@ -1117,7 +1117,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       gradient: isSelected
-                          ? LinearGradient(
+                          âœ¨ LinearGradient(
                               colors: [
                                 violetColor,
                                 violetColor.withOpacity(0.8),
@@ -1131,11 +1131,11 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                             ),
                       borderRadius: BorderRadius.circular(32),
                       border: Border.all(
-                        color: isSelected ? Colors.white.withOpacity(0.35) : Colors.white.withOpacity(0.18),
-                        width: isSelected ? 1.5 : 1.0,
+                        color: isSelected âœ¨ Colors.white.withOpacity(0.35) : Colors.white.withOpacity(0.18),
+                        width: isSelected âœ¨ 1.5 : 1.0,
                       ),
                       boxShadow: isSelected
-                          ? [
+                          âœ¨ [
                               BoxShadow(
                                 color: violetColor.withOpacity(0.40),
                                 blurRadius: 14,
@@ -1152,7 +1152,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
-                              color: Colors.white.withOpacity(isSelected ? 1.0 : 0.80),
+                              color: Colors.white.withOpacity(isSelected âœ¨ 1.0 : 0.80),
                             ),
                           ),
                         ),
@@ -1174,7 +1174,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
           Padding(
             padding: const EdgeInsets.only(top: 16),
             child: Text(
-              '? Tu peux sélectionner plusieurs réponses',
+              'Tu peux sï¿½lectionner plusieurs rï¿½ponses',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 13,
@@ -1190,7 +1190,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
     final field = stepData['field'] as String;
     final min = (stepData['min'] as int).toDouble();
     final max = (stepData['max'] as int).toDouble();
-    final value = _model.answers[field] as double? ?? min;
+    final value = _model.answers[field] as double? âœ¨ min;
 
     return Column(
       children: [
@@ -1246,7 +1246,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                       ],
                     ).createShader(bounds),
                     child: Text(
-                      '${value.toInt()}€',
+                      '${value.toInt()}ï¿½',
                       style: GoogleFonts.poppins(
                         fontSize: 56,
                         fontWeight: FontWeight.bold,
@@ -1296,14 +1296,14 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${min.toInt()}€',
+                    '${min.toInt()}ï¿½',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: const Color(0xFFF5F5F7),
                     ),
                   ),
                   Text(
-                    '${max.toInt()}€',
+                    '${max.toInt()}ï¿½',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: const Color(0xFFF5F5F7),
@@ -1318,7 +1318,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 child: InkWell(
                   onTap: () {
                     setState(() {
-                      // Valeur raisonnable : 80€ (mix accessible + premium)
+                      // Valeur raisonnable : 80ï¿½ (mix accessible + premium)
                       _model.answers[field] = 80.0;
                     });
                   },
@@ -1395,25 +1395,25 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
           ),
         ),
         child: ElevatedButton(
-          // FIX Bug 2: Désactiver le bouton si navigation en cours
+          // FIX Bug 2: Dï¿½sactiver le bouton si navigation en cours
           onPressed: (canProceed && !_model.isNavigating)
-              ? () async {
+              âœ¨ () async {
                   // Attendre correctement handleNext (async)
                   await _model.handleNext(steps, context, skipUserQuestions: skipUserQuestions, returnTo: returnTo, onlyUserQuestions: onlyUserQuestions);
-                  // Rafraîchir l'UI après la navigation
+                  // Rafraï¿½chir l'UI aprï¿½s la navigation
                   if (mounted) {
                     setState(() {});
                   }
                 }
               : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: canProceed ? violetColor : Colors.white.withOpacity(0.1),
+            backgroundColor: canProceed âœ¨ violetColor : Colors.white.withOpacity(0.1),
             disabledBackgroundColor: Colors.white.withOpacity(0.1),
             padding: const EdgeInsets.symmetric(vertical: 20),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(50),
             ),
-            elevation: canProceed ? 8 : 0,
+            elevation: canProceed âœ¨ 8 : 0,
             shadowColor: violetColor.withOpacity(0.5),
           ),
           child: Row(
@@ -1424,11 +1424,11 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 const SizedBox(width: 8),
               ],
               Text(
-                isLastStep ? 'Découvrir mes cadeaux' : context.tr('Continuer', 'Continue'),
+                isLastStep âœ¨ 'Dï¿½couvrir mes cadeaux' : context.tr('Continuer', 'Continue'),
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: canProceed ? Colors.white : Colors.white54,
+                  color: canProceed âœ¨ Colors.white : Colors.white54,
                 ),
               ),
               if (isLastStep) ...[
@@ -1438,7 +1438,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 const SizedBox(width: 8),
                 Icon(
                   Icons.arrow_forward,
-                  color: canProceed ? Colors.white : Colors.white54,
+                  color: canProceed âœ¨ Colors.white : Colors.white54,
                   size: 20,
                 ),
               ],

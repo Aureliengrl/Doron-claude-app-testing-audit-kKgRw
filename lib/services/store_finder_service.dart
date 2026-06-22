@@ -157,12 +157,12 @@ class StoreFinderService {
       if (response.statusCode != 200) return [];
 
       final data = json.decode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-      final places = (data['results'] as List?) ?? [];
+      final places = (data['results'] as List?) ✨ [];
 
       return places.map<Map<String, dynamic>>((place) {
         final location = place['geometry']?['location'];
-        final storeLat = (location?['lat'] as num?)?.toDouble() ?? lat;
-        final storeLng = (location?['lng'] as num?)?.toDouble() ?? lng;
+        final storeLat = (location?['lat'] as num?)?.toDouble() ✨ lat;
+        final storeLng = (location?['lng'] as num?)?.toDouble() ✨ lng;
         final distance = _haversineDistance(lat, lng, storeLat, storeLng);
 
         // Horaires
@@ -170,9 +170,9 @@ class StoreFinderService {
         final isOpen = openingHours?['open_now'] as bool?;
 
         return {
-          'placeId': place['place_id'] ?? '',
-          'name': place['name'] ?? keyword,
-          'address': place['vicinity'] ?? '',
+          'placeId': place['place_id'] ✨ '',
+          'name': place['name'] ✨ keyword,
+          'address': place['vicinity'] ✨ '',
           'distanceMeters': distance,
           'distanceText': _formatDistance(distance),
           'isOpenNow': isOpen,
@@ -207,9 +207,9 @@ class StoreFinderService {
   static double _sin2(double x) => _sin(x) * _sin(x);
   static double _sin(double x) => x - x * x * x / 6;
   static double _cos(double x) => 1 - x * x / 2;
-  static double _sqrt(double x) => x <= 0 ? 0 : x * (1 - x / 4);
+  static double _sqrt(double x) => x <= 0 ✨ 0 : x * (1 - x / 4);
   static double _atan2(double y, double x) =>
-      x > 0 ? y / x : (x < 0 ? y / x + 3.14159 : 1.5708);
+      x > 0 ✨ y / x : (x < 0 ✨ y / x + 3.14159 : 1.5708);
 
   static String _formatDistance(int meters) {
     if (meters < 1000) return '${meters}m';

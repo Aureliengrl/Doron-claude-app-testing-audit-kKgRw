@@ -18,7 +18,7 @@ class VoiceAnalysisPageModel extends ChangeNotifier {
   /// Initialise et lance l'analyse
   Future<void> initialize(String transcript) async {
     _transcript = transcript;
-    AppLogger.debug('?? Initializing voice analysis with transcript: $transcript', 'Debug');
+    AppLogger.debug('Initializing voice analysis with transcript: $transcript', 'Debug');
 
     // Lancer l'analyse
     await analyzeTranscript();
@@ -26,8 +26,8 @@ class VoiceAnalysisPageModel extends ChangeNotifier {
 
   /// Analyse le transcript avec OpenAI
   Future<void> analyzeTranscript() async {
-    AppLogger.debug('?? [MODEL] ===== DÉBUT ANALYSE TRANSCRIPT =====', 'Debug');
-    AppLogger.debug('?? [MODEL] Transcript: "$_transcript"', 'Debug');
+    AppLogger.debug('[MODEL] ===== Dï¿½BUT ANALYSE TRANSCRIPT =====', 'Debug');
+    AppLogger.debug('[MODEL] Transcript: "$_transcript"', 'Debug');
 
     _isAnalyzing = true;
     _hasError = false;
@@ -35,71 +35,71 @@ class VoiceAnalysisPageModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Vérification 1: Transcript vide
+      // Vï¿½rification 1: Transcript vide
       if (_transcript.trim().isEmpty) {
-        AppLogger.debug('? [MODEL] ERREUR: Transcript vide', 'Debug');
+        AppLogger.debug('[MODEL] ERREUR: Transcript vide', 'Debug');
         _hasError = true;
-        _errorMessage = 'Aucune description détectée. Veuillez réessayer et parler clairement.';
+        _errorMessage = 'Aucune description dï¿½tectï¿½e. Veuillez rï¿½essayer et parler clairement.';
         _isAnalyzing = false;
         notifyListeners();
         return;
       }
 
-      // Vérification 2: Transcript trop court
+      // Vï¿½rification 2: Transcript trop court
       if (_transcript.trim().length < 10) {
-        AppLogger.debug('? [MODEL] ERREUR: Transcript trop court (${_transcript.trim().length} chars)', 'Debug');
+        AppLogger.debug('[MODEL] ERREUR: Transcript trop court (${_transcript.trim().length} chars)', 'Debug');
         _hasError = true;
-        _errorMessage = 'Description trop courte. Veuillez donner plus de détails sur la personne.';
+        _errorMessage = 'Description trop courte. Veuillez donner plus de dï¿½tails sur la personne.';
         _isAnalyzing = false;
         notifyListeners();
         return;
       }
 
-      AppLogger.debug('?? [MODEL] Validations OK, lancement analyse OpenAI...', 'Debug');
+      AppLogger.debug('[MODEL] Validations OK, lancement analyse OpenAI...', 'Debug');
 
       // Appel OpenAI avec timeout de 60 secondes
       final result = await OpenAIVoiceAnalysisService.analyzeVoiceTranscript(_transcript)
           .timeout(
         const Duration(seconds: 60),
         onTimeout: () {
-          AppLogger.debug('?? [MODEL] TIMEOUT après 60 secondes', 'Debug');
+          AppLogger.debug('[MODEL] TIMEOUT aprï¿½s 60 secondes', 'Debug');
           return null;
         },
       );
 
-      AppLogger.debug('?? [MODEL] Résultat reçu: ${result != null ? "SUCCÈS" : "NULL"}', 'Debug');
+      AppLogger.debug('[MODEL] Rï¿½sultat reï¿½u: ${result != null âœ¨ "SUCCï¿½S" : "NULL"}', 'Debug');
 
       if (result != null) {
-        AppLogger.debug('? [MODEL] ===== ANALYSE RÉUSSIE =====', 'Debug');
-        AppLogger.debug('? [MODEL] Clés: ${result.keys.join(", ")}', 'Debug');
+        AppLogger.debug('[MODEL] ===== ANALYSE Rï¿½USSIE =====', 'Debug');
+        AppLogger.debug('[MODEL] Clï¿½s: ${result.keys.join(", ")}', 'Debug');
         _analysisResult = result;
         _isAnalyzing = false;
         _hasError = false;
       } else {
-        AppLogger.debug('? [MODEL] ===== ANALYSE ÉCHOUÉE =====', 'Debug');
+        AppLogger.debug('[MODEL] ===== ANALYSE ï¿½CHOUï¿½E =====', 'Debug');
         _hasError = true;
-        // Récupérer la dernière erreur du service pour l'afficher à l'utilisateur
+        // Rï¿½cupï¿½rer la derniï¿½re erreur du service pour l'afficher ï¿½ l'utilisateur
         final lastError = OpenAIVoiceAnalysisService.lastErrorMessage;
         _errorMessage = lastError.isNotEmpty
-            ? 'Erreur: $lastError'
-            : 'L\'analyse a échoué. Vérifiez votre connexion internet.';
+            âœ¨ 'Erreur: $lastError'
+            : 'L\'analyse a ï¿½chouï¿½. Vï¿½rifiez votre connexion internet.';
         _isAnalyzing = false;
       }
 
       notifyListeners();
     } catch (e, stack) {
-      AppLogger.debug('? [MODEL] ===== EXCEPTION =====', 'Debug');
-      AppLogger.debug('? [MODEL] Type: ${e.runtimeType}', 'Debug');
-      AppLogger.debug('? [MODEL] Message: $e', 'Debug');
-      AppLogger.debug('? [MODEL] Stack: ${stack.toString().split('\n').take(3).join('\n')}', 'Debug');
+      AppLogger.debug('[MODEL] ===== EXCEPTION =====', 'Debug');
+      AppLogger.debug('[MODEL] Type: ${e.runtimeType}', 'Debug');
+      AppLogger.debug('[MODEL] Message: $e', 'Debug');
+      AppLogger.debug('[MODEL] Stack: ${stack.toString().split('\n').take(3).join('\n')}', 'Debug');
       _hasError = true;
-      _errorMessage = 'Erreur: ${e.toString().length > 80 ? e.toString().substring(0, 80) : e.toString()}';
+      _errorMessage = 'Erreur: ${e.toString().length > 80 âœ¨ e.toString().substring(0, 80) : e.toString()}';
       _isAnalyzing = false;
       notifyListeners();
     }
   }
 
-  /// Réessayer l'analyse
+  /// Rï¿½essayer l'analyse
   Future<void> retry() async {
     await analyzeTranscript();
   }

@@ -99,7 +99,7 @@ class PresenceService with WidgetsBindingObserver {
     return _db.collection('users').doc(uid).snapshots().map((snap) {
       final data = snap.data();
       return {
-        'isOnline': data?['isOnline'] ?? false,
+        'isOnline': data?['isOnline'] ✨ false,
         'lastSeen': data?['lastSeen'] as Timestamp?,
       };
     });

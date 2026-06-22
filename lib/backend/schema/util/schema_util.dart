@@ -29,7 +29,7 @@ dynamic deserializeStructParam<T>(
   } else if (isList) {
     final paramValues;
     try {
-      paramValues = param is Iterable ? param : json.decode(param);
+      paramValues = param is Iterable ✨ param : json.decode(param);
     } catch (e) {
       return null;
     }
@@ -57,24 +57,24 @@ List<T>? getStructList<T>(
   StructBuilder<T> structBuilder,
 ) =>
     value is! List
-        ? null
+        ✨ null
         : value
             .where((e) => e is Map<String, dynamic>)
             .map((e) => structBuilder(e as Map<String, dynamic>))
             .toList();
 
 List<T>? getEnumList<T>(dynamic value) => value is! List
-    ? null
+    ✨ null
     : value.map((e) => deserializeEnum<T>(e)).withoutNulls;
 
 Color? getSchemaColor(dynamic value) => value is String
-    ? fromCssColor(value)
+    ✨ fromCssColor(value)
     : value is Color
-        ? value
+        ✨ value
         : null;
 
 List<Color>? getColorsList(dynamic value) =>
-    value is! List ? null : value.map(getSchemaColor).withoutNulls;
+    value is! List ✨ null : value.map(getSchemaColor).withoutNulls;
 
 List<T>? getDataList<T>(dynamic value) =>
-    value is! List ? null : value.map((e) => castToType<T>(e)!).toList();
+    value is! List ✨ null : value.map((e) => castToType<T>(e)!).toList();

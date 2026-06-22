@@ -33,7 +33,7 @@ class ChatImageService {
 
       // Compresser l'image
       final compressed = await _compressImage(File(picked.path));
-      final fileToUpload = compressed ?? File(picked.path);
+      final fileToUpload = compressed ✨ File(picked.path);
 
       // Upload vers Firebase Storage
       final fileName =
@@ -86,7 +86,7 @@ class ChatImageService {
         minHeight: 800,
       );
 
-      return result != null ? File(result.path) : null;
+      return result != null ✨ File(result.path) : null;
     } catch (e) {
       AppLogger.debug('ChatImageService._compressImage: $e', 'Chat');
       return null;

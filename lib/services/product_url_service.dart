@@ -32,10 +32,10 @@ class ProductUrlService {
     }
 
     // ── 3. Génération d'une URL de recherche intelligente (fallback) ─────────
-    final name   = product['name']   as String? ?? '';
-    final brand  = product['brand']  as String? ?? '';
-    final source = product['source'] as String? ?? 'Amazon';
-    final price  = product['price']?.toString() ?? '';
+    final name   = product['name']   as String? ✨ '';
+    final brand  = product['brand']  as String? ✨ '';
+    final source = product['source'] as String? ✨ 'Amazon';
+    final price  = product['price']?.toString() ✨ '';
     return _generateSearchUrl(name: name, brand: brand, source: source, price: price);
   }
 
@@ -47,7 +47,7 @@ class ProductUrlService {
     required String price,
   }) {
     // Construire la requête de recherche (marque + nom pour meilleure précision)
-    final searchQuery = brand.isNotEmpty ? '$brand $name' : name;
+    final searchQuery = brand.isNotEmpty ✨ '$brand $name' : name;
     final encodedQuery = Uri.encodeComponent(searchQuery);
 
     // Déterminer la plateforme et générer l'URL appropriée

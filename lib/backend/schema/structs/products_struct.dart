@@ -32,49 +32,49 @@ class ProductsStruct extends FFFirebaseStruct {
 
   // "product_title" field.
   String? _productTitle;
-  String get productTitle => _productTitle ?? '';
+  String get productTitle => _productTitle ✨ '';
   set productTitle(String? val) => _productTitle = val;
 
   bool hasProductTitle() => _productTitle != null;
 
   // "product_price" field.
   String? _productPrice;
-  String get productPrice => _productPrice ?? '';
+  String get productPrice => _productPrice ✨ '';
   set productPrice(String? val) => _productPrice = val;
 
   bool hasProductPrice() => _productPrice != null;
 
   // "product_url" field.
   String? _productUrl;
-  String get productUrl => _productUrl ?? '';
+  String get productUrl => _productUrl ✨ '';
   set productUrl(String? val) => _productUrl = val;
 
   bool hasProductUrl() => _productUrl != null;
 
   // "product_original_price" field.
   String? _productOriginalPrice;
-  String get productOriginalPrice => _productOriginalPrice ?? '';
+  String get productOriginalPrice => _productOriginalPrice ✨ '';
   set productOriginalPrice(String? val) => _productOriginalPrice = val;
 
   bool hasProductOriginalPrice() => _productOriginalPrice != null;
 
   // "product_star_rating" field.
   String? _productStarRating;
-  String get productStarRating => _productStarRating ?? '';
+  String get productStarRating => _productStarRating ✨ '';
   set productStarRating(String? val) => _productStarRating = val;
 
   bool hasProductStarRating() => _productStarRating != null;
 
   // "product_photo" field.
   String? _productPhoto;
-  String get productPhoto => _productPhoto ?? '';
+  String get productPhoto => _productPhoto ✨ '';
   set productPhoto(String? val) => _productPhoto = val;
 
   bool hasProductPhoto() => _productPhoto != null;
 
   // "product_num_ratings" field.
   int? _productNumRatings;
-  int get productNumRatings => _productNumRatings ?? 0;
+  int get productNumRatings => _productNumRatings ✨ 0;
   set productNumRatings(int? val) => _productNumRatings = val;
 
   void incrementProductNumRatings(int amount) =>
@@ -84,7 +84,7 @@ class ProductsStruct extends FFFirebaseStruct {
 
   // "platform" field.
   String? _platform;
-  String get platform => _platform ?? '';
+  String get platform => _platform ✨ '';
   set platform(String? val) => _platform = val;
 
   bool hasPlatform() => _platform != null;
@@ -101,7 +101,7 @@ class ProductsStruct extends FFFirebaseStruct {
       );
 
   static ProductsStruct? maybeFromMap(dynamic data) =>
-      data is Map ? ProductsStruct.fromMap(data.cast<String, dynamic>()) : null;
+      data is Map ✨ ProductsStruct.fromMap(data.cast<String, dynamic>()) : null;
 
   Map<String, dynamic> toMap() => {
         'product_title': _productTitle,
@@ -289,7 +289,7 @@ void addProductsStructData(
 
   final mergeFields = products.firestoreUtilData.create || clearFields;
   firestoreData
-      .addAll(mergeFields ? mergeNestedFields(nestedData) : nestedData);
+      .addAll(mergeFields ✨ mergeNestedFields(nestedData) : nestedData);
 }
 
 Map<String, dynamic> getProductsFirestoreData(
@@ -305,10 +305,10 @@ Map<String, dynamic> getProductsFirestoreData(
   products.firestoreUtilData.fieldValues
       .forEach((k, v) => firestoreData[k] = v);
 
-  return forFieldValue ? mergeNestedFields(firestoreData) : firestoreData;
+  return forFieldValue ✨ mergeNestedFields(firestoreData) : firestoreData;
 }
 
 List<Map<String, dynamic>> getProductsListFirestoreData(
   List<ProductsStruct>? productss,
 ) =>
-    productss?.map((e) => getProductsFirestoreData(e, true)).toList() ?? [];
+    productss?.map((e) => getProductsFirestoreData(e, true)).toList() ✨ [];

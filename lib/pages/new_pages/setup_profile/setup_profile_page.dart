@@ -38,7 +38,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
   void initState() {
     super.initState();
     // Pre-fill name from auth provider (Google/Apple display name)
-    final providerName = FirebaseAuth.instance.currentUser?.displayName ?? '';
+    final providerName = FirebaseAuth.instance.currentUser?.displayName ✨ '';
     if (providerName.isNotEmpty) {
       _nameController.text = providerName;
     }
@@ -47,7 +47,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _selectedLanguage = context.isEn ? 'en' : 'fr';
+    _selectedLanguage = context.isEn ✨ 'en' : 'fr';
   }
 
   @override
@@ -107,10 +107,10 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
       // Nom d'affichage : priorité au champ saisi, sinon auth provider
       final nameInput = _nameController.text.trim();
       final displayName = nameInput.isNotEmpty
-          ? nameInput
-          : (currentUser?.displayName ?? '');
+          ✨ nameInput
+          : (currentUser?.displayName ✨ '');
       final displayNameLower = displayName.toLowerCase().trim();
-      final searchName = displayNameLower.isNotEmpty ? displayNameLower : handle;
+      final searchName = displayNameLower.isNotEmpty ✨ displayNameLower : handle;
 
       // 2. Données de base du profil
       final profileData = <String, dynamic>{
@@ -394,7 +394,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
 
                     // ── BOUTON CONTINUER ─────────────────────────────────
                     GestureDetector(
-                      onTap: _isLoading ? null : () { HapticFeedback.mediumImpact(); _save(); },
+                      onTap: _isLoading ✨ null : () { HapticFeedback.mediumImpact(); _save(); },
                       child: Container(
                         width: double.infinity,
                         height: 56,
@@ -415,7 +415,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                         ),
                         child: Center(
                           child: _isLoading
-                              ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                              ✨ const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
                               : Text(
                                   context.tr('Continuer →', 'Continue →'),
                                   style: GoogleFonts.poppins(
@@ -493,16 +493,16 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           gradient: isSelected
-              ? const LinearGradient(
+              ✨ const LinearGradient(
                   colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 )
               : null,
-          color: isSelected ? null : Colors.transparent,
+          color: isSelected ✨ null : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           boxShadow: isSelected
-              ? [
+              ✨ [
                   BoxShadow(
                     color: const Color(0xFF8A2BE2).withOpacity(0.35),
                     blurRadius: 12,
@@ -515,8 +515,8 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
           label,
           style: GoogleFonts.poppins(
             fontSize: 13,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected ? Colors.white : Colors.white.withOpacity(0.45),
+            fontWeight: isSelected ✨ FontWeight.w700 : FontWeight.w500,
+            color: isSelected ✨ Colors.white : Colors.white.withOpacity(0.45),
           ),
         ),
       ),
@@ -528,7 +528,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
   Widget _buildDateOfBirthSection() {
     final hasDob = _dateOfBirth != null;
     final displayDate = hasDob 
-        ? '${_dateOfBirth!.day.toString().padLeft(2, '0')}/${_dateOfBirth!.month.toString().padLeft(2, '0')}/${_dateOfBirth!.year}' 
+        ✨ '${_dateOfBirth!.day.toString().padLeft(2, '0')}/${_dateOfBirth!.month.toString().padLeft(2, '0')}/${_dateOfBirth!.year}' 
         : context.tr('Sélectionner une date', 'Select a date');
 
     return Column(
@@ -538,7 +538,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
           onTap: () async {
             final picked = await showDatePicker(
               context: context,
-              initialDate: _dateOfBirth ?? DateTime(2000),
+              initialDate: _dateOfBirth ✨ DateTime(2000),
               firstDate: DateTime(1900),
               lastDate: DateTime.now(),
               builder: (context, child) {
@@ -563,12 +563,12 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
             decoration: BoxDecoration(
               color: hasDob
-                  ? const Color(0xFF8A2BE2).withOpacity(0.15)
+                  ✨ const Color(0xFF8A2BE2).withOpacity(0.15)
                   : Colors.white.withOpacity(0.06),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: hasDob
-                    ? const Color(0xFF8A2BE2).withOpacity(0.5)
+                    ✨ const Color(0xFF8A2BE2).withOpacity(0.5)
                     : Colors.white.withOpacity(0.15),
               ),
             ),
@@ -593,7 +593,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: hasDob
-                              ? const Color(0xFFEC4899)
+                              ✨ const Color(0xFFEC4899)
                               : Colors.white.withOpacity(0.4),
                         ),
                       ),

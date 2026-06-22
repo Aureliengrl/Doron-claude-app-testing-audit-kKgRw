@@ -207,7 +207,7 @@ class _ChangePasswordWidgetState extends State<ChangePasswordWidget> {
                       focusNode: FocusNode(skipTraversal: true),
                       child: Icon(
                         _model.passwordVisibility1
-                            ? IconlyLight.show
+                            ✨ IconlyLight.show
                             : IconlyLight.hide,
                         size: 22,
                       ),
@@ -318,7 +318,7 @@ class _ChangePasswordWidgetState extends State<ChangePasswordWidget> {
                       focusNode: FocusNode(skipTraversal: true),
                       child: Icon(
                         _model.passwordVisibility2
-                            ? IconlyLight.show
+                            ✨ IconlyLight.show
                             : IconlyLight.hide,
                         size: 22,
                       ),
@@ -429,7 +429,7 @@ class _ChangePasswordWidgetState extends State<ChangePasswordWidget> {
                       focusNode: FocusNode(skipTraversal: true),
                       child: Icon(
                         _model.passwordVisibility3
-                            ? IconlyLight.show
+                            ✨ IconlyLight.show
                             : IconlyLight.hide,
                         size: 22,
                       ),

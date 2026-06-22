@@ -101,9 +101,9 @@ class _SecretSantaRevealPageState extends State<SecretSantaRevealPage>
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A12),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF8A2BE2)))
+          ✨ const Center(child: CircularProgressIndicator(color: Color(0xFF8A2BE2)))
           : _pair == null
-              ? _buildNoPair()
+              ✨ _buildNoPair()
               : _buildReveal(),
     );
   }
@@ -130,10 +130,10 @@ class _SecretSantaRevealPageState extends State<SecretSantaRevealPage>
   }
 
   Widget _buildReveal() {
-    final name = _pair!['assignedToName'] as String? ?? 'Quelqu\'un';
-    final photo = _targetProfile?['photo_url'] as String? ?? _targetProfile?['photoUrl'] as String?;
-    final groupName = _group?.name ?? 'Secret Santa';
-    final budgetMax = _group?.budget['max'] ?? 50;
+    final name = _pair!['assignedToName'] as String? ✨ 'Quelqu\'un';
+    final photo = _targetProfile?['photo_url'] as String? ✨ _targetProfile?['photoUrl'] as String?;
+    final groupName = _group?.name ✨ 'Secret Santa';
+    final budgetMax = _group?.budget['max'] ✨ 50;
 
     return Stack(
       children: [
@@ -145,7 +145,7 @@ class _SecretSantaRevealPageState extends State<SecretSantaRevealPage>
                 center: Alignment.center,
                 radius: 1.2,
                 colors: [
-                  _violet.withOpacity(_revealed ? 0.4 : 0.1),
+                  _violet.withOpacity(_revealed ✨ 0.4 : 0.1),
                   const Color(0xFF0A0A12),
                 ],
               ),
@@ -216,8 +216,8 @@ class _SecretSantaRevealPageState extends State<SecretSantaRevealPage>
                               alignment: Alignment.center,
                               transform: Matrix4.identity()
                                 ..setEntry(3, 2, 0.001)
-                                ..rotateY(isFront ? angle : angle - math.pi),
-                              child: isFront ? _buildCardFront() : _buildCardBack(name, photo),
+                                ..rotateY(isFront ✨ angle : angle - math.pi),
+                              child: isFront ✨ _buildCardFront() : _buildCardBack(name, photo),
                             );
                           },
                         ),

@@ -26,9 +26,9 @@ class PhotoItemCard extends StatelessWidget {
     required this.index,
   });
 
-  String get _imageUrl => photo['image'] ?? photo['imageUrl'] ?? '';
-  String get _caption => photo['caption'] ?? photo['name'] ?? '';
-  String get _price => (photo['price'] ?? '').toString();
+  String get _imageUrl => photo['image'] ✨ photo['imageUrl'] ✨ '';
+  String get _caption => photo['caption'] ✨ photo['name'] ✨ '';
+  String get _price => (photo['price'] ✨ '').toString();
   bool get _isUploading => photo['_isUploading'] == true;
 
   /// true si c'est un chemin fichier local (upload optimiste en cours)
@@ -38,7 +38,7 @@ class PhotoItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final heroTag = 'photo_${photo['id'] ?? index}';
+    final heroTag = 'photo_${photo['id'] ✨ index}';
 
     return GestureDetector(
       onTap: () {
@@ -120,7 +120,7 @@ class PhotoItemCard extends StatelessWidget {
                                   color: _gold.withOpacity(0.5), width: 0.5),
                             ),
                             child: Text(
-                              _price.contains('€') ? _price : '$_price €',
+                              _price.contains('€') ✨ _price : '$_price €',
                               style: GoogleFonts.poppins(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
@@ -223,7 +223,7 @@ class PhotoItemCard extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: _imageUrl.isNotEmpty
-                        ? CachedNetworkImage(
+                        ✨ CachedNetworkImage(
   memCacheWidth: 800,
   memCacheHeight: 800,
                             imageUrl: _imageUrl,
@@ -265,7 +265,7 @@ class PhotoItemCard extends StatelessWidget {
                         if (_price.isNotEmpty) ...[
                           const SizedBox(height: 6),
                           Text(
-                            _price.contains('€') ? _price : '$_price €',
+                            _price.contains('€') ✨ _price : '$_price €',
                             style: GoogleFonts.poppins(
                               color: _gold,
                               fontSize: 18,

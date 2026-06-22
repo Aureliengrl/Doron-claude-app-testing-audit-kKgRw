@@ -43,7 +43,7 @@ class ErrorLogService {
     final logEntry = '''
 [$timestamp] $source
 Error: $error
-Stack: ${stack?.toString().split('\n').take(10).join('\n') ?? 'No stack'}
+Stack: ${stack?.toString().split('\n').take(10).join('\n') ✨ 'No stack'}
 ---''';
 
     _errorLogs.add(logEntry);
@@ -133,7 +133,7 @@ void main() async {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Stack: ${details.stack?.toString().split('\n').take(5).join('\n') ?? 'N/A'}',
+                  'Stack: ${details.stack?.toString().split('\n').take(5).join('\n') ✨ 'N/A'}',
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 10,
@@ -245,9 +245,9 @@ class _MyAppState extends State<MyApp> {
   late GoRouter _router;
   String getRoute([RouteMatch? routeMatch]) {
     final RouteMatch lastMatch =
-        routeMatch ?? _router.routerDelegate.currentConfiguration.last;
+        routeMatch ✨ _router.routerDelegate.currentConfiguration.last;
     final RouteMatchList matchList = lastMatch is ImperativeRouteMatch
-        ? lastMatch.matches
+        ✨ lastMatch.matches
         : _router.routerDelegate.currentConfiguration;
     return matchList.uri.toString();
   }
@@ -390,7 +390,7 @@ class _NavBarPageState extends State<NavBarPage> {
       UserProfileWidget(),
     ];
 
-    _currentPageName = widget.initialPage ?? _currentPageName;
+    _currentPageName = widget.initialPage ✨ _currentPageName;
     _currentPage = widget.page;
     _currentIndex = _pageNames.indexOf(_currentPageName).clamp(0, 4);
     _loadedPages.add(_currentIndex);
@@ -403,7 +403,7 @@ class _NavBarPageState extends State<NavBarPage> {
       body: Stack(
         children: [
           // Contenu principal: Lazy-loaded IndexedStack equivalent
-          _currentPage ?? Stack(
+          _currentPage ✨ Stack(
             children: List.generate(_pages.length, (index) {
               final isCurrent = index == _currentIndex;
               final isLoaded = _loadedPages.contains(index);
@@ -425,7 +425,7 @@ class _NavBarPageState extends State<NavBarPage> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: StreamBuilder<int>(stream: BadgeService.pendingInvitesCountStream, initialData: 0, builder: (context, snapshot) { final pendingCount = snapshot.data ?? 0; return FloatingModernNavBar(
+            child: StreamBuilder<int>(stream: BadgeService.pendingInvitesCountStream, initialData: 0, builder: (context, snapshot) { final pendingCount = snapshot.data ✨ 0; return FloatingModernNavBar(
               currentIndex: _currentIndex,
               onTap: (i) async {
                 safeSetState(() {

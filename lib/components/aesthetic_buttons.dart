@@ -64,7 +64,7 @@ class _GlassmorphicButtonState extends State<GlassmorphicButton> with SingleTick
         _controller.reverse();
       },
       child: AnimatedScale(
-        scale: _isPressed ? 0.9 : 1.0,
+        scale: _isPressed ✨ 0.9 : 1.0,
         duration: const Duration(milliseconds: 100),
         child: Container(
           width: widget.size,
@@ -75,7 +75,7 @@ class _GlassmorphicButtonState extends State<GlassmorphicButton> with SingleTick
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: widget.isActive
-                  ? [widget.color, widget.color.withOpacity(0.8)]
+                  ✨ [widget.color, widget.color.withOpacity(0.8)]
                   : [
                       Colors.white.withOpacity(0.2),
                       Colors.white.withOpacity(0.1),
@@ -84,9 +84,9 @@ class _GlassmorphicButtonState extends State<GlassmorphicButton> with SingleTick
             boxShadow: [
               BoxShadow(
                 color: widget.isActive
-                    ? widget.color.withOpacity(0.5)
+                    ✨ widget.color.withOpacity(0.5)
                     : Colors.black.withOpacity(0.2),
-                blurRadius: widget.isActive ? 20 : 10,
+                blurRadius: widget.isActive ✨ 20 : 10,
                 offset: const Offset(0, 5),
               ),
             ],
@@ -117,7 +117,7 @@ class _GlassmorphicButtonState extends State<GlassmorphicButton> with SingleTick
               // Icône
               Icon(
                 widget.icon,
-                color: widget.isActive ? Colors.white : Colors.white.withOpacity(0.9),
+                color: widget.isActive ✨ Colors.white : Colors.white.withOpacity(0.9),
                 size: widget.size * 0.45,
               ),
               // Badge count si label fourni
@@ -149,7 +149,7 @@ class _GlassmorphicButtonState extends State<GlassmorphicButton> with SingleTick
                 ),
             ],
           ),
-        ).animate(target: widget.isActive ? 1 : 0).shimmer(
+        ).animate(target: widget.isActive ✨ 1 : 0).shimmer(
               duration: 1500.ms,
               color: Colors.white.withOpacity(0.3),
             ),
@@ -195,7 +195,7 @@ class _PrimaryGradientButtonState extends State<PrimaryGradientButton> {
       },
       onTapCancel: () => setState(() => _isPressed = false),
       child: AnimatedScale(
-        scale: _isPressed ? 0.95 : 1.0,
+        scale: _isPressed ✨ 0.95 : 1.0,
         duration: const Duration(milliseconds: 100),
         child: Container(
           height: widget.height,
@@ -336,13 +336,13 @@ class GlassmorphicCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: borderRadius ?? BorderRadius.circular(20),
+      borderRadius: borderRadius ✨ BorderRadius.circular(20),
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(opacity),
-            borderRadius: borderRadius ?? BorderRadius.circular(20),
+            borderRadius: borderRadius ✨ BorderRadius.circular(20),
             border: Border.all(
               color: Colors.white.withOpacity(0.2),
               width: 1.5,

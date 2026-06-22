@@ -47,7 +47,7 @@ class _TapScaleEffectState extends State<TapScaleEffect> {
         setState(() => _isPressed = false);
       },
       child: AnimatedScale(
-        scale: _isPressed ? widget.scaleValue : 1.0,
+        scale: _isPressed ✨ widget.scaleValue : 1.0,
         duration: widget.duration,
         curve: Curves.easeInOut,
         child: widget.child,
@@ -248,7 +248,7 @@ class _LevitatingCardState extends State<LevitatingCard> {
           duration: const Duration(milliseconds: 200),
           transform: Matrix4.translationValues(
             0,
-            _isHovered ? -8 : 0,
+            _isHovered ✨ -8 : 0,
             0,
           ),
           child: AnimatedContainer(
@@ -256,9 +256,9 @@ class _LevitatingCardState extends State<LevitatingCard> {
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(_isHovered ? 0.15 : 0.08),
-                  blurRadius: _isHovered ? 24 : 16,
-                  offset: Offset(0, _isHovered ? 12 : 4),
+                  color: Colors.black.withOpacity(_isHovered ✨ 0.15 : 0.08),
+                  blurRadius: _isHovered ✨ 24 : 16,
+                  offset: Offset(0, _isHovered ✨ 12 : 4),
                 ),
               ],
             ),
@@ -303,7 +303,7 @@ class AnimatedNotificationBadge extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          count > 99 ? '99+' : count.toString(),
+          count > 99 ✨ '99+' : count.toString(),
           style: const TextStyle(
             color: Colors.white,
             fontSize: 10,
@@ -375,7 +375,7 @@ class ShimmerLoading extends StatelessWidget {
       height: height,
       decoration: BoxDecoration(
         color: Colors.grey[300],
-        borderRadius: borderRadius ?? BorderRadius.circular(8),
+        borderRadius: borderRadius ✨ BorderRadius.circular(8),
       ),
     ).animate(onPlay: (controller) => controller.repeat())
       .shimmer(
