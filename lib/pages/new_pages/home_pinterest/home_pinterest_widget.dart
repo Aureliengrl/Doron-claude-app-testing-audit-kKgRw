@@ -612,7 +612,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             isCurrentlyLiked
                 ? 'Retiré des favoris (connectez-vous pour synchroniser)'
                 : 'Ajouté aux favoris (connectez-vous pour synchroniser)',
-            style: GoogleFonts.poppins(),
+            style: GoogleFonts.outfit(),
           ),
           backgroundColor: isCurrentlyLiked ? Colors.grey[600] : const Color(0xFF10B981),
           duration: const Duration(seconds: 2),
@@ -660,7 +660,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(context.tr('❤️ Ajouté aux favoris !', '❤️ Added to favourites!'), style: GoogleFonts.poppins()),
+            content: Text(context.tr('❤️ Ajouté aux favoris !', '❤️ Added to favourites!'), style: GoogleFonts.outfit()),
             backgroundColor: const Color(0xFF10B981),
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
@@ -673,7 +673,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Erreur: ${e.toString().substring(0, e.toString().length.clamp(0, 80))}',
-              style: GoogleFonts.poppins()),
+              style: GoogleFonts.outfit()),
           backgroundColor: Colors.red[700],
           duration: const Duration(seconds: 3),
         ));
@@ -751,7 +751,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     const SizedBox(width: 8),
                     Text(
                     context.tr('✨ ${_model.products.length} cadeaux chargés !', '✨ ${_model.products.length} gifts loaded!'),
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
@@ -871,29 +871,15 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
   Widget _buildHeader() {
     return Container(
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF8A2BE2),
-            Color(0xFFEC4899),
-          ],
-        ),
+        color: const Color(0xFF8A2BE2),
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF8A2BE2).withOpacity(0.4),
-            blurRadius: 30,
-            spreadRadius: 2,
-            offset: const Offset(0, 10),
-          ),
-          BoxShadow(
-            color: const Color(0xFFEC4899).withOpacity(0.3),
-            blurRadius: 20,
-            spreadRadius: 0,
+            color: const Color(0xFF8A2BE2).withOpacity(0.18),
+            blurRadius: 16,
             offset: const Offset(0, 6),
           ),
         ],
@@ -901,38 +887,32 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              micro.ShimmerEffect(
-                shimmerColor: Colors.white,
-                duration: const Duration(milliseconds: 3000),
-                child: Text(
-                  _model.isAnonymousMode
-                      ? 'Découvre ✨'
-                      : (_model.firstName.isNotEmpty
-                          ? 'Salut ${_model.firstName} ! ✨'
-                          : 'Accueil'),
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
+              Text(
+                _model.isAnonymousMode
+                    ? 'Découvre'
+                    : (_model.firstName.isNotEmpty
+                        ? 'Salut ${_model.firstName}'
+                        : 'Accueil'),
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.2,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 _model.isAnonymousMode
                     ? 'Idées cadeaux populaires'
                     : 'Voici tes inspirations cadeaux',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  color: Colors.white.withOpacity(0.9),
-                  fontSize: 12,
+                style: GoogleFonts.outfit(
+                  color: Colors.white.withOpacity(0.75),
+                  fontSize: 13,
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -961,7 +941,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                   : (_model.firstName.isNotEmpty
                       ? 'Bienvenue ${_model.firstName} !\nVoici ta sélection personnalisée'
                       : 'Bienvenue !\nVoici ta sélection personnalisée'),
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.outfit(
                 color: const Color(0xFF4B5563),
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
@@ -982,7 +962,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           padding: const EdgeInsets.only(left: 24, bottom: 8), // Aligné avec 24
           child: Text(
             context.tr('Cat\u00e9gories', 'Categories'),
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.outfit(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF6B7280),
@@ -1021,19 +1001,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: isActive
-                        ? violetColor
-                        : violetColor.withOpacity(0.1),
+                    color: isActive ? violetColor : const Color(0xFFF3F0FA),
                     borderRadius: BorderRadius.circular(50),
-                    boxShadow: isActive
-                        ? [
-                            BoxShadow(
-                              color: violetColor.withOpacity(0.2),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ]
-                        : [],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -1045,7 +1014,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       const SizedBox(width: 6),
                       Text(
                         _translateCategory(category['id'] as String, category['name'] as String),
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.outfit(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: isActive ? Colors.white : violetColor,
@@ -1111,21 +1080,12 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       decoration: BoxDecoration(
                         color: isActive
                             ? const Color(0xFFEC4899) // Rose
-                            : const Color(0xFFEC4899).withOpacity(0.1),
+                            : const Color(0xFFFCEEF5),
                         borderRadius: BorderRadius.circular(50),
-                        boxShadow: isActive
-                            ? [
-                                BoxShadow(
-                                  color: const Color(0xFFEC4899).withOpacity(0.2),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ]
-                            : [],
                       ),
                       child: Text(
                         filter['name'] as String,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.outfit(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: isActive ? Colors.white : const Color(0xFFEC4899),
@@ -1168,7 +1128,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     children: [
                       Text(
                         title,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.outfit(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF111827),
@@ -1177,7 +1137,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.outfit(
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
                           color: const Color(0xFF6B7280),
@@ -1194,7 +1154,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     ),
                     child: Text(
                       '${products.length}',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.outfit(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: violetColor,
@@ -1291,7 +1251,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 // Titre de l'erreur
                 Text(
                   _model.errorMessage!,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.outfit(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.red[700],
@@ -1310,7 +1270,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                   ),
                   child: Text(
                     _model.errorDetails ?? 'Erreur inconnue',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.outfit(
                       fontSize: 13,
                       color: Colors.red[900],
                       height: 1.5,
@@ -1378,7 +1338,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                   filteredProducts.isEmpty && _model.products.isNotEmpty
                       ? 'Oups, aucun produit !'
                       : 'Oups, on a rien trouv !',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.outfit(
                     color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
@@ -1388,7 +1348,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                   filteredProducts.isEmpty && _model.products.isNotEmpty
                       ? "Essaie de changer de filtre d'événement ou de catégorie"
                       : "Essaie de changer de catégorie ou tire pour rafraichir",
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.outfit(
                     color: const Color(0xFF6B7280),
                     fontSize: 15,
                     height: 1.5,
@@ -1423,7 +1383,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                         const SizedBox(width: 8),
                         Text(
                           'Rafrachir',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.outfit(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
@@ -1685,7 +1645,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                         children: [
                           Text(
                             'Ajouter à une wishlist',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.outfit(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: const Color(0xFF111827),
@@ -1693,7 +1653,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                           ),
                           Text(
                             product['name'] as String? ?? '',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.outfit(
                               fontSize: 12,
                               color: const Color(0xFF6B7280),
                             ),
@@ -1719,7 +1679,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       const SizedBox(height: 16),
                       Text(
                         'Aucune wishlist',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.outfit(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: Colors.grey[700],
@@ -1728,7 +1688,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                       const SizedBox(height: 8),
                       Text(
                         'Crée ta première wishlist ci-dessous',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.outfit(
                           fontSize: 14,
                           color: Colors.grey[500],
                         ),
@@ -1762,7 +1722,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                         ),
                         title: Text(
                           wishlist['name'] as String? ?? 'Wishlist',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.outfit(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF111827),
@@ -1770,7 +1730,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                         ),
                         subtitle: Text(
                           '$giftCount cadeau${giftCount > 1 ? 's' : ''}',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.outfit(
                             fontSize: 13,
                             color: const Color(0xFF6B7280),
                           ),
@@ -1804,7 +1764,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     icon: const Icon(Icons.add, color: Colors.white),
                     label: Text(
                       'Créer une nouvelle wishlist',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.outfit(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -1839,7 +1799,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'Nouvelle wishlist',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.outfit(
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -1861,7 +1821,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                   borderSide: BorderSide(color: violetColor, width: 2),
                 ),
               ),
-              style: GoogleFonts.poppins(),
+              style: GoogleFonts.outfit(),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -1877,7 +1837,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                   borderSide: BorderSide(color: violetColor, width: 2),
                 ),
               ),
-              style: GoogleFonts.poppins(),
+              style: GoogleFonts.outfit(),
               maxLines: 2,
             ),
           ],
@@ -1887,7 +1847,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             onPressed: () => Navigator.pop(context, false),
             child: Text(
               'Annuler',
-              style: GoogleFonts.poppins(color: Colors.grey[600]),
+              style: GoogleFonts.outfit(color: Colors.grey[600]),
             ),
           ),
           ElevatedButton(
@@ -1900,7 +1860,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             ),
             child: Text(
               'Créer',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.outfit(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
@@ -1940,7 +1900,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 Expanded(
                   child: Text(
                     'Ajouté à la wishlist !',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1964,7 +1924,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           SnackBar(
             content: Text(
               'Erreur lors de l\'ajout à la wishlist',
-              style: GoogleFonts.poppins(),
+              style: GoogleFonts.outfit(),
             ),
             backgroundColor: Colors.red[700],
           ),

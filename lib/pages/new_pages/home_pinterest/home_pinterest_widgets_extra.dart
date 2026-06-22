@@ -24,25 +24,26 @@ class SearchBarWidget extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFEDEBF2), width: 1),
           boxShadow: [
             BoxShadow(
-              color: violetColor.withOpacity(0.1),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: violetColor.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: TextField(
           controller: controller,
           onChanged: onChanged,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.outfit(
             fontSize: 14,
             color: const Color(0xFF1F2937),
           ),
           decoration: InputDecoration(
             hintText: 'Rechercher un cadeau, une marque...',
-            hintStyle: GoogleFonts.poppins(
+            hintStyle: GoogleFonts.outfit(
               fontSize: 14,
               color: const Color(0xFF9CA3AF),
             ),
@@ -124,7 +125,7 @@ class QuickFiltersWidget extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 label,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.outfit(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: isActive ? Colors.white : violetColor,
