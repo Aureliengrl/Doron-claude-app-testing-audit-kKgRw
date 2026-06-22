@@ -29,6 +29,7 @@ import '/components/modern_nav_bar.dart';
 import '/services/badge_service.dart';
 import '/components/offline_banner.dart';
 import '/pages/new_pages/social/social_page_widget.dart';
+import '/pages/new_pages/chat/chat_list_page.dart';
 import '/services/push_notifications_service.dart';
 import 'index.dart';
 
