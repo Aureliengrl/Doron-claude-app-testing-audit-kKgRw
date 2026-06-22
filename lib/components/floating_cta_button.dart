@@ -97,25 +97,20 @@ class FloatingCtaButton extends StatelessWidget {
       );
     }
 
-    return Positioned(
-      bottom: 90,
-      left: 0,
-      right: 0,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              const Color(0xFF1A0030).withOpacity(0),
-              const Color(0xFF1A0030).withOpacity(0.92),
-              const Color(0xFF1A0030),
-            ],
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFF1A0030).withOpacity(0),
+            const Color(0xFF1A0030).withOpacity(0.92),
+            const Color(0xFF1A0030),
+          ],
         ),
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-        child: pill,
       ),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+      child: pill,
     );
   }
 }

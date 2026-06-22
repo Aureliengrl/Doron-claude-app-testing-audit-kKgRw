@@ -1,4 +1,4 @@
-﻿import '/components/aesthetic_bottom_sheet_notch.dart';
+import '/components/aesthetic_bottom_sheet_notch.dart';
 import 'package:flutter/material.dart';
 import '/components/premium_3d_icon.dart';
 import '/utils/iconly_compat.dart';
@@ -944,13 +944,18 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
               },
             ),
             // 🎯 Bouton Créer un album 🎯
-            FloatingCtaButton(
-              title: context.tr('Créer un album', 'Create album'),
-              icon: Icons.add_rounded,
-              onTap: () async {
-                final created = await _showCreateAlbumDialog();
-                if (created == true) setState(() {});
-              },
+            Positioned(
+              bottom: 90,
+              left: 0,
+              right: 0,
+              child: FloatingCtaButton(
+                title: context.tr('Créer un album', 'Create album'),
+                icon: Icons.add_rounded,
+                onTap: () async {
+                  final created = await _showCreateAlbumDialog();
+                  if (created == true) setState(() {});
+                },
+              ),
             ),
           ],
         );

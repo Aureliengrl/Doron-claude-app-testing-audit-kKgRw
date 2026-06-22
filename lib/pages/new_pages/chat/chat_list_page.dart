@@ -87,21 +87,26 @@ class _ChatListPageState extends State<ChatListPage> {
               ],
             ),
           ),
-          StreamBuilder<int>(
-            stream: BadgeService.pendingInvitesCountStream,
-            initialData: 0,
-            builder: (context, snapshot) {
-              final pendingCount = snapshot.data ?? 0;
-              return FloatingCtaButton(
-                title: 'Trouver des amis',
-                icon: Icons.person_add,
-                badgeCount: pendingCount,
-                onTap: () {
-                  HapticFeedback.mediumImpact();
-                  context.push('/friends');
-                },
-              );
-            },
+          Positioned(
+            bottom: 90,
+            left: 0,
+            right: 0,
+            child: StreamBuilder<int>(
+              stream: BadgeService.pendingInvitesCountStream,
+              initialData: 0,
+              builder: (context, snapshot) {
+                final pendingCount = snapshot.data ?? 0;
+                return FloatingCtaButton(
+                  title: 'Trouver des amis',
+                  icon: Icons.person_add,
+                  badgeCount: pendingCount,
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    context.push('/friends');
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),
