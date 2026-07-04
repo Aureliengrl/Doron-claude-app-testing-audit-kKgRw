@@ -426,6 +426,7 @@ class _NavBarPageState extends State<NavBarPage> {
             right: 0,
             bottom: 0,
             child: StreamBuilder<int>(stream: BadgeService.pendingInvitesCountStream, initialData: 0, builder: (context, snapshot) { final pendingCount = snapshot.data ?? 0; return FloatingModernNavBar(
+              margin: const EdgeInsets.only(left: 20, right: 20, bottom: 4),
               currentIndex: _currentIndex,
               onTap: (i) async {
                 safeSetState(() {
