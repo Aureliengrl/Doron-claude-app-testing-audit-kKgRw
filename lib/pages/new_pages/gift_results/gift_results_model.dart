@@ -5,7 +5,7 @@ import '/services/firebase_data_service.dart';
 
 class GiftResultsModel {
   String activeFilter = 'Tous';
-  Set<int> likedGifts = {};
+  Set<String> likedGifts = {};
   bool isLoading = true;
 
   late List<AnimationController> animationControllers;
@@ -269,16 +269,16 @@ class GiftResultsModel {
     }
   }
 
-  void toggleLike(int giftId) async {
+  void toggleLike(String giftId) async {
     if (likedGifts.contains(giftId)) {
       likedGifts.remove(giftId);
       // Retirer des favoris Firebase
-      await FirebaseDataService.removeFromFavorites(giftId.toString());
+      await FirebaseDataService.removeFromFavorites(giftId);
     } else {
       likedGifts.add(giftId);
       // Ajouter aux favoris Firebase
       final gift = giftResults.firstWhere(
-        (g) => g['id'] == giftId,
+        (g) => g['id']?.toString() == giftId,
         orElse: () => {}, // Protection si gift non trouvé
       );
       if (gift.isNotEmpty) {
@@ -355,11 +355,7 @@ class GiftResultsModel {
       final giftsToSave = likedGifts.isNotEmpty
           ? giftResults
               .where((g) {
-                final idRaw = g['id'];
-                final giftId = idRaw is int
-                    ? idRaw
-                    : (int.tryParse(idRaw.toString()) ?? -1);
-                return likedGifts.contains(giftId);
+                return likedGifts.contains(g['id']?.toString());
               })
               .toList()
           : giftResults; // fallback si rien sélectionné

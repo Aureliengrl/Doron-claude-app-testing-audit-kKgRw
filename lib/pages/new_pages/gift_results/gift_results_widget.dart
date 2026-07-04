@@ -1,4 +1,4 @@
-import '/utils/app_logger.dart';
+ï»¿import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
@@ -66,7 +66,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                   CircularProgressIndicator(color: violetColor),
                   const SizedBox(height: 24),
                   Text(
-                    '?? Génération des cadeaux...',
+                    '?? Gï¿½nï¿½ration des cadeaux...',
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       color: violetColor,
@@ -78,16 +78,16 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
             )
           : CustomScrollView(
               slivers: [
-                // Header violet arrondi avec résumé
+                // Header violet arrondi avec rï¿½sumï¿½
                 SliverToBoxAdapter(child: _buildHeader()),
 
-                // Message IA personnalisé
+                // Message IA personnalisï¿½
                 SliverToBoxAdapter(child: _buildAIMessage()),
 
-                // Filtres de catégories
+                // Filtres de catï¿½gories
                 SliverToBoxAdapter(child: _buildFilters()),
 
-                // Liste des résultats
+                // Liste des rï¿½sultats
                 _buildResultsList(),
 
                 // Boutons Enregistrer / Refaire (dans le scroll, pas fixes)
@@ -152,7 +152,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
               // Titre
               Expanded(
                 child: Text(
-                  'Résultats IA',
+                  'Rï¿½sultats IA',
                   style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 20,
@@ -236,7 +236,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '12 cadeaux parfaits trouvés !',
+                  '12 cadeaux parfaits trouvï¿½s !',
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -245,7 +245,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Sélectionnés selon ses passions et ton budget',
+                  'Sï¿½lectionnï¿½s selon ses passions et ton budget',
                   style: GoogleFonts.poppins(
                     fontSize: 13,
                     color: Colors.white.withOpacity(0.55),
@@ -327,7 +327,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
 
   Widget _buildResultsList() {
     if (_isReordering) {
-      // Mode réorganisation : liste réordonnable
+      // Mode rï¿½organisation : liste rï¿½ordonnable
       return SliverToBoxAdapter(
         child: ReorderableListView.builder(
           shrinkWrap: true,
@@ -386,7 +386,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
   }
 
   Widget _buildGiftCard(Map<String, dynamic> gift, int index, {bool isReordering = false}) {
-    final isLiked = _model.likedGifts.contains(gift['id']);
+    final isLiked = _model.likedGifts.contains(gift['id']?.toString());
     final matchRaw = gift['match'];
     final matchPercent = matchRaw is int ? matchRaw : (matchRaw is double ? matchRaw.toInt() : 85);
 
@@ -466,11 +466,11 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('${gift['price']}€', style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: violetColor)),
+                          Text('${gift['price']}ï¿½', style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: violetColor)),
                           const SizedBox(height: 8),
                           Row(children: [
                             Material(color: Colors.transparent, child: InkWell(
-                              onTap: () { setState(() { final idRaw = gift['id']; final giftId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0); _model.toggleLike(giftId); }); },
+                              onTap: () { setState(() { _model.toggleLike(gift['id']?.toString() ?? ''); }); },
                               borderRadius: BorderRadius.circular(50),
                               child: Container(
                                 padding: const EdgeInsets.all(10),
@@ -517,8 +517,8 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
   }
 
   void _showGiftDetail(Map<String, dynamic> gift) {
-    final isLiked = _model.likedGifts.contains(gift['id']);
-    // FIX: Cast sécurisé pour éviter crash
+    final isLiked = _model.likedGifts.contains(gift['id']?.toString());
+    // FIX: Cast sï¿½curisï¿½ pour ï¿½viter crash
     final matchRaw = gift['match'];
     final matchPercent = matchRaw is int ? matchRaw : (matchRaw is double ? matchRaw.toInt() : 85);
 
@@ -701,10 +701,8 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                             onPressed: () {
                               if (mounted) {
                                 setState(() {
-                                  // FIX: Cast sécurisé
-                                  final idRaw = gift['id'];
-                                  final giftId = idRaw is int ? idRaw : (int.tryParse(idRaw.toString()) ?? 0);
-                                  _model.toggleLike(giftId);
+                                  // FIX: Cast sï¿½curisï¿½
+                                  _model.toggleLike(gift['id']?.toString() ?? '');
                                 });
                                 context.pop();
                               }
@@ -731,7 +729,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
                           flex: 3,
                           child: ElevatedButton(
                             onPressed: () async {
-                              // Générer une URL de produit intelligente (=95% précision)
+                              // Gï¿½nï¿½rer une URL de produit intelligente (=95% prï¿½cision)
                               final url = ProductUrlService.generateProductUrl(gift);
                               if (url.isNotEmpty) {
                                 final uri = Uri.parse(url);
@@ -793,7 +791,7 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
           Expanded(
             child: ElevatedButton.icon(
               onPressed: () {
-                // Retour à l'onboarding (skip questions sur soi)
+                // Retour ï¿½ l'onboarding (skip questions sur soi)
                 context.go('/onboarding-advanced?skipUserQuestions=true');
               },
               icon: const Icon(Icons.refresh, size: 20),
@@ -853,3 +851,6 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
     );
   }
 }
+
+
+
