@@ -1,4 +1,4 @@
-import '/services/firebase_data_service.dart';
+ï»¿import '/services/firebase_data_service.dart';
 import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -88,7 +88,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
         _onboardingMode = mode;
         _isLoadingMode = false;
       });
-      AppLogger.debug('?? Mode onboarding chargé: $_onboardingMode', 'Debug');
+      AppLogger.debug('?? Mode onboarding chargï¿½: $_onboardingMode', 'Debug');
     } catch (e) {
       AppLogger.debug('?? Erreur chargement mode: $e', 'Debug');
       setState(() {
@@ -118,19 +118,19 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
       );
     }
 
-    // Lire les paramètres de query
+    // Lire les paramï¿½tres de query
     final skipUserQuestions = GoRouterState.of(context).uri.queryParameters['skipUserQuestions'] == 'true';
     final onlyUserQuestions = GoRouterState.of(context).uri.queryParameters['onlyUserQuestions'] == 'true';
     final returnTo = GoRouterState.of(context).uri.queryParameters['returnTo'];
-    // Mode express activé par défaut (seulement 7 questions essentielles)
-    // Pour revenir au mode complet, passer expressMode=false en paramètre
+    // Mode express activï¿½ par dï¿½faut (seulement 7 questions essentielles)
+    // Pour revenir au mode complet, passer expressMode=false en paramï¿½tre
     final expressMode = GoRouterState.of(context).uri.queryParameters['expressMode'] != 'false';
 
     final steps = _model.getSteps(
       skipUserQuestions: skipUserQuestions,
       onlyUserQuestions: onlyUserQuestions,
       expressMode: expressMode,
-      onboardingMode: _onboardingMode, // Passer le mode chargé
+      onboardingMode: _onboardingMode, // Passer le mode chargï¿½
     );
     final currentStepData = steps[_model.currentStep];
     final progress = (_model.currentStep + 1) / steps.length;
@@ -198,7 +198,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Analyse des millions de combinaisons\ngrace à notre ? Scan IA',
+                        'Analyse des millions de combinaisons\ngrace ï¿½ notre ? Scan IA',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           color: Colors.white70,
@@ -381,7 +381,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
               scale: value,
               child: useLogo
                   ? Image.asset(
-                      'assets/images/doron_logo.png', // Logo DORÕN (vague)
+                      'assets/images/doron_logo.png', // Logo DORï¿½N (vague)
                       width: 150,
                       height: 150,
                       errorBuilder: (context, error, stackTrace) {
@@ -492,9 +492,9 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
     // quand le clavier s'ouvre
     final scrollController = ScrollController();
 
-    // Déclencher le scroll automatique après le build pour montrer le champ
+    // Dï¿½clencher le scroll automatique aprï¿½s le build pour montrer le champ
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Petit délai pour laisser le clavier s'ouvrir
+      // Petit dï¿½lai pour laisser le clavier s'ouvrir
       Future.delayed(const Duration(milliseconds: 300), () {
         if (scrollController.hasClients) {
           scrollController.animateTo(
@@ -508,7 +508,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
 
     return SingleChildScrollView(
       controller: scrollController,
-      // Padding réduit en haut, plus de padding en bas pour le clavier
+      // Padding rï¿½duit en haut, plus de padding en bas pour le clavier
       padding: EdgeInsets.only(
         top: 16,
         bottom: MediaQuery.of(context).viewInsets.bottom + 60,
@@ -516,18 +516,18 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          // Espace réduit en haut (au lieu de 15% de l'écran)
+          // Espace rï¿½duit en haut (au lieu de 15% de l'ï¿½cran)
           const SizedBox(height: 20),
           Text(
             stepData['icon'] as String,
-            style: const TextStyle(fontSize: 60), // Taille réduite pour gagner de l'espace
+            style: const TextStyle(fontSize: 60), // Taille rï¿½duite pour gagner de l'espace
           ),
           const SizedBox(height: 20),
           Text(
             stepData['question'] as String,
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              fontSize: 24, // Taille réduite pour s'adapter au clavier
+              fontSize: 24, // Taille rï¿½duite pour s'adapter au clavier
               fontWeight: FontWeight.bold,
               color: violetColor,
             ),
@@ -593,7 +593,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
             ),
           ),
         ),
-        // Espace supplémentaire en bas pour s'assurer que le champ reste visible
+        // Espace supplï¿½mentaire en bas pour s'assurer que le champ reste visible
         const SizedBox(height: 60),
         ],
       ),
@@ -746,7 +746,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
     );
   }
 
-  // Cache pour l'utilisateur Doron trouvé
+  // Cache pour l'utilisateur Doron trouvï¿½
   Map<String, dynamic>? _foundDoronUser;
   String _lastSearchedHandle = '';
   List<Map<String, dynamic>> _handleSuggestions = [];
@@ -805,13 +805,16 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
               onChanged: (raw) async {
                 final value = raw.replaceAll('@', '').trim().toLowerCase();
                 _model.answers[field] = value;
-                // Réinitialiser l'utilisateur trouvé si handle change
+                // Rï¿½initialiser l'utilisateur trouvï¿½ si handle change
                 if (value != _lastSearchedHandle) {
                   setLocal(() {
                     _foundDoronUser = null;
                     _isSearchingHandle = value.length >= 2;
                     _handleSuggestions = [];
                   });
+                  if (value.isEmpty) {
+                    _model.answers['isHandleValid'] = true;
+                  }
                   if (value.length >= 2) {
                     _lastSearchedHandle = value;
                     // Recherche dans Firestore
@@ -838,6 +841,9 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                               (u) => (u['handle'] as String).toLowerCase() == value).toList();
                           if (exact.isNotEmpty) {
                             _foundDoronUser = exact.first;
+                            _model.answers['isHandleValid'] = true;
+                          } else {
+                            _model.answers['isHandleValid'] = false;
                           }
                         });
                       }
@@ -943,6 +949,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                       onTap: () {
                         setLocal(() {
                           _model.answers[field] = user['handle'] as String;
+                          _model.answers['isHandleValid'] = true;
                           _foundDoronUser = user;
                           _handleSuggestions = [];
                           controller.text = user['handle'] as String;
@@ -953,7 +960,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 ),
               ),
             ],
-            // Badge de confirmation du compte trouvé
+            // Badge de confirmation du compte trouvï¿½
             if (_foundDoronUser != null) ...[
               const SizedBox(height: 8),
               Container(
@@ -969,7 +976,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '? Compte Doron trouvé — ses wishlists seront incluses !',
+                        '? Compte Doron trouvï¿½ ï¿½ ses wishlists seront incluses !',
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           color: const Color(0xFF10B981),
@@ -981,13 +988,41 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 ),
               ),
             ],
-            // Info optionnel
+            // Info optionnel et erreur
             if (_foundDoronUser == null && _handleSuggestions.isEmpty) ...[
-              const SizedBox(height: 4),
-              Text(
-                'Si cette personne a un compte Doron, ses wishlists seront incluses dans les suggestions',
-                style: GoogleFonts.poppins(fontSize: 11, color: Colors.white38),
-              ),
+              if (controller.text.replaceAll('@', '').trim().length >= 2 && !_isSearchingHandle) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.red.withOpacity(0.4)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline, color: Colors.red, size: 18),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Ce pseudo n''existe pas',
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            color: Colors.red,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ] else ...[
+                const SizedBox(height: 4),
+                Text(
+                  'Si cette personne a un compte Doron, ses wishlists seront incluses dans les suggestions',
+                  style: GoogleFonts.poppins(fontSize: 11, color: Colors.white38),
+                ),
+              ],
             ],
           ],
         );
@@ -1174,7 +1209,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
           Padding(
             padding: const EdgeInsets.only(top: 16),
             child: Text(
-              '? Tu peux sélectionner plusieurs réponses',
+              '? Tu peux sï¿½lectionner plusieurs rï¿½ponses',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 13,
@@ -1246,7 +1281,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                       ],
                     ).createShader(bounds),
                     child: Text(
-                      '${value.toInt()}€',
+                      '${value.toInt()}ï¿½',
                       style: GoogleFonts.poppins(
                         fontSize: 56,
                         fontWeight: FontWeight.bold,
@@ -1296,14 +1331,14 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${min.toInt()}€',
+                    '${min.toInt()}ï¿½',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: const Color(0xFFF5F5F7),
                     ),
                   ),
                   Text(
-                    '${max.toInt()}€',
+                    '${max.toInt()}ï¿½',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: const Color(0xFFF5F5F7),
@@ -1318,7 +1353,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 child: InkWell(
                   onTap: () {
                     setState(() {
-                      // Valeur raisonnable : 80€ (mix accessible + premium)
+                      // Valeur raisonnable : 80ï¿½ (mix accessible + premium)
                       _model.answers[field] = 80.0;
                     });
                   },
@@ -1395,12 +1430,12 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
           ),
         ),
         child: ElevatedButton(
-          // FIX Bug 2: Désactiver le bouton si navigation en cours
+          // FIX Bug 2: Dï¿½sactiver le bouton si navigation en cours
           onPressed: (canProceed && !_model.isNavigating)
               ? () async {
                   // Attendre correctement handleNext (async)
                   await _model.handleNext(steps, context, skipUserQuestions: skipUserQuestions, returnTo: returnTo, onlyUserQuestions: onlyUserQuestions);
-                  // Rafraîchir l'UI après la navigation
+                  // Rafraï¿½chir l'UI aprï¿½s la navigation
                   if (mounted) {
                     setState(() {});
                   }
@@ -1424,7 +1459,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                 const SizedBox(width: 8),
               ],
               Text(
-                isLastStep ? 'Découvrir mes cadeaux' : context.tr('Continuer', 'Continue'),
+                isLastStep ? 'Dï¿½couvrir mes cadeaux' : context.tr('Continuer', 'Continue'),
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -1449,5 +1484,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
     );
   }
 }
+
+
 
 

@@ -1,4 +1,4 @@
-import '/utils/app_logger.dart';
+ï»¿import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import '/services/firebase_data_service.dart';
@@ -8,16 +8,16 @@ import 'package:go_router/go_router.dart';
 class OnboardingAdvancedModel {
   int currentStep = 0;
   String? editProfileId;
-  // FIX Bug 2: Variable pour empêcher les doubles clics
+  // FIX Bug 2: Variable pour empï¿½cher les doubles clics
   bool isNavigating = false;
   Map<String, dynamic> answers = {
-    'personName': '', // Prénom de la personne (REQUIS)
+    'personName': '', // Prï¿½nom de la personne (REQUIS)
     'personIdentifier': '', // Username DORON (OPTIONNEL)
     'location': '', // Localisation
-    'giftTypes': <String>[], // Physique vs Activité
+    'giftTypes': <String>[], // Physique vs Activitï¿½
     'personGender': '', // Homme / Femme / Non-binaire / Enfant
-    'personAge': '', // Tranche d'âge
-    'occasion': '', // Événement
+    'personAge': '', // Tranche d'ï¿½ge
+    'occasion': '', // ï¿½vï¿½nement
     'recipientPersonality': <String>[], // Tags de style de vie
     'budgetTier': '', // Paliers de budget
   };
@@ -65,29 +65,29 @@ class OnboardingAdvancedModel {
     bool expressMode = false,
     String? onboardingMode,
   }) {
-    // NOUVEL ENTONNOIR HAUTE PRÉCISION (Refonte Totale)
+    // NOUVEL ENTONNOIR HAUTE PRï¿½CISION (Refonte Totale)
     return [
-      // Écran de bienvenue
+      // ï¿½cran de bienvenue
       {
         'id': 'welcome',
         'type': 'welcome',
-        'title': 'DORÕN',
-        'subtitle': 'Trouvons le cadeau parfait grâce à l\'IA ??',
+        'title': 'DORï¿½N',
+        'subtitle': 'Trouvons le cadeau parfait grï¿½ce ï¿½ l\'IA ??',
         'emoji': '',
         'useLogo': true,
       },
-      // Étape 0.1 : Prénom et Pseudo
+      // ï¿½tape 0.1 : Prï¿½nom et Pseudo
       {
         'section': 'person',
         'id': 'personInfo',
         'type': 'dual_text',
         'question': 'Pour qui cherches-tu ?',
-        'subtitle': '?? Prénom requis • ?? Pseudo optionnel',
+        'subtitle': '?? Prï¿½nom requis ï¿½ ?? Pseudo optionnel',
         'icon': '??',
         'fields': [
           {
             'field': 'personName',
-            'label': 'Prénom',
+            'label': 'Prï¿½nom',
             'placeholder': 'Ex: Marie',
             'required': true,
             'hint': 'REQUIS',
@@ -101,16 +101,16 @@ class OnboardingAdvancedModel {
           },
         ],
       },
-      // Étape 0.2 : Localisation
+      // ï¿½tape 0.2 : Localisation
       {
         'section': 'person',
         'id': 'location',
         'type': 'single', // Change to text or autocomplete later if needed, but single works for broad regions
-        'question': 'Où habite cette personne ?',
-        'subtitle': '?? Pour suggérer des activités locales',
+        'question': 'Oï¿½ habite cette personne ?',
+        'subtitle': '?? Pour suggï¿½rer des activitï¿½s locales',
         'field': 'location',
         'options': [
-          'Île-de-France (Paris)',
+          'ï¿½le-de-France (Paris)',
           'Sud-Est (Lyon, Marseille, Nice...)',
           'Sud-Ouest (Bordeaux, Toulouse...)',
           'Nord & Est (Lille, Strasbourg...)',
@@ -119,7 +119,7 @@ class OnboardingAdvancedModel {
         ],
         'icon': '??',
       },
-      // Étape 0.3 : Type de cadeau
+      // ï¿½tape 0.3 : Type de cadeau
       {
         'section': 'gift',
         'id': 'giftTypes',
@@ -128,12 +128,12 @@ class OnboardingAdvancedModel {
         'subtitle': '?? Tu peux choisir les deux !',
         'field': 'giftTypes',
         'options': [
-          '??? Cadeaux Physiques (Livres, Mode, Déco...)',
-          '??? Expériences & Activités (Spa, Voyages, Sorties...)'
+          '??? Cadeaux Physiques (Livres, Mode, Dï¿½co...)',
+          '??? Expï¿½riences & Activitï¿½s (Spa, Voyages, Sorties...)'
         ],
         'icon': '?',
       },
-      // Étape 1.1 : Sexe
+      // ï¿½tape 1.1 : Sexe
       {
         'section': 'person',
         'id': 'personGender',
@@ -149,12 +149,12 @@ class OnboardingAdvancedModel {
         ],
         'icon': '??',
       },
-      // Étape 1.2 : Âge
+      // ï¿½tape 1.2 : ï¿½ge
       {
         'section': 'person',
         'id': 'personAge',
         'type': 'single',
-        'question': 'Sa tranche d\'âge ?',
+        'question': 'Sa tranche d\'ï¿½ge ?',
         'field': 'personAge',
         'options': [
           'Moins de 12 ans',
@@ -166,7 +166,7 @@ class OnboardingAdvancedModel {
         ],
         'icon': '??',
       },
-      // Étape 2 : L'Occasion
+      // ï¿½tape 2 : L'Occasion
       {
         'section': 'gift',
         'id': 'occasion',
@@ -175,33 +175,33 @@ class OnboardingAdvancedModel {
         'field': 'occasion',
         'options': [
           '?? Anniversaire',
-          '?? Pendaison de crémaillère',
+          '?? Pendaison de crï¿½maillï¿½re',
           '?? Mariage',
           '?? Naissance',
           '?? Remerciement',
-          '?? Juste comme ça'
+          '?? Juste comme ï¿½a'
         ],
         'icon': '??',
       },
-      // Étape 3 : La Personnalité
+      // ï¿½tape 3 : La Personnalitï¿½
       {
         'section': 'gift',
         'id': 'personality',
         'type': 'multiple',
-        'question': 'Sa personnalité (Le "Style de vie") ?',
-        'subtitle': '?? Sélection multiple possible',
+        'question': 'Sa personnalitï¿½ (Le "Style de vie") ?',
+        'subtitle': '?? Sï¿½lection multiple possible',
         'field': 'recipientPersonality',
         'options': [
           '?? L\'Explorateur (Voyage, Nature, Aventure)',
-          '?? Le Casanier (Déco, Cocooning, Lecture)',
+          '?? Le Casanier (Dï¿½co, Cocooning, Lecture)',
           '?? Le Tech-Enthusiast (Gadgets, Gaming)',
-          '?? Le Fashioniste (Mode, Beauté)',
-          '?? L\'Épicurien (Vin, Gastronomie)',
-          '?? Le Créatif (Art, Musique, DIY)'
+          '?? Le Fashioniste (Mode, Beautï¿½)',
+          '?? L\'ï¿½picurien (Vin, Gastronomie)',
+          '?? Le Crï¿½atif (Art, Musique, DIY)'
         ],
         'icon': '??',
       },
-      // Étape 4 : Le Budget
+      // ï¿½tape 4 : Le Budget
       {
         'section': 'gift',
         'id': 'budgetTier',
@@ -209,10 +209,10 @@ class OnboardingAdvancedModel {
         'question': 'Le Budget (Filtre strict) ?',
         'field': 'budgetTier',
         'options': [
-          '?? < 20€',
-          '?? 20€ - 50€',
-          '?? 50€ - 150€',
-          '?? Luxe (> 150€)'
+          '?? < 20ï¿½',
+          '?? 20ï¿½ - 50ï¿½',
+          '?? 50ï¿½ - 150ï¿½',
+          '?? Luxe (> 150ï¿½)'
         ],
         'icon': '??',
       }
@@ -225,7 +225,7 @@ class OnboardingAdvancedModel {
       if (currentList.contains(value)) {
         currentList.remove(value);
       } else {
-        // Vérifier la limite de sélection si définie
+        // Vï¿½rifier la limite de sï¿½lection si dï¿½finie
         if (maxSelections != null && currentList.length >= maxSelections) {
           // Ne pas ajouter si la limite est atteinte
           return;
@@ -256,10 +256,10 @@ class OnboardingAdvancedModel {
       return true;
     }
 
-    // Gestion du type dual_text (Prénom + Pseudo)
+    // Gestion du type dual_text (Prï¿½nom + Pseudo)
     if (type == 'dual_text') {
       final fields = stepData['fields'] as List;
-      // Vérifier que tous les champs requis sont remplis
+      // Vï¿½rifier que tous les champs requis sont remplis
       for (var fieldData in fields) {
         final field = fieldData['field'] as String;
         final required = fieldData['required'] as bool? ?? false;
@@ -272,7 +272,7 @@ class OnboardingAdvancedModel {
       return true;
     }
 
-    // Pour les autres types, vérifier que le champ existe
+    // Pour les autres types, vï¿½rifier que le champ existe
     if (!stepData.containsKey('field')) {
       return true; // Si pas de field, on peut continuer
     }
@@ -290,9 +290,9 @@ class OnboardingAdvancedModel {
   }
 
   Future<void> handleNext(List<Map<String, dynamic>> steps, BuildContext context, {bool skipUserQuestions = false, String? returnTo, bool onlyUserQuestions = false}) async {
-    // FIX Bug 2: Empêcher les doubles clics
+    // FIX Bug 2: Empï¿½cher les doubles clics
     if (isNavigating) {
-      AppLogger.debug('?? Navigation déjà en cours, ignoré', 'Debug');
+      AppLogger.debug('?? Navigation dï¿½jï¿½ en cours, ignorï¿½', 'Debug');
       return;
     }
     isNavigating = true;
@@ -300,9 +300,9 @@ class OnboardingAdvancedModel {
     final currentStepData = steps[currentStep];
 
     // ==================== NOUVELLE ARCHITECTURE ====================
-    // Détecter la fin de l'Étape A (section user) - juste après la transition
+    // Dï¿½tecter la fin de l'ï¿½tape A (section user) - juste aprï¿½s la transition
     if (currentStepData['id'] == 'transition') {
-      // Sauvegarder les tags utilisateur (Étape A)
+      // Sauvegarder les tags utilisateur (ï¿½tape A)
       final userTags = {
         'firstName': answers['firstName'],
         'age': answers['age'],
@@ -314,27 +314,27 @@ class OnboardingAdvancedModel {
 
       try {
         await FirebaseDataService.saveUserProfileTags(userTags);
-        AppLogger.debug('? Étape A terminée: Tags utilisateur sauvegardés', 'Debug');
+        AppLogger.debug('? ï¿½tape A terminï¿½e: Tags utilisateur sauvegardï¿½s', 'Debug');
       } catch (e) {
         AppLogger.debug('? Erreur sauvegarde tags utilisateur: $e', 'Debug');
       }
 
-      // ?? CAS SPÉCIAL: Si onlyUserQuestions=true, on s'arrête ici
-      // L'utilisateur modifie juste son profil depuis les paramètres
+      // ?? CAS SPï¿½CIAL: Si onlyUserQuestions=true, on s'arrï¿½te ici
+      // L'utilisateur modifie juste son profil depuis les paramï¿½tres
       if (onlyUserQuestions) {
-        AppLogger.debug('? Modification profil utilisateur terminée (onlyUserQuestions=true)', 'Debug');
+        AppLogger.debug('? Modification profil utilisateur terminï¿½e (onlyUserQuestions=true)', 'Debug');
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('? Profil mis à jour avec succès !'),
+              content: Text('? Profil mis ï¿½ jour avec succï¿½s !'),
               backgroundColor: Colors.green,
               duration: Duration(seconds: 2),
             ),
           );
         }
 
-        // Retourner à la page d'origine (ou page Recherche par défaut)
+        // Retourner ï¿½ la page d'origine (ou page Recherche par dï¿½faut)
         await Future.delayed(const Duration(milliseconds: 500));
         if (context.mounted) {
           if (returnTo != null && returnTo.isNotEmpty) {
@@ -344,24 +344,24 @@ class OnboardingAdvancedModel {
           }
         }
         isNavigating = false; // Reset le flag avant de return
-        return; // Arrêter ici, ne pas créer de personne
+        return; // Arrï¿½ter ici, ne pas crï¿½er de personne
       }
     }
     // =================================================================
 
     if (currentStep < steps.length - 1) {
       currentStep++;
-      isNavigating = false; // FIX Bug 2: Reset le flag après l'incrémentation
-      AppLogger.debug('? Step avancé: $currentStep', 'Debug');
+      isNavigating = false; // FIX Bug 2: Reset le flag aprï¿½s l'incrï¿½mentation
+      AppLogger.debug('? Step avancï¿½: $currentStep', 'Debug');
     } else {
-      // Onboarding terminé (fin de l'Étape B)
-      AppLogger.debug('? Onboarding terminé: $answers', 'Debug');
+      // Onboarding terminï¿½ (fin de l'ï¿½tape B)
+      AppLogger.debug('? Onboarding terminï¿½: $answers', 'Debug');
 
       try {
         // ==================== NOUVELLE ARCHITECTURE ====================
-        // 1. Créer la première personne (Étape B) avec isPendingFirstGen=true
+        // 1. Crï¿½er la premiï¿½re personne (ï¿½tape B) avec isPendingFirstGen=true
 
-        // Déterminer si c'est un username ou un prénom
+        // Dï¿½terminer si c'est un username ou un prï¿½nom
         final isUsername = answers['personIdentifierType']?.contains('utilisateur') == true;
         final identifier = answers['personIdentifier'] ?? '';
 
@@ -380,27 +380,27 @@ class OnboardingAdvancedModel {
 
         final personId = await FirebaseDataService.createPerson(
           tags: personTags,
-          isPendingFirstGen: true, // Flag pour génération post-auth
+          isPendingFirstGen: true, // Flag pour gï¿½nï¿½ration post-auth
         );
 
-        AppLogger.debug('? Première personne cre: $personId (isPendingFirstGen=true)', 'Debug');
+        AppLogger.debug('? Premiï¿½re personne cre: $personId (isPendingFirstGen=true)', 'Debug');
         // =================================================================
 
-        // 2. Sauvegarder aussi l'ancien format pour compatibilité
+        // 2. Sauvegarder aussi l'ancien format pour compatibilitï¿½
         await FirebaseDataService.saveOnboardingAnswers(answers);
 
-        // Afficher un feedback de succès
+        // Afficher un feedback de succï¿½s
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('? Profil sauvegardé avec succès !'),
+              content: Text('? Profil sauvegardï¿½ avec succï¿½s !'),
               backgroundColor: Colors.green,
               duration: Duration(seconds: 2),
             ),
           );
         }
 
-        // 3. Marquer l'onboarding comme complété (seulement si c'est le premier onboarding)
+        // 3. Marquer l'onboarding comme complï¿½tï¿½ (seulement si c'est le premier onboarding)
         if (!skipUserQuestions) {
           await FirstTimeService.setOnboardingCompleted();
         }
@@ -409,14 +409,14 @@ class OnboardingAdvancedModel {
         if (context.mounted) {
           // TOUJOURS montrer la page cadeaux d'abord
           if (personId != null) {
-            // Si on a un returnTo, le passer en paramètre pour revenir après
+            // Si on a un returnTo, le passer en paramï¿½tre pour revenir aprï¿½s
             final returnParam = (returnTo != null && returnTo.isNotEmpty)
                 ? '&returnTo=${Uri.encodeComponent(returnTo)}'
                 : '';
 
             // Si c'est le PREMIER onboarding (pas de skipUserQuestions)
             if (!skipUserQuestions) {
-              // Aller d'abord à l'authentification AVANT de voir les cadeaux
+              // Aller d'abord ï¿½ l'authentification AVANT de voir les cadeaux
               AppLogger.debug('?? Premier onboarding: Navigation vers authentification puis cadeaux', 'Debug');
               context.go('/authentification?personId=$personId$returnParam');
             } else {
@@ -433,7 +433,7 @@ class OnboardingAdvancedModel {
       } catch (e) {
         AppLogger.debug('? Erreur sauvegarde onboarding: $e', 'Debug');
         isNavigating = false; // Reset le flag en cas d'erreur
-        // Même en cas d'erreur, on navigue
+        // Mï¿½me en cas d'erreur, on navigue
         if (context.mounted) {
           if (returnTo != null && returnTo.isNotEmpty) {
             context.go(returnTo);
@@ -451,5 +451,6 @@ class OnboardingAdvancedModel {
     }
   }
 }
+
 
 
