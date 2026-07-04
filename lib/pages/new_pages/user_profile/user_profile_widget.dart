@@ -477,8 +477,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         Stack(
                           children: [
                             Container(
-                              width: 80,
-                              height: 80,
+                              width: 110,
+                              height: 110,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(color: Colors.white.withOpacity(0.8), width: 2),
@@ -628,31 +628,19 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         Expanded(
                           child: LiquidGlassCard(
                             blur: LiquidGlassTokens.blurLight,
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                             onTap: () {
                                _showEditProfileSheet(context);
                             },
-                            child: Text(
-                              'Modifier le profil',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: LiquidGlassCard(
-                            blur: LiquidGlassTokens.blurLight,
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                            onTap: () => context.push('/friends'),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(IconlyLight.user2, color: Colors.white, size: 16),
-                                const SizedBox(width: 6),
+                                const Icon(IconlyLight.editSquare, color: Colors.white, size: 22),
+                                const SizedBox(height: 6),
                                 Text(
-                                  'Amis',
-                                  style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+                                  'Modifier',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12),
                                 ),
                               ],
                             ),
@@ -662,14 +650,41 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         Expanded(
                           child: LiquidGlassCard(
                             blur: LiquidGlassTokens.blurLight,
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                            onTap: () => context.push('/friends'),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(IconlyLight.user2, color: Colors.white, size: 22),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Amis',
+                                  style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: LiquidGlassCard(
+                            blur: LiquidGlassTokens.blurLight,
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                             onTap: () {
                                _shareProfile();
                             },
-                            child: Text(
-                              'Partager',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(IconlyLight.send, color: Colors.white, size: 22),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Partager',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12),
+                                ),
+                              ],
                             ),
                           ),
                         ),
