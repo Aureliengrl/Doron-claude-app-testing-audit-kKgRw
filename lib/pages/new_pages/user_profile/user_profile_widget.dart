@@ -233,7 +233,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           
           if (isMe)
             Positioned(
-              bottom: 90,
+              bottom: 104,
               left: 0,
               right: 0,
               child: FloatingCtaButton(
@@ -247,7 +247,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             ),
           if (!isMe)
             Positioned(
-              bottom: 90,
+              bottom: 104,
               left: 0,
               right: 0,
               child: FloatingCtaButton(
@@ -1236,7 +1236,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             ),
             // 🎯 Bouton Créer un album 🎯
             Positioned(
-              bottom: 90,
+              bottom: 104,
               left: 0,
               right: 0,
               child: FloatingCtaButton(

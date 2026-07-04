@@ -25,7 +25,7 @@ class FloatingCtaButton extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (icon != null) ...[
-          Icon(icon, color: Colors.white, size: subtitle != null ? 28 : 22),
+          Icon(icon, color: Colors.white, size: subtitle != null ? 22 : 18),
           const SizedBox(width: 8),
         ],
         if (subtitle != null)
@@ -36,7 +36,7 @@ class FloatingCtaButton extends StatelessWidget {
               Text(
                 title,
                 style: GoogleFonts.poppins(
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -44,7 +44,7 @@ class FloatingCtaButton extends StatelessWidget {
               Text(
                 subtitle!,
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
+                  fontSize: 11,
                   color: Colors.white.withOpacity(0.8),
                 ),
               ),
@@ -54,7 +54,7 @@ class FloatingCtaButton extends StatelessWidget {
           Text(
             title,
             style: GoogleFonts.poppins(
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
@@ -66,21 +66,22 @@ class FloatingCtaButton extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(24),
         child: Container(
-          height: 60,
+          height: 48,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF8A2BE2).withOpacity(0.4),
-                blurRadius: 15,
-                offset: const Offset(0, 5),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -97,19 +98,8 @@ class FloatingCtaButton extends StatelessWidget {
       );
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            const Color(0xFF1A0030).withOpacity(0),
-            const Color(0xFF1A0030).withOpacity(0.92),
-            const Color(0xFF1A0030),
-          ],
-        ),
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: pill,
     );
   }

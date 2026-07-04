@@ -269,7 +269,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
 
           // CTA fixe en bas de l'écran
           Positioned(
-            bottom: 90,
+            bottom: 104,
             left: 0,
             right: 0,
             child: FloatingCtaButton(
