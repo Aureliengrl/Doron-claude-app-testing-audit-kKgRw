@@ -20,7 +20,7 @@ class ScoredProduct {
 ///
 /// ### Paramètres de scoring v2
 /// | Dimension | Points max | Mode |
-/// |-----------|-----------|------|
+/// |---|---|---|
 /// | Genre match | +100 | Strict (exclusion en home/person) |
 /// | Catégorie match | +100 | Scoring + pénalité |
 /// | Budget exact | +80 | Scoring |
@@ -122,9 +122,9 @@ class MatchingEngine {
     return ScoredProduct(product: product, score: s);
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // Extraction des tags produit
-  // ---------------------------------------------------------------------------
+  // ---
 
   static Set<String> _extractProductTags(Map<String, dynamic> product) {
     final tags = (product['tags'] as List?)?.cast<String>() ?? <String>[];
@@ -134,9 +134,9 @@ class MatchingEngine {
         .toSet();
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // 1. Genre
-  // ---------------------------------------------------------------------------
+  // ---
 
   static double _scoreGender(
     double s,
@@ -192,9 +192,9 @@ class MatchingEngine {
     return kw.any(name.contains);
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // 2. Âge
-  // ---------------------------------------------------------------------------
+  // ---
 
   static double _scoreAge(
     double s,
@@ -239,9 +239,9 @@ class MatchingEngine {
     return s - 25.0; // Mauvaise tranche d'âge
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // 3. Catégorie
-  // ---------------------------------------------------------------------------
+  // ---
 
   static double _scoreCategory(
     double s,
@@ -269,9 +269,9 @@ class MatchingEngine {
     return s - 8.0; // Discovery : très souple
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // 4. Budget — avec tolérance adjacente
-  // ---------------------------------------------------------------------------
+  // ---
 
   static double _scoreBudget(
     double s,
@@ -322,9 +322,9 @@ class MatchingEngine {
     return s - 35.0;
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // 5. Passions — clustering avec bonus cumulatif
-  // ---------------------------------------------------------------------------
+  // ---
 
   static double _scorePassions(
       double s, Set<String> searchTags, Set<String> productTags) {
@@ -346,9 +346,9 @@ class MatchingEngine {
     return s;
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // 6. Styles — clustering avec bonus
-  // ---------------------------------------------------------------------------
+  // ---
 
   static double _scoreStyles(
       double s, Set<String> searchTags, Set<String> productTags) {
@@ -371,9 +371,9 @@ class MatchingEngine {
     return s;
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // 7. Personnalité
-  // ---------------------------------------------------------------------------
+  // ---
 
   static double _scorePersonality(
       double s, Set<String> searchTags, Set<String> productTags) {
@@ -383,9 +383,9 @@ class MatchingEngine {
     return s;
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // 8. Types de cadeaux
-  // ---------------------------------------------------------------------------
+  // ---
 
   static double _scoreGiftTypes(
       double s, Set<String> searchTags, Set<String> productTags) {
@@ -400,9 +400,9 @@ class MatchingEngine {
     return s;
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // 9. Contexte (relation: ami, famille, collègue)
-  // ---------------------------------------------------------------------------
+  // ---
 
   static double _scoreContext(
       double s, Set<String> searchTags, Set<String> productTags) {
@@ -412,9 +412,9 @@ class MatchingEngine {
     return s;
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // 10. Occasion (anniversaire, noël, mariage, saint-valentin…)
-  // ---------------------------------------------------------------------------
+  // ---
 
   static double _scoreOccasion(
       double s, Set<String> searchTags, Set<String> productTags) {
@@ -424,9 +424,9 @@ class MatchingEngine {
     return s;
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // 11. Saison — bonus si saison courante, pénalité si saison opposée
-  // ---------------------------------------------------------------------------
+  // ---
 
   static double _scoreSaison(double s, Set<String> productTags) {
     final currentSaison = TagsDefinitions.getSaisonTag();
@@ -440,10 +440,10 @@ class MatchingEngine {
     return s; // Autre saison → neutre
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // 12. Prix inverse — pénalise les produits trop cheap pour un gros budget
   //     (un budget 200€+ ne veut pas voir un produit à 8€)
-  // ---------------------------------------------------------------------------
+  // ---
 
   static double _scorePrixInverse(
       double s, Set<String> searchTags, Map<String, dynamic> product) {
@@ -461,9 +461,9 @@ class MatchingEngine {
     return s;
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // 13. Popularité — bestsellers / produits viraux remontent légèrement
-  // ---------------------------------------------------------------------------
+  // ---
 
   static double _scorePopularite(double s, Set<String> productTags) {
     if (productTags.contains('popularite_5')) return s + 20.0; // Viral/bestseller
@@ -472,10 +472,10 @@ class MatchingEngine {
     return s;
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // 14. Exclusion intime en contexte collègue
   //     (lingerie, bijoux très personnels → inapproprié pour un collègue)
-  // ---------------------------------------------------------------------------
+  // ---
 
   static double _scoreContextIntime(
       double s, Set<String> searchTags, Set<String> productTags) {
@@ -485,10 +485,10 @@ class MatchingEngine {
     return s;
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // 15. Anti-doublon marque inter-sessions
   //     Pénalise légèrement une marque déjà vue récemment
-  // ---------------------------------------------------------------------------
+  // ---
 
   static double _scoreBrandSeen(
       double s, Map<String, dynamic> product, List<String> brandsSeen) {

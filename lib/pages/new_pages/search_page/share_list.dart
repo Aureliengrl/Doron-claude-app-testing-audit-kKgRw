@@ -58,7 +58,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
     super.dispose();
   }
 
-  // --- Init collaboration ---------------------------------------------------
+  // --- Init collaboration ---
 
   Future<void> _initCollab() async {
     setState(() {
@@ -128,7 +128,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
     }
   }
 
-  // --- Actions -------------------------------------------------------------
+  // --- Actions ---
 
   Future<void> _addFriendToCollab(String uid) async {
     if (_collabId == null) {
@@ -250,7 +250,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
     ));
   }
 
-  // --- Build ----------------------------------------------------------------
+  // --- Build ---
 
   @override
   Widget build(BuildContext context) {
@@ -435,7 +435,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
     );
   }
 
-  // --- Onglet 1 : Amis -----------------------------------------------------
+  // --- Onglet 1 : Amis ---
 
   Widget _buildFriendsTab() {
     if (_loadingFriends) {
@@ -535,7 +535,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
     );
   }
 
-  // --- Onglet 2 : Lien -----------------------------------------------------
+  // --- Onglet 2 : Lien ---
 
   Widget _buildLinkTab() {
     return Padding(

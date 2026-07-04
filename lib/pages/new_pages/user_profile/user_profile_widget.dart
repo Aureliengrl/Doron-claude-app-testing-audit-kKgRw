@@ -58,20 +58,20 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     _model = UserProfileModel();
     _tabController = TabController(length: 2, vsync: this);
 
-    // VÃƒÆ’Ã‚Â©rifier le mode anonyme
+    // Vérifier le mode anonyme
     _checkAnonymousMode();
     // Charger les wishlists initiales + nb amis
     _loadWishlists();
     _loadFriendsCount();
 
-    // Charger les favoris et le profil aprÃƒÆ’Ã‚Â¨s le premier frame
+    // Charger les favoris et le profil après le premier frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && !_isAnonymous) {
         _model.loadFavourites();
       }
     });
 
-    // ÃƒÆ’Ã‚Â©couter les changements du model
+    // écouter les changements du model
     _model.addListener(_onModelChanged);
   }
 
@@ -96,16 +96,16 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     super.dispose();
   }
 
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ Changement de photo de profil ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬
+  // âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬ Changement de photo de profil âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬
 
-  /// Chemin local affichÃƒÆ’Ã‚Â© immÃƒÆ’Ã‚Â©diatement avant que l'upload termine.
+  /// Chemin local affiché immédiatement avant que l'upload termine.
   File? _localProfilePhoto;
 
-  /// URL CDN mÃƒÆ’Ã‚Â©morisÃƒÆ’Ã‚Â©e aprÃƒÆ’Ã‚Â¨s upload ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÂ¢ââ€šÂ¬Ã‚Â affichÃƒÆ’Ã‚Â©e mÃƒÆ’Ã‚Âªme si AuthUserStream
-  /// n'est pas encore rafraÃƒÆ’Ã‚Â®chi (ÃƒÆ’Ã‚Â©vite le dÃƒÆ’Ã‚Â©lai de latence).
+  /// URL CDN mémorisée après upload âà¢ââ‚¬Å¡Ã‚Â¬à¢â"šÂ¬Ã‚Â affichée même si AuthUserStream
+  /// n'est pas encore rafraîchi (évite le délai de latence).
   String? _uploadedPhotoUrl;
 
-  /// Fallback avatar (initiales / icÃƒÆ’Ã‚Â´ne)
+  /// Fallback avatar (initiales / icône)
   Widget _buildAvatarFallback() => Container(
     color: violetColor.withOpacity(0.3),
     child: Icon(IconlyLight.profile, size: 40, color: Colors.white),
@@ -119,12 +119,12 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
 
-    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ Affichage OPTIMISTE IMMÃƒÆ’Ã†â€™ÃƒÂ¢ââ€šÂ¬Ã‚Â°DIAT ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬
+    // âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬ Affichage OPTIMISTE IMMÉDIAT âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬
     if (mounted) setState(() { _localProfilePhoto = file; _uploadedPhotoUrl = null; });
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Sauvegarde de la photoÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦', style: GoogleFonts.outfit()),
+        content: Text('Sauvegarde de la photo...', style: GoogleFonts.outfit()),
         backgroundColor: LiquidGlassTokens.pageDark,
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
@@ -136,9 +136,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       storagePath: 'users/$uid/profile_${DateTime.now().millisecondsSinceEpoch}.jpg',
       onUploadComplete: (downloadUrl) async {
         try {
-          // ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ ÃƒÆ’Ã†â€™ÃƒÂ¢ââ€šÂ¬Ã‚Â°criture ATOMIQUE : photo_url + photoUrl en un seul update ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬
-          // Synchronise les deux champs ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ ÃƒÂ¢ââ€šÂ¬ââ€žÂ¢ tous les lecteurs voient la photo
-          // immÃƒÆ’Ã‚Â©diatement (public_profile_page, friend_service, etc.)
+          // âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬ Écriture ATOMIQUE : photo_url + photoUrl en un seul update âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬
+          // Synchronise les deux champs -> tous les lecteurs voient la photo
+          // immédiatement (public_profile_page, friend_service, etc.)
           await FirebaseFirestore.instance
               .collection('users')
               .doc(uid)
@@ -154,10 +154,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         if (mounted) {
           setState(() {
             _localProfilePhoto = null;
-            _uploadedPhotoUrl  = downloadUrl; // mÃƒÆ’Ã‚Â©morisÃƒÆ’Ã‚Â© ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ ÃƒÂ¢ââ€šÂ¬ââ€žÂ¢ affichÃƒÆ’Ã‚Â© immÃƒÆ’Ã‚Â©diatement
+            _uploadedPhotoUrl  = downloadUrl; // mémorisé -> affiché immédiatement
           });
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Photo de profil mise ÃƒÆ’Ã‚  jour ÃƒÆ’Ã‚Â¢Ãƒâ€¦ââ‚¬Å“ÃƒÂ¢ââ€šÂ¬Ã…â€œ', style: GoogleFonts.outfit()),
+            content: Text('Photo de profil mise à jour ✨', style: GoogleFonts.outfit()),
             backgroundColor: const Color(0xFF8A2BE2),
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 2),
@@ -278,7 +278,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             ],
           ),
 
-          // Overlay floutÃƒÆ’Ã‚Â©
+          // Overlay flouté
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
@@ -327,7 +327,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'CrÃƒÆ’Ã‚Â©e ton compte pour accÃƒÆ’Ã‚Â©der ÃƒÆ’Ã‚  ton profil, tes produits likÃƒÆ’Ã‚Â©s et tes wishlists',
+                    'Crée ton compte pour accéder à ton profil, tes produits likés et tes wishlists',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
                       fontSize: 15,
@@ -407,7 +407,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        // ÃƒÂ°Ã…Â¸ââ‚¬Âââ‚¬Â Bouton notifications avec badge
+                        // à°Ã…Â¸ââ‚¬Âââ‚¬Â Bouton notifications avec badge
                         StreamBuilder<QuerySnapshot>(
                           stream: FirebaseAuth.instance.currentUser != null
                             ? FirebaseFirestore.instance
@@ -491,7 +491,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                 ],
                               ),
                               child: ClipOval(
-                                // ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ Avatar optimiste ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬
+                                // âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬ Avatar optimiste âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬
                                 // Si un upload est en cours : fichier local
                                 // Sinon : URL CDN via AuthUserStreamWidget
                                 child: _localProfilePhoto != null
@@ -575,7 +575,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                           ],
                         ),
                         const SizedBox(width: 24),
-                        // Stats ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÂ¢ââ€šÂ¬Ã‚Â Amis / Wishlists / Cadeaux
+                        // Stats âà¢ââ‚¬Å¡Ã‚Â¬à¢â"šÂ¬Ã‚Â Amis / Wishlists / Cadeaux
                         Expanded(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -734,7 +734,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 children: [
                   const Icon(IconlyLight.document),
                   const SizedBox(width: 8),
-                  // FIX C14: nom plus clair pour les wishlists partagÃƒÆ’Ã‚Â©es
+                  // FIX C14: nom plus clair pour les wishlists partagées
                   Text(context.tr('Listes de cadeaux', 'Gift lists')),
                 ],
               ),
@@ -745,8 +745,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 children: [
                   const Icon(IconlyBold.heart),
                   const SizedBox(width: 8),
-                  // FIX C14: nom plus clair pour les coups de cÃƒâ€¦ââ‚¬Å“ur privÃƒÆ’Ã‚Â©s
-                  Text(context.tr('Coups de cÃƒâ€¦ââ‚¬Å“ur', 'Favourites')),
+                  // FIX C14: nom plus clair pour les coups de cœur privés
+                  Text(context.tr('Coups de cœur', 'Favourites')),
                 ],
               ),
             ),
@@ -788,7 +788,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             ),
             const SizedBox(height: 16),
             Text(
-              'Aucun produit likÃƒÆ’Ã‚Â©',
+              'Aucun produit liké',
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -797,7 +797,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             ),
             const SizedBox(height: 8),
             Text(
-              'Explore l\'accueil et like tes produits prÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â©rÃƒÆ’Ã‚Â©s !',
+              'Explore l\'accueil et like tes produits préférés !',
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 14,
@@ -1108,7 +1108,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 const SizedBox(height: 16),
                 Text('Aucune wishlist', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
                 const SizedBox(height: 8),
-                Text('CrÃƒÆ’Ã‚Â©e des wishlists pour organiser tes cadeaux', textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
+                Text('Crée des wishlists pour organiser tes cadeaux', textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
               ],
             ),
           );
@@ -1132,7 +1132,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 return GestureDetector(
                   onTap: () async {
                     await _showWishlistDetail(wishlist);
-                    // Recharger la liste pour mettre ÃƒÆ’Ã‚  jour le compteur sur la pochette
+                    // Recharger la liste pour mettre à jour le compteur sur la pochette
                     _loadWishlists();
                   },
                   child: Container(
@@ -1252,10 +1252,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         );
   }
 
-  /// Dialog de crÃƒÆ’Ã‚Â©ation d'un nouvel album (wishlist)
+  /// Dialog de création d'un nouvel album (wishlist)
   Future<bool?> _showCreateAlbumDialog() async {
     final nameController = TextEditingController();
-    final emojiController = TextEditingController(text: 'ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â');
+    final emojiController = TextEditingController(text: '🎁');
     bool isCreating = false;
 
     return showDialog<bool>(
@@ -1279,7 +1279,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 autofocus: true,
                 style: GoogleFonts.poppins(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: context.tr('Nom de l\'album (ex : pour NoÃƒÆ’Ã‚«l)', 'Album name (e.g. for Christmas)'),
+                  hintText: context.tr('Nom de l\'album (ex : pour Noël)', 'Album name (e.g. for Christmas)'),
                   hintStyle: GoogleFonts.poppins(color: Colors.white38),
                   filled: true,
                   fillColor: Colors.white.withOpacity(0.07),
@@ -1313,13 +1313,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   : () {
                       final name = nameController.text.trim();
                       if (name.isEmpty) return;
-                      final emoji = emojiController.text.trim().isEmpty ? 'ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â' : emojiController.text.trim();
+                      final emoji = emojiController.text.trim().isEmpty ? '🎁' : emojiController.text.trim();
 
-                      // ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ OPTIMISTIC UI :
-                      // 1. Fermer le dialog immÃƒÆ’Ã‚Â©diatement
+                      // âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬ OPTIMISTIC UI :
+                      // 1. Fermer le dialog immédiatement
                       Navigator.pop(ctx, true);
 
-                      // 2. Ajouter localement pour affichage instantanÃƒÆ’Ã‚Â©
+                      // 2. Ajouter localement pour affichage instantané
                       final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
                       final optimisticWishlist = {
                         'id': tempId,
@@ -1331,7 +1331,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                       };
                       setState(() => _wishlists.insert(0, optimisticWishlist));
 
-                      // 3. CrÃƒÆ’Ã‚Â©er en arriÃƒÆ’Ã‚Â¨re-plan dans Firestore
+                      // 3. Créer en arrière-plan dans Firestore
                       FirebaseDataService.createWishlist(name: name, emoji: emoji).then((realId) {
                         if (realId != null && mounted) {
                           setState(() {
@@ -1341,7 +1341,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         }
                       });
                     },
-              child: Text(context.tr('CrÃƒÆ’Ã‚Â©er', 'Create'), style: GoogleFonts.poppins(color: const Color(0xFF8A2BE2), fontWeight: FontWeight.w700)),
+              child: Text(context.tr('Créer', 'Create'), style: GoogleFonts.poppins(color: const Color(0xFF8A2BE2), fontWeight: FontWeight.w700)),
             ),
           ],
         ),
@@ -1403,10 +1403,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ÃƒÆ’Ã‚Â¢Ãƒâ€¦ââ‚¬Å“ÃƒÂ¢ââ€šÂ¬Ã‚Â¦ Couverture mise ÃƒÆ’Ã‚  jour !')),
+        const SnackBar(content: Text('✅ Couverture mise à jour !')),
       );
 
-      // Mettre ÃƒÆ’Ã‚  jour immÃƒÆ’Ã‚Â©diatement en mÃƒÆ’Ã‚Â©moire + vider le cache image
+      // Mettre à jour immédiatement en mémoire + vider le cache image
       setState(() {
         final idx = _wishlists.indexWhere((w) => w['id'] == wishlistId);
         if (idx != -1) {
@@ -1428,10 +1428,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
     if (!mounted) return;
 
-    // Normaliser les clÃƒÆ’Ã‚Â©s pour SharedProductCard (conserver le type pour routing photo/product)
+    // Normaliser les clés pour SharedProductCard (conserver le type pour routing photo/product)
     final normalizedProducts = products.map((p) => {
       'id': p['id'] ?? '',
-      'type': p['type'] ?? 'product',  // phÃƒÆ’Ã‚Â©nomÃƒÆ’Ã‚Â¨ne clÃƒÆ’Ã‚Â© pour le routing PhotoItemCard
+      'type': p['type'] ?? 'product',  // phénomène clé pour le routing PhotoItemCard
       'name': p['title'] ?? p['name'] ?? p['product_title'] ?? 'Produit',
       'brand': p['brand'] ?? p['platform'] ?? p['source'] ?? '',
       'price': (p['price'] ?? p['product_price'] ?? '').toString(),
@@ -1457,13 +1457,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           child: Column(
             children: [
                     
-              // PoignÃƒÆ’Ã‚Â©e
+              // Poignée
               Container(
                 margin: const EdgeInsets.only(top: 12),
                 width: 40, height: 4,
                 decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
               ),
-              // En-tÃƒÆ’Ã‚Âªte
+              // En-tête
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 12, 12, 0),
               child: Row(
@@ -1584,7 +1584,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         ),
                         child: Row(
                           children: [
-                            const Text('ÃƒÂ°Ã…Â¸Ã…Â½ââ‚¬Â¦', style: TextStyle(fontSize: 20)),
+                            const Text('🎅', style: TextStyle(fontSize: 20)),
                             const SizedBox(width: 10),
                             Text(
                               'Secret Santa',
@@ -1608,14 +1608,14 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   }
 
   /// Ouvre un picker pour ajouter une photo dans un album wishlist.
-  /// ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ Upload OPTIMISTE : la photo s'affiche immÃƒÆ’Ã‚Â©diatement en local,
-  ///   l'upload Firebase se fait en arriÃƒÆ’Ã‚Â¨re-plan.
+  /// âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬ Upload OPTIMISTE : la photo s'affiche immédiatement en local,
+  ///   l'upload Firebase se fait en arrière-plan.
   Future<Map<String, dynamic>?> _addPhotoToAlbum(
     String wishlistId, {
-    /// Callback appelÃƒÆ’Ã‚Â© quand l'URL Firebase est disponible (mise ÃƒÆ’Ã‚  jour en arriÃƒÆ’Ã‚Â¨re-plan)
+    /// Callback appelé quand l'URL Firebase est disponible (mise à jour en arrière-plan)
     void Function(String photoId, String firebaseUrl, String price)? onUploaded,
   }) async {
-    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ 1. Choix de la source ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬
+    // âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬ 1. Choix de la source âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬
     ImageSource? source;
     await showModalBottomSheet(
       context: context,
@@ -1649,13 +1649,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     );
     if (source == null || !mounted) return null;
 
-    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ 2. SÃƒÆ’Ã‚Â©lection de la photo ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬
+    // âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬ 2. Sélection de la photo âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬
     final picked = source == ImageSource.gallery
         ? await PhotoPermissionService.pickFromGallery(context, imageQuality: 80)
         : await PhotoPermissionService.pickFromCamera(context, imageQuality: 80);
     if (picked == null || !mounted) return null;
 
-    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ 3. Dialog Nom + Prix ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬
+    // âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬ 3. Dialog Nom + Prix âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬
     String caption = '';
     String price = '';
     final captionCtrl = TextEditingController();
@@ -1669,7 +1669,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           children: [
             const Icon(IconlyLight.editSquare, color: Color(0xFF00D4FF), size: 22),
             const SizedBox(width: 8),
-            Text('DÃƒÆ’Ã‚Â©tails (optionnel)', style: GoogleFonts.poppins(
+            Text('Détails (optionnel)', style: GoogleFonts.poppins(
               color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
           ],
         ),
@@ -1730,20 +1730,20 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     priceCtrl.dispose();
     if (!mounted) return null;
 
-    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ 4. Affichage OPTIMISTE immÃƒÆ’Ã‚Â©diat (fichier local) ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬
+    // âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬ 4. Affichage OPTIMISTE immédiat (fichier local) âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬
     final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
     final localPath = picked.path;
     final optimisticEntry = {
       'id': tempId,
       'type': 'photo',
-      'image': localPath,      // chemin fichier local ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÂ¢ââ€šÂ¬Ã‚Â PhotoItemCard le gÃƒÆ’Ã‚Â¨re
+      'image': localPath,      // chemin fichier local âà¢ââ‚¬Å¡Ã‚Â¬à¢â"šÂ¬Ã‚Â PhotoItemCard le gère
       'caption': caption,
       'price': price,
       'url': '',
       '_isUploading': true,    // flag pour indicateur discret
     };
 
-    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ 5. Upload en arriÃƒÆ’Ã‚Â¨re-plan ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬
+    // âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬ 5. Upload en arrière-plan âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬
     FirebaseDataService.addPhotoToWishlist(
       wishlistId,
       localPath,
@@ -1754,7 +1754,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       if (!ok || !mounted) return;
       // Snack discret de confirmation
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('ÃƒÂ°Ã…Â¸ââ‚¬Å“Ã‚Â· Photo ajoutÃƒÆ’Ã‚Â©e !', style: GoogleFonts.poppins(
+        content: Text('📸 Photo ajoutée !', style: GoogleFonts.poppins(
             color: Colors.white, fontWeight: FontWeight.w600)),
         backgroundColor: const Color(0xFF10B981),
         behavior: SnackBarBehavior.floating,
@@ -1763,13 +1763,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       ));
     });
 
-    // Retourner l'entrÃƒÆ’Ã‚Â©e optimiste ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÂ¢ââ€šÂ¬Ã‚Â la grille l'affiche immÃƒÆ’Ã‚Â©diatement
+    // Retourner l'entrée optimiste âà¢ââ‚¬Å¡Ã‚Â¬à¢â"šÂ¬Ã‚Â la grille l'affiche immédiatement
     return optimisticEntry;
   }
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ Gamification & Stats ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬
-  // Removed "Ton activitÃƒÆ’Ã‚Â©" and "Badges" per user request.
+  // âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬ Gamification & Stats âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬
+  // Removed "Ton activité" and "Badges" per user request.
 
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ Actions & Modals ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬
+  // âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬ Actions & Modals âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬
   Future<void> _shareProfile() async {
     final handle = _model.userProfile?['handle'] as String?;
     if (handle == null || handle.isEmpty) {
@@ -1787,7 +1787,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Lien copiÃƒÆ’Ã‚Â© ! $url', style: GoogleFonts.outfit()),
+          content: Text('Lien copié ! $url', style: GoogleFonts.outfit()),
           backgroundColor: const Color(0xFF8A2BE2),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -1797,7 +1797,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     }
   }
 
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ ParamÃƒÆ’Ã‚Â¨tres ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ€šÂ¬Ã‚ÂÃƒÂ¢ââ‚¬Å¡Ã‚Â¬
+  // âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬ Paramètres âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬
   void _showSettingsBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -1817,14 +1817,14 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     
               Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
               const SizedBox(height: 24),
-              Text('ParamÃƒÆ’Ã‚Â¨tres', style: GoogleFonts.outfit(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Paramètres', style: GoogleFonts.outfit(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 24),
               LiquidGlassSurface(
                 child: Column(
                   children: [
                     ListTile(
                       leading: const Icon(IconlyLight.filter, color: Colors.white),
-                      title: Text('Modifier mes prÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â©rences (IA)', style: GoogleFonts.outfit(color: Colors.white)),
+                      title: Text('Modifier mes préférences (IA)', style: GoogleFonts.outfit(color: Colors.white)),
                       trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
                       onTap: () {
                         Navigator.pop(ctx);
@@ -1900,11 +1900,11 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     builder: (alertCtx) => AlertDialog(
                       backgroundColor: const Color(0xFF1E1E1E),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      title: const Text('DÃƒÆ’Ã‚Â©connexion', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      content: const Text('ÃƒÆ’Ã… tes-vous sÃƒÆ’Ã‚»r de vouloir vous dÃƒÆ’Ã‚Â©connecter ?', style: TextStyle(color: Colors.white70)),
+                      title: const Text('Déconnexion', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?', style: TextStyle(color: Colors.white70)),
                       actions: [
                         TextButton(onPressed: () => Navigator.pop(alertCtx, false), child: const Text('Annuler', style: TextStyle(color: Colors.white54))),
-                        TextButton(onPressed: () => Navigator.pop(alertCtx, true), child: const Text('Se dÃƒÆ’Ã‚Â©connecter', style: TextStyle(color: Color(0xFFE53935)))),
+                        TextButton(onPressed: () => Navigator.pop(alertCtx, true), child: const Text('Se déconnecter', style: TextStyle(color: Color(0xFFE53935)))),
                       ],
                     ),
                   ) ?? false;
@@ -1921,7 +1921,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                     children: [
                       const Icon(IconlyLight.logout, color: Colors.white, size: 20),
                       const SizedBox(width: 12),
-                      Text('Se dÃƒÆ’Ã‚Â©connecter', style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text('Se déconnecter', style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -1943,7 +1943,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('Supprimer le compte', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
         content: Text(
-          'Cette action est irrÃƒÆ’Ã‚Â©versible. Votre compte sera dÃƒÆ’Ã‚Â©finitivement supprimÃƒÆ’Ã‚Â©.',
+          'Cette action est irréversible. Votre compte sera définitivement supprimé.',
           style: GoogleFonts.poppins(color: Colors.white70),
         ),
         actions: [
@@ -1960,7 +1960,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
         backgroundColor: const Color(0xFF1E1E1E),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('Confirmation finale', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.bold)),
-        content: Text('ÃƒÆ’Ã†â€™Ãƒâ€¦Ã‚ tes-vous ABSOLUMENT sÃƒÆ’Ã‚»r ? Vous ne pourrez plus rÃƒÆ’Ã‚Â©cupÃƒÆ’Ã‚Â©rer votre compte.', style: GoogleFonts.poppins(color: Colors.white70)),
+        content: Text('Êtes-vous ABSOLUMENT sûr ? Vous ne pourrez plus récupérer votre compte.', style: GoogleFonts.poppins(color: Colors.white70)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('Non, garder mon compte', style: GoogleFonts.poppins(color: Colors.white))),
           TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('Oui, supprimer', style: GoogleFonts.poppins(color: Colors.red, fontWeight: FontWeight.w600))),
@@ -2004,7 +2004,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     }
   }
 
-  // BUG 8 FIX: ÃƒÆ’Ã†â€™ÃƒÂ¢ââ€šÂ¬Ã‚Â°dition complÃƒÆ’Ã‚Â¨te du profil (nom, pseudo, bio)
+  // BUG 8 FIX: Édition complète du profil (nom, pseudo, bio)
   void _showEditProfileSheet(BuildContext context) {
     final nameCtrl = TextEditingController(text: _model.userProfile?['first_name'] as String? ?? '');
     final handleCtrl = TextEditingController(text: _model.userProfile?['handle'] as String? ?? '');
@@ -2056,7 +2056,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                       maxLines: 3,
                       maxLength: 150,
                       decoration: InputDecoration(
-                        hintText: 'Parlez de vous en quelques motsÃƒÆ’Ã‚Â¢ÃƒÂ¢ââ‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦',
+                        hintText: 'Parlez de vous en quelques mots...',
                         hintStyle: GoogleFonts.poppins(color: Colors.white38),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.all(12),
@@ -2142,7 +2142,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   }
 }
 
-// DÃƒÆ’Ã‚Â©lÃƒÆ’Ã‚Â©guÃƒÆ’Ã‚Â© pour la tab bar sticky
+// Délégué pour la tab bar sticky
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;
   final Color backgroundColor;

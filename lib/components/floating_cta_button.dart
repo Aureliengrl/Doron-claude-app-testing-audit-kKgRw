@@ -66,22 +66,22 @@ class FloatingCtaButton extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(22),
         child: Container(
-          height: 48,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          height: 44,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(22),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF8A2BE2).withOpacity(0.4),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
               ),
             ],
           ),

@@ -150,7 +150,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                     return Stack(
                       fit: StackFit.expand,
                       children: [
-                        // 1. Fond FloutÃƒÂ© Immersif
+                        // 1. Fond Flouté Immersif
                         if (imageUrl.isNotEmpty)
                           CachedNetworkImage(
   memCacheWidth: 800,
@@ -245,7 +245,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                           ),
                         ),
 
-                        // 3. Overlay gradient trÃƒÂ¨s lÃƒÂ©ger en bas
+                        // 3. Overlay gradient très léger en bas
                         Positioned(
                           bottom: 0,
                           left: 0,
@@ -267,7 +267,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                           ),
                         ),
 
-                        // 4. Barre d'Actions LatÃƒÂ©rale (Boutons fonctionnels)
+                        // 4. Barre d'Actions Latérale (Boutons fonctionnels)
                         Positioned(
                           right: 16,
                           bottom: 100,
@@ -278,7 +278,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                               _buildActionButton(
                                 icon: isLiked ? IconlyBold.heart : IconlyLight.heart,
                                 color: isLiked ? const Color(0xFFEC4899) : Colors.white,
-                                label: isLiked ? 'LikÃƒÂ©' : 'Like',
+                                label: isLiked ? 'Liké' : 'Like',
                                 isLiked: isLiked,
                                 onTap: () => _toggleLike(product),
                               ),
@@ -320,7 +320,7 @@ class _TikTokInspirationPageWidgetState extends State<TikTokInspirationPageWidge
                                 const Icon(IconlyLight.infoSquare, color: Colors.white70, size: 16),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Appuyez sur l\'image pour les dÃƒÂ©tails',
+                                  'Appuyez sur l\'image pour les détails',
                                   style: GoogleFonts.poppins(
                                     color: Colors.white70,
                                     fontSize: 13,

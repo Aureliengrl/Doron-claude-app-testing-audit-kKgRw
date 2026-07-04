@@ -14,9 +14,9 @@ import 'package:google_fonts/google_fonts.dart';
 class DoronTheme {
   DoronTheme._();
 
-  // ---------------------------------------------------------------------------
+  // ---
   // Palette de couleurs
-  // ---------------------------------------------------------------------------
+  // ---
 
   /// Bleu marine profond — couleur principale des pages fondamentales
   static const Color navy = Color(0xFF062248);
@@ -47,9 +47,9 @@ class DoronTheme {
   /// Fond carte — cartes produits
   static const Color cardWhite = Colors.white;
 
-  // ---------------------------------------------------------------------------
+  // ---
   // ColorScheme — Material 3
-  // ---------------------------------------------------------------------------
+  // ---
 
   static const ColorScheme _lightColorScheme = ColorScheme(
     brightness: Brightness.light,
@@ -117,9 +117,9 @@ class DoronTheme {
     inversePrimary: rose,
   );
 
-  // ---------------------------------------------------------------------------
+  // ---
   // Typographie Outfit (famille utilisée dans l'app)
-  // ---------------------------------------------------------------------------
+  // ---
 
   static TextTheme get _textTheme => GoogleFonts.outfitTextTheme(
         const TextTheme(
@@ -141,9 +141,9 @@ class DoronTheme {
         ),
       );
 
-  // ---------------------------------------------------------------------------
+  // ---
   // Thèmes Material 3
-  // ---------------------------------------------------------------------------
+  // ---
 
   /// Thème clair (mode par défaut)
   static ThemeData get light => ThemeData(

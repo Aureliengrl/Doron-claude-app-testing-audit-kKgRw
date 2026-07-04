@@ -58,13 +58,13 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
     _model = SearchPageModel();
     _loadData();
 
-    // Ã‰coute les cadeaux ajoutés depuis le modal produit (3 points â†’ "Ajouter pour quelqu'un")
+    // Écoute les cadeaux ajoutés depuis le modal produit (3 points → "Ajouter pour quelqu'un")
     _giftEventSub = GiftEventsService.onGiftAdded.listen((event) {
       if (!mounted) return;
       // Injection optimiste en tête de liste sans recharger tous les profils
       setState(() {
         _model.personGifts[event.personId] ??= [];
-        // Ã‰viter un doublon si le produit est déjà présent
+        // Éviter un doublon si le produit est déjà présent
         final alreadyPresent = _model.personGifts[event.personId]!
             .any((g) => g['id'] == event.gift['id']);
         if (!alreadyPresent) {
@@ -598,7 +598,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                 );
               },
               onDismissed: (direction) async {
-                // FIX: Soft-delete â€” suppression Firebase différée avec annulation
+                // FIX: Soft-delete "” suppression Firebase différée avec annulation
                 final removedProfile = _model.profiles[index - 1];
                 setState(() {
                   _model.profiles.removeAt(index - 1); // FIX: index-1 car index=0 = bouton "Ajouter"
@@ -1434,7 +1434,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
     // â”€â”€ 2. Sélection de la photo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     final picker = ImagePicker();
     final picked = await picker.pickImage(
-      source: source!, imageQuality: 60, maxWidth: 1200, maxHeight: 1200, requestFullMetadata: false); // FIX P1-C: qualit\u00e9 r\u00e9duite + contrainte taille â†’ 3x plus rapide
+      source: source!, imageQuality: 60, maxWidth: 1200, maxHeight: 1200, requestFullMetadata: false); // FIX P1-C: qualit\u00e9 r\u00e9duite + contrainte taille → 3x plus rapide
     if (picked == null || !mounted) return;
 
     // â”€â”€ 3. Dialog Nom + Prix â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1519,7 +1519,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
       'id': photoId,
       'type': 'photo',
       'name': productName.isNotEmpty ? productName : 'Photo',
-      'image': picked.path,    // chemin local â€” affiché immédiatement
+      'image': picked.path,    // chemin local "” affiché immédiatement
       'price': productPrice,
       'caption': productName,
       'brand': '',
@@ -1528,14 +1528,14 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
       '_uploading': true,
     };
 
-    // â”€â”€ 5. INJECTION OPTIMISTE IMMÃ‰DIATE dans la grille â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    // On insère en tête de liste sans attendre Firebase â†’ UI instantanée
+    // â”€â”€ 5. INJECTION OPTIMISTE IMMÉDIATE dans la grille â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // On insère en tête de liste sans attendre Firebase → UI instantanée
     _model.personGifts[personId] ??= [];
     _model.personGifts[personId]!.insert(0, photoGiftLocal);
     if (mounted) setState(() {}); // grille mise à jour en < 16ms
 
     // Snack discret immédiat
-    _showSnackBar('ðŸ“· Photo ajoutée ! Upload en coursâ€¦');
+    _showSnackBar('ðŸ“· Photo ajoutée ! Upload en cours"¦');
 
     // â”€â”€ 6. Persistance en arrière-plan (Firebase + Storage) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     FirebaseDataService.addGiftToPerson(
@@ -1585,7 +1585,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
           if (mounted) _showSnackBar('ðŸ“· Photo de $personName sauvegardée !');
         },
         onUploadError: (_) {
-          if (mounted) _showSnackBar('âš ï¸ Erreur upload â€” photo sauvegardée localement', isError: true);
+          if (mounted) _showSnackBar('âš ï¸ Erreur upload "” photo sauvegardée localement', isError: true);
         },
         );
       }
@@ -1593,7 +1593,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
 
   /// Upload une photo locale vers Firebase Storage et retourne l'URL de téléchargement.
   /// Chemin : users/{uid}/person_photos/{personId}/{timestamp}.jpg
-  /// @deprecated â€” utiliser OptimisticImageUploader.upload() à la place
+  /// @deprecated "” utiliser OptimisticImageUploader.upload() à la place
   Future<String?> _uploadPhotoToStorage(String localPath, String personId) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return null;

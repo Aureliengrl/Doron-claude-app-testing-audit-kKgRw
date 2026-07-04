@@ -61,9 +61,9 @@ class TagConverter {
     return validated;
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // Tags officiels Doron
-  // ---------------------------------------------------------------------------
+  // ---
 
   static void _addGenderTag(Map<String, dynamic> profile, Set<String> tags) {
     final gender = (profile['gender'] ?? profile['recipientGender'])?.toString() ?? '';
@@ -154,9 +154,9 @@ class TagConverter {
     }
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // Tags étendus — âge et contexte (utilisés par MatchingEngine)
-  // ---------------------------------------------------------------------------
+  // ---
 
   static void _addAgeTag(Map<String, dynamic> profile, Set<String> tags) {
     final ageRaw = profile['age'] ??
@@ -225,9 +225,9 @@ class TagConverter {
         s.contains('mari') || s.contains('femme') && s.contains('ma ');
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // Tags v3 — Occasion et Saison
-  // ---------------------------------------------------------------------------
+  // ---
 
   static void _addOccasionTag(Map<String, dynamic> profile, Set<String> tags) {
     // 1. Depuis le profil explicite
@@ -266,9 +266,9 @@ class TagConverter {
     }
   }
 
-  // ---------------------------------------------------------------------------
+  // ---
   // Map de passions enrichie v3 (25 mots-clés supplémentaires)
-  // ---------------------------------------------------------------------------
+  // ---
 
   static const Map<String, String> _enrichedPassionConversion = {
     // Sport

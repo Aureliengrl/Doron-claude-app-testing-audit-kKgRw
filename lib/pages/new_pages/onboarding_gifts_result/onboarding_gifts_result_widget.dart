@@ -159,9 +159,9 @@ class _OnboardingGiftsResultWidgetState
         profileForGeneration = {};
       }
 
-      // ----------------------------------------------------------------
+      // ---
       // ?? NOUVELLE LOGIQUE : Charger les wishlists Doron si handle connu
-      // ----------------------------------------------------------------
+      // ---
       List<Map<String, dynamic>> wishlistGifts = [];
       final personHandle = (profileForGeneration['username'] ?? profileForGeneration['personIdentifier'] ?? '').toString().replaceAll('@', '').trim().toLowerCase();
 
@@ -224,7 +224,7 @@ class _OnboardingGiftsResultWidgetState
           AppLogger.debug('?? Erreur récupération wishlists Doron (non bloquant): $e', 'Debug');
         }
       }
-      // ----------------------------------------------------------------
+      // ---
 
       // Charger les IDs des produits déjà vus pour refresh intelligent
       final prefs = await SharedPreferences.getInstance();

@@ -17,9 +17,9 @@ import '/components/block_report_sheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-/// Page Amis â€” 3 onglets : Mes amis / Rechercher / Demandes reçues
+/// Page Amis "” 3 onglets : Mes amis / Rechercher / Demandes reçues
 /// â”€ Chaque résultat de recherche affiche le statut exact (none/pending/friend)
-/// â”€ Clic sur profil â†’ /public-profile/:uid (PublicProfilePage)
+/// â”€ Clic sur profil → /public-profile/:uid (PublicProfilePage)
 class FriendsPage extends StatefulWidget {
   final bool showBackButton;
   const FriendsPage({super.key, this.showBackButton = true});
@@ -52,7 +52,7 @@ class _FriendsPageState extends State<FriendsPage>
   List<String> _searchHistory = [];
   static const String _historyKey = 'friends_search_history';
 
-  // Onglet Demandes â€” stream temps réel
+  // Onglet Demandes "” stream temps réel
   Stream<List<Map<String, dynamic>>>? _requestsStream;
   List<Map<String, dynamic>> _pendingRequests = [];
   final Set<String> _processingRequestIds = {};
@@ -129,7 +129,7 @@ class _FriendsPageState extends State<FriendsPage>
     } catch (_) {}
   }
 
-  // --- Suggestions ------------------------------------------------------------
+  // --- Suggestions ---
 
   Future<void> _loadSuggestions() async {
     if (_suggestionsLoaded || _suggestionsLoading) return;
@@ -156,7 +156,7 @@ class _FriendsPageState extends State<FriendsPage>
     }
   }
 
-  // --- Recherche --------------------------------------------------------------
+  // --- Recherche ---
 
   Future<void> _search(String query) async {
     if (query.trim() == _lastQuery) return;
@@ -211,7 +211,7 @@ class _FriendsPageState extends State<FriendsPage>
     }
   }
 
-  // --- Demandes ------------------------------------------------------------------
+  // --- Demandes ---
   // Les demandes sont gérées via _requestsStream (StreamBuilder) — pas de chargement manuel.
 
   Future<void> _acceptRequest(String requestId, String fromUid) async {
@@ -242,7 +242,7 @@ class _FriendsPageState extends State<FriendsPage>
     }
   }
 
-  // --- Invitations de collaboration --------------------------------------------
+  // --- Invitations de collaboration ---
 
   Future<void> _acceptCollabInvite(String inviteId) async {
     setState(() => _processingCollabIds.add(inviteId));
@@ -424,7 +424,7 @@ class _FriendsPageState extends State<FriendsPage>
                     },
                     style: GoogleFonts.poppins(color: Colors.white, fontSize: 15),
                     decoration: InputDecoration(
-                      hintText: 'Rechercher par @pseudo ou prénomâ€¦',
+                      hintText: 'Rechercher par @pseudo ou prénom"¦',
                       hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 14),
                       border: InputBorder.none,
                     ),
@@ -1115,7 +1115,7 @@ class _FriendsPageState extends State<FriendsPage>
   ) {
     if (isLoading || cached == null) {
       return _actionChip(
-        label: 'Chargementâ€¦',
+        label: 'Chargement"¦',
         icon: Icons.hourglass_empty_rounded,
         color: Colors.grey.shade600,
         onTap: null,
@@ -1133,7 +1133,7 @@ class _FriendsPageState extends State<FriendsPage>
 
       case FriendshipStatus.pendingSent:
         return _actionChip(
-          label: 'En attenteâ€¦ (annuler)',
+          label: 'En attente"¦ (annuler)',
           icon: Icons.hourglass_top_rounded,
           color: Colors.grey.shade600,
           onTap: cached.requestId != null ? () => _cancelRequest(uid, cached.requestId!) : null,
@@ -1181,7 +1181,7 @@ class _FriendsPageState extends State<FriendsPage>
               children: [
                 const Icon(IconlyLight.user2, size: 16, color: _green),
                 const SizedBox(width: 6),
-                Text('Amis â€” Voir le profil', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: _green)),
+                Text('Amis "” Voir le profil', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: _green)),
                 const SizedBox(width: 4),
                 const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: _green),
               ],
@@ -1257,7 +1257,7 @@ class _FriendsPageState extends State<FriendsPage>
             ),
           );
         }
-        // Stream collab séparé â€” ne bloque PAS l'affichage des demandes d'amis
+        // Stream collab séparé "” ne bloque PAS l'affichage des demandes d'amis
         return StreamBuilder<List<Map<String, dynamic>>>(
           stream: _collabInvitesStream,
           initialData: const [], // Valeur initiale vide pour ne pas bloquer

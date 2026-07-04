@@ -15,7 +15,7 @@ import '/components/liquid_glass_loader.dart';
 import '/components/shared_product_card.dart';
 import '/components/block_report_sheet.dart';
 
-/// Page de profil public ââ‚¬â€ même layout que user_profile_widget.dart
+/// Page de profil public ââ‚¬" même layout que user_profile_widget.dart
 /// Route : /public-profile/:uid
 class PublicProfilePage extends StatefulWidget {
   final String uid;
@@ -153,7 +153,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
             _friendshipStatus = FriendshipStatus.pendingSent;
             _requestId = id;
           });
-          _showSnack('âÅ“â€¦ Demande envoyée !', _green);
+          _showSnack('âÅ“"¦ Demande envoyée !', _green);
         } else {
           _showSnack('âÂÅ’ Erreur lors de l\'envoi', Colors.red);
         }
@@ -219,9 +219,9 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     ));
   }
 
-  // ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
+  // â"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Â
   // BUILD
-  // ââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Âââ€¢Â
+  // â"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Â
 
   @override
   Widget build(BuildContext context) {
@@ -234,14 +234,48 @@ class _PublicProfilePageState extends State<PublicProfilePage>
               : CustomScrollView(
                   slivers: [
                     _buildAppBar(),
-                    _buildTabBar(),
-                    _buildTabContent(),
+                    
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                        child: Row(
+                          children: [
+                            const Icon(IconlyLight.document, color: Colors.white, size: 22),
+                            const SizedBox(width: 10),
+                            Text(
+                              context.tr('Listes de cadeaux', 'Gift lists'),
+                              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    _buildWishlistsSliver(),
+
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 32, 20, 12),
+                        child: Row(
+                          children: [
+                            const Icon(IconlyBold.heart, color: Colors.white, size: 22),
+                            const SizedBox(width: 10),
+                            Text(
+                              context.tr('Coups de coeur', 'Favourites'),
+                              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    _buildLikedProductsSliver(),
+                    
+                    const SliverToBoxAdapter(child: SizedBox(height: 140)),
                   ],
                 ),
     );
   }
 
-  // ââ€â‚¬ââ€â‚¬ââ€â‚¬ App Bar (identique au profil perso) ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬
+  // â"â‚¬â"â‚¬â"â‚¬ App Bar (identique au profil perso) â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬
 
   Widget _buildAppBar() {
     final displayName = _profile?['displayName'] as String? ?? 'Utilisateur';
@@ -347,7 +381,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                           ],
                         ),
                         const SizedBox(width: 24),
-                        // Stats â€” Amis / Wishlists / Cadeaux
+                        // Stats "” Amis / Wishlists / Cadeaux
                         Expanded(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -499,7 +533,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
       FriendshipStatus.none: (label: context.tr('Ajouter en ami', 'Add as friend'), icon: IconlyLight.addUser, color: _violet),
       FriendshipStatus.pendingSent: (label: 'En attenteââ‚¬Â¦', icon: Icons.hourglass_top_rounded, color: Colors.grey.shade600),
       FriendshipStatus.pendingReceived: (label: 'Accepter', icon: Icons.check_circle_rounded, color: _green),
-      FriendshipStatus.friends: (label: 'Amis âÅ“â€œ', icon: IconlyLight.user2, color: const Color(0xFF6366F1)),
+      FriendshipStatus.friends: (label: 'Amis âÅ“"', icon: IconlyLight.user2, color: const Color(0xFF6366F1)),
     };
     final cfg = configs[_friendshipStatus]!;
 
@@ -538,7 +572,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     );
   }
 
-  // ââ€â‚¬ââ€â‚¬ââ€â‚¬ Tab Bar (identique au profil perso) ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬
+  // â"â‚¬â"â‚¬â"â‚¬ Tab Bar (identique au profil perso) â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬
 
   Widget _buildTabBar() {
     return SliverPersistentHeader(
@@ -591,36 +625,44 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     );
   }
 
-  Widget _buildWishlists() {
+  Widget _buildWishlistsSliver() {
     if (_wishlists.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(IconlyLight.bookmark, size: 80, color: Colors.white.withOpacity(0.35)),
-            const SizedBox(height: 16),
-            Text(context.tr('Aucune wishlist publique', 'No public wishlists'),
-                style: GoogleFonts.poppins(
-                    fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
-            const SizedBox(height: 8),
-            Text('Cet utilisateur n\'a pas encore de wishlist publique',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
-          ],
+      return SliverToBoxAdapter(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
+              Icon(IconlyLight.bookmark, size: 60, color: Colors.white.withOpacity(0.35)),
+              const SizedBox(height: 16),
+              Text(context.tr('Aucune wishlist publique', 'No public wishlists'),
+                  style: GoogleFonts.poppins(
+                      fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
+              const SizedBox(height: 8),
+              Text('Cet utilisateur n\'a pas encore de wishlist publique',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       );
     }
 
-    return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.85,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+    return SliverToBoxAdapter(
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 0.85,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+        ),
+        itemCount: _wishlists.length,
+        itemBuilder: (context, index) => _buildWishlistCard(_wishlists[index]),
       ),
-      itemCount: _wishlists.length,
-      itemBuilder: (context, index) => _buildWishlistCard(_wishlists[index]),
     );
   }
 
@@ -699,71 +741,82 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     );
   }
 
-  Widget _buildLikedProducts() {
-    // Produits likés d'un autre utilisateur ââ‚¬â€ toujours privés
+  Widget _buildLikedProductsSliver() {
     if (_likedProductsArePrivate) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.07),
-                border: Border.all(color: Colors.white12),
+      return SliverToBoxAdapter(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.07),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: const Icon(IconlyLight.lock, size: 38, color: Colors.white38),
               ),
-              child: const Icon(IconlyLight.lock, size: 38, color: Colors.white38),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Produits likés privés',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.white54,
+              const SizedBox(height: 20),
+              Text(
+                'Produits likés privés',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white54,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Les produits likés de cet utilisateur\nsont privés et non visibles.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(fontSize: 14, color: Colors.white30),
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                'Les produits likés de cet utilisateur\nsont privés et non visibles.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(fontSize: 14, color: Colors.white30),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       );
     }
 
     if (_likedProducts.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(IconlyLight.heart, size: 80, color: Colors.white.withOpacity(0.35)),
-            const SizedBox(height: 16),
-            Text('Aucun produit liké',
-                style: GoogleFonts.poppins(
-                    fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
-            const SizedBox(height: 8),
-            Text('Les produits likés de cet utilisateur apparaîtront ici',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
-          ],
+      return SliverToBoxAdapter(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
+              Icon(IconlyLight.heart, size: 60, color: Colors.white.withOpacity(0.35)),
+              const SizedBox(height: 16),
+              Text('Aucun produit liké',
+                  style: GoogleFonts.poppins(
+                      fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
+              const SizedBox(height: 8),
+              Text('Les produits likés de cet utilisateur apparaîtront ici',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _likedProducts.length,
-      itemBuilder: (context, index) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: SharedProductCard(
-          product: _likedProducts[index],
-          index: index,
-          showWishlistButton: false,
+    return SliverToBoxAdapter(
+      child: ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        itemCount: _likedProducts.length,
+        itemBuilder: (context, index) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: SharedProductCard(
+            product: _likedProducts[index],
+            index: index,
+            showWishlistButton: false,
+          ),
         ),
       ),
     );
@@ -789,7 +842,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 }
 
-// ââ€â‚¬ââ€â‚¬ââ€â‚¬ Délégué Tab Bar sticky ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬ââ€â‚¬
+// â"â‚¬â"â‚¬â"â‚¬ Délégué Tab Bar sticky â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬
 
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;

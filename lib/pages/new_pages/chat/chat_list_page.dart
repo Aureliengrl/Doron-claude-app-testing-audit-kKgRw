@@ -41,10 +41,10 @@ class _ChatListPageState extends State<ChatListPage> {
     if (diff.inDays == 0 && now.day == date.day) {
       return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
     } else if (diff.inDays == 1 || (diff.inDays == 0 && now.day != date.day)) {
-      // 'Hier' / 'Yesterday' â€” needs context, handled in chatTile
+      // 'Hier' / 'Yesterday' "” needs context, handled in chatTile
       return context.tr('Hier', 'Yesterday');
     } else if (diff.inDays < 7) {
-      // Day abbreviations â€” handled per-locale in chatTile
+      // Day abbreviations "” handled per-locale in chatTile
       return context.isEn ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][date.weekday-1] : ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'][date.weekday-1];
     } else {
       return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
@@ -190,7 +190,7 @@ class _ChatListPageState extends State<ChatListPage> {
   Future<List<Map<String,dynamic>>> _loadGroupSuggestions() async {
     final suggestions = <Map<String,dynamic>>[
       {'emoji': 'ðŸŽ‰', 'title': context.isEn ? 'Group gift' : 'Cadeau commun', 'type': 'gift'},
-      {'emoji': 'ðŸ‘¨â€ðŸ‘©â€ðŸ‘§', 'title': context.isEn ? 'Family Group' : 'Groupe Famille', 'type': 'family'},
+      {'emoji': 'ðŸ‘¨"ðŸ‘©"ðŸ‘§', 'title': context.isEn ? 'Family Group' : 'Groupe Famille', 'type': 'family'},
       {'emoji': 'ðŸ‘«', 'title': 'Déjeuner surprise', 'type': 'surprise'},
     ];
 
@@ -240,31 +240,60 @@ class _ChatListPageState extends State<ChatListPage> {
   Widget _buildHeader() {
     if (!widget.showBackButton) return const SizedBox.shrink();
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 16, 20, 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              if (widget.showBackButton) ...[
-                IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
-                  onPressed: () => context.pop(),
-                  splashRadius: 24,
-                ),
-                const SizedBox(width: 8),
-              ],
-              Text(
-                context.tr('Messages', 'Messages'),
-                style: GoogleFonts.poppins(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ],
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8A2BE2).withOpacity(0.4),
+            blurRadius: 30,
+            spreadRadius: 2,
+            offset: const Offset(0, 10),
           ),
+          BoxShadow(
+            color: const Color(0xFFEC4899).withOpacity(0.3),
+            blurRadius: 20,
+            spreadRadius: 0,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(4, 8, 20, 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  if (widget.showBackButton) ...[
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+                      onPressed: () => context.pop(),
+                      splashRadius: 24,
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  Text(
+                    context.tr('Messages', 'Messages'),
+                    style: GoogleFonts.poppins(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
           // Boutons d'action à droite
           Row(
             children: [
@@ -316,7 +345,7 @@ class _ChatListPageState extends State<ChatListPage> {
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -369,9 +398,16 @@ class _ChatListPageState extends State<ChatListPage> {
             final isGroup = chatData['isGroup'] == true;
             final lastMessage = chatData['lastMessage'] as String? ?? '';
             final lastMessageTime = chatData['lastMessageTime'] as Timestamp?;
-            final unread = (chatData['unreadCount'] as Map?)?.entries
-                .firstWhere((e) => e.key == currentUser.uid, orElse: () => MapEntry('', 0))
-                .value ?? 0;
+            
+            // Safe parsing of unreadCount map
+            final dynamic unreadCountData = chatData['unreadCount'];
+            int unread = 0;
+            if (unreadCountData is Map) {
+              final unreadVal = unreadCountData[currentUser.uid];
+              if (unreadVal is num) {
+                unread = unreadVal.toInt();
+              }
+            }
 
             Widget chatTile(String chatName, String photoUrl) {
               return Padding(
@@ -399,7 +435,7 @@ class _ChatListPageState extends State<ChatListPage> {
                       ),
                       child: Row(
                         children: [
-                          // Avatar â€” FIX C5: initiale affichée si pas de photo
+                          // Avatar "” FIX C5: initiale affichée si pas de photo
                           Container(
                             width: 56,
                             height: 56,
@@ -458,7 +494,7 @@ class _ChatListPageState extends State<ChatListPage> {
                                         chatName,
                                         style: GoogleFonts.poppins(
                                           fontSize: 16,
-                                          fontWeight: (unread as int) > 0 ? FontWeight.bold : FontWeight.w600,
+                                          fontWeight: unread > 0 ? FontWeight.bold : FontWeight.w600,
                                           color: Colors.white,
                                         ),
                                         maxLines: 1,
@@ -469,8 +505,8 @@ class _ChatListPageState extends State<ChatListPage> {
                                       _formatTime(lastMessageTime),
                                       style: GoogleFonts.poppins(
                                         fontSize: 12,
-                                        color: (unread as int) > 0 ? const Color(0xFFEC4899) : Colors.white.withOpacity(0.5),
-                                        fontWeight: (unread as int) > 0 ? FontWeight.bold : FontWeight.normal,
+                                        color: unread > 0 ? const Color(0xFFEC4899) : Colors.white.withOpacity(0.5),
+                                        fontWeight: unread > 0 ? FontWeight.bold : FontWeight.normal,
                                       ),
                                     ),
                                   ],
@@ -489,7 +525,7 @@ class _ChatListPageState extends State<ChatListPage> {
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    if ((unread as int) > 0)
+                                    if (unread > 0)
                                       Container(
                                         margin: const EdgeInsets.only(left: 8),
                                         padding: const EdgeInsets.all(6),
@@ -533,7 +569,7 @@ class _ChatListPageState extends State<ChatListPage> {
                 return chatTile(context.tr('Moi', 'Me'), '');
               }
 
-              // Si déjà en cache â†’ affiche directement (pas de rebuild infini)
+              // Si déjà en cache → affiche directement (pas de rebuild infini)
               if (_profileCache.containsKey(otherUserId)) {
                 final cached = _profileCache[otherUserId]!;
                 return chatTile(cached['name'] as String, cached['photo'] as String);

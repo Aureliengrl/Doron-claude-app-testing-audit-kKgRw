@@ -23,7 +23,7 @@ class CollaborationService {
     try {
       // Chercher une collaboration existante pour ce profil et cet owner
       // IMPORTANT: inclure where('ownerId') pour satisfaire les security rules Firestore
-      // (sans ce filtre, la query peut retourner des docs d'autres users â†’ permission-denied)
+      // (sans ce filtre, la query peut retourner des docs d'autres users → permission-denied)
       final existing = await _db
           .collection('collaborations')
           .where('profileId', isEqualTo: profileId)
@@ -98,7 +98,7 @@ class CollaborationService {
         }, SetOptions(merge: true));
       } catch (e) { AppLogger.debug('CollaborationService error: $e', 'Collab'); }
 
-      AppLogger.debug('âœ… CollaborationService: collab créée ${collabRef.id}', 'Collab');
+      AppLogger.debug('✅ CollaborationService: collab créée ${collabRef.id}', 'Collab');
       return {'collabId': collabRef.id, ...collabData, 'chatId': chatRef.id};
     } catch (e) {
       AppLogger.debug('âŒ CollaborationService.createOrGetCollab: $e', 'Collab');
@@ -109,8 +109,8 @@ class CollaborationService {
   // â”€â”€â”€ Inviter un utilisateur Doron â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   /// Invite [toUid] à rejoindre [collabId].
-  /// Si [isAlreadyFriend] â†’ ajoute directement en membre.
-  /// Sinon â†’ crée une invitation en attente.
+  /// Si [isAlreadyFriend] → ajoute directement en membre.
+  /// Sinon → crée une invitation en attente.
   static Future<String> inviteUser({
     required String collabId,
     required String toUid,
@@ -185,12 +185,12 @@ class CollaborationService {
           'read': false,
           'createdAt': FieldValue.serverTimestamp(),
         });
-        AppLogger.debug('âœ… Notification collab envoyée à $toUid', 'Collab');
+        AppLogger.debug('✅ Notification collab envoyée à $toUid', 'Collab');
       } catch (e) {
         AppLogger.debug('âš ï¸ Notification collab failed (non-critical): $e', 'Collab');
       }
 
-      AppLogger.debug('âœ… Invitation envoyée: ${inviteRef.id}', 'Collab');
+      AppLogger.debug('✅ Invitation envoyée: ${inviteRef.id}', 'Collab');
       return inviteRef.id;
     } catch (e) {
       AppLogger.debug('âŒ CollaborationService.inviteUser: $e', 'Collab');
@@ -200,7 +200,7 @@ class CollaborationService {
 
   // â”€â”€â”€ Ajouter un membre directement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  /// FIX #1 â€” addMember accepte chatId et profileName en paramètre facultatif.
+  /// FIX #1 "” addMember accepte chatId et profileName en paramètre facultatif.
   /// Cela évite un get() sur la collab qui peut échouer si l'utilisateur
   /// n'est pas encore dans members/pendingInvites (permission-denied).
   static Future<void> addMember({
@@ -252,7 +252,7 @@ class CollaborationService {
         }
       }
 
-      AppLogger.debug('âœ… Membre $uid ajouté à $collabId (chat: $resolvedChatId)', 'Collab');
+      AppLogger.debug('✅ Membre $uid ajouté à $collabId (chat: $resolvedChatId)', 'Collab');
     } catch (e) {
       AppLogger.debug('âŒ CollaborationService.addMember: $e', 'Collab');
       rethrow;
@@ -285,7 +285,7 @@ class CollaborationService {
       final collabDoc = await _db.collection('collaborations').doc(collabId).get();
       final collab = collabDoc.data() ?? {};
 
-      AppLogger.debug('âœ… Invitation acceptée: $inviteId', 'Collab');
+      AppLogger.debug('✅ Invitation acceptée: $inviteId', 'Collab');
       return {
         'collabId': collabId,
         'chatId': collab['chatId'],
@@ -323,10 +323,10 @@ class CollaborationService {
 
   // â”€â”€â”€ Rejoindre via token (deep link) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  /// FIX #2 â€” joinByToken utilise la collection `collab_tokens` comme index.
+  /// FIX #2 "” joinByToken utilise la collection `collab_tokens` comme index.
   /// La query directe sur `collaborations` échouait car la règle Firestore
   /// ne permet pas la lecture sans être owner/member/pendingInvite.
-  /// `collab_tokens` a une règle allow read: if isAuth() â†’ pas de problème.
+  /// `collab_tokens` a une règle allow read: if isAuth() → pas de problème.
   static Future<Map<String, dynamic>?> joinByToken(String token) async {
     final myUid = _myUid;
     if (myUid == null) return null;
@@ -362,10 +362,10 @@ class CollaborationService {
         }
       } catch (_) {} // Non-critique, continuer l'ajout
 
-      // â”€â”€ 3. Ajouter comme membre (chatId fourni â†’ pas de get() interne) â”€â”€â”€â”€â”€
+      // â”€â”€ 3. Ajouter comme membre (chatId fourni → pas de get() interne) â”€â”€â”€â”€â”€
       await addMember(collabId: collabId, uid: myUid, chatId: chatId, profileName: profileName);
 
-      AppLogger.debug('âœ… Rejoint par token: $collabId', 'Collab');
+      AppLogger.debug('✅ Rejoint par token: $collabId', 'Collab');
       return {
         'collabId': collabId,
         'chatId': chatId,

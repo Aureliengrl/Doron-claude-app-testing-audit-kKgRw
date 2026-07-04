@@ -1,5 +1,5 @@
 import '/utils/app_logger.dart';
-// device_preview removed â€” not compatible with Dart 3.12+
+// device_preview removed "” not compatible with Dart 3.12+
 import '/custom_code/actions/index.dart' as actions;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart' as provider_pkg;
