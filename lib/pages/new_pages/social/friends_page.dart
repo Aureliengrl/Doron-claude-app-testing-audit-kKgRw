@@ -1,4 +1,4 @@
-﻿import 'dart:ui';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
 import '/utils/iconly_compat.dart';
@@ -21,7 +21,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 /// â”€ Chaque résultat de recherche affiche le statut exact (none/pending/friend)
 /// â”€ Clic sur profil â†’ /public-profile/:uid (PublicProfilePage)
 class FriendsPage extends StatefulWidget {
-  const FriendsPage({super.key});
+  final bool showBackButton;
+  const FriendsPage({super.key, this.showBackButton = true});
 
   static const String routeName = 'FriendsPage';
   static const String routePath = '/friends';
@@ -128,7 +129,7 @@ class _FriendsPageState extends State<FriendsPage>
     } catch (_) {}
   }
 
-  // â”€â”€â”€ Suggestions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // --- Suggestions ------------------------------------------------------------
 
   Future<void> _loadSuggestions() async {
     if (_suggestionsLoaded || _suggestionsLoading) return;
@@ -150,12 +151,12 @@ class _FriendsPageState extends State<FriendsPage>
         }
       }
     } catch (e) {
-      AppLogger.debug('âŒ FriendsPage suggestions: $e', 'Social');
+      AppLogger.debug('❌ FriendsPage suggestions: $e', 'Social');
       if (mounted) setState(() => _suggestionsLoading = false);
     }
   }
 
-  // â”€â”€â”€ Recherche â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // --- Recherche --------------------------------------------------------------
 
   Future<void> _search(String query) async {
     if (query.trim() == _lastQuery) return;
@@ -183,7 +184,7 @@ class _FriendsPageState extends State<FriendsPage>
         }
       }
     } catch (e) {
-      AppLogger.debug('âŒ FriendsPage search: $e', 'Social');
+      AppLogger.debug('❌ FriendsPage search: $e', 'Social');
       if (mounted) setState(() => _isSearching = false);
     }
   }
@@ -210,8 +211,8 @@ class _FriendsPageState extends State<FriendsPage>
     }
   }
 
-  // â”€â”€â”€ Demandes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Les demandes sont gérées via _requestsStream (StreamBuilder) â€” pas de chargement manuel.
+  // --- Demandes ------------------------------------------------------------------
+  // Les demandes sont gérées via _requestsStream (StreamBuilder) — pas de chargement manuel.
 
   Future<void> _acceptRequest(String requestId, String fromUid) async {
     setState(() => _processingRequestIds.add(requestId));
@@ -222,7 +223,7 @@ class _FriendsPageState extends State<FriendsPage>
         _processingRequestIds.remove(requestId);
         if (ok) _pendingRequests.removeWhere((r) => r['requestId'] == requestId);
       });
-      _showSnack(ok ? '?? Vous êtes maintenant amis !' : 'âŒ Erreur', ok ? _green : Colors.red);
+      _showSnack(ok ? '✅ Vous êtes maintenant amis !' : '❌ Erreur', ok ? _green : Colors.red);
       if (ok) {
         // Invalider le cache pour cet uid
         _statusCache.remove(fromUid);
@@ -241,7 +242,7 @@ class _FriendsPageState extends State<FriendsPage>
     }
   }
 
-  // â”€â”€â”€ Invitations de collaboration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // --- Invitations de collaboration --------------------------------------------
 
   Future<void> _acceptCollabInvite(String inviteId) async {
     setState(() => _processingCollabIds.add(inviteId));
@@ -265,7 +266,7 @@ class _FriendsPageState extends State<FriendsPage>
       }
     } catch (_) {
       if (mounted) setState(() => _processingCollabIds.remove(inviteId));
-      _showSnack('âŒ Erreur', Colors.red);
+      _showSnack('❌ Erreur', Colors.red);
     }
   }
 
@@ -294,7 +295,7 @@ class _FriendsPageState extends State<FriendsPage>
           _statusCache[uid] = (status: FriendshipStatus.pendingSent, requestId: requestId);
         }
       });
-      if (requestId != null) _showSnack('âœ… Demande envoyée !', _green);
+      if (requestId != null) _showSnack('✅ Demande envoyée !', _green);
     }
   }
 
@@ -321,7 +322,7 @@ class _FriendsPageState extends State<FriendsPage>
         if (ok) _statusCache[uid] = (status: FriendshipStatus.friends, requestId: null);
       });
       if (ok) {
-        _showSnack('?? Vous êtes maintenant amis !', _green);
+        _showSnack('✅ Vous êtes maintenant amis !', _green);
       }
     }
   }
@@ -475,7 +476,7 @@ class _FriendsPageState extends State<FriendsPage>
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    Text('🤝 Demandes', style: GoogleFonts.poppins(fontSize: 13)),
+                    Text('Demandes', style: GoogleFonts.poppins(fontSize: 13)),
                     if (pendingCount > 0)
                       Positioned(
                         top: -6,

@@ -183,16 +183,82 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       return _buildAnonymousView();
     }
 
+    final isMe = widget.isCurrentUser;
+
     return Scaffold(
       backgroundColor: LiquidGlassTokens.pageDark,
-      body: CustomScrollView(
-        slivers: [
-          // App Bar avec photo de profil et bouton paramÃƒÆ’Ã‚Âªtres
-          _buildAppBar(),          // Tabs (Produits likÃƒÆ’Ã‚Â©s / Wishlists)
-          _buildTabBar(),
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              _buildAppBar(),
+              
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                  child: Row(
+                    children: [
+                      const Icon(IconlyLight.document, color: Colors.white, size: 22),
+                      const SizedBox(width: 10),
+                      Text(
+                        context.tr('Listes de cadeaux', 'Gift lists'),
+                        style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              _buildWishlistsSliver(),
 
-          // Contenu des tabs
-          _buildTabContent(),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 32, 20, 12),
+                  child: Row(
+                    children: [
+                      const Icon(IconlyBold.heart, color: Colors.white, size: 22),
+                      const SizedBox(width: 10),
+                      Text(
+                        context.tr('Coups de coeur', 'Favourites'),
+                        style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              _buildLikedProductsSliver(),
+              
+              const SliverToBoxAdapter(child: SizedBox(height: 140)),
+            ],
+          ),
+          
+          if (isMe)
+            Positioned(
+              bottom: 90,
+              left: 0,
+              right: 0,
+              child: FloatingCtaButton(
+                title: context.tr('Créer un album', 'Create album'),
+                icon: Icons.add_rounded,
+                onTap: () async {
+                  final created = await _showCreateAlbumDialog();
+                  if (created == true) setState(() {});
+                },
+              ),
+            ),
+          if (!isMe)
+            Positioned(
+              bottom: 90,
+              left: 0,
+              right: 0,
+              child: FloatingCtaButton(
+                title: 'Offrir un cadeau',
+                subtitle: 'Générer une idée pour ${_model.userProfileData?['display_name'] ?? 'cet utilisateur'}',
+                icon: IconlyLight.gift,
+                onTap: () {
+                  HapticFeedback.heavyImpact();
+                },
+              ),
+            ),
         ],
       ),
     );
@@ -203,12 +269,12 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       backgroundColor: LiquidGlassTokens.pageDark,
       body: Stack(
         children: [
-          // Contenu floutÃƒÆ’Ã‚Â©
+          // Contenu flouté
           CustomScrollView(
             slivers: [
               _buildAppBar(),
-              _buildTabBar(),
-              _buildTabContent(),
+              _buildWishlistsSliver(),
+              _buildLikedProductsSliver(),
             ],
           ),
 
@@ -777,6 +843,231 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       index: index,
       showWishlistButton: true,
       onRemove: null,
+    );
+  }
+
+  Widget _buildWishlistsSliver() {
+    if (_wishlistsLoading) {
+      return const SliverToBoxAdapter(child: Center(child: LiquidGlassLoader(size: 40)));
+    }
+    
+    final wishlists = _wishlists;
+
+    if (wishlists.isEmpty) {
+      return SliverToBoxAdapter(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
+              Icon(IconlyLight.bookmark, size: 60, color: Colors.white.withOpacity(0.35)),
+              const SizedBox(height: 16),
+              Text('Aucune wishlist', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
+              const SizedBox(height: 8),
+              Text('Crée des wishlists pour organiser tes cadeaux', textAlign: TextAlign.center, style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return SliverToBoxAdapter(
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 0.85,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+        ),
+        itemCount: wishlists.length,
+        itemBuilder: (context, index) {
+          final wishlist = wishlists[index];
+          final coverUrl = wishlist['coverPhoto'] as String?;
+
+          return GestureDetector(
+            onTap: () async {
+              await _showWishlistDetail(wishlist);
+              _loadWishlists();
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0x1AFFFFFF),
+                    Color(0x0AFFFFFF),
+                  ],
+                ),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.1),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (coverUrl != null && coverUrl.isNotEmpty)
+                      CachedNetworkImage(
+                        imageUrl: coverUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: Colors.white.withOpacity(0.05),
+                          child: const Center(
+                            child: LiquidGlassLoader(size: 24, isDark: false),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => _buildDefaultCover(),
+                      )
+                    else
+                      _buildDefaultCover(),
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: 80,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.transparent, Colors.black.withOpacity(0.9)],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 12,
+                      left: 12,
+                      right: 12,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            wishlist['name'] as String? ?? 'Wishlist',
+                            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => _updateWishlistCover(wishlist['id'] as String),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.4),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(IconlyBold.camera, color: Colors.white, size: 16),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLikedProductsSliver() {
+    if (_model.isLoading) {
+      return const SliverToBoxAdapter(
+        child: Center(
+          child: LiquidGlassLoader(size: 32),
+        ),
+      );
+    }
+
+    if (_model.favourites.isEmpty) {
+      return SliverToBoxAdapter(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
+              Icon(
+                IconlyLight.heart,
+                size: 60,
+                color: Colors.white.withOpacity(0.35),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Aucun produit liké',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white.withOpacity(0.7),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Explore l\'accueil et like tes produits préférés !',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: Colors.grey[500],
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return SliverToBoxAdapter(
+      child: ReorderableGridView.count(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        crossAxisCount: 2,
+        childAspectRatio: 0.75,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        onReorder: (oldIndex, newIndex) {
+          HapticFeedback.mediumImpact();
+          setState(() {
+            final item = _model.favourites.removeAt(oldIndex);
+            _model.favourites.insert(newIndex, item);
+          });
+        },
+        children: [
+          for (int i = 0; i < _model.favourites.length; i++)
+            SharedProductCard(
+              key: ValueKey(_model.favourites[i]['id'] ?? i.toString()),
+              product: _model.favourites[i],
+              index: i,
+              showWishlistButton: true,
+              onRemove: null,
+            ),
+        ],
+      ),
     );
   }
 

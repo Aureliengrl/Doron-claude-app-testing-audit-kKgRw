@@ -238,6 +238,8 @@ class _ChatListPageState extends State<ChatListPage> {
   }
 
   Widget _buildHeader() {
+    if (!widget.showBackButton) return const SizedBox.shrink();
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 16, 20, 16),
       child: Row(
