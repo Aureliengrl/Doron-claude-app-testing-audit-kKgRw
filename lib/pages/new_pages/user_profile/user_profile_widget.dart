@@ -633,30 +633,10 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         ),
                       ],
                     ),
-                    // Nom et Bio
-                    const SizedBox(height: 12),
-                    AuthUserStreamWidget(
-                      builder: (context) => Text(
-                        currentUserDisplayName,
-                        style: GoogleFonts.poppins(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    if (_model.userProfile?['handle'] != null)
-                      Text(
-                        '@${_model.userProfile!['handle']}',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: Colors.white70,
-                        ),
-                      ),
                     // Bio
                     if (_model.userProfile?['bio'] != null && _model.userProfile!['bio'].toString().isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
+                        padding: const EdgeInsets.only(top: 16.0),
                         child: Text(
                           _model.userProfile!['bio'],
                           style: GoogleFonts.poppins(
