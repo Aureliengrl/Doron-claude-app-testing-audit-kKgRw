@@ -405,8 +405,53 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   children: [
                     // Top action buttons row
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        // En-tête gauche (Style Instagram)
+                        GestureDetector(
+                          onTap: () {
+                             HapticFeedback.lightImpact();
+                             // Ouverture d'un bottom sheet de comptes ou paramètres
+                             _showSettingsBottomSheet(context);
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              AuthUserStreamWidget(
+                                builder: (context) {
+                                  final handle = _model.userProfile?['handle']?.toString();
+                                  final displayName = (handle != null && handle.isNotEmpty) 
+                                      ? handle 
+                                      : (currentUserDisplayName.isNotEmpty ? currentUserDisplayName.split(' ').first : 'Profil');
+                                  
+                                  return Text(
+                                    displayName,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(IconlyLight.arrowDown2, color: Colors.white, size: 20),
+                              const SizedBox(width: 6),
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFEC4899),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Boutons d'action droite
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
                         // à°Ã…Â¸ââ‚¬Âââ‚¬Â Bouton notifications avec badge
                         StreamBuilder<QuerySnapshot>(
                           stream: FirebaseAuth.instance.currentUser != null
@@ -469,6 +514,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                             _showSettingsBottomSheet(context);
                           },
                         ),
+                      ],
                       ],
                     ),
                     Row(
