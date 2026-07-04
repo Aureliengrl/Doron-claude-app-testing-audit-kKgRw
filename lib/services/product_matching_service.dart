@@ -207,13 +207,14 @@ class ProductMatchingService {
       // (format: 20-28 chars alphanumériques). Un prénom libre comme "Marie" peut
       // matcher n'importe quel utilisateur Doron nommé Marie, y compris des inconnus.
       final personIdentifier = userTags['personUid'] ?? userTags['personIdentifier'];
+      final isUsername = userTags['isUsername'] == true || (personIdentifier != null && personIdentifier.toString().startsWith('@'));
       final looksLikeUid = personIdentifier != null &&
           personIdentifier.toString().length >= 20 &&
           !personIdentifier.toString().contains(' ');
-      if (looksLikeUid) {
+      if (looksLikeUid || isUsername) {
         final wishlistProducts = await _fetchWishlistByUsername(personIdentifier.toString());
         if (wishlistProducts.isNotEmpty) {
-           AppLogger.info('🎁 Wishlist de $personIdentifier: ${wishlistProducts.length} produits injectés', 'Matching');
+           AppLogger.info('🪄 Wishlist de $personIdentifier: ${wishlistProducts.length} produits injectés', 'Matching');
            final existingIds = allProducts.map((p) => p['id']).toSet();
            for (final wp in wishlistProducts) {
              if (!existingIds.contains(wp['id'])) {

@@ -1,7 +1,8 @@
-﻿import '/services/firebase_data_service.dart';
+import '/services/firebase_data_service.dart';
 import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:doron/services/voice_assistant_service.dart';
 import '/utils/app_tr.dart';
 import '/utils/iconly_compat.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -98,7 +99,8 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
   }
 
   @override
-  void dispose() {
+    void dispose() {
+    _voiceService.dispose();
     _model.dispose();
     super.dispose();
   }
@@ -360,8 +362,10 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
       return _buildDualTextInputScreen(stepData);
     } else if (type == 'single' || type == 'multiple') {
       return _buildQuestionScreen(stepData);
-    } else if (type == 'slider') {
+        } else if (type == 'slider') {
       return _buildSliderScreen(stepData);
+    } else if (type == 'voice_recording') {
+      return _buildVoiceRecordingScreen(stepData);
     }
 
     return const SizedBox.shrink();
@@ -1221,6 +1225,146 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
     );
   }
 
+  Widget _buildVoiceRecordingScreen(Map<String, dynamic> stepData) {
+    final field = stepData['field'] as String;
+    
+    // Récupérer le texte déjà enregistré s'il y en a
+    if (_currentTranscript.isEmpty && _model.answers[field] != null && _model.answers[field] is String && (_model.answers[field] as String).isNotEmpty) {
+       _currentTranscript = _model.answers[field] as String;
+    }
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const SizedBox(height: 20),
+        Text(
+          stepData['question'] as String,
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        if (stepData['subtitle'] != null) ...[
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
+            ),
+            child: Text(
+              stepData['subtitle'] as String,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.white70,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+        const SizedBox(height: 40),
+        
+        // Zone de texte transcrit
+        Container(
+          width: double.infinity,
+          minHeight: 120,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: _isRecording ? violetColor.withOpacity(0.1) : Colors.black26,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: _isRecording ? violetColor : Colors.white12,
+              width: _isRecording ? 2 : 1,
+            ),
+          ),
+          child: _currentTranscript.isEmpty
+              ? Center(
+                  child: Text(
+                    _isRecording ? 'Je vous écoute...' : 'Appuyez sur le micro pour parler',
+                    style: GoogleFonts.poppins(
+                      color: _isRecording ? violetColor : Colors.white38,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                )
+              : Text(
+                  _currentTranscript,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 16,
+                    height: 1.5,
+                  ),
+                ),
+        ),
+        
+        const SizedBox(height: 40),
+        
+        // Bouton Micro
+        GestureDetector(
+          onTap: () async {
+            if (_isRecording) {
+              await _voiceService.stopListening();
+              setState(() {
+                _isRecording = false;
+                _model.answers[field] = _currentTranscript;
+              });
+            } else {
+              final initialized = await _voiceService.initialize();
+              if (initialized) {
+                _voiceService.onTranscriptUpdate = (text) {
+                  setState(() {
+                    _currentTranscript = text;
+                    _model.answers[field] = text;
+                  });
+                };
+                await _voiceService.startListening();
+                setState(() => _isRecording = true);
+              } else {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Impossible d''accéder au microphone')),
+                  );
+                }
+              }
+            }
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            width: _isRecording ? 90 : 80,
+            height: _isRecording ? 90 : 80,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _isRecording ? Colors.red : violetColor,
+              boxShadow: [
+                if (_isRecording)
+                  BoxShadow(
+                    color: Colors.red.withOpacity(0.4),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                if (!_isRecording)
+                  BoxShadow(
+                    color: violetColor.withOpacity(0.3),
+                    blurRadius: 15,
+                    spreadRadius: 2,
+                  ),
+              ],
+            ),
+            child: Icon(
+              _isRecording ? Icons.stop_rounded : Icons.mic_rounded,
+              color: Colors.white,
+              size: 40,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildSliderScreen(Map<String, dynamic> stepData) {
     final field = stepData['field'] as String;
     final min = (stepData['min'] as int).toDouble();
@@ -1484,6 +1628,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
     );
   }
 }
+
 
 
 

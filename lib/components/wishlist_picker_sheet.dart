@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:doron/services/firebase_data_service.dart';
 import '/utils/iconly_compat.dart';
 import '/components/liquid_glass.dart';
 import '/utils/app_tr.dart';
@@ -27,12 +28,9 @@ class WishlistPickerSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: WishlistPickerSheet(product: productMap),
-        ),
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: WishlistPickerSheet(product: productMap),
       ),
     );
   }
@@ -44,6 +42,7 @@ class WishlistPickerSheet extends StatefulWidget {
 class _WishlistPickerSheetState extends State<WishlistPickerSheet> {
   List<Map<String, dynamic>> _wishlists = [];
   bool _isLoading = true;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -77,45 +76,35 @@ class _WishlistPickerSheetState extends State<WishlistPickerSheet> {
   }
 
   Future<void> _addToWishlist(String wishlistId, String wishlistName) async {
+    if (_isSaving) return;
+    
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
 
+    setState(() => _isSaving = true);
     HapticFeedback.mediumImpact();
-    Navigator.of(context).pop();
+
+    // Cache les objets liés au context avant de fermer la modale
+    final messenger = ScaffoldMessenger.of(context);
+    final nav = Navigator.of(context);
+    
+    // Ferme la modale immédiatement pour éviter le bug de l'écran grisé
+    nav.pop();
 
     try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .collection('wishlists')
-          .doc(wishlistId)
-          .collection('items')
-          .add({
-        ...widget.product,
-        'addedAt': FieldValue.serverTimestamp(),
-      });
-      
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .collection('wishlists')
-          .doc(wishlistId)
-          .update({'itemsCount': FieldValue.increment(1)});
+      // FIX: Utilise le service global pour ajouter dans "products" avec le même format
+      await FirebaseDataService.addProductToWishlist(wishlistId, widget.product);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Ajouté à $wishlistName !', style: GoogleFonts.poppins()),
-          backgroundColor: const Color(0xFF8A2BE2),
-          behavior: SnackBarBehavior.floating,
-        ));
-      }
+      messenger.showSnackBar(SnackBar(
+        content: Text('Ajouté à $wishlistName !', style: GoogleFonts.poppins()),
+        backgroundColor: const Color(0xFF8A2BE2),
+        behavior: SnackBarBehavior.floating,
+      ));
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Erreur lors de l\'ajout', style: GoogleFonts.poppins()),
-          backgroundColor: Colors.red,
-        ));
-      }
+      messenger.showSnackBar(SnackBar(
+        content: Text('Erreur lors de l''ajout', style: GoogleFonts.poppins()),
+        backgroundColor: Colors.red,
+      ));
     }
   }
 
@@ -123,7 +112,8 @@ class _WishlistPickerSheetState extends State<WishlistPickerSheet> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0F0C29).withOpacity(0.6),
+        color: const Color(0xFF0F0C29).withOpacity(0.9),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         border: Border(top: BorderSide(color: Colors.white.withOpacity(0.2))),
       ),
       constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),

@@ -240,7 +240,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                             const Icon(IconlyLight.camera, color: Colors.white70, size: 18),
                             const SizedBox(width: 6),
                             Text(
-                              'Ajouter une photo',
+                              'Ajouter mon propre produit',
                               style: GoogleFonts.poppins(
                                 color: Colors.white70,
                                 fontSize: 13,
@@ -1042,7 +1042,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
               const Icon(IconlyLight.camera, color: Colors.white70, size: 40),
               const SizedBox(height: 8),
               Text(
-                'Ajouter photo',
+                'Ajouter mon propre produit',
                 style: GoogleFonts.poppins(
                   color: Colors.white70,
                   fontWeight: FontWeight.w600,

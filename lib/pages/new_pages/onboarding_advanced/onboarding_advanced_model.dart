@@ -11,15 +11,16 @@ class OnboardingAdvancedModel {
   // FIX Bug 2: Variable pour emp�cher les doubles clics
   bool isNavigating = false;
   Map<String, dynamic> answers = {
-    'personName': '', // Pr�nom de la personne (REQUIS)
-    'personIdentifier': '', // Username DORON (OPTIONNEL)
-    'location': '', // Localisation
-    'giftTypes': <String>[], // Physique vs Activit�
-    'personGender': '', // Homme / Femme / Non-binaire / Enfant
-    'personAge': '', // Tranche d'�ge
-    'occasion': '', // �v�nement
-    'recipientPersonality': <String>[], // Tags de style de vie
-    'budgetTier': '', // Paliers de budget
+    'personName': '',
+    'personIdentifier': '',
+    'location': '',
+    'giftTypes': <String>[],
+    'personGender': '',
+    'personAge': '',
+    'occasion': '',
+    'personalityMode': '',
+    'recipientPersonality': <String>[],
+    'budgetTier': '',
   };
 
   // Animations
@@ -65,96 +66,89 @@ class OnboardingAdvancedModel {
     bool expressMode = false,
     String? onboardingMode,
   }) {
-    // NOUVEL ENTONNOIR HAUTE PR�CISION (Refonte Totale)
-    return [
-      // �cran de bienvenue
+    List<Map<String, dynamic>> steps = [
       {
         'id': 'welcome',
         'type': 'welcome',
-        'title': 'DOR�N',
-        'subtitle': 'Trouvons le cadeau parfait gr�ce � l\'IA ??',
+        'title': 'DORON',
+        'subtitle': 'Trouvons le cadeau parfait grÃ¢ce Ã  l''IA âœ¨',
         'emoji': '',
         'useLogo': true,
       },
-      // �tape 0.1 : Pr�nom et Pseudo
       {
         'section': 'person',
         'id': 'personInfo',
         'type': 'dual_text',
         'question': 'Pour qui cherches-tu ?',
-        'subtitle': '?? Pr�nom requis � ?? Pseudo optionnel',
-        'icon': '??',
+        'subtitle': 'En renseignant son pseudo Doron, l''IA s''inspirera de ses propres wishlists et prÃ©fÃ©rences enregistrÃ©es pour trouver le cadeau parfait !',
+        'icon': 'ðŸ“',
         'fields': [
           {
             'field': 'personName',
-            'label': 'Pr�nom',
+            'label': 'PrÃ©nom',
             'placeholder': 'Ex: Marie',
             'required': true,
             'hint': 'REQUIS',
           },
           {
             'field': 'personIdentifier',
-            'label': 'Nom d\'utilisateur DORON',
+            'label': 'Nom d''utilisateur DORON',
             'placeholder': '@username',
             'required': false,
-            'hint': 'OPTIONNEL - Pour inclure sa Wishlist',
+            'hint': 'OPTIONNEL - Pour lier ses Wishlists',
           },
         ],
       },
-      // �tape 0.2 : Localisation
       {
         'section': 'person',
         'id': 'location',
-        'type': 'single', // Change to text or autocomplete later if needed, but single works for broad regions
-        'question': 'O� habite cette personne ?',
-        'subtitle': '?? Pour sugg�rer des activit�s locales',
+        'type': 'single',
+        'question': 'OÃ¹ habite cette personne ?',
+        'subtitle': 'Pour suggÃ©rer des activitÃ©s locales',
         'field': 'location',
         'options': [
-          '�le-de-France (Paris)',
-          'Sud-Est (Lyon, Marseille, Nice...)',
-          'Sud-Ouest (Bordeaux, Toulouse...)',
-          'Nord & Est (Lille, Strasbourg...)',
-          'Ouest (Nantes, Rennes...)',
-          'Peu importe / Ailleurs'
+          'Paris / Ile-de-France',
+          'Province',
+          'International',
+          'Peu importe'
         ],
-        'icon': '??',
+        'icon': 'ðŸ“',
       },
-      // �tape 0.3 : Type de cadeau
       {
         'section': 'gift',
         'id': 'giftTypes',
         'type': 'multiple',
         'question': 'Quel type de cadeau ?',
-        'subtitle': '?? Tu peux choisir les deux !',
+        'subtitle': 'Tu peux choisir plusieurs options !',
         'field': 'giftTypes',
         'options': [
-          '??? Cadeaux Physiques (Livres, Mode, D�co...)',
-          '??? Exp�riences & Activit�s (Spa, Voyages, Sorties...)'
+          'ðŸŽ Cadeaux Physiques (Livres, Mode, DÃ©co)',
+          'ðŸŽŸï¸ ExpÃ©riences & ActivitÃ©s (Spa, Voyages)',
+          'ðŸ“¦ Abonnements (Box, Magasines, Streaming)',
+          'â¤ï¸ Dons / CharitÃ©'
         ],
-        'icon': '?',
+        'icon': 'ðŸ›ï¸',
       },
-      // �tape 1.1 : Sexe
       {
         'section': 'person',
         'id': 'personGender',
         'type': 'single',
         'question': 'Son profil ?',
-        'subtitle': '?? Affinons la recherche',
+        'subtitle': 'Affinons la recherche',
         'field': 'personGender',
         'options': [
-          '????? Homme',
-          '????? Femme',
-          '?? Non-binaire',
-          '?? Enfant',
+          'ðŸ‘¨â€ðŸ¦± Homme',
+          'ðŸ‘©â€ðŸ¦± Femme',
+          'ðŸ¤ Non-binaire',
+          'ðŸ‘¶ Enfant',
         ],
-        'icon': '??',
+        'icon': 'ðŸ‘¤',
       },
-      // �tape 1.2 : �ge
       {
         'section': 'person',
         'id': 'personAge',
         'type': 'single',
-        'question': 'Sa tranche d\'�ge ?',
+        'question': 'Sa tranche d''Ã¢ge ?',
         'field': 'personAge',
         'options': [
           'Moins de 12 ans',
@@ -164,61 +158,88 @@ class OnboardingAdvancedModel {
           '45-65 ans',
           '65+ ans'
         ],
-        'icon': '??',
+        'icon': 'ðŸŽ‚',
       },
-      // �tape 2 : L'Occasion
       {
         'section': 'gift',
         'id': 'occasion',
         'type': 'single',
-        'question': 'L\'occasion (Le "Pourquoi") ?',
+        'question': 'L''occasion (Le "Pourquoi") ?',
         'field': 'occasion',
         'options': [
-          '?? Anniversaire',
-          '?? Pendaison de cr�maill�re',
-          '?? Mariage',
-          '?? Naissance',
-          '?? Remerciement',
-          '?? Juste comme �a'
+          'ðŸŽ‚ Anniversaire',
+          'ðŸŽ„ NoÃ«l',
+          'â¤ï¸ Saint Valentin',
+          'ðŸ‘¶ Naissance',
+          'ðŸŽ‰ FÃªte des MÃ¨res/PÃ¨res',
+          'ðŸ¥‚ Pendaison de crÃ©maillÃ¨re',
+          'âœ¨ Juste comme Ã§a'
         ],
-        'icon': '??',
+        'icon': 'ðŸ¾',
       },
-      // �tape 3 : La Personnalit�
       {
+        'section': 'gift',
+        'id': 'personalityMode',
+        'type': 'single',
+        'question': 'Comment veux-tu dÃ©crire sa personnalitÃ© ?',
+        'subtitle': 'Choisis ton mode prÃ©fÃ©rÃ©',
+        'field': 'personalityMode',
+        'options': [
+          'ðŸ’¬ Essayer le mode vocal (RecommandÃ©)',
+          'ðŸ“ RÃ©pondre aux questions (Classique)',
+        ],
+        'icon': 'ðŸ—£ï¸',
+      }
+    ];
+
+    if (answers['personalityMode'] == 'ðŸ’¬ Essayer le mode vocal (RecommandÃ©)') {
+      steps.add({
+        'section': 'gift',
+        'id': 'voiceRecording',
+        'type': 'voice_recording',
+        'question': 'Parle-nous un peu de la personne !',
+        'subtitle': 'Inspire-toi de ces questions :\n- Quels sont ses hobbies ou ses passions ?\n- Dans quoi travaille-t-il/elle ?\n- Raconte une anecdote drÃ´le',
+        'field': 'recipientPersonality',
+      });
+    } else {
+      steps.add({
         'section': 'gift',
         'id': 'personality',
         'type': 'multiple',
-        'question': 'Sa personnalit� (Le "Style de vie") ?',
-        'subtitle': '?? S�lection multiple possible',
+        'question': 'Sa personnalitÃ© (Le "Style de vie") ?',
+        'subtitle': 'SÃ©lection multiple possible',
         'field': 'recipientPersonality',
         'options': [
-          '?? L\'Explorateur (Voyage, Nature, Aventure)',
-          '?? Le Casanier (D�co, Cocooning, Lecture)',
-          '?? Le Tech-Enthusiast (Gadgets, Gaming)',
-          '?? Le Fashioniste (Mode, Beaut�)',
-          '?? L\'�picurien (Vin, Gastronomie)',
-          '?? Le Cr�atif (Art, Musique, DIY)'
+          'ðŸ§— L''Explorateur (Voyage, Nature, Aventure)',
+          'ðŸ›‹ï¸ Le Casanier (DÃ©co, Cocooning, Lecture)',
+          'ðŸ’» Le Tech-Addict (Gadgets, Gaming)',
+          'ðŸ‘— Le Fashioniste (Mode, BeautÃ©)',
+          'ðŸ· L''Ã‰picurien (Vin, Gastronomie)',
+          'ðŸŽ¨ Le CrÃ©atif (Art, Musique, DIY)',
+          'âš½ Le Sportif (Fitness, CompÃ©tition)',
+          'ðŸ§˜ Le Zen (Bien-Ãªtre, SpiritualitÃ©, Yoga)',
         ],
-        'icon': '??',
-      },
-      // �tape 4 : Le Budget
-      {
-        'section': 'gift',
-        'id': 'budgetTier',
-        'type': 'single',
-        'question': 'Le Budget (Filtre strict) ?',
-        'field': 'budgetTier',
-        'options': [
-          '?? < 20�',
-          '?? 20� - 50�',
-          '?? 50� - 150�',
-          '?? Luxe (> 150�)'
-        ],
-        'icon': '??',
-      }
-    ];
-  }
+        'icon': 'ðŸŽ­',
+      });
+    }
 
+    steps.add({
+      'section': 'gift',
+      'id': 'budgetTier',
+      'type': 'single',
+      'question': 'Le Budget (Filtre strict) ?',
+      'field': 'budgetTier',
+      'options': [
+        'ðŸ’¸ < 20â‚¬',
+        'ðŸ’° 20â‚¬ - 50â‚¬',
+        'ðŸ’Ž 50â‚¬ - 150â‚¬',
+        'ðŸ‘‘ Luxe (> 150â‚¬)'
+      ],
+      'icon': 'ðŸ’³',
+    });
+
+    return steps;
+  }
   void handleSelect(String field, String value, bool isMultiple, {int? maxSelections}) {
     if (isMultiple) {
       final currentList = answers[field] as List<String>;
@@ -252,8 +273,9 @@ class OnboardingAdvancedModel {
       return true;
     }
 
-    if (type == 'slider') {
-      return true;
+    if (type == 'slider') { return true; }     if (type == 'voice_recording') {
+      final value = answers[stepData['field'] as String];
+      return value != null && value.toString().trim().isNotEmpty;
     }
 
     // Gestion du type dual_text (Pr�nom + Pseudo)
@@ -451,6 +473,8 @@ class OnboardingAdvancedModel {
     }
   }
 }
+
+
 
 
 
