@@ -12,7 +12,7 @@ import '/components/liquid_glass.dart';
 import '/components/liquid_glass_empty_state_widget.dart';
 import '/components/liquid_glass_loader.dart';
 import '/components/floating_cta_button.dart';
-import '/components/floating_cta_button.dart';
+import '/components/app_notch.dart';
 import 'create_chat_bottom_sheet.dart';
 import '/services/birthday_service.dart'; // F6: suggestions anniversaire
 import '/utils/app_tr.dart';
@@ -240,113 +240,9 @@ class _ChatListPageState extends State<ChatListPage> {
   Widget _buildHeader() {
     if (!widget.showBackButton) return const SizedBox.shrink();
 
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
-        ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF8A2BE2).withOpacity(0.4),
-            blurRadius: 30,
-            spreadRadius: 2,
-            offset: const Offset(0, 10),
-          ),
-          BoxShadow(
-            color: const Color(0xFFEC4899).withOpacity(0.3),
-            blurRadius: 20,
-            spreadRadius: 0,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(4, 8, 20, 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  if (widget.showBackButton) ...[
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
-                      onPressed: () => context.pop(),
-                      splashRadius: 24,
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(
-                    context.tr('Messages', 'Messages'),
-                    style: GoogleFonts.poppins(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-          // Boutons d'action à droite
-          Row(
-            children: [
-              // Bouton Nouveau Groupe
-              Tooltip(
-                message: context.tr('Nouveau groupe', 'New group'),
-                child: GestureDetector(
-                  onTap: () => _openCreateChat(forceGroup: true),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF8A2BE2).withOpacity(0.4),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(IconlyLight.addUser, color: Colors.white, size: 18),
-                        const SizedBox(width: 6),
-                        Text(
-                          context.tr('Groupe', 'Group'),
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              // Bouton Nouveau Message (icône)
-              IconButton(
-                icon: const Icon(IconlyBold.editSquare, color: Colors.white),
-                onPressed: () => _openCreateChat(forceGroup: false),
-                splashRadius: 24,
-                tooltip: context.tr('Nouveau message', 'New message'),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return AppNotch(
+      title: context.tr('Messages', 'Messages'),
+      subtitle: context.tr('Vos discussions et groupes', 'Your chats and groups'),
     );
   }
 
