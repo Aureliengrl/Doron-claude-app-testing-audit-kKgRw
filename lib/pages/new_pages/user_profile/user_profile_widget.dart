@@ -419,10 +419,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                             children: [
                               AuthUserStreamWidget(
                                 builder: (context) {
-                                  final handle = _model.userProfile?['handle']?.toString();
-                                  final displayName = (handle != null && handle.isNotEmpty) 
-                                      ? handle 
-                                      : (currentUserDisplayName.isNotEmpty ? currentUserDisplayName.split(' ').first : 'Profil');
+                                  final displayName = currentUserDisplayName.isNotEmpty 
+                                      ? currentUserDisplayName 
+                                      : 'Profil';
                                   
                                   return Text(
                                     displayName,
