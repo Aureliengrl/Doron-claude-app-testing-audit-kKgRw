@@ -501,6 +501,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         ),
                       ],
                     ),
+                  ],
+                ),
                     Row(
                       children: [
                         // Photo de profil
