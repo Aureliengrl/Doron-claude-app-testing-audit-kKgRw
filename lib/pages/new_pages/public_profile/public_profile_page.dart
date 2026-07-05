@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'dart:ui';
 import '/utils/app_tr.dart';
 import '/utils/iconly_compat.dart';
@@ -618,8 +618,8 @@ class _PublicProfilePageState extends State<PublicProfilePage>
       child: TabBarView(
         controller: _tabController,
         children: [
-          _buildWishlists(),
-          _buildLikedProducts(),
+          CustomScrollView(slivers: [_buildWishlistsSliver()]),
+          CustomScrollView(slivers: [_buildLikedProductsSliver()]),
         ],
       ),
     );

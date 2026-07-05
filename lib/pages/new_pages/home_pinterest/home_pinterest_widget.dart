@@ -1992,6 +1992,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         );
       }
     }
+  }
+
   Widget _buildSubMenu() {
     String currentKey = '';
     if (_model.activeCategoryId != 'all') {
@@ -2067,19 +2069,20 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                             ),
                           ),
                         ),
-                      )
-                          .animate()
-                          .fadeIn(
-                            delay: Duration(milliseconds: 50 * index),
-                            duration: 300.ms,
-                          )
-                          .slideX(
-                            begin: 0.2,
-                            end: 0,
-                            delay: Duration(milliseconds: 50 * index),
-                            duration: 300.ms,
-                            curve: Curves.easeOutCubic,
-                          );
+                      ),
+                    )
+                        .animate()
+                        .fadeIn(
+                          delay: Duration(milliseconds: 50 * index),
+                          duration: 300.ms,
+                        )
+                        .slideX(
+                          begin: 0.2,
+                          end: 0,
+                          delay: Duration(milliseconds: 50 * index),
+                          duration: 300.ms,
+                          curve: Curves.easeOutCubic,
+                        );
                   },
                 ),
               ),

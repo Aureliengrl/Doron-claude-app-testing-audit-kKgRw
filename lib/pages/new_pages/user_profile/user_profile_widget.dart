@@ -183,7 +183,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       return _buildAnonymousView();
     }
 
-    final isMe = widget.isCurrentUser;
+    final isMe = true;
 
     return Scaffold(
       backgroundColor: LiquidGlassTokens.pageDark,
@@ -242,20 +242,6 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 onTap: () async {
                   final created = await _showCreateAlbumDialog();
                   if (created == true) setState(() {});
-                },
-              ),
-            ),
-          if (!isMe)
-            Positioned(
-              bottom: 104,
-              left: 0,
-              right: 0,
-              child: FloatingCtaButton(
-                title: 'Offrir un cadeau',
-                subtitle: 'Générer une idée pour ${_model.userProfileData?['display_name'] ?? 'cet utilisateur'}',
-                icon: IconlyLight.gift,
-                onTap: () {
-                  HapticFeedback.heavyImpact();
                 },
               ),
             ),
@@ -434,7 +420,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                 },
                               ),
                               const SizedBox(width: 4),
-                              const Icon(IconlyLight.arrowDown2, color: Colors.white, size: 20),
+                              const Icon(IconlyLight.arrowDown, color: Colors.white, size: 20),
                               const SizedBox(width: 6),
                               Container(
                                 width: 8,
@@ -513,7 +499,6 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                             _showSettingsBottomSheet(context);
                           },
                         ),
-                      ],
                       ],
                     ),
                     Row(

@@ -38,8 +38,10 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
   String? _onboardingMode;
   bool _isLoadingMode = true;
 
-  @override
   bool _profileLoaded = false;
+  final VoiceAssistantService _voiceService = VoiceAssistantService();
+  bool _isRecording = false;
+  String _currentTranscript = '';
 
   @override
   void didChangeDependencies() {
@@ -1271,7 +1273,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
         // Zone de texte transcrit
         Container(
           width: double.infinity,
-          minHeight: 120,
+          constraints: const BoxConstraints(minHeight: 120),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: _isRecording ? violetColor.withOpacity(0.1) : Colors.black26,
