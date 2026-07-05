@@ -5,6 +5,8 @@ class HomePinterestModel {
   String activeCategoryId = 'all';    // ID logique — utilisé pour Firestore & comparaisons
   String activeEventFilter = 'all';
   String activeBrand = 'all'; // Filtre par marque/retailer
+  String activeSubMenu = 'all'; // Filtre de sous-menu personnalisé
+
   Set<int> likedProducts = {};
   Set<String> likedProductTitles = {}; // Pour FlutterFlow system (par titre)
   Map<String, dynamic>? selectedProduct;
@@ -29,8 +31,6 @@ class HomePinterestModel {
   bool showFreeShipping = false;
 
   // Pagination
-  // PERF AXE 1: 1er batch réduit à 12 — scoring 4× plus rapide, affichage en ~500ms
-  // infiniteScroll charge 25 produits supplémentaires à chaque scroll
   static const int productsPerPage = 12;
   static const int infiniteScrollChunk = 25;
   int currentPage = 0;
@@ -44,9 +44,18 @@ class HomePinterestModel {
     {'id': 'home', 'name': 'Maison', 'emoji': '🏠'},
     {'id': 'beauty', 'name': 'Beauté', 'emoji': '💄'},
     {'id': 'food', 'name': 'Food', 'emoji': '🍷'},
+    {'id': 'aeronautic', 'name': 'Aéronautique', 'emoji': '✈️'},
+    {'id': 'mechanic', 'name': 'Mécanique', 'emoji': '🏎️'},
+    {'id': 'sport', 'name': 'Sport', 'emoji': '⚽'},
+    {'id': 'art', 'name': 'Art', 'emoji': '🎨'},
+    {'id': 'reading', 'name': 'Lecture', 'emoji': '📚'},
+    {'id': 'travel', 'name': 'Voyage', 'emoji': '✈️'},
+    {'id': 'gaming', 'name': 'Jeux vidéo', 'emoji': '🎮'},
+    {'id': 'music', 'name': 'Musique', 'emoji': '🎵'},
+    {'id': 'garden', 'name': 'Jardinage', 'emoji': '🌱'},
+    {'id': 'wellness', 'name': 'Bien-être', 'emoji': '🧘'},
   ];
 
-  // Filtres par événements (Remplacent les prix)
   final List<Map<String, String>> defaultEvents = [
     {'id': 'all', 'name': 'Tous les événements'},
     {'id': 'noel', 'name': '🎄 Noël'},
@@ -54,7 +63,62 @@ class HomePinterestModel {
     {'id': 'st_valentin', 'name': '❤️ St Valentin'},
     {'id': 'fete_meres', 'name': '💐 Fête des Mères'},
     {'id': 'fete_peres', 'name': '👔 Fête des Pères'},
+    {'id': 'fete_musique', 'name': '🎵 Fête de la musique'},
+    {'id': 'fete_nationale', 'name': '🎆 Fête Nationale'},
+    {'id': 'world_cup', 'name': '🏆 Finale Coupe du monde'},
+    {'id': 'fete_grand_meres', 'name': '👵 Fête des grands-mères'},
+    {'id': 'pot_depart', 'name': '👋 Pot de départ'},
+    {'id': 'mariage', 'name': '💍 Mariage'},
+    {'id': 'naissance', 'name': '👶 Naissance'},
+    {'id': 'cremaillere', 'name': '🏠 Crémaillère'},
+    {'id': 'diplome', 'name': '🎓 Diplôme'},
+    {'id': 'halloween', 'name': '🎃 Halloween'},
   ];
+
+  final Map<String, List<String>> subMenusMap = {
+    // Marques
+    'apple': ['Sport (Apple Watch)', 'Professionnel (MacBook)', 'Sons (HomePod, AirPods)'],
+    'nike': ['Running', 'Lifestyle', 'Football', 'Basketball'],
+    'lego': ['Star Wars', 'Technic', 'Architecture', 'Harry Potter', 'Adultes'],
+    'sephora': ['Parfums', 'Maquillage', 'Soins Visage', 'Coffrets'],
+    'dyson': ['Cheveux', 'Aspirateurs', 'Purificateurs'],
+    'sony': ['PlayStation', 'Audio', 'Photo/Vidéo'],
+    
+    // Catégories
+    'trending': ['Viral TikTok', 'Nouveautés', 'Édition Limitée', 'Rupture de stock'],
+    'tech': ['Smartphones', 'Audio', 'Ordinateurs', 'Objets Connectés', 'Gaming', 'Photo'],
+    'fashion': ['Sneakers', 'Streetwear', 'Luxe', 'Accessoires', 'Bijoux', 'Montres'],
+    'home': ['Cuisine', 'Salon', 'Chambre', 'Extérieurs', 'Décoration', 'Linge de maison'],
+    'beauty': ['Skincare', 'Parfums', 'Maquillage', 'Soins du corps', 'Accessoires beauté'],
+    'food': ['Chocolat', 'Vin & Spiritueux', 'Épicerie fine', 'Café & Thé', 'Box culinaires'],
+    'aeronautic': ['Maquettes', 'Simulateurs', 'Expériences de vol', 'Livres aviation'],
+    'mechanic': ['Accessoires Auto', 'Modélisme', 'Stage de pilotage', 'Outillage'],
+    'sport': ['Football', 'Running', 'Fitness', 'Tennis', 'Cyclisme', 'Nutrition sportive'],
+    'art': ['Matériel de dessin', 'Peinture', 'Livres d\'art', 'Sculpture', 'Tableaux'],
+    'reading': ['Romans', 'Mangas', 'BD', 'Développement personnel', 'Liseuses'],
+    'travel': ['Bagages', 'Accessoires de voyage', 'Expériences insolites', 'Guides'],
+    'gaming': ['Consoles', 'Jeux PC', 'Jeux Rétro', 'Accessoires Gamer', 'Décoration'],
+    'music': ['Instruments', 'Vinyles', 'Concerts', 'Hi-Fi', 'Merchandising'],
+    'garden': ['Plantes d\'intérieur', 'Outillage jardin', 'Graines', 'Mobilier extérieur'],
+    'wellness': ['Massages', 'Yoga', 'Huiles essentielles', 'Spa à domicile'],
+
+    // Événements
+    'noel': ['Secret Santa', 'Gros Cadeaux', 'Petites attentions', 'Calendriers de l\'Avent'],
+    'anniversaire': ['Fête surprise', 'Cadeaux marquants', 'Bons cadeaux', 'Humour'],
+    'st_valentin': ['Romantique', 'Expériences à deux', 'Coquin', 'Personnalisé'],
+    'fete_meres': ['Détente', 'Bijoux', 'Fleurs', 'Gourmandise'],
+    'fete_peres': ['High-Tech', 'Gastronomie', 'Bricolage', 'Sport'],
+    'fete_musique': ['Instruments', 'Billets de concert', 'Enceintes portables'],
+    'fete_nationale': ['Produits locaux', 'Festif', 'Feux d\'artifice'],
+    'world_cup': ['Maillots', 'Écrans', 'Ambiance', 'Snacks'],
+    'fete_grand_meres': ['Photos de famille', 'Thé & Biscuits', 'Confort', 'Plantes'],
+    'pot_depart': ['Cadeaux communs', 'Cagnotte', 'Humour', 'Voyage'],
+    'mariage': ['Liste de mariage', 'Cadeaux de luxe', 'Voyage de noces', 'Maison'],
+    'naissance': ['Vêtements bébé', 'Jouets d\'éveil', 'Puériculture', 'Cadeaux Maman'],
+    'cremaillere': ['Décoration', 'Électroménager', 'Plantes', 'Vaisselle'],
+    'diplome': ['Montres', 'Stylos de luxe', 'Voyages', 'High-Tech'],
+    'halloween': ['Déguisements', 'Décoration flippante', 'Bonbons', 'Films d\'horreur'],
+  };
 
   List<Map<String, String>> get currentEvents {
     if (personalizedEvents.isNotEmpty) {
@@ -66,16 +130,30 @@ class HomePinterestModel {
     return defaultEvents;
   }
 
+  void resetOtherFilters(String activeType) {
+    if (activeType != 'category') {
+      activeCategory = 'Pour toi';
+      activeCategoryId = 'all';
+    }
+    if (activeType != 'event') {
+      activeEventFilter = 'all';
+    }
+    if (activeType != 'brand') {
+      activeBrand = 'all';
+    }
+    // Quand on change le parent, on réinitialise toujours le sous-menu
+    activeSubMenu = 'all';
+  }
+
   void toggleLike(int productId, String productTitle) {
-    // Mettre à jour LES DEUX listes de favoris
     if (likedProducts.contains(productId)) {
       likedProducts.remove(productId);
       likedProductTitles.remove(productTitle);
-      AppLogger.debug('🗑️ Produit retiré des favoris - ID: $productId, Titre: $productTitle', 'Home');
+      AppLogger.debug('🗑️ Produit retiré des favoris - ID: $productId', 'Home');
     } else {
       likedProducts.add(productId);
       likedProductTitles.add(productTitle);
-      AppLogger.debug('❤️ Produit ajouté aux favoris - ID: $productId, Titre: $productTitle', 'Home');
+      AppLogger.debug('❤️ Produit ajouté aux favoris - ID: $productId', 'Home');
     }
   }
 
@@ -84,15 +162,12 @@ class HomePinterestModel {
   }
 
   void setProducts(List<Map<String, dynamic>> newProducts) {
-    // Supprimer les doublons en utilisant un Set basé sur l'ID
     final seenIds = <dynamic>{};
     products = newProducts.where((product) {
       final productId = product['id'];
-      if (seenIds.contains(productId)) {
-        return false; // Doublon, on l'ignore
-      }
+      if (seenIds.contains(productId)) return false;
       seenIds.add(productId);
-      return true; // Premier occurrence, on le garde
+      return true;
     }).toList();
   }
 
@@ -109,16 +184,10 @@ class HomePinterestModel {
   }
 
   void addProducts(List<Map<String, dynamic>> newProducts) {
-    // Créer un Set des IDs existants pour éviter les doublons
     final existingIds = products.map((p) => p['id']).toSet();
-
-    // Filtrer les nouveaux produits pour ne garder que ceux qui n'existent pas déjà
     final uniqueNewProducts = newProducts.where((product) {
-      final productId = product['id'];
-      return !existingIds.contains(productId);
+      return !existingIds.contains(product['id']);
     }).toList();
-
-    // Ajouter uniquement les produits uniques
     products.addAll(uniqueNewProducts);
   }
 
@@ -126,7 +195,6 @@ class HomePinterestModel {
     currentPage = 0;
     hasMore = true;
     products.clear();
-    // NB: on ne réinitialise PAS activeCategoryId ici — on le fait explicitement lors du changement de catégorie
   }
 
   void incrementPage() {
@@ -161,27 +229,19 @@ class HomePinterestModel {
     errorDetails = null;
   }
 
-  /// Retourne les produits filtrés selon le prix, la marque, la recherche et les quick filters
   List<Map<String, dynamic>> getFilteredProducts() {
     var filtered = products;
 
-    // Filtre par marque/retailer
     if (activeBrand != 'all') {
       filtered = filtered.where((product) {
         final brand = (product['brand'] as String? ?? '').toLowerCase();
         final source = (product['source'] as String? ?? '').toLowerCase();
         final platform = (product['platform'] as String? ?? '').toLowerCase();
-
         final brandFilter = activeBrand.toLowerCase();
-
-        // Chercher dans brand, source ou platform
-        return brand.contains(brandFilter) ||
-               source.contains(brandFilter) ||
-               platform.contains(brandFilter);
+        return brand.contains(brandFilter) || source.contains(brandFilter) || platform.contains(brandFilter);
       }).toList();
     }
 
-    // Filtre par événement
     if (activeEventFilter != 'all') {
       final eventFilter = activeEventFilter.replaceAll('_', ' ').toLowerCase();
       filtered = filtered.where((product) {
@@ -189,14 +249,37 @@ class HomePinterestModel {
         final description = (product['description'] as String? ?? '').toLowerCase();
         final keywordsList = product['keywords'] as List<dynamic>? ?? [];
         final keywordsStr = keywordsList.join(' ').toLowerCase();
+        return name.contains(eventFilter) || description.contains(eventFilter) || keywordsStr.contains(eventFilter);
+      }).toList();
+    }
+    
+    // Filtrage dynamique par le sous-menu
+    if (activeSubMenu != 'all') {
+      final subQuery = activeSubMenu.toLowerCase();
+      final cleanSubQueryWords = subQuery.replaceAll(RegExp(r'[()]'), ' ').split(' ').where((w) => w.length > 3).toList();
+      
+      // Fallback si le mot est très court (ex: "Art", "Vin")
+      if (cleanSubQueryWords.isEmpty) {
+        cleanSubQueryWords.addAll(subQuery.split(' ').where((w) => w.length > 2));
+      }
+
+      filtered = filtered.where((product) {
+        final name = (product['name'] as String? ?? '').toLowerCase();
+        final description = (product['description'] as String? ?? '').toLowerCase();
+        final categoriesList = (product['categories'] as List<dynamic>? ?? []).join(' ').toLowerCase();
+        final keywordsList = product['keywords'] as List<dynamic>? ?? [];
+        final keywordsStr = keywordsList.join(' ').toLowerCase();
         
-        return name.contains(eventFilter) || 
-               description.contains(eventFilter) || 
-               keywordsStr.contains(eventFilter);
+        final combined = '$name $description $categoriesList $keywordsStr';
+        
+        if (cleanSubQueryWords.isEmpty) return true;
+        for (final word in cleanSubQueryWords) {
+          if (combined.contains(word)) return true; // match au moins un mot clef significatif
+        }
+        return false;
       }).toList();
     }
 
-    // Filtre par recherche
     if (searchQuery.isNotEmpty) {
       final query = searchQuery.toLowerCase();
       filtered = filtered.where((product) {
@@ -207,29 +290,23 @@ class HomePinterestModel {
       }).toList();
     }
 
-    // Quick filter : Favoris uniquement
     if (showOnlyFavorites) {
       filtered = filtered.where((product) {
         return likedProducts.contains(product['id']);
       }).toList();
     }
 
-    // FIX F11: Quick filter "Nouveau" — filtre sur le champ isNew
-    // isNew est mis à true lors du chargement pour les produits récents (<30 jours)
-    // Avant: ce filtre était toggleable dans l'UI mais ne faisait RIEN
     if (showOnlyNew) {
       final hasNewProducts = filtered.any((p) => p['isNew'] == true);
       if (hasNewProducts) {
         filtered = filtered.where((p) => p['isNew'] == true).toList();
       }
-      // Si aucun produit n'a isNew=true, on garde tous (évite un écran vide)
     }
 
     return filtered;
   }
 
   void dispose() {
-    // Cleanup - clear products and liked list to free memory
     products.clear();
     likedProducts.clear();
     selectedProduct = null;

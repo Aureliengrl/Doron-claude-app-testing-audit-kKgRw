@@ -823,7 +823,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                   onBrandSelected: (brandId) {
                     setState(() {
                       _model.activeBrand = brandId;
+                      _model.resetOtherFilters('brand');
                     });
+                    _loadProducts();
                   },
                   primaryColor: violetColor,
                 ),
@@ -834,6 +836,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
               // Filtres par événements
               SliverToBoxAdapter(child: _buildEventFilters()),
+              
+              // Sous-menu (dynamique selon le filtre actif)
+              SliverToBoxAdapter(child: _buildSubMenu()),
 
               // Sections thématiques désactivées - Pinterest uniquement
               // if (_model.sections.isNotEmpty) ...[
@@ -1010,6 +1015,8 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                   HapticFeedback.lightImpact();
                   setState(() {
                     _model.activeCategory = category['name'] as String;
+                    _model.activeCategoryId = category['id'] as String;
+                    _model.resetOtherFilters('category');
                   });
                   _loadProducts(); // Recharger les produits pour la nouvelle catégorie
                 },
@@ -1098,8 +1105,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     onTap: () {
                       setState(() {
                         _model.activeEventFilter = filter['id'] as String;
-                        // Forcer le rafraîchissement
+                        _model.resetOtherFilters('event');
                       });
+                      _loadProducts();
                     },
                     borderRadius: BorderRadius.circular(50),
                     child: AnimatedContainer(
@@ -1971,6 +1979,99 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         );
       }
     }
+  Widget _buildSubMenu() {
+    String currentKey = '';
+    if (_model.activeCategoryId != 'all') {
+      currentKey = _model.activeCategoryId;
+    } else if (_model.activeEventFilter != 'all') {
+      currentKey = _model.activeEventFilter;
+    } else if (_model.activeBrand != 'all') {
+      currentKey = _model.activeBrand;
+    }
+
+    final subMenus = _model.subMenusMap[currentKey] ?? [];
+
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      child: subMenus.isEmpty
+          ? const SizedBox.shrink()
+          : Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 16),
+              child: SizedBox(
+                height: 40,
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: subMenus.length,
+                  itemBuilder: (context, index) {
+                    final subMenu = subMenus[index];
+                    final isActive = _model.activeSubMenu == subMenu;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            setState(() {
+                              _model.activeSubMenu = isActive ? 'all' : subMenu;
+                            });
+                            _loadProducts();
+                          },
+                          borderRadius: BorderRadius.circular(20),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isActive
+                                  ? const Color(0xFF8B5CF6)
+                                  : Colors.white.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isActive ? Colors.transparent : Colors.white.withOpacity(0.2),
+                              ),
+                              boxShadow: isActive
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(0xFF8B5CF6).withOpacity(0.4),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ]
+                                  : [],
+                            ),
+                            child: Center(
+                              child: Text(
+                                subMenu,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                                  color: isActive ? Colors.white : Colors.white.withOpacity(0.9),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                          .animate()
+                          .fadeIn(
+                            delay: Duration(milliseconds: 50 * index),
+                            duration: 300.ms,
+                          )
+                          .slideX(
+                            begin: 0.2,
+                            end: 0,
+                            delay: Duration(milliseconds: 50 * index),
+                            duration: 300.ms,
+                            curve: Curves.easeOutCubic,
+                          );
+                  },
+                ),
+              ),
+            ),
+    );
   }
 
 }
