@@ -46,32 +46,36 @@ class _NotificationsPageState extends State<NotificationsPage> {
         slivers: [
           // Header
           SliverAppBar(
-            backgroundColor: Colors.transparent,
-            expandedHeight: 80,
+            backgroundColor: LiquidGlassTokens.pageDark,
             pinned: true,
+            centerTitle: true,
             leading: IconButton(
               icon: const Icon(IconlyLight.arrowLeft2, color: Colors.white),
               onPressed: () => context.pop(),
             ),
-            actions: [
-              // Tout marquer comme lu
-              TextButton.icon(
-                onPressed: () => _markAllRead(user.uid),
-                icon: const Icon(Icons.done_all_rounded, color: _violet, size: 18),
-                label: Text(
-                  context.tr('Tout lire', 'Mark all read'),
-                  style: GoogleFonts.poppins(color: _violet, fontSize: 12),
-                ),
+            title: Text(
+              context.tr('Notifications', 'Notifications'),
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.only(left: 60, bottom: 16),
-              title: Text(
-                context.tr('Notifications', 'Notifications'),
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+            ),
+          ),
+          
+          // Bouton "Tout lire" placé sous le header pour ne pas déborder
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(right: 20, bottom: 8),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: () => _markAllRead(user.uid),
+                  icon: const Icon(Icons.done_all_rounded, color: _violet, size: 18),
+                  label: Text(
+                    context.tr('Tout lire', 'Mark all read'),
+                    style: GoogleFonts.poppins(color: _violet, fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
                 ),
               ),
             ),
@@ -214,6 +218,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
           context.push('/chat-room/$chatId', extra: {'id': chatId});
         }
         break;
+      case 'wishlist_share':
+        final wishlistId = data['wishlistId'] as String?;
+        if (wishlistId != null) {
+          context.push('/wishlist-details/$wishlistId');
+        }
+        break;
       default:
         break;
     }
@@ -259,6 +269,10 @@ class _NotificationTile extends StatelessWidget {
       case 'message':
         icon = IconlyBold.chat;
         iconColor = Colors.blue;
+        break;
+      case 'wishlist_share':
+        icon = IconlyBold.heart;
+        iconColor = _pink;
         break;
       default:
         icon = IconlyBold.notification;

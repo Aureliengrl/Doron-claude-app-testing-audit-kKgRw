@@ -78,9 +78,22 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     FirebaseDataService.warmUp();
 
     _loadFavorites();
-    _loadProducts();
+    _initializeAndLoadProducts();
     _scrollController.addListener(_onScroll);
     _showInteractiveTutorialIfNeeded();
+  }
+
+  Future<void> _initializeAndLoadProducts() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final pendingEvent = prefs.getString('pending_event_filter');
+      if (pendingEvent != null && pendingEvent.isNotEmpty) {
+        _model.activeEventFilter = pendingEvent;
+        _model.resetOtherFilters('event');
+        await prefs.remove('pending_event_filter');
+      }
+    } catch (_) {}
+    _loadProducts();
   }
 
   Future<void> _showInteractiveTutorialIfNeeded() async {

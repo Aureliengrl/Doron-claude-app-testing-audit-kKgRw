@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '/services/birthday_service.dart';
 import '/utils/app_tr.dart';
 import '/components/liquid_glass.dart';
@@ -295,7 +296,31 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
           if (event.type == EventType.holiday) ...[
             const SizedBox(width: 8),
             GestureDetector(
-              onTap: () => context.push('/inspiration'),
+              onTap: () async {
+                HapticFeedback.selectionClick();
+                final prefs = await SharedPreferences.getInstance();
+                String eventId = 'all';
+                final title = event.title.toLowerCase();
+                
+                if (title.contains('valentin')) eventId = 'st_valentin';
+                else if (title.contains('nationale')) eventId = 'fete_nationale';
+                else if (title.contains('noël') || title.contains('noel')) eventId = 'noel';
+                else if (title.contains('mères')) eventId = 'fete_meres';
+                else if (title.contains('pères')) eventId = 'fete_peres';
+                else if (title.contains('musique')) eventId = 'fete_musique';
+                else if (title.contains('grand')) eventId = 'fete_grand_meres';
+                else if (title.contains('halloween')) eventId = 'halloween';
+                else if (title.contains('saint patrick')) eventId = 'saint_patrick';
+                else if (title.contains('monde')) eventId = 'world_cup';
+                
+                if (eventId != 'all') {
+                  await prefs.setString('pending_event_filter', eventId);
+                }
+                
+                if (mounted) {
+                  context.go('/home-pinterest');
+                }
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
