@@ -1027,6 +1027,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                 key: ValueKey(products[i]['id']?.toString() ?? 'product_$i'),
                 product: products[i],
                 index: i + 1,
+                showWishlistButton: false,
               ),
           ],
         ),
@@ -1213,6 +1214,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
       child: SharedProductCard(
         product: product,
         index: 0,
+        showWishlistButton: false,
       ),
     );
   }
