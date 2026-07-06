@@ -25,7 +25,7 @@ class FloatingCtaButton extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (icon != null) ...[
-          Icon(icon, color: Colors.white, size: subtitle != null ? 22 : 18),
+          Icon(icon, color: Colors.white, size: subtitle != null ? 24 : 22),
           const SizedBox(width: 8),
         ],
         if (subtitle != null)
@@ -36,7 +36,7 @@ class FloatingCtaButton extends StatelessWidget {
               Text(
                 title,
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
+                  fontSize: 15,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -44,7 +44,7 @@ class FloatingCtaButton extends StatelessWidget {
               Text(
                 subtitle!,
                 style: GoogleFonts.poppins(
-                  fontSize: 11,
+                  fontSize: 12,
                   color: Colors.white.withOpacity(0.8),
                 ),
               ),
@@ -54,7 +54,7 @@ class FloatingCtaButton extends StatelessWidget {
           Text(
             title,
             style: GoogleFonts.poppins(
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
@@ -66,17 +66,17 @@ class FloatingCtaButton extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(26),
         child: Container(
-          height: 44,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          height: 52,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(26),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.15),

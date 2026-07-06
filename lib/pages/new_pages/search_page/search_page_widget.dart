@@ -269,12 +269,26 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
 
           // CTA fixe en bas de l'écran
           Positioned(
-            bottom: 104,
+            bottom: 120,
             left: 0,
             right: 0,
             child: FloatingCtaButton(
               title: 'Secret Santa',
-              subtitle: 'Créez un groupe pour Noël',
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('🎅', style: TextStyle(fontSize: 22)),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Secret Santa',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
               onTap: () {
                 HapticFeedback.heavyImpact();
                 context.push('/secret-santa');
