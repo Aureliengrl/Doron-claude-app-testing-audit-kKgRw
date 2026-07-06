@@ -537,23 +537,11 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                             );
                           },
                         ),
-                        // F3: Bouton calendrier anniversaires (remplace le ticket)
                         IconButton(
                           icon: const Icon(
-                            Icons.cake_rounded,
+                            IconlyLight.setting,
                             color: Colors.white,
                             size: 28,
-                          ),
-                          onPressed: () {
-                            context.push('/birthday-calendar');
-                          },
-                          tooltip: context.tr('Calendrier & Anniversaires', 'Calendar & Birthdays'),
-                        ),
-                        IconButton(
-                          icon: const Icon(
-                            IconlyLight.moreSquare,
-                            color: Colors.white,
-                            size: 32,
                           ),
                           onPressed: () {
                             _showSettingsBottomSheet(context);
