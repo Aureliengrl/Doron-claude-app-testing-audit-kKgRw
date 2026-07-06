@@ -134,6 +134,45 @@ class _ChatListPageState extends State<ChatListPage> {
     return AppNotch(
       title: context.tr('Messages', 'Messages'),
       subtitle: context.tr('Vos discussions et groupes', 'Your chats and groups'),
+      trailing: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseAuth.instance.currentUser != null
+          ? FirebaseFirestore.instance
+              .collection('notifications')
+              .doc(FirebaseAuth.instance.currentUser!.uid)
+              .collection('items')
+              .where('read', isEqualTo: false)
+              .snapshots()
+          : null,
+        builder: (context, snap) {
+          final unreadCount = snap.data?.docs.length ?? 0;
+          return Stack(
+            children: [
+              IconButton(
+                icon: const Icon(IconlyLight.notification, color: Colors.white, size: 28),
+                onPressed: () => context.push('/notifications'),
+                tooltip: context.tr('Notifications', 'Notifications'),
+              ),
+              if (unreadCount > 0)
+                Positioned(
+                  top: 6, right: 6,
+                  child: Container(
+                    width: 18, height: 18,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEC4899),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        unreadCount > 9 ? '9+' : '$unreadCount',
+                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
     );
   }
 
