@@ -79,8 +79,6 @@ class _ChatListPageState extends State<ChatListPage> {
             child: Column(
               children: [
                 _buildHeader(),
-                // F6: Suggestions de création de groupe
-                _buildGroupSuggestions(),
                 Expanded(
                   child: _buildChatsList(),
                 ),
@@ -125,113 +123,6 @@ class _ChatListPageState extends State<ChatListPage> {
         child: FractionallySizedBox(
           heightFactor: 0.85,
           child: CreateChatBottomSheet(forceGroup: forceGroup),
-        ),
-      ),
-    );
-  }
-
-  // â”€â”€â”€ F6: Suggestions de groupe intelligentes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Génère des cards de suggestions pour créer un groupe
-  Widget _buildGroupSuggestions() {
-    return FutureBuilder<List<Map<String,dynamic>>>(
-      future: _loadGroupSuggestions(),
-      builder: (ctx, snap) {
-        final suggestions = snap.data ?? [];
-        if (suggestions.isEmpty) return const SizedBox.shrink();
-        return Container(
-          height: 100,
-          margin: const EdgeInsets.only(bottom: 8),
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: suggestions.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
-            itemBuilder: (ctx, i) {
-              final s = suggestions[i];
-              return GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  _openCreateChatWithSuggestion(s);
-                },
-                child: Container(
-                  width: 160,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.06),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFF8A2BE2).withOpacity(0.3)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(s['emoji'] as String, style: const TextStyle(fontSize: 22)),
-                      const SizedBox(height: 4),
-                      Text(
-                        s['title'] as String,
-                        style: GoogleFonts.poppins(
-                          color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
-                        maxLines: 2, overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text('Créer un groupe',
-                        style: GoogleFonts.poppins(color: Colors.white38, fontSize: 10)),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  Future<List<Map<String,dynamic>>> _loadGroupSuggestions() async {
-    final suggestions = <Map<String,dynamic>>[
-      {'emoji': 'ðŸŽ‰', 'title': context.isEn ? 'Group gift' : 'Cadeau commun', 'type': 'gift'},
-      {'emoji': 'ðŸ‘¨"ðŸ‘©"ðŸ‘§', 'title': context.isEn ? 'Family Group' : 'Groupe Famille', 'type': 'family'},
-      {'emoji': 'ðŸ‘«', 'title': 'Déjeuner surprise', 'type': 'surprise'},
-    ];
-
-    // Ajouter une suggestion anniversaire si un ami fête son anniv dans 30 j
-    try {
-      final friendsBdays = await BirthdayService.getFriendsBirthdays();
-      final now = DateTime.now();
-      for (final friend in friendsBdays) {
-        final day = friend['day'] as int;
-        final month = friend['month'] as int;
-        final thisYear = DateTime(now.year, month, day);
-        final diff = thisYear.difference(now).inDays;
-        if (diff >= 0 && diff <= 30) {
-          suggestions.insert(0, {
-            'emoji': 'ðŸŽ‚',
-            'title': 'Anniv de ${friend['name']} dans ${diff == 0 ? "aujourd'hui" : '$diff j'}',
-            'type': 'birthday',
-            'friendName': friend['name'],
-          });
-          break;
-        }
-      }
-    } catch (_) {}
-
-    return suggestions;
-  }
-
-  void _openCreateChatWithSuggestion(Map<String,dynamic> suggestion) {
-    HapticFeedback.mediumImpact();
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-        child: FractionallySizedBox(
-          heightFactor: 0.85,
-          child: CreateChatBottomSheet(
-            forceGroup: true,
-            suggestedGroupName: suggestion['title'] as String,
-          ),
         ),
       ),
     );
