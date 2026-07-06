@@ -457,20 +457,18 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                         GestureDetector(
                           onTap: () {
                              HapticFeedback.lightImpact();
-                             // Ouverture d'un bottom sheet de comptes ou paramètres
-                             _showSettingsBottomSheet(context);
+                             _showAccountSwitcherBottomSheet(context);
                           },
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              AuthUserStreamWidget(
+                              Builder(
                                 builder: (context) {
-                                  final displayName = currentUserDisplayName.isNotEmpty 
-                                      ? currentUserDisplayName 
-                                      : 'Profil';
+                                  final handle = _model.userProfile?['handle'] as String?;
+                                  final display = handle != null && handle.isNotEmpty ? '@$handle' : 'Profil';
                                   
                                   return Text(
-                                    displayName,
+                                    display,
                                     style: GoogleFonts.poppins(
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold,
@@ -585,34 +583,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                           ),
                               ),
                             ),
-                            // Badge modifier
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: GestureDetector(
-                                onTap: _changeProfilePicture,
-                                child: Container(
-                                  width: 28,
-                                  height: 28,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.2),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Icon(
-                                    IconlyLight.camera,
-                                    size: 14,
-                                    color: violetColor,
-                                  ),
-                                ),
-                              ),
-                            ),
+                            // Badge modifier removed
                           ],
                         ),
                         const SizedBox(width: 24),
@@ -2034,6 +2005,51 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   const SizedBox(height: 20),
                   Text(context.tr('Modifier le profil', 'Edit profile'), style: GoogleFonts.outfit(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 24),
+                  // Section Photo de profil
+                  Center(
+                    child: GestureDetector(
+                      onTap: () async {
+                        HapticFeedback.lightImpact();
+                        await _changeProfilePicture();
+                        setModal(() {});
+                      },
+                      child: Stack(
+                        children: [
+                          Container(
+                            width: 90,
+                            height: 90,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
+                            ),
+                            child: ClipOval(
+                              child: _localProfilePhoto != null
+                                  ? Image.file(_localProfilePhoto!, fit: BoxFit.cover)
+                                  : _uploadedPhotoUrl != null
+                                      ? CachedNetworkImage(imageUrl: _uploadedPhotoUrl!, fit: BoxFit.cover)
+                                      : (currentUserPhoto?.isNotEmpty == true
+                                          ? CachedNetworkImage(imageUrl: currentUserPhoto!, fit: BoxFit.cover)
+                                          : _buildAvatarFallback()),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: violetColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: LiquidGlassTokens.pageDark, width: 2),
+                              ),
+                              child: const Icon(IconlyLight.camera, size: 16, color: Colors.white),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   Text('Pseudo', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 6),
                   _buildEditField(nameCtrl, 'Ton pseudo', IconlyLight.profile),
@@ -2138,6 +2154,92 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           ),
         ],
       ),
+    );
+  }
+
+  void _showAccountSwitcherBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          decoration: BoxDecoration(
+            color: LiquidGlassTokens.pageDark,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 24),
+              Text('Changer de compte', style: GoogleFonts.poppins(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              
+              // Compte actuel
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Colors.grey[800],
+                      backgroundImage: currentUserPhoto?.isNotEmpty == true ? CachedNetworkImageProvider(currentUserPhoto!) : null,
+                      child: currentUserPhoto?.isEmpty ?? true ? const Icon(IconlyLight.profile, color: Colors.white, size: 20) : null,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(currentUserDisplayName.isNotEmpty ? currentUserDisplayName : 'Utilisateur', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600)),
+                          if (_model.userProfile?['handle'] != null)
+                            Text('@${_model.userProfile!['handle']}', style: GoogleFonts.poppins(color: Colors.white54, fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.check_circle, color: Color(0xFF8A2BE2), size: 20),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Action Se déconnecter pour changer
+              InkWell(
+                onTap: () async {
+                  HapticFeedback.mediumImpact();
+                  Navigator.pop(ctx);
+                  await authManager.signOut();
+                  if (context.mounted) {
+                    context.go('/authentification');
+                  }
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), shape: BoxShape.circle),
+                        child: const Icon(Icons.add_rounded, color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Text('Se connecter à un autre compte', style: GoogleFonts.poppins(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
     );
   }
 }
