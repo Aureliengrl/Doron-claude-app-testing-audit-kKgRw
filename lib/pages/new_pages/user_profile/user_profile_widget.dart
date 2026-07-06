@@ -189,46 +189,59 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       backgroundColor: LiquidGlassTokens.pageDark,
       body: Stack(
         children: [
-          CustomScrollView(
-            slivers: [
-              _buildAppBar(),
-              
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
-                  child: Row(
-                    children: [
-                      const Icon(IconlyLight.document, color: Colors.white, size: 22),
-                      const SizedBox(width: 10),
-                      Text(
-                        context.tr('Listes de cadeaux', 'Gift lists'),
-                        style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                    ],
+          NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
+              return [
+                _buildAppBar(),
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _SliverTabBarDelegate(
+                    TabBar(
+                      controller: _tabController,
+                      indicatorColor: pinkColor,
+                      labelColor: Colors.white,
+                      unselectedLabelColor: Colors.white54,
+                      indicatorSize: TabBarIndicatorSize.label,
+                      dividerColor: Colors.transparent,
+                      tabs: [
+                        Tab(
+                          icon: const Icon(Icons.card_giftcard, size: 22),
+                          text: context.tr('Listes de cadeaux', 'Gift lists'),
+                        ),
+                        Tab(
+                          icon: const Icon(IconlyBold.heart, size: 22),
+                          text: context.tr('Coups de coeur', 'Favourites'),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: LiquidGlassTokens.pageDark,
                   ),
                 ),
-              ),
-              _buildWishlistsSliver(),
-
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 32, 20, 12),
-                  child: Row(
-                    children: [
-                      const Icon(IconlyBold.heart, color: Colors.white, size: 22),
-                      const SizedBox(width: 10),
-                      Text(
-                        context.tr('Coups de coeur', 'Favourites'),
-                        style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                    ],
-                  ),
+              ];
+            },
+            body: TabBarView(
+              controller: _tabController,
+              children: [
+                CustomScrollView(
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.only(top: 16),
+                      sliver: _buildWishlistsSliver(),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 140)),
+                  ],
                 ),
-              ),
-              _buildLikedProductsSliver(),
-              
-              const SliverToBoxAdapter(child: SizedBox(height: 140)),
-            ],
+                CustomScrollView(
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.only(top: 16),
+                      sliver: _buildLikedProductsSliver(),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 140)),
+                  ],
+                ),
+              ],
+            ),
           ),
           
           if (isMe)
@@ -256,12 +269,59 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       body: Stack(
         children: [
           // Contenu flouté
-          CustomScrollView(
-            slivers: [
-              _buildAppBar(),
-              _buildWishlistsSliver(),
-              _buildLikedProductsSliver(),
-            ],
+          NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
+              return [
+                _buildAppBar(),
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _SliverTabBarDelegate(
+                    TabBar(
+                      controller: _tabController,
+                      indicatorColor: pinkColor,
+                      labelColor: Colors.white,
+                      unselectedLabelColor: Colors.white54,
+                      indicatorSize: TabBarIndicatorSize.label,
+                      dividerColor: Colors.transparent,
+                      tabs: [
+                        Tab(
+                          icon: const Icon(Icons.card_giftcard, size: 22),
+                          text: context.tr('Listes de cadeaux', 'Gift lists'),
+                        ),
+                        Tab(
+                          icon: const Icon(IconlyBold.heart, size: 22),
+                          text: context.tr('Coups de coeur', 'Favourites'),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: LiquidGlassTokens.pageDark,
+                  ),
+                ),
+              ];
+            },
+            body: TabBarView(
+              controller: _tabController,
+              children: [
+                CustomScrollView(
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.only(top: 16),
+                      sliver: _buildWishlistsSliver(),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 140)),
+                  ],
+                ),
+                CustomScrollView(
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.only(top: 16),
+                      sliver: _buildLikedProductsSliver(),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 140)),
+                  ],
+                ),
+              ],
+            ),
           ),
 
           // Overlay flouté
