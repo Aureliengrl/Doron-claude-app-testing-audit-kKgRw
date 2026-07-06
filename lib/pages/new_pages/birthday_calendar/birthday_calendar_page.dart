@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '/services/birthday_service.dart';
 import '/utils/app_tr.dart';
 import '/components/liquid_glass.dart';
+import '/components/micro_interactions.dart' as micro;
+import '/utils/iconly_pro.dart';
 
 class BirthdayCalendarPage extends StatefulWidget {
   const BirthdayCalendarPage({super.key});
@@ -57,7 +59,7 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
       backgroundColor: LiquidGlassTokens.pageDark,
       body: CustomScrollView(
         slivers: [
-          _buildAppBar(),
+          SliverToBoxAdapter(child: _buildHeader()),
           if (_isLoading)
             const SliverFillRemaining(
               child: Center(
@@ -76,41 +78,92 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
     );
   }
 
-  Widget _buildAppBar() {
-    return SliverAppBar(
-      pinned: true,
-      backgroundColor: LiquidGlassTokens.pageDark,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-        onPressed: () => Navigator.of(context).pop(),
+  Widget _buildHeader() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF8A2BE2),
+            Color(0xFFEC4899),
+          ],
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8A2BE2).withOpacity(0.4),
+            blurRadius: 30,
+            spreadRadius: 2,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: const Color(0xFFEC4899).withOpacity(0.3),
+            blurRadius: 20,
+            spreadRadius: 0,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
-      title: Text(
-        context.tr('Calendrier', 'Calendar'),
-        style: GoogleFonts.outfit(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-          fontSize: 20,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Align(
+                alignment: Alignment.centerRight,
+                child: IconButton(
+                  icon: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+                  tooltip: 'Ajouter mon anniversaire',
+                  onPressed: _showAddBirthdaySheet,
+                ),
+              ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  micro.ShimmerEffect(
+                    shimmerColor: Colors.white,
+                    duration: const Duration(milliseconds: 3000),
+                    child: Text(
+                      context.tr('Calendrier', 'Calendar'),
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    context.tr('N\'oubliez plus aucun anniversaire !', 'Never forget a birthday again!'),
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.add_rounded, color: Colors.white),
-          tooltip: 'Ajouter mon anniversaire',
-          onPressed: _showAddBirthdaySheet,
-        ),
-      ],
     );
   }
 
   Widget _buildCalendar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
-        ),
+      child: LiquidGlassCard(
         child: TableCalendar<CalendarEvent>(
           firstDay: DateTime(DateTime.now().year - 1, 1, 1),
           lastDay: DateTime(DateTime.now().year + 2, 12, 31),
@@ -245,14 +298,11 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
   }
 
   Widget _buildEventTile(CalendarEvent event) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: event.color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: event.color.withOpacity(0.3)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: LiquidGlassCard(
+        tintColor: event.color.withOpacity(0.08),
+        padding: const EdgeInsets.all(14),
       child: Row(
         children: [
           if (event.type == EventType.friendBirthday && event.friendPhotoUrl != null && event.friendPhotoUrl!.isNotEmpty)
@@ -335,6 +385,7 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
           ],
         ],
       ),
+    ),
     );
   }
 
@@ -369,37 +420,41 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
                 : 'Dans $diff jours';
             return entry.value.map((e) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48,
-                    alignment: Alignment.center,
-                    child: Column(
-                      children: [
-                        Text(
-                          '${entry.key.day}',
-                          style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          months[entry.key.month],
-                          style: GoogleFonts.poppins(color: Colors.white54, fontSize: 10),
-                        ),
-                      ],
+              child: LiquidGlassCard(
+                tintColor: e.color.withOpacity(0.05),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      alignment: Alignment.center,
+                      child: Column(
+                        children: [
+                          Text(
+                            '${entry.key.day}',
+                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            months[entry.key.month],
+                            style: GoogleFonts.poppins(color: Colors.white54, fontSize: 10),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(e.title,
-                          style: GoogleFonts.poppins(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
-                        Text(label,
-                          style: GoogleFonts.poppins(color: e.color, fontSize: 11)),
-                      ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(e.title,
+                            style: GoogleFonts.poppins(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
+                          Text(label,
+                            style: GoogleFonts.poppins(color: e.color, fontSize: 11)),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ));
           }).toList(),

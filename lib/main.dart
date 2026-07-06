@@ -31,6 +31,7 @@ import '/components/offline_banner.dart';
 import '/pages/new_pages/social/social_page_widget.dart';
 import '/pages/new_pages/chat/chat_list_page.dart';
 import '/services/push_notifications_service.dart';
+import '/pages/new_pages/birthday_calendar/birthday_calendar_page.dart';
 import 'index.dart';
 
 /// Service de logging d'erreurs global pour capturer les crashs en release
@@ -381,11 +382,11 @@ class _NavBarPageState extends State<NavBarPage> {
   void initState() {
     super.initState();
 
-    _pageNames = ['HomePinterest', 'SearchPage', 'Inspiration', 'SocialPage', 'UserProfile'];
+    _pageNames = ['HomePinterest', 'SearchPage', 'BirthdayCalendar', 'SocialPage', 'UserProfile'];
     _pages = [
       HomePinterestWidget(),
       SearchPageWidget(),
-      const TikTokInspirationPageWidget(),
+      const BirthdayCalendarPage(),
       const SocialPageWidget(),
       UserProfileWidget(),
     ];
@@ -460,11 +461,11 @@ class _NavBarPageState extends State<NavBarPage> {
                   lottieAsset: 'assets/jsons/Search edit.json',
                 ),
                 NavBarItem(
-                  icon: IconlyPro.playLight,
-                  activeIcon: IconlyPro.playBold,
-                  label: 'Inspiration',
-                  tooltip: 'Inspiration',
-                  lottieAsset: 'assets/jsons/Loading play 2.json',
+                  icon: IconlyPro.calendarLight,
+                  activeIcon: IconlyPro.calendarBold,
+                  label: 'Calendrier',
+                  tooltip: 'Calendrier',
+                  lottieAsset: null,
                 ),
                 NavBarItem(
                   icon: IconlyPro.chatLight,
