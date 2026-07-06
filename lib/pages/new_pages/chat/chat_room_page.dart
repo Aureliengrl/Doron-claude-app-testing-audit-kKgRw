@@ -56,6 +56,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   // S15 FIX: cache noms expediteurs pour les messages de groupe
   final Map<String, String> _senderNameCache = {};
 
+  Stream<QuerySnapshot>? _messagesStream;
+  Stream<DocumentSnapshot>? _otherUserPresenceStream;
+
   Future<String> _getSenderName(String uid) async {
     if (_senderNameCache.containsKey(uid)) return _senderNameCache[uid]!;
     try {
@@ -75,6 +78,14 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   void initState() {
     super.initState();
     _updateReadStatus();
+    
+    _messagesStream = FirebaseFirestore.instance
+        .collection('chats')
+        .doc(widget.chatId)
+        .collection('messages')
+        .orderBy('timestamp', descending: true)
+        .limit(_messageLimit)
+        .snapshots();
 
     if (widget.chatData == null) {
       FirebaseFirestore.instance.collection('chats').doc(widget.chatId).get().then((snap) {
@@ -112,6 +123,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     final participants = List<String>.from(chatData?['participants'] ?? []);
     final otherUid = participants.firstWhere((id) => id != currentUid, orElse: () => '');
     if (otherUid.isEmpty) return;
+    
+    if (mounted && _otherUserPresenceStream == null) {
+      setState(() {
+        _otherUserPresenceStream = FirebaseFirestore.instance.collection('users').doc(otherUid).snapshots();
+      });
+    }
+
     try {
       final doc = await FirebaseFirestore.instance.collection('users').doc(otherUid).get();
       if (mounted && doc.exists) {
@@ -424,13 +442,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 else
                   // S3 FIX: afficher la presence en ligne dans le chat
                   StreamBuilder<DocumentSnapshot>(
-                    stream: (() {
-                      final participants = List<String>.from(_effectiveChatData?['participants'] ?? []);
-                      final currentUid = FirebaseAuth.instance.currentUser?.uid;
-                      final otherUid = participants.firstWhere((id) => id != currentUid, orElse: () => '');
-                      if (otherUid.isEmpty) return const Stream<DocumentSnapshot>.empty();
-                      return FirebaseFirestore.instance.collection('users').doc(otherUid).snapshots();
-                    })(),
+                    stream: _otherUserPresenceStream,
                     builder: (ctx, snap) {
                       if (!snap.hasData || !snap.data!.exists) return const SizedBox.shrink();
                       final data = snap.data!.data() as Map<String, dynamic>? ?? {};
@@ -494,13 +506,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     if (currentUser == null) return const SizedBox();
 
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('chats')
-          .doc(widget.chatId)
-          .collection('messages')
-          .orderBy('timestamp', descending: true)
-          .limit(_messageLimit)
-          .snapshots(),
+      stream: _messagesStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: LiquidGlassLoader(size: 40));
@@ -559,6 +565,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                     onPressed: () {
                       setState(() {
                         _messageLimit += 50;
+                        _messagesStream = FirebaseFirestore.instance
+                            .collection('chats')
+                            .doc(widget.chatId)
+                            .collection('messages')
+                            .orderBy('timestamp', descending: true)
+                            .limit(_messageLimit)
+                            .snapshots();
                       });
                     },
                     style: TextButton.styleFrom(
