@@ -1,4 +1,4 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import '/services/firebase_data_service.dart';
@@ -71,7 +71,7 @@ class OnboardingAdvancedModel {
         'id': 'welcome',
         'type': 'welcome',
         'title': 'DORON',
-        'subtitle': 'Trouvons le cadeau parfait grÃ¢ce Ã  l''IA âœ¨',
+        'subtitle': 'Trouvons le cadeau parfait grâce à l''IA ✨',
         'emoji': '',
         'useLogo': true,
       },
@@ -80,12 +80,12 @@ class OnboardingAdvancedModel {
         'id': 'personInfo',
         'type': 'dual_text',
         'question': 'Pour qui cherches-tu ?',
-        'subtitle': 'En renseignant son pseudo Doron, l''IA s''inspirera de ses propres wishlists et prÃ©fÃ©rences enregistrÃ©es pour trouver le cadeau parfait !',
-        'icon': 'ðŸ“',
+        'subtitle': 'En renseignant son pseudo Doron, l''IA s''inspirera de ses propres wishlists et préférences enregistrées pour trouver le cadeau parfait !',
+        'icon': '📝',
         'fields': [
           {
             'field': 'personName',
-            'label': 'PrÃ©nom',
+            'label': 'Prénom',
             'placeholder': 'Ex: Marie',
             'required': true,
             'hint': 'REQUIS',
@@ -103,8 +103,8 @@ class OnboardingAdvancedModel {
         'section': 'person',
         'id': 'location',
         'type': 'single',
-        'question': 'OÃ¹ habite cette personne ?',
-        'subtitle': 'Pour suggÃ©rer des activitÃ©s locales',
+        'question': 'Où habite cette personne ?',
+        'subtitle': 'Pour suggérer des activités locales',
         'field': 'location',
         'options': [
           'Paris / Ile-de-France',
@@ -112,7 +112,7 @@ class OnboardingAdvancedModel {
           'International',
           'Peu importe'
         ],
-        'icon': 'ðŸ“',
+        'icon': '📍',
       },
       {
         'section': 'gift',
@@ -122,12 +122,12 @@ class OnboardingAdvancedModel {
         'subtitle': 'Tu peux choisir plusieurs options !',
         'field': 'giftTypes',
         'options': [
-          'ðŸŽ Cadeaux Physiques (Livres, Mode, DÃ©co)',
-          'ðŸŽŸï¸ ExpÃ©riences & ActivitÃ©s (Spa, Voyages)',
-          'ðŸ“¦ Abonnements (Box, Magasines, Streaming)',
-          'â¤ï¸ Dons / CharitÃ©'
+          '🎁 Cadeaux Physiques (Livres, Mode, Déco)',
+          '🎟️ Expériences & Activités (Spa, Voyages)',
+          '📦 Abonnements (Box, Magasines, Streaming)',
+          '❤️ Dons / Charité'
         ],
-        'icon': 'ðŸ›ï¸',
+        'icon': '🛍️',
       },
       {
         'section': 'person',
@@ -137,18 +137,18 @@ class OnboardingAdvancedModel {
         'subtitle': 'Affinons la recherche',
         'field': 'personGender',
         'options': [
-          'ðŸ‘¨â€ðŸ¦± Homme',
-          'ðŸ‘©â€ðŸ¦± Femme',
-          'ðŸ¤ Non-binaire',
-          'ðŸ‘¶ Enfant',
+          '👨‍🦱 Homme',
+          '👩‍🦱 Femme',
+          '🤝 Non-binaire',
+          '👶 Enfant',
         ],
-        'icon': 'ðŸ‘¤',
+        'icon': '👤',
       },
       {
         'section': 'person',
         'id': 'personAge',
         'type': 'single',
-        'question': 'Sa tranche d''Ã¢ge ?',
+        'question': 'Sa tranche d''âge ?',
         'field': 'personAge',
         'options': [
           'Moins de 12 ans',
@@ -158,7 +158,7 @@ class OnboardingAdvancedModel {
           '45-65 ans',
           '65+ ans'
         ],
-        'icon': 'ðŸŽ‚',
+        'icon': '🎂',
       },
       {
         'section': 'gift',
@@ -167,38 +167,38 @@ class OnboardingAdvancedModel {
         'question': 'L''occasion (Le "Pourquoi") ?',
         'field': 'occasion',
         'options': [
-          'ðŸŽ‚ Anniversaire',
-          'ðŸŽ„ NoÃ«l',
-          'â¤ï¸ Saint Valentin',
-          'ðŸ‘¶ Naissance',
-          'ðŸŽ‰ FÃªte des MÃ¨res/PÃ¨res',
-          'ðŸ¥‚ Pendaison de crÃ©maillÃ¨re',
-          'âœ¨ Juste comme Ã§a'
+          '🎂 Anniversaire',
+          '🎄 Noël',
+          '❤️ Saint Valentin',
+          '👶 Naissance',
+          '🎉 Fête des Mères/Pères',
+          '🥂 Pendaison de crémaillère',
+          '✨ Juste comme ça'
         ],
-        'icon': 'ðŸ¾',
+        'icon': '🥂',
       },
       {
         'section': 'gift',
         'id': 'personalityMode',
         'type': 'single',
-        'question': 'Comment veux-tu dÃ©crire sa personnalitÃ© ?',
-        'subtitle': 'Choisis ton mode prÃ©fÃ©rÃ©',
+        'question': 'Comment veux-tu décrire sa personnalité ?',
+        'subtitle': 'Choisis ton mode préféré',
         'field': 'personalityMode',
         'options': [
-          'ðŸ’¬ Essayer le mode vocal (RecommandÃ©)',
-          'ðŸ“ RÃ©pondre aux questions (Classique)',
+          '💬 Essayer le mode vocal (Recommandé)',
+          '📝 Répondre aux questions (Classique)',
         ],
-        'icon': 'ðŸ—£ï¸',
+        'icon': '🗣️',
       }
     ];
 
-    if (answers['personalityMode'] == 'ðŸ’¬ Essayer le mode vocal (RecommandÃ©)') {
+    if (answers['personalityMode'] == '💬 Essayer le mode vocal (Recommandé)') {
       steps.add({
         'section': 'gift',
         'id': 'voiceRecording',
         'type': 'voice_recording',
         'question': 'Parle-nous un peu de la personne !',
-        'subtitle': 'Inspire-toi de ces questions :\n- Quels sont ses hobbies ou ses passions ?\n- Dans quoi travaille-t-il/elle ?\n- Raconte une anecdote drÃ´le',
+        'subtitle': 'Inspire-toi de ces questions :\n- Quels sont ses hobbies ou ses passions ?\n- Dans quoi travaille-t-il/elle ?\n- Raconte une anecdote drôle',
         'field': 'recipientPersonality',
       });
     } else {
@@ -206,20 +206,20 @@ class OnboardingAdvancedModel {
         'section': 'gift',
         'id': 'personality',
         'type': 'multiple',
-        'question': 'Sa personnalitÃ© (Le "Style de vie") ?',
-        'subtitle': 'SÃ©lection multiple possible',
+        'question': 'Sa personnalité (Le "Style de vie") ?',
+        'subtitle': 'Sélection multiple possible',
         'field': 'recipientPersonality',
         'options': [
-          'ðŸ§— L''Explorateur (Voyage, Nature, Aventure)',
-          'ðŸ›‹ï¸ Le Casanier (DÃ©co, Cocooning, Lecture)',
-          'ðŸ’» Le Tech-Addict (Gadgets, Gaming)',
-          'ðŸ‘— Le Fashioniste (Mode, BeautÃ©)',
-          'ðŸ· L''Ã‰picurien (Vin, Gastronomie)',
-          'ðŸŽ¨ Le CrÃ©atif (Art, Musique, DIY)',
-          'âš½ Le Sportif (Fitness, CompÃ©tition)',
-          'ðŸ§˜ Le Zen (Bien-Ãªtre, SpiritualitÃ©, Yoga)',
+          '🧗 L''Explorateur (Voyage, Nature, Aventure)',
+          '🛋️ Le Casanier (Déco, Cocooning, Lecture)',
+          '💻 Le Tech-Addict (Gadgets, Gaming)',
+          '👗 Le Fashioniste (Mode, Beauté)',
+          '🍷 L''Épicurien (Vin, Gastronomie)',
+          '🎨 Le Créatif (Art, Musique, DIY)',
+          '⚽ Le Sportif (Fitness, Compétition)',
+          '🧘 Le Zen (Bien-être, Spiritualité, Yoga)',
         ],
-        'icon': 'ðŸŽ­',
+        'icon': '🎭',
       });
     }
 
@@ -230,10 +230,10 @@ class OnboardingAdvancedModel {
       'question': 'Le Budget (Filtre strict) ?',
       'field': 'budgetTier',
       'options': [
-        'ðŸ’¸ < 20â‚¬',
-        'ðŸ’° 20â‚¬ - 50â‚¬',
-        'ðŸ’Ž 50â‚¬ - 150â‚¬',
-        'ðŸ‘‘ Luxe (> 150â‚¬)'
+        '💸 < 20€',
+        '💰 20€ - 50€',
+        '💎 50€ - 150€',
+        '👑 Luxe (> 150€)'
       ],
       'icon': 'ðŸ’³',
     });
