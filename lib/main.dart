@@ -465,7 +465,7 @@ class _NavBarPageState extends State<NavBarPage> {
                   activeIcon: IconlyPro.calendarBold,
                   label: 'Calendrier',
                   tooltip: 'Calendrier',
-                  lottieAsset: null,
+                  lottieAsset: 'assets/jsons/calendar_star.json',
                 ),
                 NavBarItem(
                   icon: IconlyPro.chatLight,
