@@ -738,8 +738,34 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     super.dispose();
   }
 
+  bool _isCheckingEvent = false;
+  
+  void _checkPendingEvent() async {
+    if (_isCheckingEvent) return;
+    _isCheckingEvent = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final pendingEvent = prefs.getString('pending_event_filter');
+      if (pendingEvent != null && pendingEvent.isNotEmpty) {
+        if (mounted) {
+          setState(() {
+            _model.activeEventFilter = pendingEvent;
+            _model.resetOtherFilters('event');
+          });
+          await prefs.remove('pending_event_filter');
+          _loadProducts();
+        }
+      }
+    } catch (_) {
+    } finally {
+      _isCheckingEvent = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    _checkPendingEvent();
+    
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: LiquidGlassTokens.pageDark,

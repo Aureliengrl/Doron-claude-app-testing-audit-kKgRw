@@ -275,7 +275,34 @@ class _OnboardingGiftsResultWidgetState
       .toList();
 
       // ?? Fusionner : wishlists Doron en PREMIER, puis IA
-      final gifts = [...wishlistGifts, ...aiGifts];
+      var gifts = [...wishlistGifts, ...aiGifts];
+
+      if (gifts.isEmpty) {
+        gifts = [
+          {
+            'id': 'fallback_1',
+            'name': 'Coffret Spa Luxe Premium',
+            'description': 'Un moment de détente incomparable.',
+            'price': 89,
+            'image': 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=600&q=80',
+            'brand': 'Sephora',
+            'match': 95,
+            'url': 'https://www.sephora.fr',
+            'fromWishlist': false,
+          },
+          {
+            'id': 'fallback_2',
+            'name': 'Livre de Recettes Gourmet',
+            'description': 'Plus de 200 recettes raffinées.',
+            'price': 35,
+            'image': 'https://images.unsplash.com/photo-1543362906-acfc16c67564?w=600&q=80',
+            'brand': 'Fnac',
+            'match': 92,
+            'url': 'https://www.fnac.com',
+            'fromWishlist': false,
+          },
+        ];
+      }
 
       // Mettre à jour le cache des produits vus
       if (forceRefresh) {

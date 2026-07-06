@@ -42,117 +42,104 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
     return Scaffold(
       backgroundColor: LiquidGlassTokens.pageDark,
-      body: CustomScrollView(
-        slivers: [
-          // Header
-          SliverAppBar(
-            backgroundColor: LiquidGlassTokens.pageDark,
-            pinned: true,
-            centerTitle: true,
-            leading: IconButton(
-              icon: const Icon(IconlyLight.arrowLeft2, color: Colors.white),
-              onPressed: () => context.pop(),
-            ),
-            title: Text(
-              context.tr('Notifications', 'Notifications'),
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(IconlyLight.arrowLeft2, color: Colors.white),
+          onPressed: () => context.pop(),
+        ),
+        title: Text(
+          context.tr('Notifications', 'Notifications'),
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => _markAllRead(user.uid),
+            child: Row(
+              children: [
+                const Icon(Icons.done_all_rounded, color: _violet, size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  context.tr('Tout lire', 'Mark all read'),
+                  style: GoogleFonts.poppins(color: _violet, fontSize: 12, fontWeight: FontWeight.w600),
+                ),
+              ],
             ),
           ),
-          
-          // Bouton "Tout lire" placé sous le header pour ne pas déborder
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 20, bottom: 8),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: () => _markAllRead(user.uid),
-                  icon: const Icon(Icons.done_all_rounded, color: _violet, size: 18),
-                  label: Text(
-                    context.tr('Tout lire', 'Mark all read'),
-                    style: GoogleFonts.poppins(color: _violet, fontSize: 13, fontWeight: FontWeight.w600),
-                  ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('notifications')
+            .doc(user.uid)
+            .collection('items')
+            .orderBy('createdAt', descending: true)
+            .limit(50)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(40),
+                child: CircularProgressIndicator(color: _violet),
+              ),
+            );
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 60),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(IconlyLight.notification, size: 64, color: Colors.white24),
+                    const SizedBox(height: 16),
+                    Text(
+                      context.tr('Aucune notification', 'No notifications'),
+                      style: GoogleFonts.poppins(color: Colors.white54, fontSize: 16),
+                    ),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 40),
+                      child: Text(
+                        context.tr(
+                          'Les invitations et demandes d\'amis apparaîtront ici.',
+                          'Invitations and friend requests will appear here.',
+                        ),
+                        style: GoogleFonts.poppins(color: Colors.white30, fontSize: 13),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ),
+            );
+          }
 
-          // Liste des notifications
-          SliverPadding(
+          final docs = snapshot.data!.docs;
+          return ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            sliver: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('notifications')
-                  .doc(user.uid)
-                  .collection('items')
-                  .orderBy('createdAt', descending: true)
-                  .limit(50)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const SliverToBoxAdapter(
-                    child: Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(40),
-                        child: CircularProgressIndicator(color: _violet),
-                      ),
-                    ),
-                  );
-                }
-
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 60),
-                      child: Column(
-                        children: [
-                          const Icon(IconlyLight.notification, size: 64, color: Colors.white24),
-                          const SizedBox(height: 16),
-                          Text(
-                            context.tr('Aucune notification', 'No notifications'),
-                            style: GoogleFonts.poppins(color: Colors.white54, fontSize: 16),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            context.tr(
-                              'Les invitations et demandes d\'amis apparaîtront ici.',
-                              'Invitations and friend requests will appear here.',
-                            ),
-                            style: GoogleFonts.poppins(color: Colors.white30, fontSize: 13),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-
-                final docs = snapshot.data!.docs;
-                return SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, i) {
-                      final doc = docs[i];
-                      final data = doc.data() as Map<String, dynamic>;
-                      return _NotificationTile(
-                        docId: doc.id,
-                        uid: user.uid,
-                        data: data,
-                        onTap: () => _handleNotificationTap(data, doc.id, user.uid),
-                      );
-                    },
-                    childCount: docs.length,
-                  ),
-                );
-              },
-            ),
-          ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: 40)),
-        ],
+            itemCount: docs.length,
+            itemBuilder: (context, i) {
+              final doc = docs[i];
+              final data = doc.data() as Map<String, dynamic>;
+              return _NotificationTile(
+                docId: doc.id,
+                uid: user.uid,
+                data: data,
+                onTap: () => _handleNotificationTap(data, doc.id, user.uid),
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -250,8 +237,31 @@ class _NotificationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isRead = data['read'] == true;
     final type = data['type'] as String? ?? '';
-    final title = data['title'] as String? ?? '';
-    final body = data['body'] as String? ?? '';
+    String title = data['title'] as String? ?? '';
+    String body = data['body'] as String? ?? '';
+
+    if (title.isEmpty) {
+      switch (type) {
+        case 'collab_invite':
+          title = context.tr('Invitation à collaborer', 'Collaboration invite');
+          if (body.isEmpty) body = context.tr('Quelqu\'un vous a invité à collaborer.', 'Someone invited you to collaborate.');
+          break;
+        case 'friend_request':
+          title = context.tr('Demande d\'ami', 'Friend request');
+          if (body.isEmpty) body = context.tr('Quelqu\'un veut être votre ami.', 'Someone wants to be your friend.');
+          break;
+        case 'message':
+          title = context.tr('Nouveau message', 'New message');
+          if (body.isEmpty) body = context.tr('Quelqu\'un vous a envoyé un message.', 'Someone sent you a message.');
+          break;
+        case 'wishlist_share':
+          title = context.tr('Wishlist partagée', 'Shared wishlist');
+          if (body.isEmpty) body = context.tr('Quelqu\'un a partagé une wishlist avec vous.', 'Someone shared a wishlist with you.');
+          break;
+        default:
+          title = context.tr('Nouvelle notification', 'New notification');
+      }
+    }
     final ts = data['createdAt'] as Timestamp?;
     final timeStr = ts != null ? _formatTime(ts.toDate()) : '';
 

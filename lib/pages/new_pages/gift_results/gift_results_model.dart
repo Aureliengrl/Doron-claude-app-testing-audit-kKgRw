@@ -44,7 +44,13 @@ class GiftResultsModel {
         count: 12,
       );
 
-      AppLogger.debug('✅ ${giftResults.length} cadeaux générés', 'Debug');
+      if (giftResults.isEmpty) {
+        AppLogger.warning('⚠️ Aucun cadeau généré, chargement des fallbacks', 'Debug');
+        _loadFallbackGifts();
+      } else {
+        AppLogger.debug('✅ ${giftResults.length} cadeaux générés', 'Debug');
+      }
+      
       isLoading = false;
     } catch (e) {
       AppLogger.debug('❌ Erreur lors du chargement des cadeaux: $e', 'Debug');
