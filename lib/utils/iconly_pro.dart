@@ -17,6 +17,7 @@ class IconlyPro {
   static const IconData heartLight = CupertinoIcons.heart;
   static const IconData sendLight = CupertinoIcons.paperplane;
   static const IconData chatLight = CupertinoIcons.chat_bubble;
+  static const IconData calendarLight = CupertinoIcons.calendar;
 
   // --- ICÔNES BOLD (Pour onglets actifs ou favoris) ---
   static const IconData homeBold = CupertinoIcons.house_fill;
@@ -26,4 +27,5 @@ class IconlyPro {
   static const IconData heartBold = CupertinoIcons.heart_fill;
   static const IconData sendBold = CupertinoIcons.paperplane_fill;
   static const IconData chatBold = CupertinoIcons.chat_bubble_fill;
+  static const IconData calendarBold = CupertinoIcons.calendar_circle_fill;
 }
