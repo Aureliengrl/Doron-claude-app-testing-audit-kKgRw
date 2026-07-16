@@ -32,6 +32,16 @@ require('dotenv').config();
 const admin = require('firebase-admin');
 const fetch = require('node-fetch');
 
+// node-fetch v2 ne suit pas HTTPS_PROXY tout seul. En environnement proxifié
+// (egress via CONNECT), on lui passe explicitement un agent, sinon la requête
+// part hors tunnel et le proxy répond 405 Method Not Allowed.
+const PROXY_URL = process.env.HTTPS_PROXY || process.env.https_proxy || null;
+let proxyAgent = null;
+if (PROXY_URL) {
+  const { HttpsProxyAgent } = require('https-proxy-agent');
+  proxyAgent = new HttpsProxyAgent(PROXY_URL);
+}
+
 const serviceAccount = require('./serviceAccountKey.json');
 admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 const db = admin.firestore();
@@ -285,6 +295,7 @@ async function fetchProductsForQuery(query) {
       'X-RapidAPI-Key': RAPIDAPI_KEY,
       'X-RapidAPI-Host': RAPIDAPI_HOST,
     },
+    agent: proxyAgent,
   });
   if (!res.ok) {
     throw new Error(`RapidAPI ${res.status} ${res.statusText} pour "${query}"`);
