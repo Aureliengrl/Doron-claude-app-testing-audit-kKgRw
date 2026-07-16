@@ -4,6 +4,8 @@ import '/utils/iconly_compat.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '/utils/app_logger.dart';
 
 /// Modèle pour une marque/retailer
 class BrandModel {
@@ -33,14 +35,25 @@ class PopularBrands {
     return 'https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://$domain&size=128';
   }
 
-  static final List<BrandModel> all = [
-    const BrandModel(
-      id: 'all',
-      name: 'Toutes',
-      displayName: '✨ Toutes',
-      icon: IconlyLight.category,
-      color: Color(0xFF8A2BE2),
-    ),
+  static const BrandModel _allEntry = BrandModel(
+    id: 'all',
+    name: 'Toutes',
+    displayName: '✨ Toutes',
+    icon: IconlyLight.category,
+    color: Color(0xFF8A2BE2),
+  );
+
+  /// Liste courante des marques — démarre avec les 10 marques codées en dur
+  /// ci-dessous, puis remplacée par [loadFromFirestore] dès que la
+  /// collection `brands` (alimentée par l'import produits) contient des
+  /// données. Un getter (pas une const list) pour que tous les call sites
+  /// existants (`PopularBrands.all`) reflètent automatiquement le
+  /// changement une fois le chargement terminé.
+  static List<BrandModel> get all => _all;
+  static bool _loadedFromFirestore = false;
+
+  static List<BrandModel> _all = [
+    _allEntry,
     BrandModel(
       id: 'amazon',
       name: 'Amazon',
@@ -104,6 +117,44 @@ class PopularBrands {
       return null;
     }
   }
+
+  /// Remplace la liste codée en dur par les marques réelles de la base
+  /// produits (collection Firestore `brands`, alimentée par le pipeline
+  /// d'import). Ne fait rien si la collection est vide/absente — la liste
+  /// de secours ci-dessus reste alors affichée, l'app ne casse jamais.
+  /// Sûr à appeler plusieurs fois (idempotent, se contente de re-fetch).
+  static Future<void> loadFromFirestore() async {
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('brands')
+          .orderBy('order', descending: false)
+          .limit(60)
+          .get();
+
+      if (snap.docs.isEmpty) return; // garde la liste de secours
+
+      final loaded = snap.docs.map((doc) {
+        final d = doc.data();
+        final domain = d['domain'] as String?;
+        final colorValue = d['color'] as int?;
+        return BrandModel(
+          id: doc.id,
+          name: (d['name'] as String?) ?? doc.id,
+          displayName: (d['displayName'] as String?) ?? '',
+          logo: domain != null && domain.isNotEmpty ? _getLogoUrl(domain) : (d['logo'] as String?),
+          color: colorValue != null ? Color(colorValue) : null,
+        );
+      }).toList();
+
+      _all = [_allEntry, ...loaded];
+      _loadedFromFirestore = true;
+      AppLogger.info('PopularBrands: ${loaded.length} marques chargées depuis Firestore', 'Brands');
+    } catch (e) {
+      AppLogger.error('PopularBrands.loadFromFirestore failed — fallback liste codée en dur', 'Brands', e);
+    }
+  }
+
+  static bool get isLoadedFromFirestore => _loadedFromFirestore;
 }
 
 /// Widget de filtres par marques

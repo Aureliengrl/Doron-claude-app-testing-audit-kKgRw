@@ -17,6 +17,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '/services/firebase_data_service.dart';
 import '/services/product_matching_service.dart';
+import '/services/product_search_service.dart';
 import '/services/product_url_service.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
@@ -81,6 +82,13 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     _initializeAndLoadProducts();
     _scrollController.addListener(_onScroll);
     _showInteractiveTutorialIfNeeded();
+
+    // Remplace la liste de 10 marques codées en dur par les vraies marques
+    // de la base produits dès qu'elles sont disponibles (no-op tant que la
+    // collection Firestore `brands` n'a pas encore été alimentée par l'import).
+    PopularBrands.loadFromFirestore().then((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   Future<void> _initializeAndLoadProducts() async {
@@ -731,11 +739,35 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     _scrollController.dispose();
     _likedTitles.dispose(); // PERF AXE 5
     _model.dispose();
     super.dispose();
+  }
+
+  /// Lance une recherche plein-texte sur TOUTE la base Firestore (pas
+  /// seulement les produits déjà chargés pour la catégorie active), avec un
+  /// debounce pour éviter une requête à chaque frappe.
+  void _onSearchQueryChanged(String value) {
+    _searchDebounce?.cancel();
+    final query = value.trim();
+    if (query.length < 2) {
+      return; // setSearchQuery('') a déjà vidé searchResults au besoin
+    }
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () async {
+      if (!mounted || _model.searchQuery.trim() != query) return;
+      setState(() => _model.setSearching(true));
+      try {
+        final results = await ProductSearchService.search(query);
+        if (!mounted || _model.searchQuery.trim() != query) return;
+        setState(() => _model.setSearchResults(results));
+      } catch (e) {
+        AppLogger.error('Home search failed', 'Home', e);
+        if (mounted) setState(() => _model.setSearching(false));
+      }
+    });
   }
 
   bool _isCheckingEvent = false;
@@ -822,9 +854,11 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                     setState(() {
                       _model.setSearchQuery(value);
                     });
+                    _onSearchQueryChanged(value);
                   },
                   onClear: () {
                     _searchController.clear();
+                    _searchDebounce?.cancel();
                     setState(() {
                       _model.setSearchQuery('');
                     });

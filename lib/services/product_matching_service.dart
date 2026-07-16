@@ -693,7 +693,11 @@ class ProductMatchingService {
       final occStr = occasion.toString().toLowerCase();
       if (occStr.contains('anniversaire')) {
         tags.add('occasion_anniversaire');
-      } else if (occStr.contains('crémaillère')) {
+      } else if (occStr.contains('noël') || occStr.contains('noel')) {
+        tags.add('occasion_noel');
+      } else if (occStr.contains('valentin')) {
+        tags.add('occasion_saint_valentin');
+      } else if (occStr.contains('crémaillère') || occStr.contains('cremaillere')) {
         tags.addAll(['occasion_fete', 'cat_maison', 'type_maison_deco']);
       } else if (occStr.contains('mariage')) {
         tags.addAll(['occasion_mariage', 'style_luxe']);
@@ -701,7 +705,36 @@ class ProductMatchingService {
         tags.add('occasion_naissance');
       } else if (occStr.contains('remerciement')) {
         tags.add('occasion_remerciement');
+      } else if (occStr.contains('diplôme') || occStr.contains('diplome')) {
+        tags.add('occasion_diplome');
+      } else if (occStr.contains('fête') || occStr.contains('fete')) {
+        // "Fête des Mères/Pères" et occasions génériques
+        tags.add('occasion_fete');
       }
+    }
+
+    // ========================================================================
+    // 5️⃣bis SAISON (explicite si fournie, sinon déduite de la date du jour)
+    // ========================================================================
+    final saison = userTags['saison'] ?? userTags['season'];
+    if (saison != null && saison.toString().isNotEmpty) {
+      final saisonStr = saison.toString().toLowerCase();
+      if (saisonStr.contains('print')) {
+        tags.add('saison_printemps');
+      } else if (saisonStr.contains('été') || saisonStr.contains('ete')) {
+        tags.add('saison_ete');
+      } else if (saisonStr.contains('automne')) {
+        tags.add('saison_automne');
+      } else if (saisonStr.contains('hiver')) {
+        tags.add('saison_hiver');
+      } else {
+        tags.add(TagsDefinitions.getSaisonTag());
+      }
+    } else {
+      // Pas de saison explicite dans le quiz → on déduit de la date du jour,
+      // ça favorise les produits de saison sans jamais exclure les autres
+      // (voir scoring souple dans _calculateMatchScore).
+      tags.add(TagsDefinitions.getSaisonTag());
     }
 
     // ========================================================================
@@ -1095,6 +1128,29 @@ class ProductMatchingService {
         final typeScore = typeMatches * 35.0; // 35 points par type matché
         score += typeScore.clamp(0, 70); // Max 70 points
         AppLogger.debug('🎁 TYPES: $typeMatches matches = +${typeScore.clamp(0, 70)} points', 'Debug');
+      }
+    }
+
+    // 💫 7bis. OCCASION (SOUPLE - max 45 points)
+    // Les tags occasion_* existent depuis toujours sur les produits importés
+    // mais n'étaient jamais lus ici — un cadeau taggé "Noël" ne remontait pas
+    // plus haut qu'un autre pendant la recherche "Noël".
+    final userOccasionTags = searchTags.where((t) => t.startsWith('occasion_')).toList();
+    if (userOccasionTags.isNotEmpty) {
+      final productOccasionTags = allProductTags.where((t) => t.startsWith('occasion_')).toList();
+      if (productOccasionTags.any((t) => userOccasionTags.contains(t))) {
+        score += 45.0;
+        AppLogger.debug('🎉 OCCASION MATCH: +45 points', 'Debug');
+      }
+    }
+
+    // 💫 7ter. SAISON (SOUPLE - max 15 points, jamais d'exclusion)
+    final userSaisonTags = searchTags.where((t) => t.startsWith('saison_')).toList();
+    if (userSaisonTags.isNotEmpty) {
+      final productSaisonTags = allProductTags.where((t) => t.startsWith('saison_')).toList();
+      if (productSaisonTags.any((t) => userSaisonTags.contains(t))) {
+        score += 15.0;
+        AppLogger.debug('🍂 SAISON MATCH: +15 points', 'Debug');
       }
     }
 

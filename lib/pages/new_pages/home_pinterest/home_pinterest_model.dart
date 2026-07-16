@@ -16,6 +16,12 @@ class HomePinterestModel {
   List<Map<String, dynamic>> sections = []; // Sections thématiques pour l'accueil
   String firstName = '';
   String searchQuery = '';
+  // Résultats de la recherche plein-texte sur TOUTE la base Firestore
+  // (par opposition à `products`, qui n'est que le lot de la catégorie
+  // active). Non-null dès qu'une recherche DB a été lancée pour la requête
+  // courante.
+  List<Map<String, dynamic>>? searchResults;
+  bool isSearching = false;
   String? errorMessage;
   String? errorDetails;
   List<String> personalizedEvents = [];
@@ -203,6 +209,19 @@ class HomePinterestModel {
 
   void setSearchQuery(String query) {
     searchQuery = query;
+    if (query.trim().isEmpty) {
+      searchResults = null;
+      isSearching = false;
+    }
+  }
+
+  void setSearchResults(List<Map<String, dynamic>> results) {
+    searchResults = results;
+    isSearching = false;
+  }
+
+  void setSearching(bool value) {
+    isSearching = value;
   }
 
   void toggleQuickFilter(String filter) {
@@ -230,14 +249,22 @@ class HomePinterestModel {
   }
 
   List<Map<String, dynamic>> getFilteredProducts() {
-    var filtered = products;
+    // Une recherche texte active porte sur TOUTE la base (searchResults),
+    // pas seulement sur le lot pré-chargé de la catégorie active.
+    final usingDbSearch = searchQuery.trim().isNotEmpty && searchResults != null;
+    var filtered = usingDbSearch ? searchResults! : products;
 
     if (activeBrand != 'all') {
+      final brandFilter = activeBrand.toLowerCase();
       filtered = filtered.where((product) {
+        // Champ structuré (nouveaux produits importés) — priorité, match exact.
+        final brandId = (product['brandId'] as String? ?? '').toLowerCase();
+        if (brandId.isNotEmpty) return brandId == brandFilter;
+
+        // Fallback pour les produits legacy sans brandId : sous-chaîne.
         final brand = (product['brand'] as String? ?? '').toLowerCase();
         final source = (product['source'] as String? ?? '').toLowerCase();
         final platform = (product['platform'] as String? ?? '').toLowerCase();
-        final brandFilter = activeBrand.toLowerCase();
         return brand.contains(brandFilter) || source.contains(brandFilter) || platform.contains(brandFilter);
       }).toList();
     }
@@ -280,7 +307,10 @@ class HomePinterestModel {
       }).toList();
     }
 
-    if (searchQuery.isNotEmpty) {
+    // Si une recherche DB (searchResults) est active, les résultats sont déjà
+    // pré-matchés contre la requête par ProductSearchService — inutile (et
+    // moins bon, cf. accents/pluriels) de refiltrer par simple `.contains`.
+    if (searchQuery.isNotEmpty && !usingDbSearch) {
       final query = searchQuery.toLowerCase();
       filtered = filtered.where((product) {
         final name = (product['name'] as String? ?? '').toLowerCase();
