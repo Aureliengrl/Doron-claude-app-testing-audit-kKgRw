@@ -1,4 +1,5 @@
 import '/components/aesthetic_bottom_sheet_notch.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '/components/premium_3d_icon.dart';
 import '/utils/iconly_compat.dart';
@@ -52,11 +53,19 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
   bool _wishlistsLoading = true;
   int _friendsCount = 0;
 
+  // Cette page reste en mémoire (Offstage) tant que la NavBarPage n'est pas
+  // recréée : sans ce listener, changer de compte depuis le menu "Se connecter
+  // à un autre compte" laissait affichées les données de l'ancien compte.
+  StreamSubscription<User?>? _authSub;
+  String? _lastLoadedUid;
+
   @override
   void initState() {
     super.initState();
     _model = UserProfileModel();
     _tabController = TabController(length: 2, vsync: this);
+
+    _lastLoadedUid = FirebaseAuth.instance.currentUser?.uid;
 
     // Vérifier le mode anonyme
     _checkAnonymousMode();
@@ -73,6 +82,32 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
     // écouter les changements du model
     _model.addListener(_onModelChanged);
+
+    // Recharger tout le profil si l'utilisateur connecté change (changement
+    // de compte) pendant que cette page reste montée en arrière-plan.
+    _authSub = FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user?.uid != _lastLoadedUid) {
+        _lastLoadedUid = user?.uid;
+        _reloadForAccountSwitch();
+      }
+    });
+  }
+
+  Future<void> _reloadForAccountSwitch() async {
+    if (!mounted) return;
+    setState(() {
+      _wishlists = [];
+      _wishlistsLoading = true;
+      _friendsCount = 0;
+      _localProfilePhoto = null;
+      _uploadedPhotoUrl = null;
+    });
+    await _checkAnonymousMode();
+    _loadWishlists();
+    _loadFriendsCount();
+    if (mounted && !_isAnonymous) {
+      _model.loadFavourites();
+    }
   }
 
   Future<void> _checkAnonymousMode() async {
@@ -90,6 +125,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
   @override
   void dispose() {
+    _authSub?.cancel();
     _model.removeListener(_onModelChanged);
     _tabController.dispose();
     _model.dispose();
