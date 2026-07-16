@@ -749,6 +749,9 @@ class FirebaseDataService {
       } catch (_) {}
 
       // ── Écriture Firestore IMMÉDIATE (chemin local — sera remplacé) ──────
+      // Si cette écriture échoue, le produit ne survit que dans le cache local
+      // (perdu au changement d'appareil / réinstall) : on le traite comme un
+      // échec plutôt que de laisser l'appelant croire que tout est sauvegardé.
       if (isLoggedIn) {
         try {
           await _firestore
@@ -761,7 +764,10 @@ class FirebaseDataService {
               .collection('users').doc(uid)
               .collection('wishlists').doc(wishlistId)
               .update({'productCount': FieldValue.increment(1), 'updatedAt': FieldValue.serverTimestamp()});
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.error('addPhotoToWishlist Firestore write failed', 'Firebase', e);
+          return false;
+        }
       }
 
       // ── Upload en ARRIÈRE-PLAN — non awaité ─────────────────────────────

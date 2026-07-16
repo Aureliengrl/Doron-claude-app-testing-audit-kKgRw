@@ -1766,7 +1766,20 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       productName: caption.isEmpty ? null : caption,
       productPrice: price.isEmpty ? null : price,
     ).then((ok) {
-      if (!ok || !mounted) return;
+      if (!mounted) return;
+      if (!ok) {
+        // L'écriture Firestore a échoué : la photo n'est pas réellement
+        // sauvegardée (elle ne survivrait pas à un changement d'appareil).
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Échec de l\'enregistrement de la photo, réessaie', style: GoogleFonts.poppins(
+              color: Colors.white, fontWeight: FontWeight.w600)),
+          backgroundColor: const Color(0xFFE53935),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          duration: const Duration(seconds: 3),
+        ));
+        return;
+      }
       // Snack discret de confirmation
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('📸 Photo ajoutée !', style: GoogleFonts.poppins(
