@@ -1,0 +1,40 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Photos de profil et assets utilisateur
+    match /users/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Covers de wishlists (accessibles à tous en lecture, écriture propriétaire)
+    match /wishlists/{wishlistId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Assets de collaboration (groupe photos, covers)
+    match /collaborations/{collabId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Images envoyées dans les chats
+    match /chat_images/{chatId}/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Images produits de la DB (uploadées via admin SDK)
+    match /products/{allPaths=**} {
+      allow read: if true;
+      allow write: if false; // admin uniquement
+    }
+
+    // Fallback — tout refusé par défaut
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

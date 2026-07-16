@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:http/http.dart' as http;
 
 import '/utils/app_logger.dart';
 
@@ -21,6 +23,11 @@ class PdfExportUtils {
       final profileName = profile['name'] ?? 'Quelqu\'un';
       final occasion = profile['occasion'] ?? 'une occasion spéciale';
 
+      // Télécharger les images produit AVANT de construire le PDF (pw.Image a
+      // besoin des octets de façon synchrone). Un échec par image ne bloque
+      // pas les autres — on retombe sur le placeholder pour celle-ci.
+      final productImages = await _fetchProductImages(products);
+
       pdf.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
@@ -29,7 +36,7 @@ class PdfExportUtils {
             return [
               _buildHeader(profileName, occasion),
               pw.SizedBox(height: 20),
-              _buildProductGrid(products),
+              _buildProductGrid(products, productImages),
               pw.SizedBox(height: 30),
               _buildFooter(),
             ];
@@ -51,6 +58,36 @@ class PdfExportUtils {
       AppLogger.error('Erreur de génération PDF', 'PdfExportUtils', e);
       rethrow;
     }
+  }
+
+  /// Télécharge les images des produits en parallèle, avec un timeout
+  /// individuel pour ne pas faire échouer tout le PDF si une image réseau
+  /// est lente ou indisponible. Retourne un index (position dans [products])
+  /// -> octets de l'image, uniquement pour les téléchargements réussis.
+  static Future<Map<int, Uint8List>> _fetchProductImages(
+    List<dynamic> products,
+  ) async {
+    final result = <int, Uint8List>{};
+
+    await Future.wait(products.asMap().entries.map((entry) async {
+      final index = entry.key;
+      final product = entry.value as Map<String, dynamic>;
+      final url = product['image'] as String?;
+      if (url == null || url.isEmpty) return;
+
+      try {
+        final response = await http
+            .get(Uri.parse(url))
+            .timeout(const Duration(seconds: 8));
+        if (response.statusCode == 200) {
+          result[index] = response.bodyBytes;
+        }
+      } catch (e) {
+        AppLogger.debug('PdfExportUtils: image produit indisponible ($url): $e', 'PdfExportUtils');
+      }
+    }));
+
+    return result;
   }
 
   static pw.Widget _buildHeader(String name, String occasion) {
@@ -87,7 +124,10 @@ class PdfExportUtils {
     );
   }
 
-  static pw.Widget _buildProductGrid(List<dynamic> products) {
+  static pw.Widget _buildProductGrid(
+    List<dynamic> products,
+    Map<int, Uint8List> productImages,
+  ) {
     if (products.isEmpty) {
       return pw.Center(
         child: pw.Text(
@@ -98,7 +138,7 @@ class PdfExportUtils {
     }
 
     final List<pw.Widget> rows = [];
-    
+
     // Créer des rangées de 2 colonnes
     for (int i = 0; i < products.length; i += 2) {
       final product1 = products[i] as Map<String, dynamic>;
@@ -108,10 +148,10 @@ class PdfExportUtils {
         pw.Row(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Expanded(child: _buildProductItem(product1)),
+            pw.Expanded(child: _buildProductItem(product1, productImages[i])),
             pw.SizedBox(width: 20),
             if (product2 != null)
-              pw.Expanded(child: _buildProductItem(product2))
+              pw.Expanded(child: _buildProductItem(product2, productImages[i + 1]))
             else
               pw.Expanded(child: pw.Container()),
           ],
@@ -123,7 +163,10 @@ class PdfExportUtils {
     return pw.Column(children: rows);
   }
 
-  static pw.Widget _buildProductItem(Map<String, dynamic> product) {
+  static pw.Widget _buildProductItem(
+    Map<String, dynamic> product,
+    Uint8List? imageBytes,
+  ) {
     final name = product['name'] ?? 'Produit sans nom';
     final brand = product['brand_or_store'] ?? product['brand'] ?? '';
     final price = product['price'] != null ? '${product['price']} €' : '';
@@ -137,8 +180,7 @@ class PdfExportUtils {
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          // Espace pour l'image (les images réseau peuvent ralentir/échouer dans PDF, 
-          // on met un placeholder ou on essaiera de charger si possible)
+          // Image du produit si le téléchargement a réussi, sinon placeholder.
           pw.Container(
             height: 120,
             width: double.infinity,
@@ -146,12 +188,23 @@ class PdfExportUtils {
               color: PdfColors.grey100,
               borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
             ),
-            child: pw.Center(
-              child: pw.Text(
-                'Image du produit',
-                style: pw.TextStyle(color: PdfColors.grey500, fontSize: 10),
-              ),
-            ),
+            child: imageBytes != null
+                ? pw.ClipRRect(
+                    horizontalRadius: 6,
+                    verticalRadius: 6,
+                    child: pw.Image(
+                      pw.MemoryImage(imageBytes),
+                      fit: pw.BoxFit.cover,
+                      width: double.infinity,
+                      height: 120,
+                    ),
+                  )
+                : pw.Center(
+                    child: pw.Text(
+                      'Image indisponible',
+                      style: pw.TextStyle(color: PdfColors.grey500, fontSize: 10),
+                    ),
+                  ),
           ),
           pw.SizedBox(height: 12),
           if (brand.isNotEmpty) ...[

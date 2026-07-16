@@ -1,4 +1,5 @@
 import '/components/aesthetic_bottom_sheet_notch.dart';
+import '/utils/app_logger.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '/components/premium_3d_icon.dart';
@@ -171,6 +172,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       localPath: pickedFile.path,
       storagePath: 'users/$uid/profile_${DateTime.now().millisecondsSinceEpoch}.jpg',
       onUploadComplete: (downloadUrl) async {
+        bool saved = false;
         try {
           // âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬ Écriture ATOMIQUE : photo_url + photoUrl en un seul update âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬
           // Synchronise les deux champs -> tous les lecteurs voient la photo
@@ -185,16 +187,22 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           await FirebaseAuth.instance.currentUser?.updatePhotoURL(downloadUrl);
           // Invalider cache CDN pour forcer le rechargement
           await CachedNetworkImage.evictFromCache(downloadUrl);
-        } catch (_) {}
+          saved = true;
+        } catch (e) {
+          AppLogger.error('Profile photo Firestore/Auth sync failed', 'Profile', e);
+        }
 
         if (mounted) {
           setState(() {
             _localProfilePhoto = null;
-            _uploadedPhotoUrl  = downloadUrl; // mémorisé -> affiché immédiatement
+            _uploadedPhotoUrl  = saved ? downloadUrl : null; // n'affiche pas une photo non enregistrée
           });
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Photo de profil mise à jour ✨', style: GoogleFonts.outfit()),
-            backgroundColor: const Color(0xFF8A2BE2),
+            content: Text(
+              saved ? 'Photo de profil mise à jour ✨' : 'Photo envoyée mais non enregistrée, réessaie',
+              style: GoogleFonts.outfit(),
+            ),
+            backgroundColor: saved ? const Color(0xFF8A2BE2) : const Color(0xFFE53935),
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 2),
           ));
