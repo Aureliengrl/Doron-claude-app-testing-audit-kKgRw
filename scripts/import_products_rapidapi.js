@@ -1,22 +1,20 @@
 #!/usr/bin/env node
 /**
- * Import massif de produits depuis une API RapidAPI de type "comparateur"
- * (par défaut : Real-Time Product Search — agrégateur Google Shopping, large
- * couverture marques) vers Firestore (`gifts` + `brands`).
+ * Import massif de produits depuis une API RapidAPI de recherche produit
+ * vers Firestore (`gifts` + `brands`).
+ *
+ * Système d'ADAPTATEURS : plusieurs APIs supportées (voir API_ADAPTERS).
+ * Par défaut "amazon" (Real-Time Amazon Data — stable, très large couverture
+ * marques). Pour changer d'API : mets RAPIDAPI_ADAPTER=<nom> dans scripts/.env.
  *
  * Conçu comme un import PAR LOT, PAS un appel en direct depuis l'app :
- * on paie/appelle une fois (ou de temps en temps pour rafraîchir), on écrit
- * tout dans Firestore, l'app ne rappelle plus jamais l'API au runtime.
+ * on appelle une fois (ou de temps en temps pour rafraîchir), on écrit tout
+ * dans Firestore, l'app ne rappelle plus jamais l'API au runtime.
  *
- * ⚠️ IMPORTANT AVANT UN VRAI IMPORT :
- * Les noms de champs de la réponse RapidAPI ci-dessous (PRODUCT_FIELD_MAP)
- * sont basés sur la structure documentée habituelle de ce type d'API, mais
- * n'ont PAS pu être vérifiés en conditions réelles (pas de clé disponible
- * au moment de l'écriture de ce script). Lance TOUJOURS d'abord :
- *   node import_products_rapidapi.js --inspect
- * pour voir la réponse brute d'une seule requête et ajuster
- * PRODUCT_FIELD_MAP si besoin, AVANT de lancer un import complet qui
- * consomme ton quota RapidAPI.
+ * ⚠️ AVANT UN VRAI IMPORT : le mapping des champs de chaque adaptateur est
+ * basé sur le format documenté de l'API, mais peut varier. Lance TOUJOURS
+ * d'abord `--inspect` (1 seule requête) pour voir la réponse brute et
+ * ajuster l'adaptateur si besoin, AVANT de consommer ton quota.
  *
  * USAGE :
  *   node import_products_rapidapi.js --inspect              → 1 requête, affiche le JSON brut, n'écrit rien
@@ -26,7 +24,7 @@
  *   node import_products_rapidapi.js --max-queries=20         → import réel limité (contrôle du coût)
  *
  * Prérequis :
- *   - scripts/.env avec RAPIDAPI_KEY (voir .env.example)
+ *   - scripts/.env avec RAPIDAPI_KEY (+ RAPIDAPI_ADAPTER optionnel — voir .env.example)
  *   - scripts/serviceAccountKey.json (voir GUIDE_FIREBASE_UPLOAD.md)
  */
 
@@ -39,7 +37,16 @@ admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 const db = admin.firestore();
 
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
-const RAPIDAPI_HOST = process.env.RAPIDAPI_HOST || 'real-time-product-search.p.rapidapi.com';
+
+// Quelle API RapidAPI utiliser. Chaque adaptateur (voir API_ADAPTERS plus bas)
+// sait construire l'URL, extraire la liste de produits et mapper les champs
+// pour une API donnée. Changer d'API = changer cette seule variable dans .env
+// (RAPIDAPI_ADAPTER), sans toucher au reste du script.
+//   - "amazon"        → Real-Time Amazon Data (recommandé : stable, très large)
+//   - "google"        → Real-Time Product Search (Google Shopping — désactivée
+//                        chez l'éditeur en 2026, gardée ici au cas où elle
+//                        revienne ou pour un clone au même format)
+const ADAPTER_NAME = process.env.RAPIDAPI_ADAPTER || 'amazon';
 
 if (!RAPIDAPI_KEY) {
   console.error('❌ RAPIDAPI_KEY manquant dans scripts/.env (voir .env.example)');
@@ -213,11 +220,66 @@ function buildProductTags({ name, description, price, queryMeta }) {
 }
 
 // ============================================================================
-// 3. APPEL API — défensif sur les noms de champs (voir avertissement en tête)
+// 3. ADAPTATEURS D'API — un par API RapidAPI supportée
 // ============================================================================
+//
+// Chaque adaptateur définit :
+//   host       : le X-RapidAPI-Host (doit correspondre à celui de ton abonnement)
+//   buildUrl   : construit l'URL de recherche pour un mot-clé
+//   extractItems : extrait le tableau de produits de la réponse JSON
+//   fields     : listes de chemins candidats pour chaque champ produit
+//                (le 1er trouvé gagne — voir extractField)
+//
+// Pour ajouter une nouvelle API : copie un bloc, ajuste host/buildUrl/fields
+// d'après la sortie de `--inspect`, et mets RAPIDAPI_ADAPTER=<ton_nom> dans .env.
 
-async function fetchProductsForQuery(query, country = 'fr', language = 'fr') {
-  const url = `https://${RAPIDAPI_HOST}/search?q=${encodeURIComponent(query)}&country=${country}&language=${language}`;
+const API_ADAPTERS = {
+  // ── Real-Time Amazon Data (recommandé) ─────────────────────────────────
+  // https://rapidapi.com/letscrape-6bRBa3QguO5/api/real-time-amazon-data
+  amazon: {
+    host: 'real-time-amazon-data.p.rapidapi.com',
+    buildUrl: (host, q) =>
+      `https://${host}/search?query=${encodeURIComponent(q)}&country=FR&page=1`,
+    extractItems: (json) => json?.data?.products || json?.data || [],
+    fields: {
+      name: ['product_title', 'title'],
+      image: ['product_photo', 'product_main_image_url', 'thumbnail'],
+      price: ['product_price', 'price'],
+      brand: ['product_byline', 'brand'],
+      url: ['product_url', 'url'],
+      description: ['product_description', 'description'],
+      id: ['asin', 'product_id'],
+    },
+  },
+
+  // ── Real-Time Product Search (Google Shopping — format d'origine) ────────
+  google: {
+    host: 'real-time-product-search.p.rapidapi.com',
+    buildUrl: (host, q) =>
+      `https://${host}/search?q=${encodeURIComponent(q)}&country=fr&language=fr`,
+    extractItems: (json) => json?.data?.products || json?.data || json?.products || [],
+    fields: {
+      name: ['product_title', 'title', 'name'],
+      image: ['product_photos.0', 'product_photo', 'image', 'thumbnail'],
+      price: ['offer.price', 'product_price', 'price', 'typical_price_range.0'],
+      brand: ['product_attributes.Brand', 'brand', 'source'],
+      url: ['product_page_url', 'offer.offer_page_url', 'url', 'link'],
+      description: ['product_description', 'description'],
+      id: ['product_id', 'id'],
+    },
+  },
+};
+
+const ADAPTER = API_ADAPTERS[ADAPTER_NAME];
+if (!ADAPTER) {
+  console.error(`❌ RAPIDAPI_ADAPTER inconnu: "${ADAPTER_NAME}". Options: ${Object.keys(API_ADAPTERS).join(', ')}`);
+  process.exit(1);
+}
+// L'utilisateur peut forcer un host custom (clone d'API au même format).
+const RAPIDAPI_HOST = process.env.RAPIDAPI_HOST || ADAPTER.host;
+
+async function fetchProductsForQuery(query) {
+  const url = ADAPTER.buildUrl(RAPIDAPI_HOST, query);
   const res = await fetch(url, {
     headers: {
       'X-RapidAPI-Key': RAPIDAPI_KEY,
@@ -234,9 +296,7 @@ async function fetchProductsForQuery(query, country = 'fr', language = 'fr') {
     return [];
   }
 
-  // Formats de réponse possibles selon l'API RapidAPI réellement utilisée —
-  // À AJUSTER après vérification via --inspect.
-  const items = json?.data?.products || json?.data || json?.products || json?.results || [];
+  const items = ADAPTER.extractItems(json);
   return Array.isArray(items) ? items : [];
 }
 
@@ -249,18 +309,21 @@ function extractField(item, candidates, fallback = null) {
 }
 
 function normalizeProduct(item, queryMeta) {
-  const name = extractField(item, ['product_title', 'title', 'name']);
+  const f = ADAPTER.fields;
+  const name = extractField(item, f.name);
   if (!name) return null;
 
-  const imageRaw = extractField(item, ['product_photos.0', 'product_photo', 'image', 'thumbnail']);
-  const priceRaw = extractField(item, ['offer.price', 'product_price', 'price', 'typical_price_range.0']);
+  const imageRaw = extractField(item, f.image);
+  const priceRaw = extractField(item, f.price);
   const priceNum = typeof priceRaw === 'number'
     ? priceRaw
     : parseFloat(String(priceRaw || '').replace(/[^0-9.,]/g, '').replace(',', '.')) || null;
 
-  const brand = queryMeta.brand || extractField(item, ['product_attributes.Brand', 'brand', 'source']) || 'Autre';
-  const url = extractField(item, ['product_page_url', 'offer.offer_page_url', 'url', 'link']);
-  const description = extractField(item, ['product_description', 'description'], '');
+  // Marque : hint de la requête en priorité (fiable, ex. requête "Nike"),
+  // sinon champ de l'API, sinon "Autre".
+  const brand = queryMeta.brand || extractField(item, f.brand) || 'Autre';
+  const url = extractField(item, f.url);
+  const description = extractField(item, f.description, '');
 
   return {
     name,
@@ -287,6 +350,7 @@ function normalizeProduct(item, queryMeta) {
 
 async function run() {
   const queries = buildQueryList().slice(0, MAX_QUERIES === Infinity ? undefined : MAX_QUERIES);
+  console.log(`🔌 Adaptateur: ${ADAPTER_NAME} (host: ${RAPIDAPI_HOST})`);
   console.log(`🚀 ${INSPECT ? 'INSPECT' : DRY_RUN ? 'DRY RUN' : 'IMPORT RÉEL'} — ${queries.length} requêtes prévues\n`);
 
   const seenKeys = new Set(); // dédoublonnage brand+name
