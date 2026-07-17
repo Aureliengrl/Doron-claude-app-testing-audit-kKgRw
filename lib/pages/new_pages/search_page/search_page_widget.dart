@@ -719,6 +719,15 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                                 child: const Icon(IconlyLight.user2, size: 10, color: Colors.white),
                               ),
                             ),
+                          // Badge « action requise » (cagnotte) : paiement dû
+                          // côté participant, ou à confirmer côté hôte.
+                          if (profile['collabId'] != null)
+                            Positioned(
+                              top: -2,
+                              right: -2,
+                              child: _GroupGiftActionBadge(
+                                  collabId: profile['collabId'].toString()),
+                            ),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -1669,6 +1678,50 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
     return OptimisticImageUploader.uploadAndWait(
       localPath: localPath,
       storagePath: 'users/$uid/person_photos/$personId/$photoId.jpg',
+    );
+  }
+}
+
+/// Petite pastille « 1 » (action requise) affichée sur le rond d'une personne
+/// quand une cagnotte demande une action à l'utilisateur courant :
+///   - participant → il doit (encore) payer,
+///   - hôte → un paiement est déclaré et attend sa confirmation.
+class _GroupGiftActionBadge extends StatelessWidget {
+  final String collabId;
+  const _GroupGiftActionBadge({required this.collabId});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<Map<String, dynamic>?>(
+      stream: GroupGiftService.groupStream(collabId),
+      builder: (context, gSnap) {
+        final ownerId = (gSnap.data?['ownerId'] ?? '').toString();
+        if (ownerId.isEmpty) return const SizedBox.shrink();
+        return StreamBuilder<int>(
+          stream: GroupGiftService.myActionCountStream(
+              collabId: collabId, ownerId: ownerId),
+          builder: (context, cSnap) {
+            final count = cSnap.data ?? 0;
+            if (count <= 0) return const SizedBox.shrink();
+            return Container(
+              padding: const EdgeInsets.all(4),
+              constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF43F5E),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 1.5),
+              ),
+              child: Center(
+                child: Text(
+                  '$count',
+                  style: GoogleFonts.poppins(
+                      fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white),
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
