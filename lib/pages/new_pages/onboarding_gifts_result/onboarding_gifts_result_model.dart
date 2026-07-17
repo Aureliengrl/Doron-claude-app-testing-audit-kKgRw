@@ -1,18 +1,25 @@
 import '/utils/app_logger.dart';
 
-/// Model pour gérer l'état de la page de résultats cadeaux post-onboarding
+/// Model pour gï¿½rer l'ï¿½tat de la page de rï¿½sultats cadeaux post-onboarding
 class OnboardingGiftsResultModel {
   List<Map<String, dynamic>> gifts = [];
   bool isLoading = false;
   Map<String, dynamic>? userProfile;
   String? errorMessage;
   String? errorDetails;
-  String? personId; // ID de la personne pour laquelle on génère les cadeaux
+  String? personId; // ID de la personne pour laquelle on gï¿½nï¿½re les cadeaux
   Map<String, dynamic>? personTags; // Tags de la personne (recipient, budget, etc.)
-  Map<String, dynamic>? voiceProfile; // ?? Profil généré par l'assistant vocal
+  Map<String, dynamic>? voiceProfile; // ?? Profil gï¿½nï¿½rï¿½ par l'assistant vocal
 
-  // Sélection multiple de cadeaux
+  // Cadeaux ajoutï¿½s via l'onglet Recherche (fin de quiz)
+  List<Map<String, dynamic>> searchGifts = [];
+
+  // Sï¿½lection multiple de cadeaux
   Set<String> selectedGiftIds = {};
+
+  /// Pool complet de cadeaux sï¿½lectionnables : recommandï¿½s + wishlists
+  /// (dans `gifts`) + rï¿½sultats de recherche.
+  List<Map<String, dynamic>> get allGiftsPool => [...gifts, ...searchGifts];
 
   void setGifts(List<Map<String, dynamic>> newGifts) {
     gifts = newGifts;
@@ -44,40 +51,47 @@ class OnboardingGiftsResultModel {
     personTags = tags;
   }
 
-  /// ?? Défini le profil vocal (assistant vocal)
+  /// ?? Dï¿½fini le profil vocal (assistant vocal)
   void setVoiceProfile(Map<String, dynamic>? profile) {
     voiceProfile = profile;
-    AppLogger.debug('?? Profil vocal défini dans model: ${profile?.keys.join(", ")}', 'Debug');
+    AppLogger.debug('?? Profil vocal dï¿½fini dans model: ${profile?.keys.join(", ")}', 'Debug');
   }
 
-  /// Toggle la sélection d'un cadeau
+  /// Toggle la sï¿½lection d'un cadeau
   void toggleGiftSelection(String giftId) {
     if (selectedGiftIds.contains(giftId)) {
       selectedGiftIds.remove(giftId);
-      AppLogger.debug('?? Cadeau désélectionné: $giftId', 'Debug');
+      AppLogger.debug('?? Cadeau dï¿½sï¿½lectionnï¿½: $giftId', 'Debug');
     } else {
       selectedGiftIds.add(giftId);
-      AppLogger.debug('? Cadeau sélectionné: $giftId', 'Debug');
+      AppLogger.debug('? Cadeau sï¿½lectionnï¿½: $giftId', 'Debug');
     }
   }
 
-  /// Vérifie si un cadeau est sélectionné
+  /// Vï¿½rifie si un cadeau est sï¿½lectionnï¿½
   bool isGiftSelected(String giftId) {
     return selectedGiftIds.contains(giftId);
   }
 
-  /// Obtient la liste des cadeaux sélectionnés
+  /// Obtient la liste des cadeaux sï¿½lectionnï¿½s (tous onglets confondus,
+  /// dï¿½doublonnï¿½s par id).
   List<Map<String, dynamic>> getSelectedGifts() {
-    return gifts.where((gift) {
+    final seen = <String>{};
+    final result = <Map<String, dynamic>>[];
+    for (final gift in allGiftsPool) {
       final giftId = gift['id']?.toString() ?? '';
-      return selectedGiftIds.contains(giftId);
-    }).toList();
+      if (giftId.isEmpty) continue;
+      if (selectedGiftIds.contains(giftId) && seen.add(giftId)) {
+        result.add(gift);
+      }
+    }
+    return result;
   }
 
-  /// Nombre de cadeaux sélectionnés
+  /// Nombre de cadeaux sï¿½lectionnï¿½s
   int get selectedCount => selectedGiftIds.length;
 
   void dispose() {
-    // Cleanup si nécessaire
+    // Cleanup si nï¿½cessaire
   }
 }

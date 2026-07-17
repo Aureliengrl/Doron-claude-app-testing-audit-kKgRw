@@ -11,6 +11,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:confetti/confetti.dart';
 import '/services/product_matching_service.dart';
+import '/services/product_search_service.dart';
+import '/utils/app_tr.dart';
 import '/services/firebase_data_service.dart';
 import '/services/product_url_service.dart';
 import '/services/claude_api_service.dart';
@@ -38,6 +40,10 @@ class _OnboardingGiftsResultWidgetState
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final Color violetColor = const Color(0xFF8A2BE2);
   late ConfettiController _confettiController;
+
+  // Onglet « Recherche » (fin de quiz)
+  final TextEditingController _searchCtrl = TextEditingController();
+  bool _isSearchingProducts = false;
 
   @override
   void initState() {
@@ -393,6 +399,7 @@ class _OnboardingGiftsResultWidgetState
   @override
   void dispose() {
     _confettiController.dispose();
+    _searchCtrl.dispose();
     _model.dispose();
     super.dispose();
   }
@@ -428,9 +435,7 @@ class _OnboardingGiftsResultWidgetState
                         ? _buildLoader()
                         : _model.errorMessage != null
                             ? _buildErrorState()
-                            : _model.gifts.isEmpty
-                                ? _buildEmptyState()
-                                : _buildGiftsList(),
+                            : _buildTabbedContent(),
                   ),
 
                   // Boutons d'action
@@ -721,6 +726,298 @@ class _OnboardingGiftsResultWidgetState
                 ),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── Fin de quiz : 3 onglets (Recommandés · Ses envies · Recherche) ──────
+
+  Widget _buildTabbedContent() {
+    final recommended =
+        _model.gifts.where((g) => g['fromWishlist'] != true).toList();
+    final wishlist =
+        _model.gifts.where((g) => g['fromWishlist'] == true).toList();
+
+    return DefaultTabController(
+      length: 3,
+      child: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: violetColor.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: TabBar(
+              isScrollable: false,
+              labelColor: Colors.white,
+              unselectedLabelColor: violetColor,
+              labelStyle:
+                  GoogleFonts.poppins(fontSize: 12.5, fontWeight: FontWeight.w600),
+              indicator: BoxDecoration(
+                color: violetColor,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              tabs: [
+                Tab(text: context.tr('Recommandés', 'For them')),
+                Tab(text: context.tr('Ses envies', 'Their wishes')),
+                Tab(text: context.tr('Recherche', 'Search')),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: TabBarView(
+              children: [
+                recommended.isEmpty
+                    ? _buildEmptyState()
+                    : _buildGiftsGrid(recommended),
+                wishlist.isEmpty
+                    ? _buildTabEmpty(
+                        Icons.favorite_border_rounded,
+                        context.tr('Aucune envie connue',
+                            'No known wishes'),
+                        context.tr(
+                            'Ses produits likés et wishlists apparaîtront ici.',
+                            'Their liked products and wishlists will show here.'))
+                    : _buildGiftsGrid(wishlist),
+                _buildSearchTab(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Grille compacte (3 colonnes) — plus de cadeaux visibles d'un coup.
+  Widget _buildGiftsGrid(List<Map<String, dynamic>> gifts) {
+    return GridView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 12,
+        childAspectRatio: 0.60,
+      ),
+      itemCount: gifts.length,
+      itemBuilder: (context, index) => _buildGiftGridCard(gifts[index]),
+    );
+  }
+
+  /// Carte compacte avec le rond de sélection qui se remplit.
+  Widget _buildGiftGridCard(Map<String, dynamic> gift) {
+    final giftId = gift['id']?.toString() ?? '';
+    final isSelected = _model.isGiftSelected(giftId);
+    final img = (gift['image'] ?? gift['imageUrl'] ?? gift['image_url'] ?? '').toString();
+
+    return GestureDetector(
+      onTap: () {
+        setState(() => _model.toggleGiftSelection(giftId));
+        HapticFeedback.selectionClick();
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: isSelected ? Border.all(color: violetColor, width: 2.5) : null,
+          boxShadow: [
+            BoxShadow(
+              color: isSelected
+                  ? violetColor.withOpacity(0.25)
+                  : Colors.black.withOpacity(0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: img.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: img,
+                            fit: BoxFit.cover,
+                            memCacheWidth: 300,
+                            placeholder: (c, u) => Container(color: violetColor.withOpacity(0.06)),
+                            errorWidget: (c, u, e) => Container(
+                              color: violetColor.withOpacity(0.06),
+                              child: Icon(Icons.card_giftcard,
+                                  color: violetColor.withOpacity(0.4), size: 28),
+                            ),
+                          )
+                        : Container(
+                            color: violetColor.withOpacity(0.06),
+                            child: Icon(Icons.card_giftcard,
+                                color: violetColor.withOpacity(0.4), size: 28),
+                          ),
+                  ),
+                ),
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: isSelected ? violetColor : Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: isSelected ? violetColor : Colors.grey[400]!, width: 2),
+                    ),
+                    child: isSelected
+                        ? const Icon(Icons.check, color: Colors.white, size: 15)
+                        : null,
+                  ),
+                ),
+              ],
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        (gift['name'] ?? 'Produit').toString(),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1F2937),
+                            height: 1.2),
+                      ),
+                    ),
+                    if (gift['price'] != null && '${gift['price']}'.isNotEmpty)
+                      Text(
+                        '${gift['price']}${'${gift['price']}'.contains('€') ? '' : ' €'}',
+                        style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: violetColor),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchTab() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+          child: TextField(
+            controller: _searchCtrl,
+            textInputAction: TextInputAction.search,
+            onSubmitted: _runProductSearch,
+            style: GoogleFonts.poppins(fontSize: 14),
+            decoration: InputDecoration(
+              hintText: context.tr('Chercher un cadeau…', 'Search a gift…'),
+              hintStyle: GoogleFonts.poppins(fontSize: 14, color: Colors.grey),
+              prefixIcon: Icon(Icons.search, color: violetColor),
+              suffixIcon: IconButton(
+                icon: Icon(Icons.arrow_forward, color: violetColor),
+                onPressed: () => _runProductSearch(_searchCtrl.text),
+              ),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(vertical: 4),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: violetColor.withOpacity(0.3)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: violetColor.withOpacity(0.2)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: violetColor, width: 2),
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: _isSearchingProducts
+              ? Center(child: CircularProgressIndicator(color: violetColor))
+              : _model.searchGifts.isEmpty
+                  ? _buildTabEmpty(
+                      Icons.search_rounded,
+                      context.tr('Cherche n\'importe quel cadeau',
+                          'Search for any gift'),
+                      context.tr(
+                          'Tape un mot-clé pour trouver et ajouter un cadeau.',
+                          'Type a keyword to find and add a gift.'))
+                  : _buildGiftsGrid(_model.searchGifts),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _runProductSearch(String query) async {
+    final q = query.trim();
+    if (q.isEmpty) return;
+    setState(() => _isSearchingProducts = true);
+    try {
+      final results = await ProductSearchService.search(q, limit: 40);
+      final mapped = results.map<Map<String, dynamic>>((p) {
+        final id = (p['id'] ?? p['objectID'] ?? p['name'] ?? '').toString();
+        return {
+          'id': id.isEmpty ? 'search_${p.hashCode}' : id,
+          'name': p['name'] ?? p['product_title'] ?? 'Produit',
+          'brand': p['brand'] ?? '',
+          'price': p['price'] ?? '',
+          'image': p['image'] ?? p['imageUrl'] ?? p['image_url'] ?? '',
+          'url': p['url'] ?? p['product_url'] ?? '',
+          'fromSearch': true,
+        };
+      }).toList();
+      if (mounted) {
+        setState(() {
+          _model.searchGifts = mapped;
+          _isSearchingProducts = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isSearchingProducts = false);
+    }
+  }
+
+  Widget _buildTabEmpty(IconData icon, String title, String sub) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 44, color: violetColor.withOpacity(0.4)),
+            const SizedBox(height: 12),
+            Text(title,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                    fontSize: 16, fontWeight: FontWeight.w600, color: const Color(0xFF1F2937))),
+            const SizedBox(height: 6),
+            Text(sub,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[600])),
           ],
         ),
       ),

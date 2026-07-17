@@ -1575,56 +1575,119 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
             ],
           ),
         ),
-        child: ElevatedButton(
-          // FIX Bug 2: D�sactiver le bouton si navigation en cours
-          onPressed: (canProceed && !_model.isNavigating)
-              ? () async {
-                  // Attendre correctement handleNext (async)
-                  await _model.handleNext(steps, context, skipUserQuestions: skipUserQuestions, returnTo: returnTo, onlyUserQuestions: onlyUserQuestions);
-                  // Rafra�chir l'UI apr�s la navigation
-                  if (mounted) {
-                    setState(() {});
-                  }
-                }
-              : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: canProceed ? violetColor : Colors.white.withOpacity(0.1),
-            disabledBackgroundColor: Colors.white.withOpacity(0.1),
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(50),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ElevatedButton(
+              // FIX Bug 2: D�sactiver le bouton si navigation en cours
+              onPressed: (canProceed && !_model.isNavigating)
+                  ? () async {
+                      // Attendre correctement handleNext (async)
+                      await _model.handleNext(steps, context, skipUserQuestions: skipUserQuestions, returnTo: returnTo, onlyUserQuestions: onlyUserQuestions);
+                      // Rafra�chir l'UI apr�s la navigation
+                      if (mounted) {
+                        setState(() {});
+                      }
+                    }
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: canProceed ? violetColor : Colors.white.withOpacity(0.1),
+                disabledBackgroundColor: Colors.white.withOpacity(0.1),
+                minimumSize: const Size.fromHeight(0),
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                elevation: canProceed ? 8 : 0,
+                shadowColor: violetColor.withOpacity(0.5),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (isLastStep) ...[
+                    const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                  ],
+                  Text(
+                    isLastStep ? 'D�couvrir mes cadeaux' : context.tr('Continuer', 'Continue'),
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: canProceed ? Colors.white : Colors.white54,
+                    ),
+                  ),
+                  if (isLastStep) ...[
+                    const SizedBox(width: 8),
+                    const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+                  ] else ...[
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.arrow_forward,
+                      color: canProceed ? Colors.white : Colors.white54,
+                      size: 20,
+                    ),
+                  ],
+                ],
+              ),
             ),
-            elevation: canProceed ? 8 : 0,
-            shadowColor: violetColor.withOpacity(0.5),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (isLastStep) ...[
-                const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
-                const SizedBox(width: 8),
-              ],
-              Text(
-                isLastStep ? 'D�couvrir mes cadeaux' : context.tr('Continuer', 'Continue'),
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: canProceed ? Colors.white : Colors.white54,
+            // ── Échappatoires : passer une question / créer directement ──
+            // Disponibles une fois le nom du destinataire connu, hors dernière
+            // étape (l'utilisateur a déjà l'idée de cadeau et veut aller vite).
+            if (!isLastStep && _model.hasRecipientName)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      onPressed: _model.isNavigating
+                          ? null
+                          : () => setState(() => _model.skipStep(steps)),
+                      child: Text(
+                        context.tr('Passer', 'Skip'),
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 1,
+                      height: 16,
+                      color: Colors.white24,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                    ),
+                    TextButton(
+                      onPressed: _model.isNavigating
+                          ? null
+                          : () async {
+                              await _model.createDirectly(steps, context,
+                                  skipUserQuestions: skipUserQuestions,
+                                  returnTo: returnTo,
+                                  onlyUserQuestions: onlyUserQuestions);
+                              if (mounted) setState(() {});
+                            },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.bolt_rounded, size: 16, color: violetColor),
+                          const SizedBox(width: 4),
+                          Text(
+                            context.tr('Créer directement', 'Create now'),
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: violetColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              if (isLastStep) ...[
-                const SizedBox(width: 8),
-                const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
-              ] else ...[
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.arrow_forward,
-                  color: canProceed ? Colors.white : Colors.white54,
-                  size: 20,
-                ),
-              ],
-            ],
-          ),
+          ],
         ),
       ),
     );

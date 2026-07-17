@@ -472,6 +472,38 @@ class OnboardingAdvancedModel {
       currentStep--;
     }
   }
+
+  /// Vrai dès qu'on connaît le nom (ou le @username) du destinataire :
+  /// à partir de là on peut passer les questions de goûts ou créer direct.
+  bool get hasRecipientName =>
+      (answers['personName']?.toString().trim().isNotEmpty == true) ||
+      (answers['personIdentifier']?.toString().trim().isNotEmpty == true);
+
+  /// « Passer » : avance à la question suivante sans exiger de réponse.
+  void skipStep(List<Map<String, dynamic>> steps) {
+    if (currentStep < steps.length - 1) {
+      currentStep++;
+    }
+  }
+
+  /// « Créer directement » : saute les questions restantes et termine
+  /// l'onboarding tout de suite (crée la personne + navigue vers les cadeaux).
+  Future<void> createDirectly(
+    List<Map<String, dynamic>> steps,
+    BuildContext context, {
+    bool skipUserQuestions = false,
+    String? returnTo,
+    bool onlyUserQuestions = false,
+  }) async {
+    currentStep = steps.length - 1;
+    await handleNext(
+      steps,
+      context,
+      skipUserQuestions: skipUserQuestions,
+      returnTo: returnTo,
+      onlyUserQuestions: onlyUserQuestions,
+    );
+  }
 }
 
 
