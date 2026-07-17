@@ -21,6 +21,7 @@ import '/utils/app_tr.dart';
 export 'search_page_model.dart';
 import 'package:doron/pages/new_pages/search_page/user_search_bottom_sheet.dart';
 import 'share_list.dart';
+import '/services/group_gift_service.dart';
 import '/components/liquid_glass_empty_state_widget.dart';
 import '/components/liquid_glass_loader.dart';
 import '/components/product_detail_modal.dart';
@@ -900,6 +901,57 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                              }
                            });
                         }
+                      ),
+                      // Cadeau de groupe (cagnotte) : décision + paiement partagé
+                      _buildProfileActionButton(
+                        icon: IconlyBold.wallet,
+                        label: context.tr('Cadeau de groupe', 'Group gift'),
+                        onTap: () async {
+                          final profileId = profile['id']?.toString() ??
+                              profile['personId']?.toString() ?? '';
+                          if (profileId.isEmpty) return;
+                          final giftsList = _model.personGifts[profileId] ?? [];
+                          if (giftsList.isEmpty) {
+                            _showSnackBar(
+                                context.tr(
+                                    'Ajoutez d\'abord des idées cadeaux !',
+                                    'Add some gift ideas first!'),
+                                isError: true);
+                            return;
+                          }
+                          final profileName =
+                              profile['name']?.toString() ?? 'la liste';
+                          try {
+                            final collab = await GroupGiftService.createOrGet(
+                              profileId: profileId,
+                              profileName: profileName,
+                            );
+                            await FirebaseDataService.updatePersonMeta(profileId, {
+                              'chatId': collab['chatId'],
+                              'isShared': true,
+                              'collabId': collab['collabId'],
+                              'giftMode': 'group_gift',
+                            });
+                            if (!mounted) return;
+                            setState(() {
+                              profile['chatId'] = collab['chatId'];
+                              profile['isShared'] = true;
+                              profile['collabId'] = collab['collabId'];
+                            });
+                            context.push('/group-gift/${collab['collabId']}', extra: {
+                              'collabId': collab['collabId'],
+                              'chatId': collab['chatId'],
+                              'profileName': profileName,
+                              'ownerId': collab['ownerId'],
+                              'gifts': giftsList,
+                            });
+                          } catch (e) {
+                            _showSnackBar(
+                                context.tr('Erreur, réessaie',
+                                    'Something went wrong'),
+                                isError: true);
+                          }
+                        },
                       ),
                       // FIX C1: afficher si chatId présent OU isShared=true
                       if (profile['chatId'] != null || profile['isShared'] == true)

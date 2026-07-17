@@ -721,6 +721,18 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   _buildWishlistCardMessage(text, isMe)
                 else if (messageData['type'] == 'image')
                   _buildImageMessage(messageData, isMe)
+                else if (messageData['type'] == 'retained_gift')
+                  _buildGroupGiftEvent(messageData, text,
+                      Icons.card_giftcard_rounded, const Color(0xFF10B981))
+                else if (messageData['type'] == 'payment_request')
+                  _buildGroupGiftEvent(messageData, text,
+                      Icons.savings_rounded, violetColor)
+                else if (messageData['type'] == 'payment_declared')
+                  _buildGroupGiftEvent(messageData, text,
+                      Icons.send_rounded, const Color(0xFFF59E0B))
+                else if (messageData['type'] == 'payment_confirmed')
+                  _buildGroupGiftEvent(messageData, text,
+                      Icons.verified_rounded, const Color(0xFF10B981))
                 else
                   Container(
                     constraints: BoxConstraints(
@@ -934,6 +946,44 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Bandeau spécial pour les événements de cagnotte (cadeau retenu, collecte,
+  /// paiement déclaré/confirmé). Distinct des bulles de texte classiques.
+  Widget _buildGroupGiftEvent(
+      Map<String, dynamic> messageData, String text, IconData icon, Color color) {
+    final gift = (messageData['gift'] as Map?)?.cast<String, dynamic>();
+    final img = (gift?['image'] ?? '').toString();
+    return Container(
+      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.14),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.5)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (img.isNotEmpty)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(img, width: 42, height: 42, fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Icon(icon, color: color, size: 22)),
+            )
+          else
+            Icon(icon, color: color, size: 22),
+          const SizedBox(width: 10),
+          Flexible(
+            child: Text(
+              text,
+              style: GoogleFonts.poppins(
+                  fontSize: 13.5, color: Colors.white, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
       ),
     );
   }

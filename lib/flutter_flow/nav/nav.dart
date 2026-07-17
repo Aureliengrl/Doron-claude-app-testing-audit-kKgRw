@@ -35,6 +35,7 @@ import '/pages/authentification/choose_handle_widget.dart';
 import '/pages/new_pages/social/friends_page.dart';
 import '/pages/new_pages/setup_profile/setup_profile_page.dart';
 import '/pages/new_pages/join_collab_page.dart';
+import '/pages/new_pages/group_gift/group_gift_page.dart';
 import '/pages/new_pages/birthday_calendar/birthday_calendar_page.dart'; // F3
 import '/pages/new_pages/secret_santa/secret_santa_hub_page.dart';
 import '/pages/new_pages/secret_santa/secret_santa_create_page.dart';
@@ -392,6 +393,26 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => JoinCollabPage(
             token: params.getParam<String>('token', ParamType.String) ?? '',
           ),
+        ),
+        // Cadeau de groupe (cagnotte) — mode collaboration + paiement
+        FFRoute(
+          name: GroupGiftPage.routeName,
+          path: GroupGiftPage.routePath,
+          requireAuth: true,
+          builder: (context, params) {
+            final extra =
+                (params.state.extra as Map?)?.cast<String, dynamic>() ?? const {};
+            return GroupGiftPage(
+              collabId: params.getParam<String>('collabId', ParamType.String) ??
+                  (extra['collabId']?.toString() ?? ''),
+              chatId: extra['chatId']?.toString() ?? '',
+              profileName: extra['profileName']?.toString() ?? 'la liste',
+              ownerId: extra['ownerId']?.toString() ?? '',
+              gifts: ((extra['gifts'] as List?) ?? const [])
+                  .map((e) => (e as Map).cast<String, dynamic>())
+                  .toList(),
+            );
+          },
         ),
         // F3: Calendrier anniversaires & fêtes
         FFRoute(
