@@ -661,6 +661,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                   child: Column(
                     children: [
                       Stack(
+                        // Clip.none : la pastille « 1 » déborde du rond (offsets négatifs)
+                        clipBehavior: Clip.none,
                         children: [
                           AnimatedContainer(
                             duration: const Duration(milliseconds: 300),

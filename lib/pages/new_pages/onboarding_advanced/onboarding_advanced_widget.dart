@@ -1577,6 +1577,8 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          // stretch pour conserver le bouton principal en pleine largeur
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ElevatedButton(
               // FIX Bug 2: D�sactiver le bouton si navigation en cours

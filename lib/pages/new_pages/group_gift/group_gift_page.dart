@@ -832,13 +832,16 @@ class _CollectionSetupSheetState extends State<_CollectionSetupSheet> {
       _included[uid] = uid != widget.hostUid;
       _amountCtrls[uid] = TextEditingController();
     }
-    _recompute();
+    // Pas de setState ici : on est dans initState, le build n'a pas eu lieu.
+    _computeEqualShares();
   }
 
   List<String> get _includedUids =>
       widget.memberUids.where((u) => _included[u] == true).toList();
 
-  void _recompute() {
+  /// Remplit les champs de montant en parts égales. Ne déclenche PAS de
+  /// rebuild — les appelants (hors initState) encadrent déjà par setState.
+  void _computeEqualShares() {
     if (_custom) return; // en mode perso, on ne touche pas aux montants saisis
     final uids = _includedUids;
     final split = GroupGiftService.computeEqualSplit(widget.total, uids);
@@ -846,7 +849,6 @@ class _CollectionSetupSheetState extends State<_CollectionSetupSheet> {
       _amountCtrls[uid]!.text =
           split.containsKey(uid) ? (split[uid]!).toStringAsFixed(2) : '';
     }
-    setState(() {});
   }
 
   double get _sumEntered {
@@ -925,7 +927,7 @@ class _CollectionSetupSheetState extends State<_CollectionSetupSheet> {
           Row(children: [
             _segButton(context.tr('Parts égales', 'Equal'), !_custom, () {
               setState(() => _custom = false);
-              _recompute();
+              _computeEqualShares();
             }),
             const SizedBox(width: 8),
             _segButton(context.tr('Personnalisé', 'Custom'), _custom, () {
@@ -942,7 +944,7 @@ class _CollectionSetupSheetState extends State<_CollectionSetupSheet> {
                   _hostPays = v ?? false;
                   _included[widget.hostUid] = _hostPays;
                 });
-                _recompute();
+                _computeEqualShares();
               },
             ),
             Expanded(
@@ -1036,7 +1038,7 @@ class _CollectionSetupSheetState extends State<_CollectionSetupSheet> {
               ? null // géré par la case « l'hôte participe »
               : (v) {
                   setState(() => _included[uid] = v ?? false);
-                  _recompute();
+                  _computeEqualShares();
                 },
         ),
         Expanded(
