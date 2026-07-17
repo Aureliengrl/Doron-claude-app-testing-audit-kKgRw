@@ -166,13 +166,48 @@ service cloud.firestore {
       // Les données ne sont pas sensibles (pas de données perso).
       allow read: if isAuth();
       allow create: if isAuth() && request.resource.data.ownerId == request.auth.uid;
-      // FIX #2: pendingInvites must be allowed to update (joinByToken / addMember)
+      // L'hôte peut tout modifier (retainedGift, collection, payment, mode…).
+      // Un membre / invité ne peut modifier QUE members et pendingInvites
+      // (join par token / addMember / decline) — pas les champs cagnotte.
       allow update: if isAuth() && (
         resource.data.ownerId == request.auth.uid ||
-        request.auth.uid in resource.data.members ||
-        request.auth.uid in resource.data.get('pendingInvites', [])
+        (
+          (request.auth.uid in resource.data.members ||
+           request.auth.uid in resource.data.get('pendingInvites', [])) &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['members', 'pendingInvites'])
+        )
       );
       allow delete: if isAuth() && resource.data.ownerId == request.auth.uid;
+
+      // ── participants (cagnotte : statut de paiement) ──────────────────────
+      // Money-sensitive : verrouillé finement.
+      //   - Lecture : hôte ou membre de la collab.
+      //   - Écriture générale (créer les parts, confirmer, refuser) : hôte only.
+      //   - Un participant peut UNIQUEMENT passer SON propre statut à 'declared'
+      //     (« j'ai envoyé »), sans toucher à son montant.
+      match /participants/{participantUid} {
+        function collab() {
+          return get(/databases/$(database)/documents/collaborations/$(collabId)).data;
+        }
+        function isHost() {
+          return isAuth() && collab().ownerId == request.auth.uid;
+        }
+        function isCollabMember() {
+          return isAuth() && (
+            collab().ownerId == request.auth.uid ||
+            request.auth.uid in collab().members
+          );
+        }
+        allow read: if isCollabMember();
+        allow create: if isHost();
+        allow update: if isHost() || (
+          participantUid == request.auth.uid &&
+          request.resource.data.status == 'declared' &&
+          request.resource.data.share == resource.data.share
+        );
+        allow delete: if isHost();
+      }
     }
 
     // ── collab_tokens ─────────────────────────────────────────────────────────

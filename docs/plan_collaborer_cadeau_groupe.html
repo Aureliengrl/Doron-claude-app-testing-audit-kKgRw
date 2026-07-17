@@ -1,0 +1,775 @@
+<title>Doron — Refonte « Collaborer » & Cadeau de groupe</title>
+<style>
+  :root {
+    --ground: #F6F4FA;
+    --surface: #FFFFFF;
+    --surface-2: #F0ECF7;
+    --ink: #211B2E;
+    --ink-soft: #4A4360;
+    --muted: #837B99;
+    --line: #E4DEF0;
+    --line-strong: #D2C8E6;
+    --accent: #6C4CE0;
+    --accent-soft: #EEE9FC;
+    --accent-ink: #4A2FB0;
+    --good: #1B9C6B;
+    --good-soft: #E1F4EC;
+    --warn: #B87A12;
+    --warn-soft: #F8EED9;
+    --crit: #C93F38;
+    --crit-soft: #FbE7E5;
+    --host: #6C4CE0;
+    --guest: #2A7DB8;
+    --guest-soft: #E3F0F8;
+
+    --mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+    --maxw: 1180px;
+    --readw: 74ch;
+    --radius: 14px;
+    --radius-sm: 9px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #14111C;
+      --surface: #1D1926;
+      --surface-2: #262133;
+      --ink: #EEEAF6;
+      --ink-soft: #C3BCD6;
+      --muted: #8E86A4;
+      --line: #2E2840;
+      --line-strong: #3C3454;
+      --accent: #9E86F6;
+      --accent-soft: #2A2340;
+      --accent-ink: #C3B2FF;
+      --good: #3FCB92;
+      --good-soft: #16321F;
+      --warn: #E0A947;
+      --warn-soft: #33290F;
+      --crit: #F0776E;
+      --crit-soft: #351917;
+      --host: #9E86F6;
+      --guest: #63B3E6;
+      --guest-soft: #14283440;
+    }
+  }
+  :root[data-theme="light"] {
+    --ground: #F6F4FA; --surface: #FFFFFF; --surface-2: #F0ECF7; --ink: #211B2E; --ink-soft: #4A4360;
+    --muted: #837B99; --line: #E4DEF0; --line-strong: #D2C8E6; --accent: #6C4CE0; --accent-soft: #EEE9FC;
+    --accent-ink: #4A2FB0; --good: #1B9C6B; --good-soft: #E1F4EC; --warn: #B87A12; --warn-soft: #F8EED9;
+    --crit: #C93F38; --crit-soft: #FBE7E5; --host: #6C4CE0; --guest: #2A7DB8; --guest-soft: #E3F0F8;
+  }
+  :root[data-theme="dark"] {
+    --ground: #14111C; --surface: #1D1926; --surface-2: #262133; --ink: #EEEAF6; --ink-soft: #C3BCD6;
+    --muted: #8E86A4; --line: #2E2840; --line-strong: #3C3454; --accent: #9E86F6; --accent-soft: #2A2340;
+    --accent-ink: #C3B2FF; --good: #3FCB92; --good-soft: #16321F; --warn: #E0A947; --warn-soft: #33290F;
+    --crit: #F0776E; --crit-soft: #351917; --host: #9E86F6; --guest: #63B3E6; --guest-soft: #1B2A36;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 clamp(16px, 4vw, 40px); }
+  .layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: start; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+  /* ---- Hero ---- */
+  header.hero {
+    padding: clamp(40px, 7vw, 88px) 0 clamp(28px, 4vw, 44px);
+    border-bottom: 1px solid var(--line);
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    margin: 0 0 18px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::before {
+    content: ""; width: 26px; height: 2px; background: var(--accent); display: inline-block;
+  }
+  h1 {
+    font-size: clamp(30px, 5.4vw, 56px);
+    line-height: 1.04;
+    letter-spacing: -0.025em;
+    font-weight: 800;
+    margin: 0 0 20px;
+    text-wrap: balance;
+  }
+  h1 .thin { font-weight: 300; color: var(--ink-soft); }
+  .lede { font-size: clamp(17px, 2.1vw, 20px); color: var(--ink-soft); max-width: 60ch; margin: 0; }
+  .hero-meta {
+    display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px;
+  }
+  .chip {
+    font-size: 12.5px; font-family: var(--mono); letter-spacing: 0.02em;
+    padding: 6px 11px; border-radius: 100px; border: 1px solid var(--line-strong);
+    background: var(--surface); color: var(--ink-soft);
+  }
+  .chip b { color: var(--accent-ink); font-weight: 600; }
+
+  /* ---- Nav ---- */
+  nav.toc {
+    position: sticky; top: 20px;
+    font-size: 13.5px;
+    padding: 20px 0;
+  }
+  nav.toc .toc-title {
+    font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.14em;
+    font-size: 11px; color: var(--muted); margin: 0 0 14px; padding-left: 14px;
+  }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+  nav.toc a {
+    display: block; padding: 6px 14px; color: var(--ink-soft); text-decoration: none;
+    border-left: 2px solid var(--line); line-height: 1.35;
+  }
+  nav.toc a:hover { color: var(--accent-ink); border-left-color: var(--accent); background: var(--accent-soft); }
+  nav.toc a .n { font-family: var(--mono); color: var(--muted); font-size: 11px; margin-right: 7px; }
+  @media (max-width: 900px) {
+    nav.toc { position: static; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 18px 6px; margin-top: 24px; }
+  }
+
+  main { padding: 8px 0 80px; min-width: 0; }
+  section { padding: clamp(30px, 5vw, 54px) 0; border-bottom: 1px solid var(--line); scroll-margin-top: 16px; }
+  section:last-child { border-bottom: none; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; }
+  .sec-num {
+    font-family: var(--mono); font-size: 13px; color: var(--accent); font-weight: 600;
+    letter-spacing: 0.05em; flex: none;
+  }
+  h2 { font-size: clamp(23px, 3.4vw, 33px); letter-spacing: -0.02em; font-weight: 800; margin: 0 0 6px; line-height: 1.12; text-wrap: balance; }
+  h3 { font-size: clamp(18px, 2.3vw, 22px); letter-spacing: -0.01em; font-weight: 700; margin: 34px 0 12px; }
+  h4 { font-size: 15px; font-weight: 700; margin: 22px 0 8px; color: var(--ink); }
+  p { margin: 0 0 14px; max-width: var(--readw); }
+  .sub { color: var(--muted); max-width: var(--readw); margin: -2px 0 20px; }
+  ul, ol.list { padding-left: 20px; max-width: var(--readw); }
+  li { margin: 5px 0; }
+  strong { font-weight: 650; }
+  code, .mono { font-family: var(--mono); font-size: 0.86em; }
+  p code, li code, td code {
+    background: var(--surface-2); padding: 1px 6px; border-radius: 5px; color: var(--accent-ink);
+    border: 1px solid var(--line); white-space: nowrap;
+  }
+  a.inline { color: var(--accent-ink); }
+
+  /* ---- Cards & callouts ---- */
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 22px 24px; margin: 18px 0;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 720px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+
+  .callout { border-radius: var(--radius); padding: 18px 20px 18px 22px; margin: 22px 0; border: 1px solid; position: relative; }
+  .callout .k { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; margin: 0 0 7px; display: block; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout.decision { background: var(--accent-soft); border-color: var(--line-strong); }
+  .callout.decision .k { color: var(--accent-ink); }
+  .callout.crit { background: var(--crit-soft); border-color: color-mix(in srgb, var(--crit) 34%, transparent); }
+  .callout.crit .k { color: var(--crit); }
+  .callout.good { background: var(--good-soft); border-color: color-mix(in srgb, var(--good) 34%, transparent); }
+  .callout.good .k { color: var(--good); }
+  .callout.warn { background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
+  .callout.warn .k { color: var(--warn); }
+
+  /* ---- Pills ---- */
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 100px; letter-spacing: 0.01em; line-height: 1.5; white-space: nowrap; }
+  .pill.host { background: var(--accent-soft); color: var(--accent-ink); }
+  .pill.guest { background: var(--guest-soft); color: var(--guest); }
+  .pill.good { background: var(--good-soft); color: var(--good); }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); }
+  .pill.crit { background: var(--crit-soft); color: var(--crit); }
+  .pill.mvp { background: var(--accent); color: #fff; }
+  .pill.v2 { background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--line-strong); }
+  .pill.v3 { background: transparent; color: var(--muted); border: 1px dashed var(--line-strong); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .dot.good { background: var(--good); }
+  .dot.warn { background: var(--warn); }
+  .dot.empty { background: transparent; border: 2px solid var(--muted); width: 12px; height: 12px; box-sizing: border-box; }
+
+  /* ---- Tables ---- */
+  .tbl-scroll { overflow-x: auto; margin: 18px 0; border: 1px solid var(--line); border-radius: var(--radius); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 520px; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  thead th { background: var(--surface-2); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-soft); font-weight: 700; }
+  tbody tr:last-child td { border-bottom: none; }
+  td.mono, th.mono { font-family: var(--mono); font-size: 12.5px; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ---- Flow / steps ---- */
+  .flow { display: flex; flex-direction: column; gap: 0; margin: 18px 0; counter-reset: step; }
+  .step { display: grid; grid-template-columns: 40px 1fr; gap: 16px; padding: 0 0 22px; position: relative; }
+  .step:not(:last-child)::before { content: ""; position: absolute; left: 19px; top: 34px; bottom: -4px; width: 2px; background: var(--line-strong); }
+  .step .marker { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-family: var(--mono); font-weight: 700; font-size: 15px; flex: none; z-index: 1; }
+  .step.host .marker { background: var(--accent-soft); color: var(--accent-ink); border: 1.5px solid var(--accent); }
+  .step.guest .marker { background: var(--guest-soft); color: var(--guest); border: 1.5px solid var(--guest); }
+  .step .body { padding-top: 6px; }
+  .step .body h4 { margin: 0 0 4px; }
+  .step .body p { margin: 0; color: var(--ink-soft); font-size: 14.5px; }
+
+  .roles { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 18px 0; }
+  @media (max-width: 720px) { .roles { grid-template-columns: 1fr; } }
+  .role-card { border-radius: var(--radius); padding: 20px; border: 1px solid var(--line); }
+  .role-card.host { background: var(--accent-soft); border-color: var(--line-strong); }
+  .role-card.guest { background: var(--guest-soft); border-color: color-mix(in srgb, var(--guest) 25%, transparent); }
+  .role-card h4 { margin-top: 0; display: flex; align-items: center; gap: 8px; font-size: 16px; }
+
+  /* screen mockup */
+  .screens { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin: 20px 0; }
+  .screen { border: 1px solid var(--line-strong); border-radius: 18px; background: var(--surface); overflow: hidden; box-shadow: 0 1px 0 var(--line); }
+  .screen .bar { background: var(--surface-2); padding: 9px 12px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 7px; border-bottom: 1px solid var(--line); }
+  .screen .bar .back { color: var(--muted); font-family: var(--mono); }
+  .screen .scr-body { padding: 13px; font-size: 12.5px; color: var(--ink-soft); display: flex; flex-direction: column; gap: 8px; }
+  .mock-row { display: flex; align-items: center; gap: 8px; }
+  .mock-gift { border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--ground); }
+  .mock-gift.green { border-color: var(--good); background: var(--good-soft); }
+  .mock-btn { text-align: center; padding: 7px; border-radius: 8px; background: var(--accent); color: #fff; font-weight: 700; font-size: 12px; }
+  .mock-btn.ghost { background: transparent; color: var(--accent-ink); border: 1px solid var(--line-strong); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: var(--ink-soft); margin: 10px 0 4px; }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+
+  footer.foot { padding: 40px 0 60px; color: var(--muted); font-size: 13.5px; }
+  footer.foot code { color: var(--ink-soft); }
+  .kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+  hr.soft { border: none; border-top: 1px solid var(--line); margin: 30px 0; }
+  .tag-file { font-family: var(--mono); font-size: 12px; background: var(--surface-2); border: 1px solid var(--line); padding: 1px 7px; border-radius: 5px; color: var(--ink-soft); white-space: nowrap; }
+</style>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Doron · Plan de refonte produit</p>
+    <h1>« Collaborer » <span class="thin">+ le nouveau mode</span> Cadeau de groupe</h1>
+    <p class="lede">Plan complet, décisions d'architecture et découpage en phases pour garder la collaboration actuelle, ajouter une vraie cagnotte cadeau (hôte / participants / paiement) et refondre la fin du quiz.</p>
+    <div class="hero-meta">
+      <span class="chip">Branche <b>claude/app-audit-improvements</b></span>
+      <span class="chip">3 chantiers · <b>MVP en 4 phases</b></span>
+      <span class="chip">Flutter + <b>Firestore</b></span>
+      <span class="chip">Rédigé le <b>16 juil. 2026</b></span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap layout">
+  <nav class="toc" aria-label="Sommaire">
+    <p class="toc-title">Sommaire</p>
+    <ol>
+      <li><a href="#resume"><span class="n">00</span>Résumé & décisions clés</a></li>
+      <li><a href="#existant"><span class="n">01</span>État des lieux (existant)</a></li>
+      <li><a href="#paiement"><span class="n">02</span>Décision critique : paiement</a></li>
+      <li><a href="#modeA"><span class="n">03</span>Mode Cadeau de groupe</a></li>
+      <li><a href="#retenu"><span class="n">04</span>Le cadeau retenu</a></li>
+      <li><a href="#split"><span class="n">05</span>Répartition & collecte</a></li>
+      <li><a href="#quiz"><span class="n">06</span>Refonte du quiz</a></li>
+      <li><a href="#data"><span class="n">07</span>Modèle de données</a></li>
+      <li><a href="#phases"><span class="n">08</span>Découpage en phases</a></li>
+      <li><a href="#risques"><span class="n">09</span>Risques & attention</a></li>
+      <li><a href="#decisions"><span class="n">10</span>À valider ensemble</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <!-- 00 -->
+    <section id="resume">
+      <div class="sec-head"><span class="sec-num">00</span><h2>Résumé & décisions clés</h2></div>
+      <p class="sub">Ce que je recommande de construire, dans quel ordre, et les 5 partis pris qui structurent tout le reste.</p>
+
+      <p>Tu as trois demandes qui se recouvrent. Je les traite comme <strong>trois chantiers distincts</strong> pour pouvoir livrer par étapes sans tout casser :</p>
+      <div class="grid3">
+        <div class="card">
+          <span class="pill host">Chantier A</span>
+          <h4>Mode « Cadeau de groupe »</h4>
+          <p class="sub" style="margin:0">La grosse nouveauté : une cagnotte où l'hôte choisit le cadeau retenu, répartit le montant, et chacun paie via un lien. Le cœur du projet.</p>
+        </div>
+        <div class="card">
+          <span class="pill guest">Chantier B</span>
+          <h4>Refonte de la fin du quiz</h4>
+          <p class="sub" style="margin:0">Passer / créer directement pendant le quiz, cartes plus petites, et 3 onglets à la fin (Recommandés · Likes &amp; wishlists · Recherche).</p>
+        </div>
+        <div class="card">
+          <span class="pill v2">Chantier C</span>
+          <h4>Garder « Collaborer »</h4>
+          <p class="sub" style="margin:0">On conserve la collaboration simple actuelle (chat de groupe + liste partagée). Elle devient le socle du mode A.</p>
+        </div>
+      </div>
+
+      <h3>Mes 5 décisions structurantes</h3>
+      <p class="sub">Tu m'as demandé de prendre des initiatives et de te dire l'essentiel. Voici les partis pris que je prends — chacun est justifié plus bas et reste discutable en section 10.</p>
+
+      <div class="card">
+        <ol class="list" style="max-width:none; margin:0; padding-left:20px">
+          <li><strong>Doron ne touche jamais l'argent.</strong> On ne gère <em>aucun</em> flux financier dans l'app : uniquement des <strong>liens de paiement</strong> (Revolut/Wero/IBAN) + une confirmation manuelle « j'ai envoyé » / « j'ai reçu ». C'est ce qui rend la fonction légale et acceptable par l'App Store. <span class="pill crit">non négociable</span></li>
+          <li><strong>Le mode groupe est une extension de la collab existante</strong>, pas une refonte. On ajoute un champ <code>mode</code> à <code>collaborations</code> et une sous-collection <code>participants</code>. Zéro migration destructive.</li>
+          <li><strong>Deux interfaces pour un même objet.</strong> L'hôte voit un tableau de bord de contrôle ; le participant voit un écran ultra-simple « voici ta part, voici le lien, dis quand c'est payé ». Même donnée, deux vues.</li>
+          <li><strong>Le statut de paiement est la colonne vertébrale visuelle.</strong> Rond vide → notification « 1 » → part à payer → déclaré → <span class="dot good"></span> vert. Ce cycle pilote les badges, le chat et la liste.</li>
+          <li><strong>On livre un MVP « décision de groupe » avant le paiement.</strong> Choisir ensemble + cadeau retenu en vert apporte déjà 80 % de la valeur, sans le risque du paiement. Le paiement vient en phase 3.</li>
+        </ol>
+      </div>
+
+      <div class="callout good">
+        <span class="k">Ce que ça donne pour l'utilisateur</span>
+        <p>« Je crée la liste de Maman pour Noël, j'invite ma sœur et mon père, on discute, je choisis le pull retenu (il passe en vert pour tout le monde), l'app propose de diviser 60 € en 3, chacun reçoit une notif avec mon lien Revolut, paie, me dit “envoyé”, je confirme, et une pastille verte apparaît à côté de son nom. »</p>
+      </div>
+    </section>
+
+    <!-- 01 -->
+    <section id="existant">
+      <div class="sec-head"><span class="sec-num">01</span><h2>État des lieux — ce qui existe déjà</h2></div>
+      <p class="sub">Bonne nouvelle : 70 % de la plomberie du mode groupe est déjà là. On construit dessus.</p>
+
+      <h3>Côté back (Firestore)</h3>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>Collection</th><th>Rôle actuel</th><th>Champs clés</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">collaborations</td><td>Une collab = une liste partagée pour une personne</td><td class="mono">profileId, ownerId, members[], pendingInvites[], chatId, inviteToken</td></tr>
+            <tr><td class="mono">collab_tokens</td><td>Index du lien d'invitation (join par deep link)</td><td class="mono">collabId, chatId, profileName, ownerId</td></tr>
+            <tr><td class="mono">collab_invites</td><td>Invitation nominative à un ami Doron</td><td class="mono">collabId, fromUid, toUid, status</td></tr>
+            <tr><td class="mono">chats / …/messages</td><td>Chat de groupe + messages typés</td><td class="mono">isGroup, participants[] · type: system/text/image/product/wishlist_poll_result</td></tr>
+            <tr><td class="mono">notifications/{uid}/items</td><td>Notifs in-app (+ FCM)</td><td class="mono">type, title, body, read</td></tr>
+            <tr><td class="mono">users/{uid}/people/{personId}</td><td>Le destinataire + ses listes</td><td class="mono">tags, isShared, chatId, collabId · sous-coll. giftLists</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Le service <span class="tag-file">lib/services/collaboration_service.dart</span> gère déjà : création de collab + chat, invitation (ami direct ou en attente), accept/decline, join par token, streams temps réel. <strong>C'est notre point de départ.</strong></p>
+
+      <h3>Côté front (Flutter)</h3>
+      <ul>
+        <li><span class="tag-file">search_page_widget.dart</span> — la grille des ronds « personnes », le bouton <strong>AJOUTER</strong> (index 0 → <code>/onboarding-advanced</code>), le bouton <strong>Collaborer</strong> par personne, la grille de cadeaux (<code>crossAxisCount: 2</code>).</li>
+        <li><span class="tag-file">onboarding_advanced/</span> — le quiz (nom, occasion, budget, goûts…).</li>
+        <li><span class="tag-file">onboarding_gifts_result_widget.dart</span> — l'écran de fin : fusionne cadeaux IA + wishlists de la personne, sélection par rond (<code>toggleGiftSelection</code>, <code>selectedCount</code>), bouton « Valider (N) » qui sauvegarde la <code>giftList</code>.</li>
+        <li><span class="tag-file">chat/chat_room_page.dart</span> — le chat de groupe (2 000 lignes), messages texte/image/produit, système de reply.</li>
+        <li><span class="tag-file">join_collab_page.dart</span> — la page d'arrivée d'un deep link d'invitation.</li>
+      </ul>
+
+      <div class="callout decision">
+        <span class="k">Ce qui manque (et qu'on va ajouter)</span>
+        <p>La notion de <strong>rôle hôte vs participant</strong>, le <strong>cadeau retenu</strong>, la <strong>répartition du montant</strong>, le <strong>cycle de paiement</strong> et son <strong>statut visuel</strong>, plus les <strong>3 onglets</strong> de fin de quiz. Tout le reste est réutilisable.</p>
+      </div>
+    </section>
+
+    <!-- 02 -->
+    <section id="paiement">
+      <div class="sec-head"><span class="sec-num">02</span><h2>Décision critique : comment gérer le paiement</h2></div>
+      <p class="sub">À lire avant tout le reste. C'est la décision qui peut faire refuser l'app — ou la rendre parfaitement sûre.</p>
+
+      <div class="callout crit">
+        <span class="k">Règle d'or — Doron n'encaisse jamais, ne détient jamais, ne redistribue jamais d'argent</span>
+        <p>Dès qu'une app <em>reçoit</em> puis <em>reverse</em> de l'argent entre utilisateurs, elle devient juridiquement un <strong>établissement de paiement</strong> (agrément ACPR/PSD2, KYC, lutte anti-blanchiment) — impossible pour une petite structure, et <strong>rejet quasi certain par Apple/Google</strong>. On ne fait pas ça.</p>
+      </div>
+
+      <p>La bonne nouvelle : <strong>le fonctionnement que tu as décrit évite déjà ce piège.</strong> Chaque participant paie l'hôte <em>directement</em>, d'app à app (Revolut → Revolut, Wero → Wero, virement IBAN). Doron ne fait que <strong>coordonner</strong> : afficher qui doit combien, fournir le lien, et enregistrer une confirmation manuelle. On garde exactement ce modèle.</p>
+
+      <div class="grid2">
+        <div class="card">
+          <h4><span class="dot good"></span>&nbsp;Ce que Doron fait</h4>
+          <ul style="margin:0">
+            <li>Calcule les parts (égal ou personnalisé)</li>
+            <li>Stocke le <strong>lien / IBAN</strong> saisi par l'hôte</li>
+            <li>Ouvre ce lien (deep link Revolut/Wero ou copie IBAN)</li>
+            <li>Enregistre « j'ai envoyé » (participant) et « j'ai reçu » (hôte)</li>
+            <li>Affiche les statuts (vert / en attente)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4><span class="dot" style="background:var(--crit)"></span>&nbsp;Ce que Doron ne fait jamais</h4>
+          <ul style="margin:0">
+            <li>Recevoir les fonds sur un compte Doron</li>
+            <li>Déclencher un vrai virement depuis l'app</li>
+            <li>Vérifier <em>automatiquement</em> qu'un paiement a eu lieu</li>
+            <li>Stocker un numéro de carte</li>
+            <li>Garantir ou rembourser une transaction</li>
+          </ul>
+        </div>
+      </div>
+
+      <h4>Les liens de paiement, concrètement</h4>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>Moyen</th><th>Ce que l'hôte saisit</th><th>Ce que le participant voit</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Revolut</strong></td><td>Son <code>@revtag</code> ou lien <code>revolut.me/xxx</code></td><td>Bouton « Payer avec Revolut » → ouvre l'app Revolut pré-remplie</td></tr>
+            <tr><td><strong>Wero</strong></td><td>Numéro de tel. / identifiant Wero</td><td>Bouton « Payer avec Wero » → deep link Wero</td></tr>
+            <tr><td><strong>IBAN / RIB</strong></td><td>IBAN + nom du bénéficiaire</td><td>IBAN affiché + bouton « Copier » + montant exact</td></tr>
+            <tr><td><strong>Lyf / PayPal / autre</strong></td><td>Un lien URL générique</td><td>Bouton « Ouvrir le lien de paiement »</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warn">
+        <span class="k">Point Apple / Google à garder en tête</span>
+        <p>Un cadeau est un <strong>bien physique</strong> entre particuliers → <strong>pas</strong> soumis à l'achat intégré (in-app purchase). C'est autorisé, comme le partage d'addition dans Lydia/PayPal. À condition, justement, que le paiement se fasse <strong>hors de l'app</strong> (le deep link vers Revolut coche cette case). On documentera ce point pour la revue App Store.</p>
+      </div>
+    </section>
+
+    <!-- 03 -->
+    <section id="modeA">
+      <div class="sec-head"><span class="sec-num">03</span><h2>Chantier A — Le mode « Cadeau de groupe »</h2></div>
+      <p class="sub">Rôles, parcours complet côté hôte et côté participant, écrans, menus, boutons retour et vues d'ensemble.</p>
+
+      <h3>Deux rôles, deux interfaces</h3>
+      <div class="roles">
+        <div class="role-card host">
+          <h4><span class="pill host">Hôte</span> celui qui crée la liste</h4>
+          <p style="margin:0 0 8px" class="sub">Vue « tableau de bord » : il contrôle tout.</p>
+          <ul style="margin:0">
+            <li>Crée la liste &amp; invite</li>
+            <li>Anime la discussion</li>
+            <li><strong>Choisit le cadeau retenu</strong></li>
+            <li>Lance la répartition (égal / perso)</li>
+            <li>Saisit son moyen de paiement</li>
+            <li><strong>Confirme chaque paiement reçu</strong></li>
+            <li>Voit l'avancement global</li>
+          </ul>
+        </div>
+        <div class="role-card guest">
+          <h4><span class="pill guest">Participant</span> celui qu'on invite</h4>
+          <p style="margin:0 0 8px" class="sub">Vue « ultra-simple » : le moins d'actions possible.</p>
+          <ul style="margin:0">
+            <li>Rejoint via lien / notif</li>
+            <li>Propose des idées, discute</li>
+            <li>Voit le cadeau retenu passer en vert</li>
+            <li>Reçoit une notif « 1 » : tu dois payer</li>
+            <li>Voit sa part exacte + le lien</li>
+            <li>Paie → clique « J'ai envoyé »</li>
+            <li>Attend la pastille verte</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Le parcours de bout en bout</h3>
+      <p class="sub">Chaque étape est marquée <span class="pill host" style="padding:1px 8px">H</span> hôte ou <span class="pill guest" style="padding:1px 8px">P</span> participant.</p>
+
+      <div class="flow">
+        <div class="step host"><div class="marker">H</div><div class="body">
+          <h4>1 · Créer la liste en mode groupe</h4>
+          <p>Depuis le rond <strong>AJOUTER</strong> → un choix apparaît : « Pour moi » (liste perso) ou <strong>« Cagnotte / cadeau de groupe »</strong>. On lance le quiz (nom de la personne, occasion, budget), puis on sélectionne des cadeaux.</p>
+        </div></div>
+        <div class="step host"><div class="marker">H</div><div class="body">
+          <h4>2 · Inviter la famille / les amis</h4>
+          <p>Réutilise l'existant : invitation d'un ami Doron (notif), ou lien partageable (<code>doron.app/join/{token}</code>). L'invité arrive sur <span class="tag-file">join_collab_page</span> et rejoint le groupe + le chat.</p>
+        </div></div>
+        <div class="step guest"><div class="marker">P</div><div class="body">
+          <h4>3 · Discuter &amp; proposer des idées</h4>
+          <p>Tout le monde ouvre la liste + le chat de groupe. Les participants peuvent ajouter des cadeaux candidats et voter/commenter (on réutilise les messages <code>product</code> et <code>wishlist_poll_result</code> déjà présents).</p>
+        </div></div>
+        <div class="step host"><div class="marker">H</div><div class="body">
+          <h4>4 · Choisir le cadeau retenu</h4>
+          <p>Menu réservé à l'hôte : sur un cadeau de la liste, bouton <strong>« Retenir ce cadeau »</strong>. Un message spécial part dans le chat (« 🎁 Ce cadeau est retenu ! ») et le cadeau s'affiche <span class="dot good"></span> <strong>en vert pour tout le monde</strong>. Voir section 04.</p>
+        </div></div>
+        <div class="step host"><div class="marker">H</div><div class="body">
+          <h4>5 · Répartir le montant</h4>
+          <p>L'app propose <strong>diviser en parts égales</strong> (montant ÷ nb participants) OU <strong>répartition personnalisée</strong> (l'hôte ajuste qui paie plus/moins, l'app garde le total juste). Voir section 05.</p>
+        </div></div>
+        <div class="step host"><div class="marker">H</div><div class="body">
+          <h4>6 · Saisir son moyen de paiement &amp; lancer la collecte</h4>
+          <p>L'hôte connecte/saisit Revolut, Wero ou IBAN, puis appuie sur <strong>« Lancer la collecte »</strong>. À partir de là, chaque participant devient « redevable ».</p>
+        </div></div>
+        <div class="step guest"><div class="marker">P</div><div class="body">
+          <h4>7 · Notification « 1 » &amp; menu élargi</h4>
+          <p>Sur la page Recherche, le <strong>rond de la personne affiche un « 1 »</strong> (badge d'action requise). En ouvrant, le participant a un menu élargi : sa part, le récap, et le bouton payer.</p>
+        </div></div>
+        <div class="step guest"><div class="marker">P</div><div class="body">
+          <h4>8 · Payer l'hôte, puis déclarer</h4>
+          <p>Bouton « Payer 20 € à [Hôte] » → ouvre Revolut/Wero (ou copie l'IBAN). De retour dans Doron, bouton <strong>« J'ai envoyé l'argent »</strong> → un message part dans le chat, en privé vers l'hôte.</p>
+        </div></div>
+        <div class="step host"><div class="marker">H</div><div class="body">
+          <h4>9 · Vérifier &amp; confirmer la réception</h4>
+          <p>L'hôte vérifie dans <em>sa</em> banque, revient dans Doron et <strong>accepte ou refuse</strong>. S'il accepte → la personne passe <span class="dot good"></span> <strong>vert</strong> dans la liste des participants.</p>
+        </div></div>
+        <div class="step guest"><div class="marker">P</div><div class="body">
+          <h4>10 · État final</h4>
+          <p>Les participants payés &amp; confirmés ont une <strong>pastille verte</strong>. Les autres gardent un <strong>rond vide</strong> + la notif + le message « tu dois payer », jusqu'à régularisation. L'hôte voit l'avancement (ex. 2/3 payés).</p>
+        </div></div>
+      </div>
+
+      <h3>Écrans, menus &amp; navigation</h3>
+      <p class="sub">Aperçu des vues à créer. Chaque écran a un bouton retour clair et une vue d'ensemble accessible en un tap.</p>
+      <div class="screens">
+        <div class="screen"><div class="bar"><span class="back">‹</span> Cadeau de groupe · Maman</div><div class="scr-body">
+          <div class="mock-gift green"><span>🎁 Pull cachemire · 60€</span><span class="dot good"></span></div>
+          <div class="mock-gift"><span>Écharpe · 35€</span><span>▫︎</span></div>
+          <div class="mock-row" style="justify-content:space-between; font-weight:700; color:var(--accent-ink)">Vue hôte <span class="pill host">contrôle</span></div>
+          <div class="mock-btn">Répartir 60€</div>
+          <div class="mock-btn ghost">Ouvrir le chat</div>
+        </div></div>
+        <div class="screen"><div class="bar"><span class="back">‹</span> Ta part</div><div class="scr-body">
+          <div class="mock-row" style="font-size:22px; font-weight:800; color:var(--ink)">20,00 €</div>
+          <div class="sub" style="margin:0">à envoyer à Aurélien</div>
+          <div class="mock-btn">Payer avec Revolut</div>
+          <div class="mock-btn ghost">J'ai envoyé l'argent</div>
+        </div></div>
+        <div class="screen"><div class="bar">Participants</div><div class="scr-body">
+          <div class="mock-row"><span class="dot good"></span> Sœur — payé</div>
+          <div class="mock-row"><span class="dot good"></span> Toi — payé</div>
+          <div class="mock-row"><span class="dot empty"></span> Papa — en attente</div>
+          <div class="sub" style="margin:4px 0 0">Avancement 2/3 · 40€ / 60€</div>
+        </div></div>
+      </div>
+      <div class="legend">
+        <span><span class="dot good"></span> payé &amp; confirmé par l'hôte</span>
+        <span><span class="dot empty"></span> en attente de paiement</span>
+        <span><span class="dot warn"></span> déclaré, à confirmer</span>
+      </div>
+
+      <div class="callout decision">
+        <span class="k">Détails d'UX à ne pas oublier (tu les avais listés)</span>
+        <p><strong>Boutons retour</strong> sur chaque sous-écran ; <strong>vue d'ensemble</strong> (avancement global) toujours à un tap ; <strong>simplicité maximale côté participant</strong> (idéalement 2 taps : payer, puis « j'ai envoyé ») ; <strong>menu de contrôle riche côté hôte</strong> (retenir, répartir, relancer, confirmer). Le badge « 1 » disparaît dès que le participant a agi.</p>
+      </div>
+    </section>
+
+    <!-- 04 -->
+    <section id="retenu">
+      <div class="sec-head"><span class="sec-num">04</span><h2>Le cadeau retenu</h2></div>
+      <p class="sub">Le moment où le groupe passe de « on cherche » à « on offre ça ». Visible et sans ambiguïté.</p>
+
+      <div class="flow">
+        <div class="step host"><div class="marker">H</div><div class="body"><h4>L'hôte appuie sur « Retenir ce cadeau »</h4><p>Menu contextuel réservé à l'hôte (les autres ne voient pas ce bouton). Confirmation : « Retenir le pull cachemire comme cadeau du groupe ? »</p></div></div>
+        <div class="step host"><div class="marker">✓</div><div class="body"><h4>Écriture atomique</h4><p>On enregistre <code>retainedGift</code> sur la collab (id, nom, prix, image, url) + on poste un message chat de type <code>retained_gift</code>.</p></div></div>
+        <div class="step guest"><div class="marker">P</div><div class="body"><h4>Tout le monde voit le changement en temps réel</h4><p>Grâce au stream déjà en place (<code>getCollabStream</code>) : un bandeau « 🎁 Ce cadeau est le cadeau retenu » apparaît dans le chat, et la carte du cadeau s'affiche <strong>en vert</strong> avec un badge « Retenu » dans la liste — pour l'hôte comme pour les participants.</p></div></div>
+      </div>
+
+      <div class="callout good">
+        <span class="k">Règle de gestion</span>
+        <p>Un seul cadeau retenu à la fois. L'hôte peut <strong>changer d'avis</strong> tant que la collecte n'est pas lancée (le vert se déplace). Une fois la collecte lancée, changer le cadeau retenu demande une confirmation forte (ça remet les parts à zéro).</p>
+      </div>
+    </section>
+
+    <!-- 05 -->
+    <section id="split">
+      <div class="sec-head"><span class="sec-num">05</span><h2>Répartition &amp; collecte</h2></div>
+      <p class="sub">Diviser le montant simplement, mais rester large : parts égales par défaut, personnalisation possible.</p>
+
+      <div class="grid2">
+        <div class="card">
+          <h4>Parts égales <span class="pill mvp">défaut</span></h4>
+          <p class="sub" style="margin:0 0 8px">L'app propose direct : montant ÷ nb de participants.</p>
+          <p style="margin:0"><code>60 € ÷ 3 = 20 € / pers.</code> Gestion des centimes : le reste (ex. 0,01 €) est absorbé par l'hôte pour que le total tombe juste.</p>
+        </div>
+        <div class="card">
+          <h4>Répartition personnalisée <span class="pill v2">option</span></h4>
+          <p class="sub" style="margin:0 0 8px">L'hôte ajuste chaque part avec des curseurs / champs.</p>
+          <p style="margin:0">Ex. <code>Papa 30 € · Sœur 20 € · Toi 10 €</code>. L'app affiche en direct le <strong>total restant à répartir</strong> et empêche de valider si ça ne tombe pas sur le prix du cadeau (ou autorise un dépassement « marge/emballage » assumé).</p>
+        </div>
+      </div>
+
+      <h4>Qui est inclus ?</h4>
+      <p>L'hôte choisit qui participe au paiement (certains membres peuvent être là « pour l'avis » sans payer). Par défaut : tous les membres sauf l'hôte s'il le souhaite — <strong>large et flexible</strong>, comme demandé.</p>
+
+      <h4>Le cycle de statut d'un participant</h4>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>Statut</th><th>Déclencheur</th><th>Rond dans la liste</th><th>Badge personne (Recherche)</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pill">à payer</span></td><td>Hôte lance la collecte</td><td><span class="dot empty"></span> vide</td><td><strong>« 1 »</strong> (action requise)</td></tr>
+            <tr><td><span class="pill warn">déclaré</span></td><td>Participant : « J'ai envoyé »</td><td><span class="dot warn"></span> ambre</td><td>« 1 » côté hôte (à confirmer)</td></tr>
+            <tr><td><span class="pill good">confirmé</span></td><td>Hôte : « J'ai reçu »</td><td><span class="dot good"></span> vert</td><td>aucun</td></tr>
+            <tr><td><span class="pill crit">refusé</span></td><td>Hôte : « Pas reçu »</td><td><span class="dot empty"></span> vide + note</td><td>« 1 » (à re-payer)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Ce tableau d'état est <strong>la source de vérité</strong> : les badges, les couleurs de la liste, les notifications et la vue d'ensemble en découlent tous.</p>
+    </section>
+
+    <!-- 06 -->
+    <section id="quiz">
+      <div class="sec-head"><span class="sec-num">06</span><h2>Chantier B — Refonte du quiz &amp; de la fin de quiz</h2></div>
+      <p class="sub">Plus de souplesse pendant le quiz, et un écran final beaucoup plus riche.</p>
+
+      <h3>Pendant le quiz — « passer » &amp; « créer directement »</h3>
+      <p>Parfois on connaît déjà l'idée de cadeau et on veut juste créer la liste. On ajoute sous chaque question un pied de page persistant :</p>
+      <ul>
+        <li><strong>« Passer »</strong> — saute la question courante (on garde nom + occasion comme minimum).</li>
+        <li><strong>« Créer directement »</strong> — termine le quiz tout de suite et va à l'écran final (voire à une liste vide où on ajoute ses cadeaux à la main via l'onglet Recherche).</li>
+      </ul>
+      <p class="sub">On garde bien les questions de base (nom, etc.) — on ne fait qu'<em>ajouter</em> des échappatoires. Impacte <span class="tag-file">onboarding_advanced_widget.dart</span>.</p>
+
+      <h3>L'écran final — cartes plus petites &amp; 3 onglets</h3>
+      <p>Aujourd'hui <span class="tag-file">onboarding_gifts_result</span> affiche une seule liste (IA + wishlist) en <code>crossAxisCount: 2</code>. On refond en gardant la sélection par <strong>rond qui se remplit</strong> (logique <code>toggleGiftSelection</code> conservée) et le bouton « Valider (N) ».</p>
+
+      <div class="grid3">
+        <div class="card">
+          <h4>① Recommandés <span class="pill mvp">MVP</span></h4>
+          <p class="sub" style="margin:0">Les cadeaux issus du quiz (IA + ce qu'on a dit sur la personne). C'est l'onglet par défaut.</p>
+        </div>
+        <div class="card">
+          <h4>② Ses likes &amp; wishlists</h4>
+          <p class="sub" style="margin:0">Les produits likés + les wishlists de la personne (déjà chargés si handle Doron connu), <strong>filtrés par le prix/budget</strong> du quiz.</p>
+        </div>
+        <div class="card">
+          <h4>③ Recherche</h4>
+          <p class="sub" style="margin:0">Une barre de recherche (via <span class="tag-file">product_search_service</span>) pour trouver &amp; ajouter <strong>n'importe quel</strong> cadeau à la liste.</p>
+        </div>
+      </div>
+
+      <div class="callout decision">
+        <span class="k">Détails visuels demandés</span>
+        <p><strong>Cartes plus petites</strong> : passer à <code>crossAxisCount: 3</code> (voire un ratio plus compact) pour voir plus de cadeaux dès le début. <strong>Conserver</strong> le rond de sélection qui se remplit à chaque cadeau choisi. Les <strong>caractéristiques essentielles</strong> (prix surtout) restent visibles et servent de filtre dans l'onglet ②. La sélection est <strong>partagée entre les 3 onglets</strong> : on peut piocher un recommandé + un de la recherche dans la même liste.</p>
+      </div>
+
+      <div class="callout warn">
+        <span class="k">Dépendance</span>
+        <p>L'onglet ③ « Recherche » s'appuie sur un catalogue de produits qui marche. Vu le blocage RapidAPI actuel, on branchera d'abord sur la <strong>base Firestore <code>gifts</code> existante</strong> (recherche par tokens, déjà en place) — la recherche externe viendra quand une clé RapidAPI fonctionnera.</p>
+      </div>
+    </section>
+
+    <!-- 07 -->
+    <section id="data">
+      <div class="sec-head"><span class="sec-num">07</span><h2>Modèle de données consolidé</h2></div>
+      <p class="sub">Les ajouts Firestore. Tout est additif — aucune donnée existante n'est cassée.</p>
+
+      <h3><code>collaborations/{collabId}</code> — champs ajoutés</h3>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>Champ</th><th>Type</th><th>Rôle</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">mode</td><td class="mono">string</td><td><code>'simple'</code> (collab actuelle) ou <code>'group_gift'</code></td></tr>
+            <tr><td class="mono">retainedGift</td><td class="mono">map?</td><td><code>{ giftId, name, price, image, url, chosenBy, chosenAt }</code></td></tr>
+            <tr><td class="mono">collection</td><td class="mono">map?</td><td>État de la collecte : <code>{ status: 'draft'|'open'|'closed', total, currency, splitType: 'equal'|'custom', startedAt }</code></td></tr>
+            <tr><td class="mono">payment</td><td class="mono">map?</td><td>Moyen de l'hôte : <code>{ method: 'revolut'|'wero'|'iban'|'link', handle, iban, holderName, url }</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3><code>collaborations/{collabId}/participants/{uid}</code> — nouvelle sous-collection</h3>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>Champ</th><th>Type</th><th>Rôle</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">share</td><td class="mono">number</td><td>Montant dû par ce participant</td></tr>
+            <tr><td class="mono">status</td><td class="mono">string</td><td><code>'due' | 'declared' | 'confirmed' | 'refused'</code></td></tr>
+            <tr><td class="mono">includedInSplit</td><td class="mono">bool</td><td>Participe au paiement ou juste à l'avis</td></tr>
+            <tr><td class="mono">declaredAt / confirmedAt</td><td class="mono">timestamp?</td><td>Traçabilité du cycle</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="sub">Pourquoi une sous-collection et pas un champ map ? Pour que les <strong>règles de sécurité</strong> soient simples : un participant ne peut écrire que <code>status='declared'</code> sur <em>son</em> doc ; seul l'hôte peut passer à <code>confirmed</code>/<code>refused</code>.</p>
+
+      <h3>Nouveaux types de message chat</h3>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>type</th><th>Émis par</th><th>Rendu</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">retained_gift</td><td>Hôte (étape 4)</td><td>Bandeau vert « 🎁 Cadeau retenu » + carte cadeau</td></tr>
+            <tr><td class="mono">payment_request</td><td>Système (collecte lancée)</td><td>« La collecte est ouverte · ta part : 20 € »</td></tr>
+            <tr><td class="mono">payment_declared</td><td>Participant</td><td>« Papa a indiqué avoir envoyé 20 € » (privé hôte)</td></tr>
+            <tr><td class="mono">payment_confirmed</td><td>Hôte</td><td>« Paiement de Papa confirmé ✅ »</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Notifications &amp; badge « 1 »</h3>
+      <p>On réutilise <code>notifications/{uid}/items</code> avec de nouveaux <code>type</code> : <code>group_payment_due</code> (→ participant), <code>group_payment_declared</code> (→ hôte). Le <strong>badge « 1 »</strong> sur le rond d'une personne, page Recherche, se calcule à partir du statut du participant (un doc <code>participants/{uid}</code> avec <code>status ∈ {due, refused}</code> → action requise).</p>
+
+      <h3>Règles de sécurité à ajouter <span class="tag-file">firestore.rules</span></h3>
+      <ul>
+        <li><code>participants/{uid}</code> : lecture = membre de la collab ; création/maj de son propre doc limitée à <code>status: declared</code> ; passage à <code>confirmed/refused</code> réservé à <code>ownerId</code>.</li>
+        <li><code>retainedGift</code> &amp; <code>collection</code> &amp; <code>payment</code> sur la collab : écriture réservée à <code>ownerId</code>.</li>
+        <li>Ne jamais exposer l'IBAN complet aux non-membres.</li>
+      </ul>
+    </section>
+
+    <!-- 08 -->
+    <section id="phases">
+      <div class="sec-head"><span class="sec-num">08</span><h2>Découpage en phases</h2></div>
+      <p class="sub">L'ordre que je recommande : livrer de la valeur vite, garder le paiement (le plus risqué) pour la fin.</p>
+
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>Phase</th><th>Contenu</th><th>Pourquoi cet ordre</th><th>Effort</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="pill mvp">Phase 1</span><br>Fondations</td>
+              <td>Champ <code>mode</code> + choix « perso / groupe » au moment d'AJOUTER. Rôle hôte/participant. Vue liste partagée en mode groupe (réutilise collab + chat).</td>
+              <td>Débloque tout le reste sans rien casser. Testable immédiatement.</td>
+              <td>Faible</td>
+            </tr>
+            <tr>
+              <td><span class="pill mvp">Phase 2</span><br>Décision de groupe</td>
+              <td>Cadeau retenu (vert + message chat). Vue d'ensemble hôte. Menu de contrôle hôte vs vue participant.</td>
+              <td>Apporte ~80 % de la valeur ressentie <strong>sans</strong> toucher à l'argent. Zéro risque légal.</td>
+              <td>Moyen</td>
+            </tr>
+            <tr>
+              <td><span class="pill v2">Phase 3</span><br>Répartition &amp; paiement</td>
+              <td>Split égal/perso, moyens de paiement, cycle due→declared→confirmed, badges « 1 », pastilles vertes, notifications.</td>
+              <td>La partie sensible. On la fait une fois les fondations solides et testées.</td>
+              <td>Élevé</td>
+            </tr>
+            <tr>
+              <td><span class="pill v2">Phase 4</span><br>Refonte quiz</td>
+              <td>« Passer » / « Créer directement ». Écran final 3 onglets + cartes plus petites.</td>
+              <td>Indépendant du mode groupe → peut être fait en parallèle par un autre lot.</td>
+              <td>Moyen</td>
+            </tr>
+            <tr>
+              <td><span class="pill v3">Plus tard</span><br>Raffinements</td>
+              <td>Votes/sondages sur les candidats, relances auto, historique des cagnottes, recherche externe (RapidAPI), export récap.</td>
+              <td>Confort, pas bloquant.</td>
+              <td>Variable</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout decision">
+        <span class="k">Ma recommandation d'ordre</span>
+        <p>Commence par <strong>Phase 1 → 2</strong> (le mode groupe <em>sans</em> paiement) et <strong>Phase 4</strong> (le quiz) en parallèle, car ils ne se gênent pas. Garde <strong>Phase 3</strong> (le paiement) pour quand le reste est stable — c'est là qu'est le vrai risque produit et juridique.</p>
+      </div>
+    </section>
+
+    <!-- 09 -->
+    <section id="risques">
+      <div class="sec-head"><span class="sec-num">09</span><h2>Risques &amp; points d'attention</h2></div>
+      <p class="sub">Ce qui peut mordre, et comment on l'anticipe.</p>
+
+      <div class="grid2">
+        <div class="card"><h4><span class="pill crit">Élevé</span> Légal / paiement</h4><p class="sub" style="margin:0">Traité en section 02 : jamais de custody, liens + confirmation manuelle. À documenter pour la revue App Store.</p></div>
+        <div class="card"><h4><span class="pill warn">Moyen</span> Litiges « j'ai payé / pas reçu »</h4><p class="sub" style="margin:0">La confirmation est <strong>manuelle et humaine</strong>. Doron n'arbitre pas : on affiche clairement « déclaré par X, non encore confirmé ». Ajouter une note libre sur un refus.</p></div>
+        <div class="card"><h4><span class="pill warn">Moyen</span> Sécurité Firestore</h4><p class="sub" style="margin:0">Le cycle de statut doit être verrouillé par les règles (un participant ne peut pas s'auto-confirmer). Tester avec l'émulateur.</p></div>
+        <div class="card"><h4><span class="pill guest">Faible</span> Deep links Revolut/Wero</h4><p class="sub" style="margin:0">Les schémas d'URL peuvent varier / ne pas pré-remplir le montant. Prévoir un fallback « copier le montant + l'identifiant ».</p></div>
+        <div class="card"><h4><span class="pill guest">Faible</span> Temps réel &amp; offline</h4><p class="sub" style="margin:0">Les streams existent déjà ; veiller à l'état de chargement des badges pour éviter un « 1 » fantôme.</p></div>
+        <div class="card"><h4><span class="pill guest">Faible</span> i18n</h4><p class="sub" style="margin:0">L'app est FR/EN/ES (via <code>context.tr</code>). Tous les nouveaux textes doivent passer par le même mécanisme.</p></div>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section id="decisions">
+      <div class="sec-head"><span class="sec-num">10</span><h2>À valider ensemble avant que je code</h2></div>
+      <p class="sub">Quelques choix où ton avis change l'implémentation. Réponds au fil, on ajuste le plan.</p>
+
+      <ol class="list">
+        <li><strong>Moyens de paiement du MVP</strong> — on commence par <strong>Revolut + IBAN</strong> (les plus simples), et on ajoute Wero ensuite ? Ou Wero est prioritaire pour toi ?</li>
+        <li><strong>L'hôte paie-t-il aussi une part ?</strong> Par défaut je propose : l'hôte avance le cadeau et les autres le remboursent → l'hôte n'a pas de « part à payer », il <em>reçoit</em>. OK ?</li>
+        <li><strong>Peut-on avoir plusieurs cagnottes en cours pour la même personne</strong> (ex. Noël + anniversaire) ? Je pencherais pour <strong>oui</strong> (une collab par occasion).</li>
+        <li><strong>Ordre de livraison</strong> — je démarre par <strong>Phase 1+2 (décision de groupe, sans paiement)</strong> comme recommandé, ou tu veux le paiement plus tôt ?</li>
+        <li><strong>Refonte quiz en parallèle</strong> — je peux attaquer la Phase 4 (quiz 3 onglets) tout de suite puisqu'elle est indépendante. Tu veux que je commence par là pour un résultat visible rapidement ?</li>
+      </ol>
+
+      <div class="callout good">
+        <span class="k">Prochaine étape concrète</span>
+        <p>Dis-moi tes réponses aux 5 points ci-dessus (ou juste « go phase 1+2 » / « go quiz »), et je te livre le premier lot sur <code>claude/app-audit-improvements</code> avec un plan d'implémentation détaillé fichier par fichier.</p>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p class="kicker">Doron · plan de refonte</p>
+      <p>Document de cadrage — aucune ligne de code n'a encore été modifiée pour ces chantiers. Basé sur l'analyse de <code>collaboration_service.dart</code>, <code>search_page_widget.dart</code>, <code>onboarding_gifts_result_widget.dart</code>, <code>chat_room_page.dart</code> et <code>firestore.rules</code>.</p>
+    </footer>
+
+  </main>
+</div>

@@ -16,6 +16,7 @@ class CollaborationService {
   static Future<Map<String, dynamic>> createOrGetCollab({
     required String profileId,
     required String profileName,
+    String mode = 'simple', // 'simple' (collab classique) | 'group_gift' (cagnotte)
   }) async {
     final myUid = _myUid;
     if (myUid == null) throw Exception('Non connecté');
@@ -66,6 +67,7 @@ class CollaborationService {
         'profileId': profileId,
         'profileName': profileName,
         'ownerId': myUid,
+        'mode': mode,
         'members': [myUid],
         'pendingInvites': <String>[],
         'chatId': chatRef.id,
