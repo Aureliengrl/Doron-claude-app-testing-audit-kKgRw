@@ -163,9 +163,15 @@ class ProductMatchingService {
           q = q.where('tags', arrayContains: categoryTag);
         }
         // serverAndCache : utilise le cache Firestore SDK si disponible (< 1s)
-        final snap = await q.limit(loadLimit).get(
+        var snap = await q.limit(loadLimit).get(
           const GetOptions(source: Source.serverAndCache),
         );
+        // FIX: un cache local froid/vide peut renvoyer 0 doc au 1er chargement
+        // (d'où le "aucun produit → je rafraîchis → ils apparaissent"). Si vide,
+        // on force une lecture serveur avant d'abandonner.
+        if (snap.docs.isEmpty) {
+          snap = await q.limit(loadLimit).get(const GetOptions(source: Source.server));
+        }
         return snap.docs.map((doc) {
           final data = doc.data();
           data['id'] = doc.id;

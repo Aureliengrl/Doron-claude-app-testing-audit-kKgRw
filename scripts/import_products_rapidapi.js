@@ -370,6 +370,17 @@ function appCategoryFor(brandId, tags) {
   for (const t of tags) if (CAT_FROM_TAG[t]) return CAT_FROM_TAG[t];
   return 'trending';
 }
+// catégorie app → tag cat_* utilisé par le feed home (getPersonalizedProducts
+// filtre sur `tags` arrayContains cat_*, PAS sur `categories`).
+const CAT_TAG = { tech: 'cat_tech', fashion: 'cat_mode', home: 'cat_maison', beauty: 'cat_beaute', food: 'cat_food', trending: 'cat_tendances' };
+const KW_STOP = new Set(['pour', 'avec', 'des', 'les', 'une', 'set', 'the', 'and', 'sur', 'par', 'plus', 'sans', 'ml', 'cm', 'mm', 'de', 'la', 'le', 'du', 'en', 'au', 'aux', 'pcs', 'lot']);
+// Mots-clés depuis le titre complet → alimentent les sous-filtres de la home
+// (Sneakers, Audio, Parfums, Montres, Vin, Café…).
+function keywordsFrom(fullName, brand) {
+  const words = String(fullName || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter((w) => w.length > 2 && !KW_STOP.has(w));
+  return [...new Set([String(brand || '').toLowerCase(), ...words])].filter(Boolean).slice(0, 20);
+}
 
 function normalizeProduct(item, queryMeta) {
   const f = ADAPTER.fields;
@@ -389,12 +400,15 @@ function normalizeProduct(item, queryMeta) {
   const description = decodeEntities(extractField(item, f.description, ''));
 
   const brandId = slugify(brand);
-  const tags = buildProductTags({ name: decodeEntities(name), description, price: priceNum, queryMeta });
+  const cleanName = decodeEntities(name);
+  const tags = buildProductTags({ name: cleanName, description, price: priceNum, queryMeta });
   const category = appCategoryFor(brandId, tags);
+  const catTag = CAT_TAG[category];
+  if (catTag && !tags.includes(catTag)) tags.push(catTag); // pour le feed home
 
   return {
     name: shortName(name),        // nom court et décodé pour l'affichage
-    fullName: decodeEntities(name), // titre complet décodé (détail produit)
+    fullName: cleanName,          // titre complet décodé (détail produit)
     brand,
     brandId,
     price: priceNum,
@@ -405,6 +419,7 @@ function normalizeProduct(item, queryMeta) {
     description,
     categories: CAT_ALIASES[category], // ids + noms FR → matche la home
     tags,
+    keywords: keywordsFrom(cleanName, brand), // sous-filtres de la home
     active: true,
     popularity: 50,
     createdAt: new Date().toISOString(),
