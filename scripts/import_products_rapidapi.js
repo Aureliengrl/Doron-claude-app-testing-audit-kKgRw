@@ -319,6 +319,58 @@ function extractField(item, candidates, fallback = null) {
   return fallback;
 }
 
+// ── Nettoyage des noms (les APIs renvoient du HTML-encodé + titres à rallonge)
+function decodeEntities(s) {
+  return String(s || '')
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => { try { return String.fromCodePoint(parseInt(h, 16)); } catch { return _; } })
+    .replace(/&#(\d+);/g, (_, d) => { try { return String.fromCodePoint(parseInt(d, 10)); } catch { return _; } })
+    .replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
+    .replace(/&eacute;/g, 'é').replace(/&egrave;/g, 'è').replace(/&agrave;/g, 'à')
+    .replace(/&ecirc;/g, 'ê').replace(/&ccedil;/g, 'ç').replace(/&ugrave;/g, 'ù')
+    .replace(/&acirc;/g, 'â').replace(/&icirc;/g, 'î').replace(/&ocirc;/g, 'ô')
+    .replace(/&euml;/g, 'ë').replace(/&iuml;/g, 'ï').replace(/&hellip;/g, '…')
+    .replace(/&amp;/g, '&'); // en dernier
+}
+function shortName(name) {
+  let n = decodeEntities(name).trim();
+  n = n.split(/,| [–—-] |\s\|\s/)[0].replace(/\s+/g, ' ').trim();
+  if (n.length > 50) n = n.slice(0, 50).replace(/\s+\S*$/, '').trim() + '…';
+  return n || decodeEntities(name);
+}
+
+// ── Catégorie "app" (doit matcher les onglets de la home : trending/tech/
+//    fashion/home/beauty/food). On stocke l'id ET le nom FR en alias car la
+//    home requête par id, et son fallback par nom FR.
+const BRAND_CAT = {
+  apple: 'tech', samsung: 'tech', sony: 'tech', xiaomi: 'tech', jbl: 'tech', fnac: 'tech',
+  playstation: 'tech', xbox: 'tech', nintendo: 'tech', dyson: 'tech', philips: 'tech',
+  zara: 'fashion', 'h-m': 'fashion', nike: 'fashion', adidas: 'fashion', uniqlo: 'fashion',
+  'levi-s': 'fashion', mango: 'fashion', bershka: 'fashion', 'pull-bear': 'fashion',
+  'ray-ban': 'fashion', pandora: 'fashion', swarovski: 'fashion', 'petit-bateau': 'fashion',
+  kiabi: 'fashion', celio: 'fashion',
+  sephora: 'beauty', 'yves-rocher': 'beauty', clarins: 'beauty', 'l-oreal': 'beauty',
+  ikea: 'home', 'maisons-du-monde': 'home', 'le-creuset': 'home', nespresso: 'home',
+  lego: 'trending', decathlon: 'trending',
+};
+const CAT_FROM_TAG = {
+  cat_tech: 'tech', cat_mode: 'fashion', cat_maison: 'home', cat_beaute: 'beauty', cat_food: 'food', cat_tendances: 'trending',
+  passion_tech: 'tech', passion_musique: 'tech', passion_jeuxvideo: 'tech', passion_mode: 'fashion',
+  passion_beaute: 'beauty', passion_cuisine: 'food', passion_sport: 'trending', passion_lecture: 'trending', passion_voyages: 'trending',
+  type_high_tech: 'tech', type_musique_audio: 'tech', type_jeux_jouets: 'trending', type_livres_bd: 'trending',
+  type_maison_deco: 'home', type_beaute_soins: 'beauty', type_gastronomie: 'food', type_mode_accessoires: 'fashion',
+  type_bijoux: 'fashion', type_sport_outdoor: 'trending', type_voyage_aventure: 'trending',
+};
+const CAT_ALIASES = {
+  tech: ['tech'], fashion: ['fashion', 'mode'], home: ['home', 'maison'],
+  beauty: ['beauty', 'beaute', 'beauté'], food: ['food'], trending: ['trending', 'tendances'],
+};
+function appCategoryFor(brandId, tags) {
+  if (BRAND_CAT[brandId]) return BRAND_CAT[brandId];
+  for (const t of tags) if (CAT_FROM_TAG[t]) return CAT_FROM_TAG[t];
+  return 'trending';
+}
+
 function normalizeProduct(item, queryMeta) {
   const f = ADAPTER.fields;
   const name = extractField(item, f.name);
@@ -334,20 +386,25 @@ function normalizeProduct(item, queryMeta) {
   // sinon champ de l'API, sinon "Autre".
   const brand = queryMeta.brand || extractField(item, f.brand) || 'Autre';
   const url = extractField(item, f.url);
-  const description = extractField(item, f.description, '');
+  const description = decodeEntities(extractField(item, f.description, ''));
+
+  const brandId = slugify(brand);
+  const tags = buildProductTags({ name: decodeEntities(name), description, price: priceNum, queryMeta });
+  const category = appCategoryFor(brandId, tags);
 
   return {
-    name,
+    name: shortName(name),        // nom court et décodé pour l'affichage
+    fullName: decodeEntities(name), // titre complet décodé (détail produit)
     brand,
-    brandId: slugify(brand),
+    brandId,
     price: priceNum,
     image: imageRaw,
     imageUrl: imageRaw,
     url,
     source: 'RapidAPI',
     description,
-    categories: queryMeta.category ? [queryMeta.category.replace('cat_', '')] : [],
-    tags: buildProductTags({ name, description, price: priceNum, queryMeta }),
+    categories: CAT_ALIASES[category], // ids + noms FR → matche la home
+    tags,
     active: true,
     popularity: 50,
     createdAt: new Date().toISOString(),
@@ -382,7 +439,7 @@ async function run() {
         if (seenKeys.has(key)) continue;
         seenKeys.add(key);
 
-        product.searchTokens = buildSearchTokens([product.name, product.brand, ...product.categories]);
+        product.searchTokens = buildSearchTokens([product.fullName || product.name, product.brand, ...product.categories]);
         allProducts.push(product);
         added++;
 
