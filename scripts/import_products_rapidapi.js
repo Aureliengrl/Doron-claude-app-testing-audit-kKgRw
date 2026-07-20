@@ -67,6 +67,9 @@ const INSPECT = process.argv.includes('--inspect');
 const DRY_RUN = process.argv.includes('--dry-run') || INSPECT;
 const maxQueriesArg = process.argv.find((a) => a.startsWith('--max-queries='));
 const MAX_QUERIES = maxQueriesArg ? parseInt(maxQueriesArg.split('=')[1], 10) : Infinity;
+// Pages Amazon récupérées par requête (chaque page = 1 appel API, ~48 produits).
+const pagesArg = process.argv.find((a) => a.startsWith('--pages='));
+const PAGES_PER_QUERY = pagesArg ? Math.max(1, parseInt(pagesArg.split('=')[1], 10)) : 1;
 
 // Délai entre deux appels API pour rester tranquille sur les plans RapidAPI
 // à quota/minute limité (ajuste selon ton plan).
@@ -80,11 +83,30 @@ const DELAY_BETWEEN_CALLS_MS = 600;
 // Complète cette liste librement — chaque entrée = potentiellement plusieurs
 // appels API (une par mot-clé de BASE_KEYWORDS croisé).
 const BRANDS = [
+  // — mode (fashion)
   'Zara', 'H&M', 'Nike', 'Adidas', 'Uniqlo', 'Levi\'s', 'Mango', 'Bershka',
-  'Pull&Bear', 'Sephora', 'Yves Rocher', 'Apple', 'Samsung', 'Sony', 'Xiaomi',
-  'JBL', 'Fnac', 'Decathlon', 'IKEA', 'Maisons du Monde', 'Lego', 'PlayStation',
-  'Xbox', 'Nintendo', 'Nespresso', 'Le Creuset', 'Ray-Ban', 'Pandora', 'Swarovski',
-  'Clarins', 'L\'Oréal', 'Dyson', 'Philips', 'Petit Bateau', 'Kiabi', 'Célio',
+  'Pull&Bear', 'Ray-Ban', 'Pandora', 'Swarovski', 'Petit Bateau', 'Kiabi', 'Célio',
+  'Tommy Hilfiger', 'Lacoste', 'Calvin Klein', 'The North Face', 'Vans', 'Converse',
+  'New Balance', 'Puma', 'Timberland', 'Dr. Martens', 'Michael Kors', 'Fossil',
+  'Casio', 'Longchamp', 'Eastpak', 'Herschel', 'Jack & Jones', 'Guess',
+  // — tech
+  'Apple', 'Samsung', 'Sony', 'Xiaomi', 'JBL', 'Fnac', 'Dyson', 'Philips',
+  'Bose', 'Anker', 'Logitech', 'Razer', 'GoPro', 'Canon', 'Nikon', 'Garmin',
+  'Fitbit', 'Beats', 'Marshall', 'Sonos', 'OnePlus', 'Lenovo', 'HP', 'Asus',
+  'PlayStation', 'Xbox', 'Nintendo',
+  // — beauté (beauty)
+  'Sephora', 'Yves Rocher', 'Clarins', 'L\'Oréal', 'Dior', 'Chanel', 'Lancôme',
+  'Guerlain', 'Kiehl\'s', 'The Ordinary', 'Nuxe', 'Caudalie', 'Bioderma',
+  'La Roche-Posay', 'Maybelline', 'Rituals',
+  // — maison (home)
+  'IKEA', 'Maisons du Monde', 'Nespresso', 'Le Creuset', 'Tefal', 'Moulinex',
+  'SodaStream', 'Rowenta', 'Bodum', 'Staub', 'Brabantia', 'Alessi', 'Villeroy & Boch',
+  // — food / gourmet
+  'Lindt', 'Ferrero', 'Kusmi Tea', 'Dammann Frères', 'Bonne Maman', 'Michel et Augustin',
+  // — jeux & jouets (trending)
+  'Lego', 'Playmobil', 'Ravensburger', 'Funko', 'Nerf', 'Barbie', 'Pokemon', 'Djeco',
+  // — sport (trending)
+  'Decathlon', 'Salomon', 'Under Armour', 'Wilson',
 ];
 
 // Mots-clés génériques (sans marque) pour élargir encore la variété — ce sont
@@ -111,6 +133,56 @@ const GENERIC_QUERIES = [
   { q: 'déco maison', category: 'cat_maison', gender: null, type: ['type_maison_deco'] },
   { q: 'valise voyage', category: 'cat_tendances', gender: null, type: ['type_voyage_aventure'] },
   { q: 'appareil photo', category: 'cat_tech', gender: null, type: ['type_high_tech'] },
+
+  // — Mode (alimente les sous-filtres Sneakers/Accessoires/Bijoux/Montres/Luxe)
+  { q: 'sneakers homme', category: 'cat_mode', gender: 'gender_homme', type: ['type_mode_accessoires'] },
+  { q: 'sneakers femme', category: 'cat_mode', gender: 'gender_femme', type: ['type_mode_accessoires'] },
+  { q: 'montre connectée', category: 'cat_tech', gender: null, type: ['type_high_tech', 'type_mode_accessoires'] },
+  { q: 'lunettes de soleil', category: 'cat_mode', gender: null, type: ['type_mode_accessoires'] },
+  { q: 'portefeuille cuir homme', category: 'cat_mode', gender: 'gender_homme', type: ['type_mode_accessoires'] },
+  { q: 'écharpe femme', category: 'cat_mode', gender: 'gender_femme', type: ['type_mode_accessoires'] },
+  { q: 'bijoux homme', category: 'cat_mode', gender: 'gender_homme', type: ['type_bijoux'] },
+  { q: 'ceinture cuir', category: 'cat_mode', gender: null, type: ['type_mode_accessoires'] },
+
+  // — Tech (Smartphones/Audio/Ordinateurs/Gaming/Objets connectés/Photo)
+  { q: 'écouteurs sans fil', category: 'cat_tech', gender: null, type: ['type_high_tech', 'type_musique_audio'] },
+  { q: 'ordinateur portable', category: 'cat_tech', gender: null, type: ['type_high_tech'] },
+  { q: 'clavier gaming', category: 'cat_tech', gender: null, type: ['type_high_tech'] },
+  { q: 'souris gaming', category: 'cat_tech', gender: null, type: ['type_high_tech'] },
+  { q: 'liseuse', category: 'cat_tech', gender: null, type: ['type_high_tech', 'type_livres_bd'] },
+  { q: 'tablette tactile', category: 'cat_tech', gender: null, type: ['type_high_tech'] },
+  { q: 'drone', category: 'cat_tech', gender: null, type: ['type_high_tech'] },
+  { q: 'objet connecté maison', category: 'cat_tech', gender: null, type: ['type_high_tech'] },
+
+  // — Maison (Cuisine/Salon/Décoration/Linge)
+  { q: 'ustensiles cuisine', category: 'cat_maison', gender: null, type: ['type_maison_deco'] },
+  { q: 'linge de maison', category: 'cat_maison', gender: null, type: ['type_maison_deco'] },
+  { q: 'plante intérieur', category: 'cat_maison', gender: null, type: ['type_maison_deco'] },
+  { q: 'luminaire design', category: 'cat_maison', gender: null, type: ['type_maison_deco'] },
+  { q: 'plaid polaire', category: 'cat_maison', gender: null, type: ['type_maison_deco'] },
+  { q: 'diffuseur huiles essentielles', category: 'cat_maison', gender: null, type: ['type_maison_deco'] },
+
+  // — Beauté (Skincare/Parfums/Maquillage/Cheveux)
+  { q: 'crème visage', category: 'cat_beaute', gender: null, type: ['type_beaute_soins'] },
+  { q: 'sérum visage', category: 'cat_beaute', gender: null, type: ['type_beaute_soins'] },
+  { q: 'palette maquillage', category: 'cat_beaute', gender: 'gender_femme', type: ['type_beaute_soins'] },
+  { q: 'coffret parfum', category: 'cat_beaute', gender: null, type: ['type_beaute_soins'] },
+  { q: 'soin cheveux', category: 'cat_beaute', gender: null, type: ['type_beaute_soins'] },
+
+  // — Food (Chocolat/Vin/Café & Thé/Épicerie)
+  { q: 'coffret chocolat', category: 'cat_food', gender: null, type: ['type_gastronomie'] },
+  { q: 'thé coffret', category: 'cat_food', gender: null, type: ['type_gastronomie'] },
+  { q: 'café en grains', category: 'cat_food', gender: null, type: ['type_gastronomie'] },
+  { q: 'coffret apéritif', category: 'cat_food', gender: null, type: ['type_gastronomie'] },
+  { q: 'whisky coffret', category: 'cat_food', gender: null, type: ['type_gastronomie'] },
+
+  // — Tendances / enfants / gaming
+  { q: 'puzzle', category: 'cat_tendances', gender: null, type: ['type_jeux_jouets'] },
+  { q: 'peluche', category: 'cat_tendances', gender: 'gender_mixte', type: ['type_jeux_jouets'] },
+  { q: 'figurine collection', category: 'cat_tendances', gender: null, type: ['type_jeux_jouets'] },
+  { q: 'manette console', category: 'cat_tech', gender: null, type: ['type_high_tech'] },
+  { q: 'trottinette électrique', category: 'cat_tech', gender: null, type: ['type_high_tech'] },
+  { q: 'appareil photo instantané', category: 'cat_tech', gender: null, type: ['type_high_tech'] },
 ];
 
 function buildQueryList() {
@@ -248,8 +320,8 @@ const API_ADAPTERS = {
   // https://rapidapi.com/letscrape-6bRBa3QguO5/api/real-time-amazon-data
   amazon: {
     host: 'real-time-amazon-data.p.rapidapi.com',
-    buildUrl: (host, q) =>
-      `https://${host}/search?query=${encodeURIComponent(q)}&country=FR&page=1`,
+    buildUrl: (host, q, page = 1) =>
+      `https://${host}/search?query=${encodeURIComponent(q)}&country=FR&page=${page}`,
     extractItems: (json) => json?.data?.products || json?.data || [],
     fields: {
       name: ['product_title', 'title'],
@@ -265,8 +337,8 @@ const API_ADAPTERS = {
   // ── Real-Time Product Search (Google Shopping — format d'origine) ────────
   google: {
     host: 'real-time-product-search.p.rapidapi.com',
-    buildUrl: (host, q) =>
-      `https://${host}/search?q=${encodeURIComponent(q)}&country=fr&language=fr`,
+    buildUrl: (host, q, page = 1) =>
+      `https://${host}/search?q=${encodeURIComponent(q)}&country=fr&language=fr&page=${page}`,
     extractItems: (json) => json?.data?.products || json?.data || json?.products || [],
     fields: {
       name: ['product_title', 'title', 'name'],
@@ -288,8 +360,8 @@ if (!ADAPTER) {
 // L'utilisateur peut forcer un host custom (clone d'API au même format).
 const RAPIDAPI_HOST = process.env.RAPIDAPI_HOST || ADAPTER.host;
 
-async function fetchProductsForQuery(query) {
-  const url = ADAPTER.buildUrl(RAPIDAPI_HOST, query);
+async function fetchPage(query, page) {
+  const url = ADAPTER.buildUrl(RAPIDAPI_HOST, query, page);
   const res = await fetch(url, {
     headers: {
       'X-RapidAPI-Key': RAPIDAPI_KEY,
@@ -298,17 +370,29 @@ async function fetchProductsForQuery(query) {
     agent: proxyAgent,
   });
   if (!res.ok) {
-    throw new Error(`RapidAPI ${res.status} ${res.statusText} pour "${query}"`);
+    throw new Error(`RapidAPI ${res.status} ${res.statusText} pour "${query}" (page ${page})`);
   }
-  const json = await res.json();
+  return res.json();
+}
 
+async function fetchProductsForQuery(query) {
+  // INSPECT : une seule page, on affiche le JSON brut.
   if (INSPECT) {
+    const json = await fetchPage(query, 1);
     console.log(JSON.stringify(json, null, 2).slice(0, 4000));
     return [];
   }
 
-  const items = ADAPTER.extractItems(json);
-  return Array.isArray(items) ? items : [];
+  // Pagination : on récupère PAGES_PER_QUERY pages (chaque page = 1 requête API).
+  const all = [];
+  for (let page = 1; page <= PAGES_PER_QUERY; page++) {
+    const json = await fetchPage(query, page);
+    const items = ADAPTER.extractItems(json);
+    if (!Array.isArray(items) || items.length === 0) break; // plus de résultats
+    all.push(...items);
+    if (page < PAGES_PER_QUERY) await new Promise((r) => setTimeout(r, DELAY_BETWEEN_CALLS_MS));
+  }
+  return all;
 }
 
 function extractField(item, candidates, fallback = null) {
@@ -436,10 +520,23 @@ async function run() {
   console.log(`🔌 Adaptateur: ${ADAPTER_NAME} (host: ${RAPIDAPI_HOST})`);
   console.log(`🚀 ${INSPECT ? 'INSPECT' : DRY_RUN ? 'DRY RUN' : 'IMPORT RÉEL'} — ${queries.length} requêtes prévues\n`);
 
-  const seenKeys = new Set(); // dédoublonnage brand+name
+  const seenKeys = new Set(); // dédoublonnage brand+name (intra + inter-runs)
   const allProducts = [];
   const brandsSeen = new Map(); // id -> {name, order}
   let order = 0;
+
+  // Idempotence : précharger les clés déjà en base pour ne PAS réimporter les
+  // produits existants (permet de relancer / paginer sans créer de doublons).
+  if (!DRY_RUN) {
+    process.stdout.write('⏳ Produits déjà importés… ');
+    const existing = await db.collection('gifts')
+      .where('addedBy', '==', 'import_products_rapidapi_v1').get();
+    existing.forEach((d) => {
+      const x = d.data();
+      seenKeys.add(`${x.brandId}::${slugify(x.name)}`);
+    });
+    console.log(`${seenKeys.size} en base (ignorés).\n`);
+  }
 
   for (const query of queries) {
     const q = query.q;
