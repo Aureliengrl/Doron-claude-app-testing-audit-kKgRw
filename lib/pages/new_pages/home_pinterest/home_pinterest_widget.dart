@@ -32,6 +32,7 @@ import '/components/brand_filters.dart';
 import '/components/aesthetic_buttons.dart';
 import '/components/micro_interactions.dart' as micro;
 import '/components/liquid_glass.dart';
+import '/components/logo_3d.dart';
 import 'home_pinterest_model.dart';
 import '/utils/app_tr.dart';
 import 'home_pinterest_widgets_extra.dart';
@@ -984,6 +985,11 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Logo 3D premium en tête d'accueil
+              const Padding(
+                padding: EdgeInsets.only(bottom: 6),
+                child: Logo3D(fontSize: 30),
+              ),
               micro.ShimmerEffect(
                 shimmerColor: Colors.white,
                 duration: const Duration(milliseconds: 3000),
