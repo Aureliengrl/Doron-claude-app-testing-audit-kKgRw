@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart' show CupertinoPage;
 import 'package:go_router/go_router.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
@@ -681,7 +682,9 @@ class FFRoute {
                     child,
                   ),
                 )
-              : MaterialPage(key: state.pageKey, child: child);
+              // CupertinoPage : slide iOS natif + geste de retour au swipe
+              // (bord gauche) sur toutes les pages par défaut.
+              : CupertinoPage(key: state.pageKey, child: child);
         },
         routes: routes,
       );
@@ -700,11 +703,13 @@ class TransitionInfo {
   final Duration duration;
   final Alignment? alignment;
 
+  // Par défaut : pas de transition custom → on retombe sur CupertinoPage
+  // (slide iOS + swipe-back). Les routes qui veulent un effet spécifique
+  // passent leur propre TransitionInfo avec hasTransition: true.
   static TransitionInfo appDefault() => const TransitionInfo(
-        hasTransition: true,
-        transitionType: PageTransitionType.fade,
-        // PERF AXE 4: 200ms — navigation perçue comme instantanée
-        duration: Duration(milliseconds: 200),
+        hasTransition: false,
+        transitionType: PageTransitionType.rightToLeft,
+        duration: Duration(milliseconds: 260),
       );
 
 }
