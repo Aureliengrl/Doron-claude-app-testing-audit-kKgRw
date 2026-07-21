@@ -77,7 +77,8 @@ const START_PAGE = startPageArg ? Math.max(1, parseInt(startPageArg.split('=')[1
 
 // Délai entre deux appels API pour rester tranquille sur les plans RapidAPI
 // à quota/minute limité (ajuste selon ton plan).
-const DELAY_BETWEEN_CALLS_MS = 2500;
+// 4s entre requêtes ≈ 900/heure → sous la limite de 1000/heure du plan.
+const DELAY_BETWEEN_CALLS_MS = 4000;
 
 // ============================================================================
 // 1. LISTE DES REQUÊTES — marques × catégories pour une couverture large
