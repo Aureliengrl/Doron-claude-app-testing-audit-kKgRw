@@ -70,6 +70,10 @@ const MAX_QUERIES = maxQueriesArg ? parseInt(maxQueriesArg.split('=')[1], 10) : 
 // Pages Amazon récupérées par requête (chaque page = 1 appel API, ~48 produits).
 const pagesArg = process.argv.find((a) => a.startsWith('--pages='));
 const PAGES_PER_QUERY = pagesArg ? Math.max(1, parseInt(pagesArg.split('=')[1], 10)) : 1;
+// Première page à récupérer (pour les imports "par lot" : lot 1 = page 1,
+// lot 2 = page 2, etc., sans re-télécharger les pages déjà importées).
+const startPageArg = process.argv.find((a) => a.startsWith('--start-page='));
+const START_PAGE = startPageArg ? Math.max(1, parseInt(startPageArg.split('=')[1], 10)) : 1;
 
 // Délai entre deux appels API pour rester tranquille sur les plans RapidAPI
 // à quota/minute limité (ajuste selon ton plan).
@@ -383,14 +387,15 @@ async function fetchProductsForQuery(query) {
     return [];
   }
 
-  // Pagination : on récupère PAGES_PER_QUERY pages (chaque page = 1 requête API).
+  // Pagination : PAGES_PER_QUERY pages à partir de START_PAGE (chaque = 1 appel).
   const all = [];
-  for (let page = 1; page <= PAGES_PER_QUERY; page++) {
+  const lastPage = START_PAGE + PAGES_PER_QUERY - 1;
+  for (let page = START_PAGE; page <= lastPage; page++) {
     const json = await fetchPage(query, page);
     const items = ADAPTER.extractItems(json);
     if (!Array.isArray(items) || items.length === 0) break; // plus de résultats
     all.push(...items);
-    if (page < PAGES_PER_QUERY) await new Promise((r) => setTimeout(r, DELAY_BETWEEN_CALLS_MS));
+    if (page < lastPage) await new Promise((r) => setTimeout(r, DELAY_BETWEEN_CALLS_MS));
   }
   return all;
 }
