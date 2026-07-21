@@ -41,7 +41,8 @@ class Logo3D extends StatelessWidget {
       ),
     );
 
-    if (!animate) return wordmark;
+    final reduce = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    if (!animate || reduce) return wordmark;
 
     return wordmark
         .animate(onPlay: (c) => c.repeat(reverse: true))

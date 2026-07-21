@@ -43,19 +43,25 @@ class GlobalProductDetailModal {
       barrierLabel: 'Produit',
       barrierColor: Colors.black.withOpacity(0.62),
       transitionDuration: const Duration(milliseconds: 320),
-      // Ouverture premium : zoom incrusté + flou d'arrière-plan (§01 du plan).
+      // Ouverture premium : la carte "tourne" (rotateY) en s'incrustant, avec
+      // zoom + flou d'arrière-plan (§01 du plan). Respecte "réduire animations".
       transitionBuilder: (context, anim, secondary, child) {
+        final reduce = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
         final t = Curves.easeOutCubic.transform(anim.value);
-        return FadeTransition(
-          opacity: anim,
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 16 * t, sigmaY: 16 * t),
-            child: Transform.scale(
-              scale: 0.90 + 0.10 * t,
-              child: child,
-            ),
-          ),
+        final blurred = BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16 * t, sigmaY: 16 * t),
+          child: reduce
+              ? child
+              : Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, 0.0012) // perspective
+                    ..rotateY((1 - t) * 0.55) // ~31° → 0 : effet "carte qui tourne"
+                    ..scale(0.90 + 0.10 * t),
+                  child: child,
+                ),
         );
+        return FadeTransition(opacity: anim, child: blurred);
       },
       pageBuilder: (context, a1, a2) => StatefulBuilder(
         builder: (context, setDialogState) {
