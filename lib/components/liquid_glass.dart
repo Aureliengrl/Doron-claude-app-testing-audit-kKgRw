@@ -27,6 +27,33 @@ class LiquidGlassTokens {
   static const double blurLight = 20.0;
   static const double blurHeavy = 40.0;
 
+  // ── Design system unifié (refonte premium) ──────────────────────────────
+  // Dégradé signature — réservé aux accents (CTA primaire, actif, focus).
+  static const LinearGradient signatureGradient = LinearGradient(
+    colors: [primary, secondary],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  // Échelle d'espacement (multiples de 4).
+  static const double space1 = 4;
+  static const double space2 = 8;
+  static const double space3 = 12;
+  static const double space4 = 16;
+  static const double space6 = 24;
+  static const double space8 = 32;
+
+  // Rayons canoniques.
+  static const double radiusSmall = 14; // pastilles, champs
+  static const double radiusCard = 20; // cartes
+  static const double radiusSheet = 28; // feuilles / modaux
+
+  // Durées & courbes d'animation (cohérence des micro-interactions).
+  static const Duration durFast = Duration(milliseconds: 180);
+  static const Duration durMed = Duration(milliseconds: 260);
+  static const Duration durSlow = Duration(milliseconds: 420);
+  static const Cubic easePremium = Cubic(0.2, 0.7, 0.2, 1.0);
+
   // Ombres
   static List<BoxShadow> shadowPrimary = [
     BoxShadow(
