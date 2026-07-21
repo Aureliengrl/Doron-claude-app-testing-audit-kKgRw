@@ -1,6 +1,8 @@
 import '/components/aesthetic_bottom_sheet_notch.dart';
 import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import '/components/liquid_glass.dart';
 import '/utils/app_tr.dart';
 import '/utils/iconly_compat.dart';
 import 'package:flutter/services.dart';
@@ -35,22 +37,52 @@ class GlobalProductDetailModal {
       });
     }
 
-    showDialog(
+    showGeneralDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.7),
-      builder: (context) => StatefulBuilder(
+      barrierDismissible: true,
+      barrierLabel: 'Produit',
+      barrierColor: Colors.black.withOpacity(0.62),
+      transitionDuration: const Duration(milliseconds: 320),
+      // Ouverture premium : zoom incrusté + flou d'arrière-plan (§01 du plan).
+      transitionBuilder: (context, anim, secondary, child) {
+        final t = Curves.easeOutCubic.transform(anim.value);
+        return FadeTransition(
+          opacity: anim,
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 16 * t, sigmaY: 16 * t),
+            child: Transform.scale(
+              scale: 0.90 + 0.10 * t,
+              child: child,
+            ),
+          ),
+        );
+      },
+      pageBuilder: (context, a1, a2) => StatefulBuilder(
         builder: (context, setDialogState) {
           return Dialog(
             backgroundColor: Colors.transparent,
             insetPadding: const EdgeInsets.all(16),
-            child: Container(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                child: Container(
               constraints: const BoxConstraints(maxWidth: 500),
               decoration: BoxDecoration(
-                color: const Color(0xFF1A1A2E),
+                // Verre dépoli premium (plus épuré que l'ancien fond opaque).
+                color: const Color(0xF01A1226),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.10),
-                  width: 0.5,
+                  color: Colors.white.withOpacity(0.14),
+                  width: 1,
+                ),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    LiquidGlassTokens.primary.withOpacity(0.10),
+                    Colors.white.withOpacity(0.02),
+                  ],
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -301,6 +333,8 @@ class GlobalProductDetailModal {
                 ],
               ),
             ),
+                ), // BackdropFilter (glass premium)
+              ), // ClipRRect
           );
         },
       ),
