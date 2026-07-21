@@ -77,7 +77,7 @@ const START_PAGE = startPageArg ? Math.max(1, parseInt(startPageArg.split('=')[1
 
 // Délai entre deux appels API pour rester tranquille sur les plans RapidAPI
 // à quota/minute limité (ajuste selon ton plan).
-const DELAY_BETWEEN_CALLS_MS = 600;
+const DELAY_BETWEEN_CALLS_MS = 2500;
 
 // ============================================================================
 // 1. LISTE DES REQUÊTES — marques × catégories pour une couverture large
@@ -364,7 +364,7 @@ if (!ADAPTER) {
 // L'utilisateur peut forcer un host custom (clone d'API au même format).
 const RAPIDAPI_HOST = process.env.RAPIDAPI_HOST || ADAPTER.host;
 
-async function fetchPage(query, page) {
+async function fetchPage(query, page, attempt = 0) {
   const url = ADAPTER.buildUrl(RAPIDAPI_HOST, query, page);
   const res = await fetch(url, {
     headers: {
@@ -373,6 +373,16 @@ async function fetchPage(query, page) {
     },
     agent: proxyAgent,
   });
+  // 429 = limite de débit atteinte → backoff exponentiel puis retry.
+  if (res.status === 429) {
+    if (attempt >= 6) {
+      throw new Error(`429 persistant pour "${query}" (page ${page})`);
+    }
+    const waitMs = 15000 * Math.pow(2, attempt); // 15s, 30s, 60s, 120s…
+    process.stdout.write(`\n   ⏳ 429 — pause ${Math.round(waitMs / 1000)}s… `);
+    await new Promise((r) => setTimeout(r, waitMs));
+    return fetchPage(query, page, attempt + 1);
+  }
   if (!res.ok) {
     throw new Error(`RapidAPI ${res.status} ${res.statusText} pour "${query}" (page ${page})`);
   }
