@@ -194,8 +194,10 @@ class _GroupGiftPageState extends State<GroupGiftPage> {
     final url = (payment['url'] ?? '').toString();
     if (url.isNotEmpty) return url;
     final method = (payment['method'] ?? '').toString();
-    final handle = (payment['handle'] ?? '').toString().replaceAll('@', '');
+    final handle = (payment['handle'] ?? '').toString().replaceAll('@', '').trim();
     if (method == 'revolut' && handle.isNotEmpty) return 'https://revolut.me/$handle';
+    if (method == 'lydia' && handle.isNotEmpty) return handle.startsWith('http') ? handle : 'https://lydia-app.com/collect/$handle';
+    if (method == 'paypal' && handle.isNotEmpty) return handle.startsWith('http') ? handle : 'https://paypal.me/$handle';
     return null;
   }
 
@@ -669,17 +671,27 @@ class _GroupGiftPageState extends State<GroupGiftPage> {
       );
 
   Widget _bigButton(String label, VoidCallback onTap, {IconData? icon}) => GestureDetector(
-        onTap: onTap,
+        onTap: () {
+          HapticFeedback.mediumImpact();
+          onTap();
+        },
         child: Container(
           width: double.infinity,
           height: 52,
           decoration: BoxDecoration(
             gradient: const LinearGradient(colors: [_violet, _pink]),
             borderRadius: BorderRadius.circular(26),
+            boxShadow: [
+              BoxShadow(
+                color: _pink.withOpacity(0.35),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             if (icon != null) ...[
-              Icon(icon, color: Colors.white, size: 19),
+              Icon(icon, color: Colors.white, size: 20),
               const SizedBox(width: 8),
             ],
             Text(label,
@@ -690,7 +702,7 @@ class _GroupGiftPageState extends State<GroupGiftPage> {
       );
 }
 
-/// Ligne d'un participant côté hôte : nom, montant, statut, actions.
+/// Ligne d'un participant côté hôte : nom, montant, statut, et action de pointage direct.
 class _ParticipantTile extends StatelessWidget {
   final Map<String, dynamic> data;
   final String Function(num) eur;
@@ -711,6 +723,7 @@ class _ParticipantTile extends StatelessWidget {
   Widget build(BuildContext context) {
     const green = Color(0xFF10B981);
     const amber = Color(0xFFF59E0B);
+    const pink = Color(0xFFEC4899);
     final status = (data['status'] ?? 'due').toString();
     final amount = (data['share'] as num?)?.toDouble() ?? 0;
 
@@ -719,35 +732,50 @@ class _ParticipantTile extends StatelessWidget {
     switch (status) {
       case 'confirmed':
         dotColor = green;
-        label = context.tr('Payé', 'Paid');
+        label = context.tr('Payé ✓', 'Paid ✓');
         break;
       case 'declared':
         dotColor = amber;
-        label = context.tr('Déclaré', 'Declared');
+        label = context.tr('En attente de validation', 'Awaiting validation');
         break;
       case 'refused':
         dotColor = Colors.red;
-        label = context.tr('À re-payer', 'To re-pay');
+        label = context.tr('Refusé', 'Refused');
         break;
       default:
-        dotColor = Colors.white24;
+        dotColor = Colors.white30;
         label = context.tr('En attente', 'Pending');
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFF1A1622),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: status == 'confirmed' ? green.withOpacity(0.5) : Colors.white12,
+          width: 1,
+        ),
+        boxShadow: [
+          if (status == 'confirmed')
+            BoxShadow(
+              color: green.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+        ],
       ),
       child: Row(children: [
-        Container(width: 10, height: 10, decoration: BoxDecoration(
-          color: status == 'confirmed' || status == 'declared' ? dotColor : Colors.transparent,
-          border: Border.all(color: dotColor, width: 2),
-          shape: BoxShape.circle,
-        )),
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: status == 'confirmed' ? green : (status == 'declared' ? amber : Colors.transparent),
+            border: Border.all(color: dotColor, width: 2),
+            shape: BoxShape.circle,
+          ),
+        ),
         const SizedBox(width: 12),
         Expanded(
           child: FutureBuilder<String>(
@@ -755,28 +783,106 @@ class _ParticipantTile extends StatelessWidget {
             builder: (context, snap) => Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(snap.data ?? '…',
-                    style: GoogleFonts.poppins(
-                        fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
-                Text('${eur(amount)} · $label',
-                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.white54)),
+                Text(
+                  snap.data ?? 'Membre',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${eur(amount)} · $label',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: status == 'confirmed' ? green : Colors.white54,
+                    fontWeight: status == 'confirmed' ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
               ],
             ),
           ),
         ),
+        // Actions de validation pour l'hôte
         if (status == 'declared') ...[
-          IconButton(
-            tooltip: context.tr('Confirmer', 'Confirm'),
-            icon: const Icon(Icons.check_circle_rounded, color: green, size: 24),
-            onPressed: onConfirm,
+          GestureDetector(
+            onTap: onConfirm,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: green.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: green),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.check_circle_rounded, color: green, size: 16),
+                  const SizedBox(width: 4),
+                  Text('Valider', style: GoogleFonts.poppins(color: green, fontSize: 11, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
           ),
-          IconButton(
-            tooltip: context.tr('Pas reçu', 'Not received'),
-            icon: const Icon(Icons.cancel_rounded, color: Colors.redAccent, size: 22),
-            onPressed: onRefuse,
+          const SizedBox(width: 6),
+          GestureDetector(
+            onTap: onRefuse,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.redAccent.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.redAccent.withOpacity(0.4)),
+              ),
+              child: const Icon(Icons.close_rounded, color: Colors.redAccent, size: 16),
+            ),
           ),
         ] else if (status == 'confirmed')
-          const Icon(Icons.verified_rounded, color: green, size: 22),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: green.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: green.withOpacity(0.6)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.verified_rounded, color: green, size: 16),
+                const SizedBox(width: 4),
+                Text('Reçu ✓', style: GoogleFonts.poppins(color: green, fontSize: 11, fontWeight: FontWeight.bold)),
+              ],
+            ),
+          )
+        else
+          GestureDetector(
+            onTap: onConfirm,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [Color(0xFF8A2BE2), pink]),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: pink.withOpacity(0.3),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.check_rounded, color: Colors.white, size: 14),
+                  const SizedBox(width: 4),
+                  Text('Marquer reçu', style: GoogleFonts.poppins(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+          ),
       ]),
     );
   }
@@ -979,10 +1085,12 @@ class _CollectionSetupSheetState extends State<_CollectionSetupSheet> {
                   fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white)),
           const SizedBox(height: 10),
           Wrap(spacing: 8, runSpacing: 8, children: [
-            _payChip('revolut', 'Revolut'),
-            _payChip('wero', 'Wero'),
-            _payChip('iban', 'IBAN'),
-            _payChip('link', context.tr('Lien', 'Link')),
+            _payChip('revolut', 'Revolut', const Color(0xFF0075EB)),
+            _payChip('lydia', 'Lydia', const Color(0xFF0066FF)),
+            _payChip('paypal', 'PayPal', const Color(0xFF003087)),
+            _payChip('wero', 'Wero', const Color(0xFF10B981)),
+            _payChip('iban', 'IBAN', Colors.white38),
+            _payChip('link', context.tr('Lien', 'Link'), _violet),
           ]),
           const SizedBox(height: 12),
           ..._paymentFields(),
@@ -1075,30 +1183,45 @@ class _CollectionSetupSheetState extends State<_CollectionSetupSheet> {
     switch (_method) {
       case 'revolut':
         return [_field(_handleCtrl, context.tr('Ton @revtag ou revolut.me/…', 'Your @revtag or revolut.me/…'))];
+      case 'lydia':
+        return [_field(_handleCtrl, context.tr('Ton numéro de téléphone ou lydia.me/…', 'Your phone number or lydia.me/…'))];
+      case 'paypal':
+        return [_field(_handleCtrl, context.tr('Ton lien paypal.me/… ou email', 'Your paypal.me/… link or email'))];
       case 'wero':
-        return [_field(_handleCtrl, context.tr('Ton numéro / identifiant Wero', 'Your Wero number / id'))];
+        return [_field(_handleCtrl, context.tr('Ton numéro / identifiant Wero (ex-Paylib)', 'Your Wero / Paylib number'))];
       case 'iban':
         return [
-          _field(_ibanCtrl, 'IBAN'),
+          _field(_ibanCtrl, 'IBAN (FR76...)'),
           const SizedBox(height: 8),
-          _field(_holderCtrl, context.tr('Nom du bénéficiaire', 'Account holder name')),
+          _field(_holderCtrl, context.tr('Nom du titulaire du compte', 'Account holder name')),
         ];
       default:
-        return [_field(_urlCtrl, context.tr('Lien de paiement (https://…)', 'Payment link (https://…)'))];
+        return [_field(_urlCtrl, context.tr('Lien de cagnotte ou paiement (https://…)', 'Pot or payment link (https://…)'))];
     }
   }
 
   Widget _field(TextEditingController c, String hint) => TextField(
         controller: c,
+        cursorColor: _pink,
         style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: GoogleFonts.poppins(color: Colors.white30, fontSize: 13),
+          hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 13),
           filled: true,
-          fillColor: Colors.white10,
+          fillColor: const Color(0xFF140B26),
           border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: Colors.white.withOpacity(0.15)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: Colors.white.withOpacity(0.15)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: _pink, width: 1.5),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
         ),
       );
 
@@ -1108,7 +1231,8 @@ class _CollectionSetupSheetState extends State<_CollectionSetupSheet> {
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
-              color: active ? _violet : Colors.white10,
+              gradient: active ? const LinearGradient(colors: [_violet, _pink]) : null,
+              color: active ? null : Colors.white10,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
@@ -1122,22 +1246,32 @@ class _CollectionSetupSheetState extends State<_CollectionSetupSheet> {
         ),
       );
 
-  Widget _payChip(String value, String label) {
+  Widget _payChip(String value, String label, [Color? activeColor]) {
     final active = _method == value;
+    final color = activeColor ?? _violet;
     return GestureDetector(
       onTap: () => setState(() => _method = value),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: active ? _violet : Colors.white10,
+          color: active ? color.withOpacity(0.3) : Colors.white10,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: active ? _violet : Colors.white24),
+          border: Border.all(color: active ? color : Colors.white24, width: active ? 1.5 : 1),
         ),
-        child: Text(label,
-            style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: active ? Colors.white : Colors.white70)),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (active) ...[
+              Icon(Icons.check_circle_rounded, color: color, size: 14),
+              const SizedBox(width: 5),
+            ],
+            Text(label,
+                style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: active ? FontWeight.bold : FontWeight.w500,
+                    color: active ? Colors.white : Colors.white70)),
+          ],
+        ),
       ),
     );
   }

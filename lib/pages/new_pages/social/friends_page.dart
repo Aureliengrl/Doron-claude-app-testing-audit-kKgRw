@@ -369,9 +369,9 @@ class _FriendsPageState extends State<FriendsPage>
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildFriendsList(),
-                  _buildSearchResults(),
-                  _buildPendingRequests(),
+                  _KeepAliveTab(child: _buildFriendsList()),
+                  _KeepAliveTab(child: _buildSearchResults()),
+                  _KeepAliveTab(child: _buildPendingRequests()),
                 ],
               ),
             ),
@@ -1181,7 +1181,7 @@ class _FriendsPageState extends State<FriendsPage>
               children: [
                 const Icon(IconlyLight.user2, size: 16, color: _green),
                 const SizedBox(width: 6),
-                Text('Amis "” Voir le profil', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: _green)),
+                Text('Amis • Voir le profil', style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: _green)),
                 const SizedBox(width: 4),
                 const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: _green),
               ],
@@ -1220,15 +1220,19 @@ class _FriendsPageState extends State<FriendsPage>
     );
   }
 
-  // â”€â”€â”€ Onglet Demandes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Onglet Demandes ─────────────────────────────────────────────────────────
 
   Widget _buildPendingRequests() {
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: _requestsStream,
-      initialData: const [], // â† FIX: évite le spinner infini
+      initialData: _pendingRequests.isNotEmpty ? _pendingRequests : null,
       builder: (context, friendSnap) {
+        if (friendSnap.hasData && friendSnap.data != null) {
+          _pendingRequests = friendSnap.data!;
+        }
+
         // Erreur sur le stream
-        if (friendSnap.hasError) {
+        if (friendSnap.hasError && _pendingRequests.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -1257,18 +1261,22 @@ class _FriendsPageState extends State<FriendsPage>
             ),
           );
         }
-        // Stream collab séparé "” ne bloque PAS l'affichage des demandes d'amis
+
+        // Stream collab séparé
         return StreamBuilder<List<Map<String, dynamic>>>(
           stream: _collabInvitesStream,
-          initialData: const [], // Valeur initiale vide pour ne pas bloquer
+          initialData: _pendingCollabInvites.isNotEmpty ? _pendingCollabInvites : null,
           builder: (context, collabSnap) {
+            if (collabSnap.hasData && collabSnap.data != null) {
+              _pendingCollabInvites = collabSnap.data!;
+            }
 
-            final friendRequests = friendSnap.data ?? [];
-            final collabInvites = collabSnap.data ?? [];
+            final friendRequests = friendSnap.data ?? _pendingRequests;
+            final collabInvites = collabSnap.data ?? _pendingCollabInvites;
 
-            // Mettre à jour les listes locales
-            _pendingRequests = friendRequests;
-            _pendingCollabInvites = collabInvites;
+            if (friendSnap.connectionState == ConnectionState.waiting && friendRequests.isEmpty && collabInvites.isEmpty) {
+              return const Center(child: CircularProgressIndicator(color: _violet, strokeWidth: 2));
+            }
 
             if (friendRequests.isEmpty && collabInvites.isEmpty) {
               return Center(
@@ -1518,6 +1526,25 @@ class _FriendsPageState extends State<FriendsPage>
         ),
       ),
     );
+  }
+}
+
+class _KeepAliveTab extends StatefulWidget {
+  final Widget child;
+  const _KeepAliveTab({required this.child});
+
+  @override
+  State<_KeepAliveTab> createState() => _KeepAliveTabState();
+}
+
+class _KeepAliveTabState extends State<_KeepAliveTab> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
   }
 }
 

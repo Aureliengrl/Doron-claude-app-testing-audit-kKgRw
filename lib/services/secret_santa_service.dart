@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
@@ -30,18 +31,35 @@ class SecretSantaGroup {
   });
 
   factory SecretSantaGroup.fromFirestore(DocumentSnapshot doc) {
-    final d = doc.data() as Map<String, dynamic>;
+    final d = doc.data() as Map<String, dynamic>? ?? {};
+    
+    // Extraction sécurisée du budget
+    final budgetRaw = d['budget'] as Map?;
+    final int minB = (budgetRaw != null && budgetRaw['min'] is num)
+        ? (budgetRaw['min'] as num).toInt()
+        : int.tryParse('${budgetRaw?['min']}') ?? 0;
+    final int maxB = (budgetRaw != null && budgetRaw['max'] is num)
+        ? (budgetRaw['max'] as num).toInt()
+        : int.tryParse('${budgetRaw?['max']}') ?? 50;
+
+    DateTime? created;
+    if (d['createdAt'] is Timestamp) {
+      created = (d['createdAt'] as Timestamp).toDate();
+    } else if (d['createdAt'] is DateTime) {
+      created = d['createdAt'] as DateTime;
+    }
+
     return SecretSantaGroup(
       id: doc.id,
-      name: d['name'] as String? ?? '',
+      name: d['name'] as String? ?? 'Secret Santa',
       mode: d['mode'] as String? ?? 'personal',
-      budget: Map<String, int>.from(d['budget'] as Map? ?? {'min': 0, 'max': 50}),
+      budget: {'min': minB, 'max': maxB},
       status: d['status'] as String? ?? 'open',
       theme: d['theme'] as String? ?? 'christmas',
       createdBy: d['createdBy'] as String? ?? '',
       inviteToken: d['inviteToken'] as String? ?? '',
       participantUids: List<String>.from(d['participantUids'] as List? ?? []),
-      createdAt: (d['createdAt'] as Timestamp?)?.toDate(),
+      createdAt: created,
     );
   }
 
@@ -49,13 +67,43 @@ class SecretSantaGroup {
   bool get isDrawn => status == 'drawn';
   bool get isRevealed => status == 'revealed';
 
-  String get themeEmoji {
+  IconData get themeIcon {
     switch (theme) {
-      case 'christmas': return '🎄';
-      case 'winter': return '❄️';
-      case 'birthday': return '🎂';
-      case 'corporate': return '💼';
-      default: return '🎁';
+      case 'christmas': return Icons.card_giftcard_rounded;
+      case 'winter': return Icons.ac_unit_rounded;
+      case 'birthday': return Icons.cake_rounded;
+      case 'corporate': return Icons.business_center_rounded;
+      default: return Icons.celebration_rounded;
+    }
+  }
+
+  Color get themePrimaryColor {
+    switch (theme) {
+      case 'christmas': return const Color(0xFFEF4444);
+      case 'winter': return const Color(0xFF06B6D4);
+      case 'birthday': return const Color(0xFFF59E0B);
+      case 'corporate': return const Color(0xFF6366F1);
+      default: return const Color(0xFF8A2BE2);
+    }
+  }
+
+  Color get themeSecondaryColor {
+    switch (theme) {
+      case 'christmas': return const Color(0xFF10B981);
+      case 'winter': return const Color(0xFF3B82F6);
+      case 'birthday': return const Color(0xFFEC4899);
+      case 'corporate': return const Color(0xFF8B5CF6);
+      default: return const Color(0xFFEC4899);
+    }
+  }
+
+  String get themeLabel {
+    switch (theme) {
+      case 'christmas': return 'Noël';
+      case 'winter': return 'Hiver';
+      case 'birthday': return 'Anniversaire';
+      case 'corporate': return 'Entreprise';
+      default: return 'Fête';
     }
   }
 
@@ -363,8 +411,6 @@ class SecretSantaService {
     }
   }
 
-  // ── Stream de mes groupes ──────────────────────────────────────────────────
-
   static Stream<List<SecretSantaGroup>> getMyGroupsStream() {
     final myUid = _myUid;
     if (myUid == null) return Stream.value([]);
@@ -372,9 +418,16 @@ class SecretSantaService {
     return _db
         .collection('secret_santa_groups')
         .where('participantUids', arrayContains: myUid)
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs.map(SecretSantaGroup.fromFirestore).toList());
+        .map((snap) {
+          final list = snap.docs.map(SecretSantaGroup.fromFirestore).toList();
+          list.sort((a, b) {
+            final aDate = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+            final bDate = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+            return bDate.compareTo(aDate);
+          });
+          return list;
+        });
   }
 
   // ── Stream d'un groupe ─────────────────────────────────────────────────────

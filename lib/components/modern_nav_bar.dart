@@ -43,7 +43,7 @@ class FloatingModernNavBar extends StatefulWidget {
     this.primaryColor,
     this.height = 64,
     this.borderRadius = 32,
-    this.margin = const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+    this.margin = const EdgeInsets.only(left: 20, right: 20, top: 12, bottom: 2),
   });
 
   @override

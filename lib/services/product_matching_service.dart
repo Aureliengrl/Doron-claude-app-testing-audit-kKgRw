@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -77,52 +79,60 @@ class ProductMatchingService {
   /// Mode de filtrage:
   /// - "home": Page d'accueil - Strict sur SEXE uniquement (basé sur soi), souple sur le reste
   /// - "person": Recherche personne - Modéré sur tout (scoring uniquement pour cadeaux innovants)
+  // Cache mémoire global ultra-rapide pour affichage instantané en 0 ms
+  static List<Map<String, dynamic>> _inMemoryCatalog = [];
+  static bool _isPreloading = false;
+
+  /// Précharge le catalogue en mémoire vive dès le démarrage
+  static Future<void> preloadCatalog() async {
+    if (_inMemoryCatalog.isNotEmpty || _isPreloading) return;
+    _isPreloading = true;
+    try {
+      final jsonStr = await rootBundle.loadString('assets/jsons/fallback_products.json');
+      final List<dynamic> rawList = jsonDecode(jsonStr);
+      _inMemoryCatalog = rawList.map((item) => Map<String, dynamic>.from(item as Map)).toList();
+      AppLogger.success('⚡ [MatchingEngine] ${_inMemoryCatalog.length} produits préchargés en mémoire vive (RAM)', 'Matching');
+    } catch (e) {
+      AppLogger.warning('⚠️ [MatchingEngine] Erreur préchargement JSON: $e', 'Matching');
+    } finally {
+      _isPreloading = false;
+    }
+  }
+
   /// - "discovery": Mode Inspirations - Très souple, variété maximale
   static Future<List<Map<String, dynamic>>> getPersonalizedProducts({
     required Map<String, dynamic> userTags,
     int count = 50,
     String? category,
+    String? brand,
     List<dynamic>? excludeProductIds,
     String filteringMode = "discovery",
-    List<String>? brandsSeen, // Anti-doublon marque inter-sessions
+    List<String>? brandsSeen,
   }) async {
     try {
       AppLogger.info('🎯 Matching produits pour tags: ${userTags.keys.join(", ")}', 'Matching');
-      AppLogger.info('🔒 Mode filtrage: $filteringMode', 'Matching');
-      AppLogger.debug('📋 User tags complets: $userTags', 'Matching');
-      AppLogger.info('🚫 Exclusion de ${excludeProductIds?.length ?? 0} produits', 'Matching');
+      AppLogger.info('🔒 Mode filtrage: $filteringMode (catégorie: $category, marque: $brand)', 'Matching');
 
-      // FIX F2: clé isolée par UID — évite que les marques vues par l'utilisateur A
-      // influencent les recommandations de l'utilisateur B sur le même appareil
+      // S'assurer que le catalogue mémoire est prêt
+      if (_inMemoryCatalog.isEmpty) {
+        await preloadCatalog();
+      }
+
+      // FIX F2: clé isolée par UID
       List<String> effectiveBrandsSeen = brandsSeen ?? [];
-      if (effectiveBrandsSeen.isEmpty) {
+      if (effectiveBrandsSeen.isEmpty && (brand == null || brand == 'all')) {
         try {
           final uid = FirebaseAuth.instance.currentUser?.uid ?? 'anon';
           final prefs = await SharedPreferences.getInstance();
           effectiveBrandsSeen = prefs.getStringList('brands_seen_v3_$uid') ?? [];
-          AppLogger.debug('🏷️ Marques déjà vues (${effectiveBrandsSeen.length}): $effectiveBrandsSeen', 'Matching');
         } catch (e) {
           AppLogger.warning('⚠️ Impossible de charger brands_seen: $e', 'Matching');
         }
       }
 
-      // Convertir les réponses utilisateur en tags de recherche
       final searchTags = _convertUserTagsToSearchTags(userTags);
-      AppLogger.debug('🏷️ Tags de recherche: $searchTags', 'Matching');
 
-      // 🎯 FILTRAGE FIREBASE - Différent selon le mode
-      AppLogger.firebase('🎁 Chargement depuis collection Firebase: gifts');
-
-      // =====================================================================
-      // FILTRAGE FIREBASE CÔTÉ SERVEUR
-      // On filtre par catégorie en priorité (index Firestore requis sur 'tags').
-      // Le filtrage par genre reste côté client (scoring) car Firestore ne permet
-      // qu'un seul arrayContains par requête.
-      // =====================================================================
-      String? serverCategoryTag;
       String? genderFilter;
-
-      // Déterminer le genre pour le scoring côté client
       final gender = userTags['gender'] ?? userTags['recipientGender'];
       if (gender != null) {
         final genderStr = gender.toString();
@@ -133,80 +143,99 @@ class ProductMatchingService {
         } else {
           genderFilter = 'gender_mixte';
         }
-        AppLogger.info('👤 Genre: $genderFilter (scoring côté client)', 'Matching');
       }
 
-      // FIX F9: La catégorie 'food' (id) ne contient pas 'Food' (nom UI) → le filtre serveur
-      // n'était jamais activé, 300 docs chargés sans filtrage Firebase
-      if (category != null && category != 'Pour toi' && category != 'all') {
-        if (category.contains('Tendances') || category == 'trending') serverCategoryTag = 'cat_tendances';
-        else if (category.contains('Tech') || category == 'tech') serverCategoryTag = 'cat_tech';
-        else if (category.contains('Mode') || category == 'fashion') serverCategoryTag = 'cat_mode';
-        else if (category.contains('Maison') || category == 'home') serverCategoryTag = 'cat_maison';
-        else if (category.contains('Beauté') || category.contains('Beaute') || category == 'beauty') serverCategoryTag = 'cat_beaute';
-        else if (category.contains('Food') || category.contains('Gastronomie') || category == 'food') serverCategoryTag = 'cat_food';
-        if (serverCategoryTag != null) {
-          AppLogger.firebase('📁 Filtrage Firebase côté serveur: tags arrayContains $serverCategoryTag');
+      final cleanCatLower = (category != null && category != 'Pour toi' && category != 'all')
+          ? category.toLowerCase().trim()
+          : null;
+      final cleanBrandLower = (brand != null && brand != 'all')
+          ? brand.toLowerCase().trim()
+          : null;
+
+      // ⚡ CHARGEMENT INSTANTANÉ DEPUIS LE CACHE MÉMOIRE VIVE (0 ms)
+      List<Map<String, dynamic>> allProducts = [];
+
+      if (_inMemoryCatalog.isNotEmpty) {
+        allProducts = _inMemoryCatalog.where((p) {
+          if (cleanBrandLower != null) {
+            final pBrand = (p['brand'] ?? '').toString().toLowerCase();
+            final pBrandNorm = pBrand.replaceAll('&', '').replaceAll(' ', '').replaceAll('-', '');
+            final filterNorm = cleanBrandLower.replaceAll('&', '').replaceAll(' ', '').replaceAll('-', '');
+            final pCats = (p['categories'] as List<dynamic>? ?? []).map((c) => c.toString().toLowerCase()).toList();
+            return pBrand.contains(cleanBrandLower) ||
+                pBrandNorm.contains(filterNorm) ||
+                pCats.contains(cleanBrandLower) ||
+                pCats.contains(filterNorm);
+          }
+          if (cleanCatLower != null) {
+            final pCats = (p['categories'] as List<dynamic>? ?? []).map((c) => c.toString().toLowerCase()).toList();
+            return pCats.contains(cleanCatLower);
+          }
+          return true;
+        }).toList();
+
+        // Si le filtre spécifique ne donne rien en mémoire, fallback sur le catalogue complet
+        if (allProducts.isEmpty) {
+          allProducts = List.from(_inMemoryCatalog);
         }
       }
 
-      // Limite de chargement : 300 docs suffisent pour le scoring
-      // (moins de données = plus rapide, Firestore cache après la 1ère requête)
-      const int loadLimit = 300;
-
-      Future<List<Map<String, dynamic>>> fetchProducts({
-        required String collection,
-        String? categoryTag,
-      }) async {
-        var q = _firestore.collection(collection) as Query<Map<String, dynamic>>;
-        if (categoryTag != null) {
-          q = q.where('tags', arrayContains: categoryTag);
+      // Si le cache mémoire était vide, fallback Firestore
+      if (allProducts.isEmpty) {
+        var q = _firestore.collection('gifts') as Query<Map<String, dynamic>>;
+        if (cleanBrandLower != null) {
+          final normBrand = cleanBrandLower.replaceAll('&', '').replaceAll(' ', '').replaceAll('-', '');
+          q = q.where('categories', arrayContains: normBrand);
+        } else if (cleanCatLower != null) {
+          q = q.where('categories', arrayContains: cleanCatLower);
         }
-        // serverAndCache : utilise le cache Firestore SDK si disponible (< 1s)
-        var snap = await q.limit(loadLimit).get(
-          const GetOptions(source: Source.serverAndCache),
-        );
-        // FIX: un cache local froid/vide peut renvoyer 0 doc au 1er chargement
-        // (d'où le "aucun produit → je rafraîchis → ils apparaissent"). Si vide,
-        // on force une lecture serveur avant d'abandonner.
-        if (snap.docs.isEmpty) {
-          snap = await q.limit(loadLimit).get(const GetOptions(source: Source.server));
-        }
-        return snap.docs.map((doc) {
+        final snap = await q.limit(300).get(const GetOptions(source: Source.serverAndCache));
+        allProducts = snap.docs.map((doc) {
           final data = doc.data();
           data['id'] = doc.id;
           return data;
         }).toList();
       }
 
-      // 1️⃣ Tentative avec filtre catégorie
-      var allProducts = await fetchProducts(
-        collection: 'gifts',
-        categoryTag: serverCategoryTag,
-      );
-      AppLogger.firebase('📦 ${allProducts.length} docs chargés (filtre: $serverCategoryTag)');
+      // Synchronisation en arrière-plan avec Firestore (Stale-While-Revalidate silencieux)
+      Future.microtask(() async {
+        try {
+          final snap = await _firestore.collection('gifts').limit(300).get(const GetOptions(source: Source.serverAndCache));
+          if (snap.docs.isNotEmpty) {
+            final remote = snap.docs.map((d) {
+              final data = d.data();
+              data['id'] = d.id;
+              return data;
+            }).toList();
+            // Mettre à jour le cache mémoire
+            final mapById = {for (var p in _inMemoryCatalog) p['id']: p};
+            for (var r in remote) {
+              mapById[r['id']] = r;
+            }
+            _inMemoryCatalog = mapById.values.toList();
+          }
+        } catch (_) {}
+      });
 
-      // 2️⃣ Si résultat vide avec filtre, retry sans filtre catégorie
-      if (allProducts.isEmpty && serverCategoryTag != null) {
-        AppLogger.warning('⚠️ Aucun produit avec filtre catégorie, retry sans filtre', 'Matching');
-        allProducts = await fetchProducts(collection: 'gifts');
-        AppLogger.firebase('📦 ${allProducts.length} docs sans filtre catégorie');
-      }
-
-      // 3️⃣ Fallback vers collection 'products' si 'gifts' toujours vide
+      // 3️⃣ Fallback vers collection 'products' si toujours vide
       if (allProducts.isEmpty) {
-        AppLogger.warning('⚠️ Collection gifts vide, fallback vers products...', 'Matching');
-        allProducts = await fetchProducts(collection: 'products');
-        AppLogger.firebase('📦 ${allProducts.length} docs depuis collection products');
+        try {
+          final snapProd = await _firestore.collection('products').limit(300).get(const GetOptions(source: Source.serverAndCache));
+          allProducts = snapProd.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return data;
+          }).toList();
+        } catch (_) {}
       }
 
       // ⛔ Si toujours vide, erreur critique
       if (allProducts.isEmpty) {
-        AppLogger.error('❌ AUCUN PRODUIT DANS FIREBASE (gifts ET products sont vides)', 'Matching', null);
-        throw Exception('FIREBASE VIDE - Aucun produit trouvé dans gifts ni products.');
+        AppLogger.error('❌ AUCUN PRODUIT DANS LE CATALOGUE', 'Matching', null);
+        throw Exception('FIREBASE VIDE - Aucun produit trouvé.');
       }
 
-      AppLogger.success('✅ ${allProducts.length} produits chargés depuis Firebase', 'Matching');
+      AppLogger.success('✅ ${allProducts.length} produits disponibles (0 ms)', 'Matching');
 
 
       // FIX F12: N'injecter la wishlist QUE si personIdentifier est un UID Firebase
@@ -406,16 +435,26 @@ class ProductMatchingService {
           continue;
         }
 
-        // 4️⃣ Vérifier limite par marque (max 20%)
+        final isBrandSpecific = cleanBrandLower != null && cleanBrandLower != 'all';
         final currentBrandCount = brandCounts[brand] ?? 0;
-        if (currentBrandCount >= maxPerBrand) {
-          continue; // Skip, trop de produits de cette marque
-        }
-
-        // 5️⃣ Vérifier limite par catégorie (max 30%)
         final currentCategoryCount = categoryCounts[mainCategory] ?? 0;
-        if (currentCategoryCount >= maxPerCategory) {
-          continue; // Skip, trop de produits de cette catégorie
+
+        // 4️⃣ Vérifier limite par marque et catégorie (uniquement en mode découverte globale)
+        if (!isBrandSpecific) {
+          if (currentBrandCount >= maxPerBrand) {
+            continue; // Skip, trop de produits de cette marque
+          }
+          if (currentCategoryCount >= maxPerCategory) {
+            continue; // Skip, trop de produits de cette catégorie
+          }
+        } else {
+          // En mode marque spécifique (ex: Zara), s'assurer que le produit appartient strictement à cette marque
+          final pBrand = (product['brand'] ?? '').toString().toLowerCase();
+          final pCategories = (product['categories'] as List?)?.cast<String>() ?? [];
+          final matchesBrand = pBrand.contains(cleanBrandLower) || pCategories.any((c) => c.toLowerCase() == cleanBrandLower);
+          if (!matchesBrand) {
+            continue; // Skip les produits des autres marques (comme Apple / AirPods)
+          }
         }
 
         // 6️⃣ SUPPRIMÉ: Filtrage par genre (redondant avec scoring qui fait déjà exclusion -10000)
@@ -894,26 +933,22 @@ class ProductMatchingService {
       } else {
         // Genre ne correspond PAS
         if (isPersonMode) {
-          // 🔒 MODE PERSON: TOUJOURS EXCLUSION STRICTE (même avec filtre catégorie)
-          // Si on cherche un cadeau pour un homme, JAMAIS montrer des produits pour femmes
+          // 🔒 MODE PERSON: TOUJOURS EXCLUSION STRICTE
           AppLogger.debug('❌ GENRE NE CORRESPOND PAS (person): $userGender ≠ ${productGenderTags.join(", ")} => EXCLUSION STRICTE', 'Debug');
           return -10000.0;
-        } else if (hasCategoryFilter && !isHomeMode) {
-          // Si filtre de catégorie actif (et pas HOME) -> PÉNALITÉ uniquement
-          AppLogger.debug('⚠️ GENRE NE CORRESPOND PAS (filtre catégorie actif): $userGender ≠ ${productGenderTags.join(", ")} => Pénalité -30', 'Debug');
-          score -= 30.0;
+        } else if (hasCategoryFilter) {
+          // Si filtre de catégorie ou marque actif -> Pas d'exclusion bloquante
+          AppLogger.debug('⚠️ GENRE NE CORRESPOND PAS (filtre catégorie/marque actif): $userGender ≠ ${productGenderTags.join(", ")} => Pénalité -10', 'Debug');
+          score -= 10.0;
         } else if (isDiscoveryMode) {
           // Discovery: très petite pénalité
           AppLogger.debug('⚠️ GENRE NE CORRESPOND PAS (discovery): ${productGenderTags.join(", ")} => Pénalité -10', 'Debug');
           score -= 10.0;
         } else if (isHomeMode) {
-          // 🔒 HOME MODE: EXCLUSION STRICTE
-          AppLogger.debug('❌ GENRE NE CORRESPOND PAS (home): $userGender ≠ ${productGenderTags.join(", ")} => EXCLUSION', 'Debug');
-          return -10000.0;
+          // Sur le feed principal, petite pénalité de classement sans suppression totale
+          score -= 40.0;
         } else {
-          // Fallback: pénalité forte
-          AppLogger.debug('⚠️ GENRE NE CORRESPOND PAS: $userGender ≠ ${productGenderTags.join(", ")} => Pénalité -80', 'Debug');
-          score -= 80.0;
+          score -= 30.0;
         }
       }
     } else {

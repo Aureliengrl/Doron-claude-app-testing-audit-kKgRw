@@ -101,5 +101,9 @@
 	<key>NSContactsUsageDescription</key>
 	<string>Doron accède à vos contacts pour vous suggérer des amis présents sur l'application et faciliter le partage de listes de cadeaux avec vos proches.</string>
 
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
 </dict>
 </plist>

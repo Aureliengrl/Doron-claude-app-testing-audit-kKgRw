@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -22,7 +21,6 @@ class SecretSantaWishlistPage extends StatefulWidget {
 
 class _SecretSantaWishlistPageState extends State<SecretSantaWishlistPage> {
   final Color _violet = const Color(0xFF8A2BE2);
-  final Color _pink = const Color(0xFFEC4899);
   final Color _green = const Color(0xFF10B981);
 
   bool _loading = true;
@@ -82,7 +80,8 @@ class _SecretSantaWishlistPageState extends State<SecretSantaWishlistPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(children: [
-              const Text('🎁 ', style: TextStyle(fontSize: 20)),
+              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+              const SizedBox(width: 8),
               Text('Cadeau marqué comme acheté !', style: GoogleFonts.poppins(color: Colors.white)),
             ]),
             backgroundColor: _green,
@@ -104,9 +103,9 @@ class _SecretSantaWishlistPageState extends State<SecretSantaWishlistPage> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: LiquidGlassTokens.pageDark,
-        body: const Center(child: CircularProgressIndicator(color: Color(0xFF8A2BE2))),
+        body: Center(child: CircularProgressIndicator(color: Color(0xFF8A2BE2))),
       );
     }
 
@@ -191,8 +190,8 @@ class _SecretSantaWishlistPageState extends State<SecretSantaWishlistPage> {
                               children: [
                                 Icon(Icons.check_circle_rounded, color: _green, size: 28),
                                 const SizedBox(width: 12),
-                                Text('Cadeau acheté ?',
-                                    style: GoogleFonts.poppins(color: _green, fontSize: 16, fontWeight: FontWeight.bold)),
+                                Text('Cadeau marqué comme acheté !',
+                                    style: GoogleFonts.poppins(color: _green, fontSize: 15, fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ).animate().fadeIn().scale(begin: const Offset(0.9, 0.9))
@@ -215,8 +214,14 @@ class _SecretSantaWishlistPageState extends State<SecretSantaWishlistPage> {
                   ),
 
                   // --- Wishlist items ---
-                  Text('🎁 Sa wishlist dans ton budget',
-                      style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  Row(
+                    children: [
+                      const Icon(Icons.favorite_outline_rounded, color: Colors.white70, size: 20),
+                      const SizedBox(width: 8),
+                      Text('Sa wishlist dans ton budget',
+                          style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
                   const SizedBox(height: 4),
                   Text('Articles sous $budgetMax€',
                       style: GoogleFonts.poppins(color: Colors.white54, fontSize: 13)),
@@ -265,7 +270,14 @@ class _SecretSantaWishlistPageState extends State<SecretSantaWishlistPage> {
       ),
       child: Column(
         children: [
-          const Text('✨', style: TextStyle(fontSize: 48)),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: _violet.withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.card_giftcard_rounded, color: Colors.white, size: 36),
+          ),
           const SizedBox(height: 16),
           Text('$name n\'a pas encore de wishlist\ndans ce budget',
               textAlign: TextAlign.center,

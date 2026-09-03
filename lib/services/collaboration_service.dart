@@ -1,4 +1,4 @@
-﻿import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
 import '/utils/app_logger.dart';
@@ -46,7 +46,7 @@ class CollaborationService {
         'name': 'Cadeaux pour $profileName',
         'isGroup': true,
         'participants': [myUid],
-        'lastMessage': 'ðŸŽ Groupe de collaboration créé !',
+        'lastMessage': '🎁 Groupe de collaboration créé !',
         'lastMessageTime': FieldValue.serverTimestamp(),
         'createdAt': FieldValue.serverTimestamp(),
         'createdBy': myUid,
@@ -56,7 +56,7 @@ class CollaborationService {
       // Premier message dans le chat
       await chatRef.collection('messages').add({
         'senderId': 'system',
-        'text': 'ðŸŽ Liste de cadeaux partagée pour $profileName. Invitez des amis pour collaborer !',
+        'text': '🎁 Liste de cadeaux partagée pour $profileName. Invitez des amis pour collaborer !',
         'timestamp': FieldValue.serverTimestamp(),
         'type': 'system',
       });
@@ -161,7 +161,7 @@ class CollaborationService {
         'pendingInvites': FieldValue.arrayUnion([toUid]),
       });
 
-      // â”€â”€ Notification in-app : écrite dans 'notifications/{toUid}/items' â”€â”€
+      // ——— Notification in-app : écrite dans 'notifications/{toUid}/items' ———
       // Déclenche aussi une Cloud Function FCM si configurée sur cette collection
       try {
         // Récupérer le nom de l'inviteur
@@ -182,27 +182,27 @@ class CollaborationService {
           'fromUid': myUid,
           'fromName': senderName,
           'profileName': profileName,
-          'title': 'ðŸŽ Invitation à collaborer',
+          'title': '🎁 Invitation à collaborer',
           'body': '$senderName t\'invite à participer aux cadeaux pour $profileName',
           'read': false,
           'createdAt': FieldValue.serverTimestamp(),
         });
         AppLogger.debug('✅ Notification collab envoyée à $toUid', 'Collab');
       } catch (e) {
-        AppLogger.debug('âš ï¸ Notification collab failed (non-critical): $e', 'Collab');
+        AppLogger.debug('⚠️ Notification collab failed (non-critical): $e', 'Collab');
       }
 
       AppLogger.debug('✅ Invitation envoyée: ${inviteRef.id}', 'Collab');
       return inviteRef.id;
     } catch (e) {
-      AppLogger.debug('âŒ CollaborationService.inviteUser: $e', 'Collab');
+      AppLogger.debug('❌ CollaborationService.inviteUser: $e', 'Collab');
       rethrow;
     }
   }
 
-  // â”€â”€â”€ Ajouter un membre directement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ——— Ajouter un membre directement ——————————————————————————————————————————
 
-  /// FIX #1 "” addMember accepte chatId et profileName en paramètre facultatif.
+  /// FIX #1 — addMember accepte chatId et profileName en paramètre facultatif.
   /// Cela évite un get() sur la collab qui peut échouer si l'utilisateur
   /// n'est pas encore dans members/pendingInvites (permission-denied).
   static Future<void> addMember({
@@ -212,14 +212,14 @@ class CollaborationService {
     String? profileName,
   }) async {
     try {
-      // â”€â”€ 1. Ajouter dans la collaboration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ——— 1. Ajouter dans la collaboration ——————————————————————————————————
       // On utilise set + merge : pas besoin de lire le doc d'abord.
       await _db.collection('collaborations').doc(collabId).set({
         'members': FieldValue.arrayUnion([uid]),
         'pendingInvites': FieldValue.arrayRemove([uid]),
       }, SetOptions(merge: true));
 
-      // â”€â”€ 2. Si chatId non fourni, tenter de le récupérer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ——— 2. Si chatId non fourni, tenter de le récupérer ———————————————————
       String? resolvedChatId = chatId;
       String resolvedName = profileName ?? 'la liste';
 
@@ -231,11 +231,11 @@ class CollaborationService {
             resolvedName = collabDoc.data()?['profileName'] as String? ?? resolvedName;
           }
         } catch (e) {
-          AppLogger.debug('âš ï¸ addMember: get chatId failed (non-critical): $e', 'Collab');
+          AppLogger.debug('⚠️ addMember: get chatId failed (non-critical): $e', 'Collab');
         }
       }
 
-      // â”€â”€ 3. Ajouter dans le chat de groupe â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ——— 3. Ajouter dans le chat de groupe —————————————————————————————————
       if (resolvedChatId != null) {
         try {
           await _db.collection('chats').doc(resolvedChatId).set({
@@ -251,13 +251,45 @@ class CollaborationService {
           });
         } catch (e) {
           AppLogger.debug('âš ï¸ addMember: chat update failed (non-critical): $e', 'Collab');
+          AppLogger.debug('âš ï¸  addMember: chat update failed (non-critical): $e', 'Collab');
         }
       }
 
       AppLogger.debug('✅ Membre $uid ajouté à $collabId (chat: $resolvedChatId)', 'Collab');
     } catch (e) {
-      AppLogger.debug('âŒ CollaborationService.addMember: $e', 'Collab');
+      AppLogger.debug('â Œ CollaborationService.addMember: $e', 'Collab');
       rethrow;
+    }
+  }
+
+  /// Permet à un utilisateur de quitter une collaboration
+  static Future<void> leaveCollaboration(String collabId) async {
+    final myUid = _myUid;
+    if (myUid == null) return;
+    await removeMember(collabId: collabId, uid: myUid);
+  }
+
+  /// Retire un membre de la collaboration et du chat associé
+  static Future<void> removeMember({
+    required String collabId,
+    required String uid,
+  }) async {
+    try {
+      final doc = await _db.collection('collaborations').doc(collabId).get();
+      final chatId = doc.data()?['chatId'] as String?;
+
+      await _db.collection('collaborations').doc(collabId).update({
+        'members': FieldValue.arrayRemove([uid]),
+      });
+
+      if (chatId != null && chatId.isNotEmpty) {
+        await _db.collection('chats').doc(chatId).update({
+          'participants': FieldValue.arrayRemove([uid]),
+        });
+      }
+      AppLogger.debug('✅ Membre $uid retiré de $collabId', 'Collab');
+    } catch (e) {
+      AppLogger.debug('⚠️ removeMember error: $e', 'Collab');
     }
   }
 

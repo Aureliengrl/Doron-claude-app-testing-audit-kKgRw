@@ -105,7 +105,7 @@ class FriendService {
         AppLogger.debug('❌ getPendingRequestsStream asyncMap error: $e', 'FriendService');
       }
       return requests;
-    });
+    }).asBroadcastStream();
   }
 
   // ─── Ajouter ami (legacy / direct sans demande) ────────────────────────────

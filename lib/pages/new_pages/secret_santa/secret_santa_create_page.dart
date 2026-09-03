@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -28,11 +27,31 @@ class _SecretSantaCreatePageState extends State<SecretSantaCreatePage> {
   double _budgetMax = 50;
   bool _loading = false;
 
-  final List<Map<String, String>> _themes = [
-    {'id': 'christmas', 'label': 'Noël', 'emoji': '🎄'},
-    {'id': 'winter',    'label': 'Hiver',     'emoji': '❄️'},
-    {'id': 'birthday',  'label': 'Anniversaire', 'emoji': '🎂'},
-    {'id': 'corporate', 'label': 'Entreprise', 'emoji': '💼'},
+  final List<Map<String, dynamic>> _themes = const [
+    {
+      'id': 'christmas',
+      'label': 'Noël',
+      'icon': Icons.card_giftcard_rounded,
+      'color': Color(0xFFEF4444),
+    },
+    {
+      'id': 'winter',
+      'label': 'Hiver',
+      'icon': Icons.ac_unit_rounded,
+      'color': Color(0xFF06B6D4),
+    },
+    {
+      'id': 'birthday',
+      'label': 'Anniversaire',
+      'icon': Icons.cake_rounded,
+      'color': Color(0xFFF59E0B),
+    },
+    {
+      'id': 'corporate',
+      'label': 'Entreprise',
+      'icon': Icons.business_center_rounded,
+      'color': Color(0xFF6366F1),
+    },
   ];
 
   @override
@@ -125,9 +144,21 @@ class _SecretSantaCreatePageState extends State<SecretSantaCreatePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('🎁 Nom du groupe',
-              style: GoogleFonts.poppins(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold))
-              .animate().fadeIn(duration: 300.ms),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _violet.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.edit_note_rounded, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 10),
+              Text('Nom du groupe',
+                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            ],
+          ).animate().fadeIn(duration: 300.ms),
           const SizedBox(height: 6),
           Text('Comment s\'appelle votre Secret Santa ?',
               style: GoogleFonts.poppins(color: Colors.white54, fontSize: 14)),
@@ -136,7 +167,7 @@ class _SecretSantaCreatePageState extends State<SecretSantaCreatePage> {
             controller: _nameCtrl,
             style: GoogleFonts.poppins(color: Colors.white, fontSize: 16),
             decoration: InputDecoration(
-              hintText: 'Ex: Secret Santa Équipe Dev 🎄',
+              hintText: 'Ex: Secret Santa de Noël 2026',
               hintStyle: GoogleFonts.poppins(color: Colors.white38),
               filled: true,
               fillColor: Colors.white.withOpacity(0.07),
@@ -149,8 +180,21 @@ class _SecretSantaCreatePageState extends State<SecretSantaCreatePage> {
             ),
           ),
           const SizedBox(height: 32),
-          Text('🎨 Thème',
-              style: GoogleFonts.poppins(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _pink.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.palette_outlined, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 10),
+              Text('Thème',
+                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            ],
+          ),
           const SizedBox(height: 16),
           GridView.count(
             crossAxisCount: 2,
@@ -161,10 +205,14 @@ class _SecretSantaCreatePageState extends State<SecretSantaCreatePage> {
             childAspectRatio: 2.0,
             children: _themes.map((t) {
               final selected = _theme == t['id'];
+              final themeColor = t['color'] as Color;
+              final icon = t['icon'] as IconData;
+
               return GestureDetector(
-                onTap: () { HapticFeedback.lightImpact(); setState(() => _theme = t['id']!); },
+                onTap: () { HapticFeedback.lightImpact(); setState(() => _theme = t['id'] as String); },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                     gradient: selected
@@ -179,9 +227,16 @@ class _SecretSantaCreatePageState extends State<SecretSantaCreatePage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(t['emoji']!, style: const TextStyle(fontSize: 24)),
-                      const SizedBox(width: 8),
-                      Text(t['label']!,
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: themeColor.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(icon, color: selected ? Colors.white : themeColor, size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(t['label'] as String,
                           style: GoogleFonts.poppins(
                             color: selected ? Colors.white : Colors.white70,
                             fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
@@ -196,11 +251,11 @@ class _SecretSantaCreatePageState extends State<SecretSantaCreatePage> {
           const SizedBox(height: 40),
           SizedBox(
             width: double.infinity,
+            height: 52,
             child: ElevatedButton(
               onPressed: () { HapticFeedback.mediumImpact(); setState(() => _step = 1); },
               style: ElevatedButton.styleFrom(
                 backgroundColor: _violet,
-                padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
               child: Text('Suivant →', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
@@ -354,7 +409,14 @@ class _SecretSantaCreatePageState extends State<SecretSantaCreatePage> {
                   ),
                   child: _loading
                       ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : Text('🎅 Créer le groupe', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.card_giftcard_rounded, color: Colors.white, size: 20),
+                            const SizedBox(width: 8),
+                            Text('Créer le groupe', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                          ],
+                        ),
                 ),
               ),
             ],

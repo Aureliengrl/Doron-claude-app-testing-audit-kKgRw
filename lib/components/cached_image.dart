@@ -107,21 +107,16 @@ class CachedImage extends StatelessWidget {
             placeholder ??
             _ShimmerBox(
               width: width,
-              height: height,
+              height: height ?? 200,
               borderRadius: borderRadius,
             ),
         errorWidget: (context, url, error) {
           AppLogger.debug('❌ Erreur chargement image: $url - $error', 'Debug');
           return errorWidget ?? _buildErrorWidget();
         },
-        // PERF AXE 3: 150ms au lieu de 300ms — images pop 2× plus vite
-        fadeInDuration: const Duration(milliseconds: 150),
-        fadeOutDuration: const Duration(milliseconds: 80),
-        // PERF AXE 3: 400px pour cartes grille (vs 800px) — 4× moins de RAM
-        maxWidthDiskCache: 800,
-        maxHeightDiskCache: 800,
-        memCacheWidth: 400,
-        memCacheHeight: 400,
+        fadeInDuration: const Duration(milliseconds: 50),
+        fadeOutDuration: const Duration(milliseconds: 50),
+        useOldImageOnUrlChange: true,
       ),
     );
   }

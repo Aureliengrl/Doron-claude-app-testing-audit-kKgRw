@@ -32,9 +32,11 @@ import '/pages/new_pages/public_profile/public_profile_page.dart';
 import '/pages/wishlists/wishlist_details_widget.dart';
 import '/pages/new_pages/chat/chat_list_page.dart';
 import '/pages/new_pages/chat/chat_room_page.dart';
+import '/pages/new_pages/chat/chat_info_page.dart';
 import '/pages/authentification/choose_handle_widget.dart';
 import '/pages/new_pages/social/friends_page.dart';
 import '/pages/new_pages/setup_profile/setup_profile_page.dart';
+import '/pages/new_pages/onboarding/user_onboarding_flow_page.dart';
 import '/pages/new_pages/join_collab_page.dart';
 import '/pages/new_pages/group_gift/group_gift_page.dart';
 import '/pages/new_pages/birthday_calendar/birthday_calendar_page.dart'; // F3
@@ -302,6 +304,15 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             chatData: null,
           ),
         ),
+        FFRoute(
+          name: 'ChatInfo',
+          path: '/chat-info/:id',
+          requireAuth: true,
+          builder: (context, params) => ChatInfoPage(
+            chatId: params.getParam<String>('id', ParamType.String) ?? '',
+            chatData: null,
+          ),
+        ),
         // ── Voice Module ────────────────────────────────────────────────────
         FFRoute(
           name: VoiceGuidedOnboardingWidget.routeName,
@@ -379,12 +390,18 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           requireAuth: true,
           builder: (context, params) => const FriendsPage(),
         ),
-        // Setup profil (première connexion)
+        // Setup profil & Onboarding complet (première connexion)
         FFRoute(
-          name: SetupProfilePage.routeName,
-          path: SetupProfilePage.routePath,
+          name: UserOnboardingFlowPage.routeName,
+          path: UserOnboardingFlowPage.routePath,
           requireAuth: true,
-          builder: (context, params) => const SetupProfilePage(),
+          builder: (context, params) => const UserOnboardingFlowPage(),
+        ),
+        FFRoute(
+          name: 'OnboardingFlow',
+          path: '/onboarding',
+          requireAuth: true,
+          builder: (context, params) => const UserOnboardingFlowPage(),
         ),
         // Rejoindre une collaboration via lien d'invitation
         FFRoute(

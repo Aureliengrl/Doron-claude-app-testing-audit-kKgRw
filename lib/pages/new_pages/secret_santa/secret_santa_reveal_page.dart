@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '/components/liquid_glass.dart';
 import '/components/cached_image.dart';
 import '/services/secret_santa_service.dart';
 
@@ -113,16 +112,23 @@ class _SecretSantaRevealPageState extends State<SecretSantaRevealPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('🎁', style: TextStyle(fontSize: 64)),
-          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(colors: [_violet.withOpacity(0.3), _pink.withOpacity(0.2)]),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.card_giftcard_rounded, color: Colors.white, size: 48),
+          ),
+          const SizedBox(height: 20),
           Text('Le tirage n\'a pas encore eu lieu',
-              style: GoogleFonts.poppins(color: Colors.white, fontSize: 18),
+              style: GoogleFonts.poppins(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () => context.pop(),
             style: ElevatedButton.styleFrom(backgroundColor: _violet, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
-            child: Text('Retour', style: GoogleFonts.poppins(color: Colors.white)),
+            child: Text('Retour', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -133,7 +139,6 @@ class _SecretSantaRevealPageState extends State<SecretSantaRevealPage>
     final name = _pair!['assignedToName'] as String? ?? 'Quelqu\'un';
     final photo = _targetProfile?['photo_url'] as String? ?? _targetProfile?['photoUrl'] as String?;
     final groupName = _group?.name ?? 'Secret Santa';
-    final budgetMax = _group?.budget['max'] ?? 50;
 
     return Stack(
       children: [
@@ -172,7 +177,7 @@ class _SecretSantaRevealPageState extends State<SecretSantaRevealPage>
                     ),
                     Expanded(
                       child: Text(
-                        '🎅 $groupName',
+                        groupName,
                         style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                         textAlign: TextAlign.center,
                       ),
@@ -198,7 +203,7 @@ class _SecretSantaRevealPageState extends State<SecretSantaRevealPage>
 
                       if (_revealed)
                         Text(
-                          'Tu offres à…',
+                          'Tu offres un cadeau à…',
                           style: GoogleFonts.poppins(color: Colors.white54, fontSize: 16),
                         ).animate().fadeIn(duration: 400.ms),
 
@@ -229,10 +234,17 @@ class _SecretSantaRevealPageState extends State<SecretSantaRevealPage>
                       if (!_revealed)
                         Column(
                           children: [
-                            Text('Appuie pour découvrir !',
-                                style: GoogleFonts.poppins(color: Colors.white54, fontSize: 14)),
-                            const SizedBox(height: 8),
-                            const Text('👆', style: TextStyle(fontSize: 32))
+                            Text('Touche la carte pour découvrir !',
+                                style: GoogleFonts.poppins(color: Colors.white70, fontSize: 14)),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: _violet.withOpacity(0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.touch_app_rounded, color: Colors.white, size: 28),
+                            )
                                 .animate(onPlay: (c) => c.repeat(reverse: true))
                                 .slideY(begin: 0, end: -0.3, duration: 800.ms, curve: Curves.easeInOut),
                           ],
@@ -241,13 +253,13 @@ class _SecretSantaRevealPageState extends State<SecretSantaRevealPage>
                       if (_revealed)
                         Column(
                           children: [
-                            Text('🎁 Voir sa wishlist et trouver le cadeau parfait',
+                            Text('Consulte sa wishlist et trouve le cadeau parfait',
                                 style: GoogleFonts.poppins(color: Colors.white70, fontSize: 14),
                                 textAlign: TextAlign.center),
                             const SizedBox(height: 20),
                             ElevatedButton.icon(
                               onPressed: () => context.push('/secret-santa/wishlist/${widget.groupId}'),
-                              icon: const Text('🎁', style: TextStyle(fontSize: 18)),
+                              icon: const Icon(Icons.card_giftcard_rounded, color: Colors.white, size: 20),
                               label: Text('Voir sa wishlist →',
                                   style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                               style: ElevatedButton.styleFrom(
@@ -288,8 +300,15 @@ class _SecretSantaRevealPageState extends State<SecretSantaRevealPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('🎅', style: TextStyle(fontSize: 72)).animate(onPlay: (c) => c.repeat(reverse: true)).shimmer(duration: 2000.ms),
-          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.12),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.card_giftcard_rounded, color: Colors.white, size: 54),
+          ).animate(onPlay: (c) => c.repeat(reverse: true)).shimmer(duration: 2000.ms),
+          const SizedBox(height: 20),
           Text('Ton Secret Santa',
               style: GoogleFonts.poppins(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
@@ -328,8 +347,8 @@ class _SecretSantaRevealPageState extends State<SecretSantaRevealPage>
                 color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold,
               )).animate().fadeIn(delay: 200.ms),
           const SizedBox(height: 8),
-          Text('🎁 C\'est à toi d\'offrir !',
-              style: GoogleFonts.poppins(color: Colors.white54, fontSize: 14))
+          Text('C\'est à toi d\'offrir !',
+              style: GoogleFonts.poppins(color: Colors.white70, fontSize: 14))
               .animate().fadeIn(delay: 400.ms),
         ],
       ),

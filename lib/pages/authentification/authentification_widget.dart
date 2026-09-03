@@ -10,6 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '/services/push_notifications_service.dart';
+import '/services/first_time_service.dart';
 import 'authentification_model.dart';
 export 'authentification_model.dart';
 
@@ -28,7 +29,6 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  String? _pendingPersonId;
   String? _returnTo;
   bool _isLoading = false;
 
@@ -39,7 +39,6 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final uri = GoRouterState.of(context).uri;
-      _pendingPersonId = uri.queryParameters['personId'];
       _returnTo = uri.queryParameters['returnTo'];
     });
   }
@@ -129,17 +128,6 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
     );
   }
 
-  Future<void> _signInAnonymously() async {
-    setState(() => _isLoading = true);
-    try {
-      await FirebaseAuth.instance.signInAnonymously();
-      await _afterSignIn();
-    } catch (e) {
-      AppLogger.debug('❌ Anonymous SignIn: $e', 'Auth');
-      setState(() => _isLoading = false);
-    }
-  }
-
   Future<void> _afterSignIn() async {
     try {
       await PushNotificationsService.initialize();
@@ -153,22 +141,26 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
       return;
     }
 
-    // Vérifier si c'est une première inscription (pas de handle encore)
+    // Vérifier si c'est une première inscription ou si l'onboarding n'a pas été complété
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid != null) {
         final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
-        final handle = doc.data()?['handle'] as String?;
+        final data = doc.data();
+        final handle = data?['handle'] as String?;
+        final onboardingCompleted = data?['onboarding_completed'] == true;
+        final hasLocalCompleted = await FirstTimeService.hasCompletedOnboarding();
+
         if (!mounted) return;
-        if (handle == null || handle.trim().isEmpty) {
-          // Nouvel utilisateur → setup username
+        if (handle == null || handle.trim().isEmpty || (!onboardingCompleted && !hasLocalCompleted)) {
+          // Nouvel utilisateur ou onboarding incomplet → parcours onboarding
           context.go('/setup-profile');
           return;
         }
       }
     } catch (_) {}
 
-    // Utilisateur existant → accueil direct
+    // Utilisateur existant avec profil complet → accueil direct
     if (mounted) {
       context.go('/search-page');
     }
@@ -288,38 +280,6 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
                       backgroundColor: const Color(0xFF1A1A1A),
                       textColor: Colors.white,
                       borderColor: Colors.white24,
-                    ),
-                  ],
-
-                  // 🛠️ BOUTON DEBUG — visible uniquement en local (kDebugMode)
-                  if (kDebugMode) ...[
-                    const SizedBox(height: 16),
-                    GestureDetector(
-                      onTap: _signInAnonymously,
-                      child: Container(
-                        width: double.infinity,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: Colors.transparent,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.orange.withOpacity(0.6), width: 1.5),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.bug_report, color: Colors.orange.withOpacity(0.8), size: 18),
-                            const SizedBox(width: 10),
-                            Text(
-                              'Mode test local (debug)',
-                              style: GoogleFonts.poppins(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.orange.withOpacity(0.8),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                     ),
                   ],
 

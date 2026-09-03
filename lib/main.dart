@@ -32,6 +32,8 @@ import '/pages/new_pages/social/social_page_widget.dart';
 import '/pages/new_pages/chat/chat_list_page.dart';
 import '/services/push_notifications_service.dart';
 import '/pages/new_pages/birthday_calendar/birthday_calendar_page.dart';
+import '/services/seed_catalog_service.dart';
+import '/services/product_matching_service.dart';
 import 'index.dart';
 
 /// Service de logging d'erreurs global pour capturer les crashs en release
@@ -162,6 +164,15 @@ void main() async {
 
     await initFirebase().timeout(const Duration(seconds: 8), onTimeout: () => throw Exception('Firebase init timeout! Native iOS config is missing or blocking.'));
     
+    // Préchargement ultra-rapide du catalogue en mémoire vive (0 ms)
+    ProductMatchingService.preloadCatalog();
+
+    // Auto-seed du catalogue complet (400+ produits) dans Firestore
+    SeedCatalogService.seedFirestoreGifts().catchError((e) {
+      AppLogger.debug('Seed catalog error: $e', 'Main');
+      return 0;
+    });
+
     // Do not await push notification setup, as the native permission prompt can block runApp and cause a white screen.
     PushNotificationsService.initialize();
 

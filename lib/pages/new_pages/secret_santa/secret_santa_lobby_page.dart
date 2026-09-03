@@ -36,8 +36,14 @@ class _SecretSantaLobbyPageState extends State<SecretSantaLobbyPage> {
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF13131F),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('🎅 Lancer le tirage ?',
-            style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Row(
+          children: [
+            const Icon(Icons.celebration_rounded, color: Color(0xFF8A2BE2), size: 24),
+            const SizedBox(width: 10),
+            Text('Lancer le tirage ?',
+                style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+          ],
+        ),
         content: Text(
           'Cela va attribuer aléatoirement une personne à chaque participant. Cette action est irréversible.',
           style: GoogleFonts.poppins(color: Colors.white70),
@@ -134,10 +140,19 @@ class _SecretSantaLobbyPageState extends State<SecretSantaLobbyPage> {
                       icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
                       onPressed: () => context.pop(),
                     ),
-                    title: Text(
-                      '${group.themeEmoji} ${group.name}',
-                      style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                      maxLines: 1, overflow: TextOverflow.ellipsis,
+                    title: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(group.themeIcon, color: group.themePrimaryColor, size: 20),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            group.name,
+                            style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                            maxLines: 1, overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                     centerTitle: true,
                     actions: [
@@ -235,15 +250,15 @@ class _SecretSantaLobbyPageState extends State<SecretSantaLobbyPage> {
           child: Row(
             children: [
               Expanded(
-                child: _buildInfoItem('Budget', '${group.budget['min']}€ – ${group.budget['max']}€', '💰'),
+                child: _buildInfoItem('Budget', '${group.budget['min']}€ – ${group.budget['max']}€', Icons.payments_outlined, const Color(0xFF10B981)),
               ),
               Container(width: 1, height: 40, color: Colors.white12),
               Expanded(
-                child: _buildInfoItem('Participants', '${group.participantUids.length}', '👥'),
+                child: _buildInfoItem('Participants', '${group.participantUids.length}', Icons.people_alt_outlined, const Color(0xFF6366F1)),
               ),
               Container(width: 1, height: 40, color: Colors.white12),
               Expanded(
-                child: _buildInfoItem('Statut', group.statusLabel, group.isOpen ? '🟢' : '🎯'),
+                child: _buildInfoItem('Statut', group.statusLabel, Icons.info_outline_rounded, const Color(0xFFF59E0B)),
               ),
             ],
           ),
@@ -252,10 +267,10 @@ class _SecretSantaLobbyPageState extends State<SecretSantaLobbyPage> {
     );
   }
 
-  Widget _buildInfoItem(String label, String value, String emoji) {
+  Widget _buildInfoItem(String label, String value, IconData icon, Color iconColor) {
     return Column(
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 20)),
+        Icon(icon, color: iconColor, size: 22),
         const SizedBox(height: 4),
         Text(value, style: GoogleFonts.poppins(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600), textAlign: TextAlign.center),
         Text(label, style: GoogleFonts.poppins(color: Colors.white54, fontSize: 11), textAlign: TextAlign.center),
@@ -412,8 +427,15 @@ class _SecretSantaLobbyPageState extends State<SecretSantaLobbyPage> {
                       Text('Tirage en cours…', style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                     ],
                   )
-                : Text('🎅 Lancer le tirage !',
-                    style: GoogleFonts.poppins(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.celebration_rounded, color: Colors.white, size: 22),
+                      const SizedBox(width: 10),
+                      Text('Lancer le tirage !',
+                          style: GoogleFonts.poppins(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
           ),
         ).animate(onPlay: canDraw ? (c) => c.repeat() : null).shimmer(
           duration: 2000.ms, color: Colors.white.withOpacity(0.15),

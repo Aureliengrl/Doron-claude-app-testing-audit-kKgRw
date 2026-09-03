@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
@@ -10,60 +12,134 @@ import 'package:http/http.dart' as http;
 import '/utils/app_logger.dart';
 
 class PdfExportUtils {
-  /// Génère un PDF à partir d'une liste de cadeaux et le partage
+  /// Assainit une chaîne de caractères pour éviter les crashs de polices PDF
+  static String cleanText(String? input) {
+    if (input == null || input.isEmpty) return '';
+    return input
+        .replaceAll('’', "'")
+        .replaceAll('‘', "'")
+        .replaceAll('“', '"')
+        .replaceAll('”', '"')
+        .replaceAll('–', '-')
+        .replaceAll('—', '-')
+        .replaceAll('…', '...')
+        .replaceAll('Õ', 'O')
+        .replaceAll('õ', 'o');
+  }
+
+  /// Vérifie si les octets correspondent à une image JPEG ou PNG valide
+  static bool _isValidImage(Uint8List bytes) {
+    if (bytes.length < 8) return false;
+    // JPEG magic bytes: FF D8 FF
+    final isJpeg = bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF;
+    // PNG magic bytes: 89 50 4E 47 0D 0A 1A 0A
+    final isPng = bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
+        bytes[3] == 0x47;
+    return isJpeg || isPng;
+  }
+
+  /// Calcule un rectangle d'origine valide et non-nul pour la feuille de partage iOS
+  static Rect getValidSharePosition([BuildContext? context]) {
+    if (context != null) {
+      try {
+        final box = context.findRenderObject() as RenderBox?;
+        if (box != null && box.hasSize && box.size.width > 0 && box.size.height > 0) {
+          final pos = box.localToGlobal(Offset.zero);
+          if (pos.dx >= 0 && pos.dy >= 0) {
+            return Rect.fromLTWH(pos.dx, pos.dy, box.size.width, box.size.height);
+          }
+        }
+      } catch (_) {}
+    }
+    try {
+      final view = WidgetsBinding.instance.platformDispatcher.views.firstOrNull;
+      if (view != null && view.physicalSize.width > 0 && view.physicalSize.height > 0) {
+        final logicalWidth = view.physicalSize.width / (view.devicePixelRatio > 0 ? view.devicePixelRatio : 1.0);
+        final logicalHeight = view.physicalSize.height / (view.devicePixelRatio > 0 ? view.devicePixelRatio : 1.0);
+        return Rect.fromLTWH(
+          logicalWidth * 0.1,
+          logicalHeight * 0.4,
+          logicalWidth * 0.8,
+          logicalHeight * 0.2,
+        );
+      }
+    } catch (_) {}
+    return const Rect.fromLTWH(50, 200, 250, 150);
+  }
+
+  /// Génère un PDF minimaliste & luxueux à partir d'une liste de cadeaux et le partage
   static Future<void> generateAndShareWishlistPdf({
     required Map<String, dynamic> profile,
     required List<dynamic> products,
+    BuildContext? context,
+    Rect? sharePositionOrigin,
   }) async {
     try {
       final pdf = pw.Document();
 
-      // Charger une police personnalisée si nécessaire, sinon utiliser la police par défaut
+      final profileName = cleanText(profile['name']?.toString() ?? 'Quelqu\'un');
+      final occasion = cleanText(profile['occasion']?.toString() ?? 'une occasion speciale');
 
-      final profileName = profile['name'] ?? 'Quelqu\'un';
-      final occasion = profile['occasion'] ?? 'une occasion spéciale';
+      // Charger le logo officiel DORON depuis les assets
+      Uint8List? logoBytes;
+      try {
+        final byteData = await rootBundle.load('assets/images/doron_logo_pdf.jpg');
+        logoBytes = byteData.buffer.asUint8List();
+      } catch (_) {
+        try {
+          final byteData = await rootBundle.load('assets/images/doron_logo.png');
+          logoBytes = byteData.buffer.asUint8List();
+        } catch (_) {}
+      }
 
-      // Télécharger les images produit AVANT de construire le PDF (pw.Image a
-      // besoin des octets de façon synchrone). Un échec par image ne bloque
-      // pas les autres — on retombe sur le placeholder pour celle-ci.
+      // Télécharger les images de manière sécurisée
       final productImages = await _fetchProductImages(products);
 
       pdf.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.all(32),
+          margin: const pw.EdgeInsets.symmetric(horizontal: 40, vertical: 36),
           build: (pw.Context context) {
             return [
-              _buildHeader(profileName, occasion),
-              pw.SizedBox(height: 20),
+              _buildHeader(logoBytes),
+              pw.SizedBox(height: 12),
               _buildProductGrid(products, productImages),
-              pw.SizedBox(height: 30),
+              pw.SizedBox(height: 28),
               _buildFooter(),
             ];
           },
         ),
       );
 
-      // Sauvegarder et partager
       final bytes = await pdf.save();
       final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/Idees_Cadeaux_$profileName.pdf');
-      await file.writeAsBytes(bytes);
+      
+      // Nom de fichier nettoyé pour le système de fichier
+      final safeName = profileName.replaceAll(RegExp(r'[^\w\s\-]'), '_');
+      final file = File('${dir.path}/DORON_Cadeaux_$safeName.pdf');
+      await file.writeAsBytes(bytes, flush: true);
+
+      final xFile = XFile(
+        file.path,
+        mimeType: 'application/pdf',
+        name: 'DORON_Cadeaux_$safeName.pdf',
+      );
+
+      final safeOrigin = sharePositionOrigin ?? getValidSharePosition(context);
 
       await Share.shareXFiles(
-        [XFile(file.path)],
-        text: 'Voici quelques idées de cadeaux pour $profileName !',
+        [xFile],
+        text: 'Decouvre la selection d\'idees cadeaux pour $profileName sur DORON !',
+        sharePositionOrigin: safeOrigin,
       );
-    } catch (e) {
-      AppLogger.error('Erreur de génération PDF', 'PdfExportUtils', e);
+    } catch (e, stack) {
+      AppLogger.error('Erreur de generation PDF: $e', 'PdfExportUtils', stack);
       rethrow;
     }
   }
 
-  /// Télécharge les images des produits en parallèle, avec un timeout
-  /// individuel pour ne pas faire échouer tout le PDF si une image réseau
-  /// est lente ou indisponible. Retourne un index (position dans [products])
-  /// -> octets de l'image, uniquement pour les téléchargements réussis.
   static Future<Map<int, Uint8List>> _fetchProductImages(
     List<dynamic> products,
   ) async {
@@ -71,56 +147,61 @@ class PdfExportUtils {
 
     await Future.wait(products.asMap().entries.map((entry) async {
       final index = entry.key;
-      final product = entry.value as Map<String, dynamic>;
-      final url = product['image'] as String?;
-      if (url == null || url.isEmpty) return;
+      final dynamic item = entry.value;
+      if (item is! Map) return;
+      final product = Map<String, dynamic>.from(item);
+
+      final url = (product['image'] ?? product['imageUrl'] ?? product['photo'] ?? product['thumbnail']) as String?;
+      if (url == null || url.isEmpty || !url.startsWith('http')) return;
 
       try {
         final response = await http
             .get(Uri.parse(url))
-            .timeout(const Duration(seconds: 8));
-        if (response.statusCode == 200) {
+            .timeout(const Duration(seconds: 6));
+        if (response.statusCode == 200 && _isValidImage(response.bodyBytes)) {
           result[index] = response.bodyBytes;
         }
       } catch (e) {
-        AppLogger.debug('PdfExportUtils: image produit indisponible ($url): $e', 'PdfExportUtils');
+        AppLogger.debug('PdfExportUtils: image ignoree ($url): $e', 'PdfExportUtils');
       }
     }));
 
     return result;
   }
 
-  static pw.Widget _buildHeader(String name, String occasion) {
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        pw.Text(
-          'Doron.',
-          style: pw.TextStyle(
-            fontSize: 28,
-            fontWeight: pw.FontWeight.bold,
-            color: const PdfColor.fromInt(0xFF8A2BE2), // Violet Doron
-          ),
-        ),
-        pw.SizedBox(height: 16),
-        pw.Text(
-          'Idées Cadeaux pour $name',
-          style: pw.TextStyle(
-            fontSize: 24,
-            fontWeight: pw.FontWeight.bold,
-          ),
-        ),
-        pw.SizedBox(height: 4),
-        pw.Text(
-          'À l\'occasion de : $occasion',
-          style: pw.TextStyle(
-            fontSize: 16,
-            color: PdfColors.grey700,
-          ),
-        ),
-        pw.SizedBox(height: 8),
-        pw.Divider(color: PdfColors.grey300),
-      ],
+  static pw.Widget _buildHeader(Uint8List? logoBytes) {
+    return pw.Container(
+      width: double.infinity,
+      alignment: pw.Alignment.center,
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        children: [
+          if (logoBytes != null && logoBytes.isNotEmpty)
+            pw.ClipRRect(
+              horizontalRadius: 18,
+              verticalRadius: 18,
+              child: pw.Container(
+                width: 72,
+                height: 72,
+                child: pw.Image(
+                  pw.MemoryImage(logoBytes),
+                  fit: pw.BoxFit.cover,
+                ),
+              ),
+            )
+          else
+            pw.Text(
+              'D O R O N',
+              style: pw.TextStyle(
+                fontSize: 24,
+                fontWeight: pw.FontWeight.bold,
+                letterSpacing: 4,
+                color: const PdfColor.fromInt(0xFF130E26),
+              ),
+            ),
+          pw.SizedBox(height: 12),
+        ],
+      ),
     );
   }
 
@@ -129,111 +210,125 @@ class PdfExportUtils {
     Map<int, Uint8List> productImages,
   ) {
     if (products.isEmpty) {
-      return pw.Center(
+      return pw.Container(
+        padding: const pw.EdgeInsets.all(32),
+        alignment: pw.Alignment.center,
         child: pw.Text(
           'Aucun cadeau dans cette liste pour le moment.',
-          style: pw.TextStyle(fontSize: 16, color: PdfColors.grey600),
+          style: const pw.TextStyle(fontSize: 13, color: PdfColors.grey500),
         ),
       );
     }
 
     final List<pw.Widget> rows = [];
 
-    // Créer des rangées de 2 colonnes
     for (int i = 0; i < products.length; i += 2) {
-      final product1 = products[i] as Map<String, dynamic>;
-      final product2 = i + 1 < products.length ? products[i + 1] as Map<String, dynamic> : null;
+      final dynamic item1 = products[i];
+      final product1 = item1 is Map ? Map<String, dynamic>.from(item1) : <String, dynamic>{};
+      
+      final dynamic item2 = i + 1 < products.length ? products[i + 1] : null;
+      final product2 = item2 is Map ? Map<String, dynamic>.from(item2) : null;
 
       rows.add(
         pw.Row(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Expanded(child: _buildProductItem(product1, productImages[i])),
-            pw.SizedBox(width: 20),
+            pw.Expanded(child: _buildProductCard(product1, productImages[i])),
+            pw.SizedBox(width: 16),
             if (product2 != null)
-              pw.Expanded(child: _buildProductItem(product2, productImages[i + 1]))
+              pw.Expanded(child: _buildProductCard(product2, productImages[i + 1]))
             else
               pw.Expanded(child: pw.Container()),
           ],
         ),
       );
-      rows.add(pw.SizedBox(height: 20));
+      rows.add(pw.SizedBox(height: 16));
     }
 
     return pw.Column(children: rows);
   }
 
-  static pw.Widget _buildProductItem(
+  static pw.Widget _buildProductCard(
     Map<String, dynamic> product,
     Uint8List? imageBytes,
   ) {
-    final name = product['name'] ?? 'Produit sans nom';
-    final brand = product['brand_or_store'] ?? product['brand'] ?? '';
-    final price = product['price'] != null ? '${product['price']} €' : '';
+    final name = cleanText((product['name'] ?? product['title'] ?? 'Cadeau').toString());
+    final brand = cleanText((product['brand'] ?? product['brand_or_store'] ?? '').toString());
+    final priceRaw = product['price'] ?? product['product_price'];
+    final price = priceRaw != null ? '$priceRaw EUR' : '';
+
+    pw.Widget imageWidget;
+    if (imageBytes != null && imageBytes.isNotEmpty) {
+      try {
+        imageWidget = pw.Image(
+          pw.MemoryImage(imageBytes),
+          fit: pw.BoxFit.cover,
+        );
+      } catch (_) {
+        imageWidget = _placeholderImage();
+      }
+    } else {
+      imageWidget = _placeholderImage();
+    }
 
     return pw.Container(
-      padding: const pw.EdgeInsets.all(12),
       decoration: pw.BoxDecoration(
-        border: pw.Border.all(color: PdfColors.grey300),
-        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+        color: PdfColors.white,
+        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(12)),
+        border: pw.Border.all(color: const PdfColor.fromInt(0xFFE5E0EC), width: 1),
       ),
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          // Image du produit si le téléchargement a réussi, sinon placeholder.
-          pw.Container(
-            height: 120,
-            width: double.infinity,
-            decoration: pw.BoxDecoration(
-              color: PdfColors.grey100,
-              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+          pw.ClipRRect(
+            horizontalRadius: 11,
+            verticalRadius: 11,
+            child: pw.Container(
+              height: 140,
+              width: double.infinity,
+              color: const PdfColor.fromInt(0xFFF7F5FA),
+              child: imageWidget,
             ),
-            child: imageBytes != null
-                ? pw.ClipRRect(
-                    horizontalRadius: 6,
-                    verticalRadius: 6,
-                    child: pw.Image(
-                      pw.MemoryImage(imageBytes),
-                      fit: pw.BoxFit.cover,
-                      width: double.infinity,
-                      height: 120,
+          ),
+          pw.Padding(
+            padding: const pw.EdgeInsets.all(12),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                if (brand.isNotEmpty) ...[
+                  pw.Text(
+                    brand.toUpperCase(),
+                    style: pw.TextStyle(
+                      fontSize: 8,
+                      color: const PdfColor.fromInt(0xFF8A2BE2),
+                      fontWeight: pw.FontWeight.bold,
+                      letterSpacing: 0.5,
                     ),
-                  )
-                : pw.Center(
-                    child: pw.Text(
-                      'Image indisponible',
-                      style: pw.TextStyle(color: PdfColors.grey500, fontSize: 10),
+                    maxLines: 1,
+                  ),
+                  pw.SizedBox(height: 2),
+                ],
+                pw.Text(
+                  name,
+                  style: pw.TextStyle(
+                    fontSize: 13,
+                    fontWeight: pw.FontWeight.bold,
+                    color: const PdfColor.fromInt(0xFF130E26),
+                  ),
+                  maxLines: 2,
+                ),
+                if (price.isNotEmpty) ...[
+                  pw.SizedBox(height: 6),
+                  pw.Text(
+                    price,
+                    style: pw.TextStyle(
+                      fontSize: 13,
+                      fontWeight: pw.FontWeight.bold,
+                      color: const PdfColor.fromInt(0xFFEC4899),
                     ),
                   ),
-          ),
-          pw.SizedBox(height: 12),
-          if (brand.isNotEmpty) ...[
-            pw.Text(
-              brand.toString().toUpperCase(),
-              style: pw.TextStyle(
-                fontSize: 10,
-                color: PdfColors.grey600,
-                fontWeight: pw.FontWeight.bold,
-              ),
-              maxLines: 1,
-            ),
-            pw.SizedBox(height: 4),
-          ],
-          pw.Text(
-            name,
-            style: pw.TextStyle(
-              fontSize: 14,
-              fontWeight: pw.FontWeight.bold,
-            ),
-            maxLines: 2,
-          ),
-          pw.SizedBox(height: 8),
-          pw.Text(
-            price,
-            style: pw.TextStyle(
-              fontSize: 14,
-              color: const PdfColor.fromInt(0xFF8A2BE2),
-              fontWeight: pw.FontWeight.bold,
+                ],
+              ],
             ),
           ),
         ],
@@ -241,18 +336,36 @@ class PdfExportUtils {
     );
   }
 
+  static pw.Widget _placeholderImage() {
+    return pw.Center(
+      child: pw.Text(
+        'DORON',
+        style: const pw.TextStyle(color: PdfColors.grey400, fontSize: 14),
+      ),
+    );
+  }
+
   static pw.Widget _buildFooter() {
     return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.center,
       children: [
-        pw.Divider(color: PdfColors.grey300),
+        pw.Divider(color: const PdfColor.fromInt(0xFFECE5F5), thickness: 0.8),
         pw.SizedBox(height: 12),
-        pw.Text(
-          'Généré avec l\'application Doron',
-          style: pw.TextStyle(
-            fontSize: 10,
-            color: PdfColors.grey500,
-          ),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text(
+              'Genere avec l\'application DORON',
+              style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey500),
+            ),
+            pw.Text(
+              'doron-app.com',
+              style: pw.TextStyle(
+                fontSize: 9,
+                fontWeight: pw.FontWeight.bold,
+                color: const PdfColor.fromInt(0xFF8A2BE2),
+              ),
+            ),
+          ],
         ),
       ],
     );

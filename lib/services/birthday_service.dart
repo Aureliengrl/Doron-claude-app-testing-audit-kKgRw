@@ -170,6 +170,126 @@ class BirthdayService {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
+  // Événements personnalisés (créés par l'utilisateur)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  static Future<void> saveCustomEvent({
+    required String title,
+    required int day,
+    required int month,
+    String emoji = '🎉',
+    String? id,
+  }) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final eventId = id ?? DateTime.now().millisecondsSinceEpoch.toString();
+    final eventData = {
+      'id': eventId,
+      'title': title,
+      'day': day,
+      'month': month,
+      'emoji': emoji,
+    };
+
+    // 1. Enregistrement sur le document user principal (autorisé par toutes les règles Firestore)
+    try {
+      final userDoc = await _db.collection('users').doc(uid).get();
+      List<dynamic> currentList = [];
+      if (userDoc.exists && userDoc.data()?['customEventsList'] != null) {
+        currentList = List.from(userDoc.data()!['customEventsList']);
+      }
+      // Retirer l'ancien si modification
+      currentList.removeWhere((item) => item is Map && item['id'] == eventId);
+      currentList.add(eventData);
+
+      await _db.collection('users').doc(uid).set({
+        'customEventsList': currentList,
+      }, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint('saveCustomEvent doc root error: $e');
+    }
+
+    // 2. Enregistrement en sous-collection (compatibilité)
+    try {
+      await _db.collection('users').doc(uid).collection('custom_events').doc(eventId).set({
+        'title': title,
+        'day': day,
+        'month': month,
+        'emoji': emoji,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (_) {}
+  }
+
+  static Future<List<Map<String, dynamic>>> getCustomEvents() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return [];
+
+    final result = <Map<String, dynamic>>[];
+    final seenIds = <String>{};
+
+    // 1. Lecture depuis le document user principal
+    try {
+      final userDoc = await _db.collection('users').doc(uid).get();
+      if (userDoc.exists && userDoc.data()?['customEventsList'] != null) {
+        final list = List.from(userDoc.data()!['customEventsList']);
+        for (final item in list) {
+          if (item is Map) {
+            final id = item['id']?.toString() ?? '';
+            seenIds.add(id);
+            result.add({
+              'id': id,
+              'title': item['title'] ?? 'Événement',
+              'day': (item['day'] as num?)?.toInt() ?? 1,
+              'month': (item['month'] as num?)?.toInt() ?? 1,
+              'emoji': item['emoji'] ?? '🎉',
+            });
+          }
+        }
+      }
+    } catch (_) {}
+
+    // 2. Lecture depuis sous-collection pour récupérer les anciens
+    try {
+      final snap = await _db
+          .collection('users')
+          .doc(uid)
+          .collection('custom_events')
+          .get();
+
+      for (final doc in snap.docs) {
+        if (!seenIds.contains(doc.id)) {
+          final data = doc.data();
+          result.add({
+            'id': doc.id,
+            'title': data['title'] ?? 'Événement',
+            'day': (data['day'] as num?)?.toInt() ?? 1,
+            'month': (data['month'] as num?)?.toInt() ?? 1,
+            'emoji': data['emoji'] ?? '🎉',
+          });
+        }
+      }
+    } catch (_) {}
+
+    return result;
+  }
+
+  static Future<void> deleteCustomEvent(String eventId) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    try {
+      final userDoc = await _db.collection('users').doc(uid).get();
+      if (userDoc.exists && userDoc.data()?['customEventsList'] != null) {
+        final list = List.from(userDoc.data()!['customEventsList']);
+        list.removeWhere((item) => item is Map && item['id'] == eventId);
+        await _db.collection('users').doc(uid).set({'customEventsList': list}, SetOptions(merge: true));
+      }
+      await _db.collection('users').doc(uid).collection('custom_events').doc(eventId).delete();
+    } catch (_) {}
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   // Construire la map des événements pour TableCalendar
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -188,7 +308,7 @@ class BirthdayService {
     if (myBirthday != null) {
       for (final y in [now.year, now.year + 1]) {
         addEvent(DateTime(y, myBirthday['month']!, myBirthday['day']!),
-          CalendarEvent(title: 'Mon anniversaire 🎂', type: EventType.myBirthday, emoji: '🎂'));
+          const CalendarEvent(title: 'Mon anniversaire 🎂', type: EventType.myBirthday, emoji: '🎂'));
       }
     }
 
@@ -208,7 +328,21 @@ class BirthdayService {
       }
     }
 
-    // 3. Fêtes importantes
+    // 3. Événements personnalisés créés par l'utilisateur
+    final customEvents = await getCustomEvents();
+    for (final ce in customEvents) {
+      for (final y in [now.year, now.year + 1]) {
+        final d = DateTime(y, ce['month'] as int, ce['day'] as int);
+        addEvent(d, CalendarEvent(
+          id: ce['id'] as String?,
+          title: '${ce['emoji']} ${ce['title']}',
+          type: EventType.customEvent,
+          emoji: ce['emoji'] as String,
+        ));
+      }
+    }
+
+    // 4. Événements et dates clés de l'année
     for (final y in [now.year, now.year + 1]) {
       final holidays = getHolidaysForYear(y);
       for (final h in holidays) {
@@ -229,9 +363,10 @@ class BirthdayService {
 // Types de données du calendrier
 // ─────────────────────────────────────────────────────────────────────────────
 
-enum EventType { myBirthday, friendBirthday, holiday }
+enum EventType { myBirthday, friendBirthday, holiday, customEvent }
 
 class CalendarEvent {
+  final String? id;
   final String title;
   final EventType type;
   final String emoji;
@@ -240,6 +375,7 @@ class CalendarEvent {
   final String? friendPhotoUrl;
 
   const CalendarEvent({
+    this.id,
     required this.title,
     required this.type,
     required this.emoji,
@@ -254,6 +390,8 @@ class CalendarEvent {
         return const Color(0xFF8A2BE2);
       case EventType.friendBirthday:
         return const Color(0xFFEC4899);
+      case EventType.customEvent:
+        return const Color(0xFF06B6D4); // Cyan / turquoise pour les événements personnalisés
       case EventType.holiday:
         return const Color(0xFFF59E0B);
     }

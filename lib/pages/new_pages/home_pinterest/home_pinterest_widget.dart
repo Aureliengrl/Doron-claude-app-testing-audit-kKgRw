@@ -383,23 +383,16 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         setState(() { _model.setSections([]); });
       }
 
-      // FIX F1: Garder les IDs Firebase en String (pas de conversion int.tryParse)
-      // Les IDs Firebase sont des Strings (ex: "AbCdEf123") — la conversion en int
-      // retournait 0 pour tous les IDs non numériques → l'anti-doublon ne fonctionnait pas
-      final seenProductIds = prefs
-          .getStringList('seen_home_product_ids_${_model.activeCategory}')
-          ?? [];
-
-      // FIX F4: context.tr('Pour toi', 'For you') utilise 'home' (genre strict) et non 'discovery' (aucun filtre)
-      // 'discovery' est réservé à la page Inspirations/Tiktok
+      // FIX: Ne pas assécher le flux avec un excludeProductIds persistant
+      final currentLoadedIds = _model.products.map((p) => p['id']?.toString() ?? '').where((id) => id.isNotEmpty).toList();
       const filterMode = 'home';
 
       final rawProducts = await ProductMatchingService.getPersonalizedProducts(
         userTags: tagsToUse,
         count: HomePinterestModel.productsPerPage,
-        // BUG FIX: utiliser l'ID pour le filtre categorie (independant de la langue)
         category: _model.activeCategoryId != 'all' ? _model.activeCategoryId : null,
-        excludeProductIds: seenProductIds,
+        brand: _model.activeBrand != 'all' ? _model.activeBrand : null,
+        excludeProductIds: const [],
         filteringMode: filterMode,
       );
 
@@ -416,11 +409,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           'url': (validated['url'] as String).isNotEmpty
               ? validated['url']
               : ProductUrlService.generateProductUrl(product),
-          'buyLinks': product['buyLinks'], // conserver pour le modal comparateur
+          'buyLinks': product['buyLinks'],
           'source': product['source'] ?? 'Amazon',
           'categories': product['categories'] ?? [],
-          // FIX F5: Score normalisé sur base 400 (150 bonus + ~250 max bonus)
-          // Avant: clamp(0,100) -> tous les bons produits à 100%, différenciation perdue
           'match': (() {
             final raw = product['_matchScore'] is int
                 ? (product['_matchScore'] as int).toDouble()
@@ -438,37 +429,19 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         return ((b['match'] as int?) ?? 0).compareTo((a['match'] as int?) ?? 0);
       });
 
-      // Sauvegarder les nouveaux IDs dans le cache EN ARRIÈRE-PLAN
-      // FIX F1: seenProductIds est déjà List<String> — pas besoin de .toString()
-      Future.microtask(() async {
-        final newSeenIds = <String>[...seenProductIds];
-        for (var product in products) {
-          final productId = product['id']?.toString() ?? '';
-          if (productId.isNotEmpty && !newSeenIds.contains(productId)) {
-            newSeenIds.add(productId);
-          }
-        }
-        if (newSeenIds.length > 300) {
-          newSeenIds.removeRange(0, newSeenIds.length - 300);
-        }
-        await prefs.setStringList(
-            'seen_home_product_ids_${_model.activeCategory}', newSeenIds);
-      });
-
       if (mounted) {
         setState(() {
           _model.setProducts(products);
-          _model.hasMore = products.length >= HomePinterestModel.productsPerPage;
+          _model.hasMore = products.length >= 10;
           _model.setLoading(false);
           _model.clearError();
         });
 
-        // PERF AXE 3: Précharger les 12 premières images en parallèle
-        // après l'affichage des skeletons pour que les images pop instantanément
+        // Précharger les 16 premières images
         Future.microtask(() {
           if (mounted) {
             final urls = products
-                .take(12)
+                .take(16)
                 .map((p) => p['image'] as String? ?? '')
                 .toList();
             preloadImages(context, urls);
@@ -514,19 +487,16 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     try {
       _model.incrementPage();
 
-      // FIX F6: Utiliser le cache _cachedUserTags en priorité — évite un appel Firebase
-      // à chaque scroll infini (économise ~50ms de latence par page supplémentaire)
       final userProfileTags = _cachedUserTags ?? await FirebaseDataService.loadUserProfileTags();
-      final prefs = await SharedPreferences.getInstance();
-      // FIX F1: IDs gardés en String directement — int.tryParse retournait 0 pour les IDs Firebase
-      final seenProductIds = prefs.getStringList('seen_home_product_ids_${_model.activeCategory}') ?? [];
+      final currentLoadedIds = _model.products.map((p) => p['id']?.toString() ?? '').where((id) => id.isNotEmpty).toList();
 
       final rawProducts = await ProductMatchingService.getPersonalizedProducts(
         userTags: userProfileTags ?? {},
         count: HomePinterestModel.productsPerPage,
-        category: _model.activeCategory != context.tr('Pour toi', 'For you') ? _model.activeCategory : null,
-        excludeProductIds: seenProductIds,
-        filteringMode: 'home', // Mode HOME: strict sur sexe
+        category: _model.activeCategoryId != 'all' ? _model.activeCategoryId : null,
+        brand: _model.activeBrand != 'all' ? _model.activeBrand : null,
+        excludeProductIds: currentLoadedIds,
+        filteringMode: 'home',
       );
 
       // Convertir au format attendu
@@ -539,10 +509,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           'price': product['price'] ?? 0,
           'image': validated['image'],
           'url': (validated['url'] as String).isNotEmpty ? validated['url'] : ProductUrlService.generateProductUrl(product),
-          'buyLinks': product['buyLinks'], // conserver pour le modal comparateur
+          'buyLinks': product['buyLinks'],
           'source': product['source'] ?? 'Amazon',
           'categories': product['categories'] ?? [],
-          // FIX F5: Score normalisé /400 (base = 150 + ~250 bonus max)
           'match': (() {
             final raw = product['_matchScore'] is int
                 ? (product['_matchScore'] as int).toDouble()
@@ -552,23 +521,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         };
       }).toList();
 
-      // FIX F1: seenProductIds est List<String> — plus besoin de .toString()
-      final newSeenIds = <String>[...seenProductIds];
-      for (var product in products) {
-        final productId = product['id']?.toString() ?? '';
-        if (productId.isNotEmpty && !newSeenIds.contains(productId)) {
-          newSeenIds.add(productId);
-        }
-      }
-      if (newSeenIds.length > 300) {
-        newSeenIds.removeRange(0, newSeenIds.length - 300);
-      }
-      await prefs.setStringList('seen_home_product_ids_${_model.activeCategory}', newSeenIds);
-
       if (mounted) {
         setState(() {
           _model.addProducts(products);
-          _model.hasMore = products.length >= HomePinterestModel.productsPerPage;
+          _model.hasMore = products.length >= 10;
           _model.setLoadingMore(false);
         });
       }
@@ -840,6 +796,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
           behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
           child: CustomScrollView(
             controller: _scrollController,
+            cacheExtent: 3500.0,
             physics: const BouncingScrollPhysics(
               parent: AlwaysScrollableScrollPhysics(),
             ),
@@ -985,20 +942,15 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Logo 3D premium en tête d'accueil
-              const Padding(
-                padding: EdgeInsets.only(bottom: 6),
-                child: Logo3D(fontSize: 30),
-              ),
               micro.ShimmerEffect(
                 shimmerColor: Colors.white,
                 duration: const Duration(milliseconds: 3000),
                 child: Text(
                   _model.isAnonymousMode
-                      ? 'Découvre ✨'
+                      ? 'Bonjour ✨'
                       : (_model.firstName.isNotEmpty
-                          ? 'Salut ${_model.firstName} ! ✨'
-                          : 'Accueil'),
+                          ? 'Bonjour ${_model.firstName} ✨'
+                          : 'Bonjour ✨'),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     color: Colors.white,

@@ -67,280 +67,323 @@ class GlobalProductDetailModal {
         builder: (context, setDialogState) {
           return Dialog(
             backgroundColor: Colors.transparent,
-            insetPadding: const EdgeInsets.all(16),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(28),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
                 child: Container(
-              constraints: const BoxConstraints(maxWidth: 500),
-              decoration: BoxDecoration(
-                // Verre dépoli premium (plus épuré que l'ancien fond opaque).
-                color: const Color(0xF01A1226),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.14),
-                  width: 1,
-                ),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    LiquidGlassTokens.primary.withOpacity(0.10),
-                    Colors.white.withOpacity(0.02),
-                  ],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.5),
-                    blurRadius: 60,
-                    offset: const Offset(0, 20),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Image avec boutons
-                  Stack(
-                    children: [
-                      ProductImage(
-                        imageUrl: product['image'] as String? ?? product['product_photo'] as String? ?? product['image_url'] as String? ?? '',
-                        height: 350,
-                        fit: BoxFit.contain,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(24),
-                          topRight: Radius.circular(24),
-                        ),
-                        backgroundColor: Colors.white.withOpacity(0.05),
-                      ),
-                      // Bouton fermer
-                      Positioned(
-                        top: 12,
-                        left: 12,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () => Navigator.pop(context),
-                            borderRadius: BorderRadius.circular(50),
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.12),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.close,
-                                color: Color(0xFF111827),
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      // Bouton 3-dot menu
-                      Positioned(
-                        top: 12,
-                        right: 116,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              showProductActionsSheet(context, product);
-                            },
-                            borderRadius: BorderRadius.circular(50),
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.12),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                IconlyLight.moreCircle,
-                                color: violetColor,
-                                size: 18,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      // Bouton wishlist
-                      Positioned(
-                        top: 12,
-                        right: 64,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              // Ne pas fermer le modal — ouvrir le wishlist picker par-dessus
-                              _showWishlistModal(context, product);
-                            },
-                            borderRadius: BorderRadius.circular(50),
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.12),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                IconlyLight.bookmark,
-                                color: violetColor,
-                                size: 18,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      // Bouton coeur
-                      Positioned(
-                        top: 12,
-                        right: 12,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () async {
-                              HapticFeedback.lightImpact();
-                              final success = await _toggleFavoriteGlobally(context, product, isLiked);
-                              if (success) {
-                                setDialogState(() {
-                                  isLiked = !isLiked;
-                                });
-                                if (onLikeToggled != null) onLikeToggled();
-                              }
-                            },
-                            borderRadius: BorderRadius.circular(50),
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: isLiked ? Colors.red : Colors.white.withOpacity(0.95),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                isLiked ? IconlyBold.heart : IconlyLight.heart,
-                                color: isLiked ? Colors.white : const Color(0xFF111827),
-                                size: 18,
-                              ),
-                            ),
-                          ),
-                        ),
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF130E26).withOpacity(0.96),
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.14),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.6),
+                        blurRadius: 50,
+                        offset: const Offset(0, 20),
                       ),
                     ],
                   ),
-
-                  // Détails du produit
-                  Padding(
-                    padding: const EdgeInsets.all(20),
+                  child: SingleChildScrollView(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: violetColor.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            product['brand'] as String? ?? product['source'] as String? ?? product['platform'] as String? ?? 'Amazon',
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: violetColor,
+                        // Image avec barre d'actions flottante
+                        Stack(
+                          children: [
+                            ProductImage(
+                              imageUrl: product['image'] as String? ??
+                                  product['product_photo'] as String? ??
+                                  product['image_url'] as String? ??
+                                  '',
+                              height: 330,
+                              fit: BoxFit.contain,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(28),
+                                topRight: Radius.circular(28),
+                              ),
+                              backgroundColor: Colors.white.withOpacity(0.04),
                             ),
+                            // Gradient supérieur pour contraster les boutons
+                            Positioned(
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              height: 80,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.black.withOpacity(0.65),
+                                      Colors.transparent,
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // Bouton Fermer (Haut-gauche)
+                            Positioned(
+                              top: 14,
+                              left: 14,
+                              child: GestureDetector(
+                                onTap: () => Navigator.pop(context),
+                                child: Container(
+                                  width: 38,
+                                  height: 38,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.45),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color: Colors.white.withOpacity(0.20)),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(Icons.close_rounded,
+                                        color: Colors.white, size: 20),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // Trio d'actions (Haut-droite) : ⋯ , 🎁 , ❤️
+                            Positioned(
+                              top: 14,
+                              right: 14,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // 1. Bouton 3-petits points (Partage / Envoi en message)
+                                  GestureDetector(
+                                    onTap: () {
+                                      HapticFeedback.lightImpact();
+                                      showProductActionsSheet(context, product);
+                                    },
+                                    child: Container(
+                                      width: 38,
+                                      height: 38,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.45),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                            color:
+                                                Colors.white.withOpacity(0.20)),
+                                      ),
+                                      child: const Center(
+                                        child: Icon(Icons.more_horiz_rounded,
+                                            color: Colors.white, size: 20),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  // 2. Bouton Wishlist (Nouvelle icône cadeau 🎁)
+                                  GestureDetector(
+                                    onTap: () {
+                                      HapticFeedback.lightImpact();
+                                      WishlistPickerSheet.show(context, product);
+                                    },
+                                    child: Container(
+                                      width: 38,
+                                      height: 38,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.45),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                            color:
+                                                Colors.white.withOpacity(0.20)),
+                                      ),
+                                      child: const Center(
+                                        child: Icon(Icons.redeem_rounded,
+                                            color: Colors.white, size: 19),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  // 3. Bouton Coup de cœur / Like
+                                  GestureDetector(
+                                    onTap: () async {
+                                      HapticFeedback.mediumImpact();
+                                      final success =
+                                          await _toggleFavoriteGlobally(
+                                              context, product, isLiked);
+                                      if (success) {
+                                        setDialogState(() {
+                                          isLiked = !isLiked;
+                                        });
+                                        if (onLikeToggled != null) {
+                                          onLikeToggled();
+                                        }
+                                      }
+                                    },
+                                    child: AnimatedContainer(
+                                      duration:
+                                          const Duration(milliseconds: 200),
+                                      width: 38,
+                                      height: 38,
+                                      decoration: BoxDecoration(
+                                        gradient: isLiked
+                                            ? const LinearGradient(
+                                                colors: [
+                                                  Color(0xFFEC4899),
+                                                  Color(0xFFE11D48),
+                                                ],
+                                              )
+                                            : null,
+                                        color: isLiked
+                                            ? null
+                                            : Colors.black.withOpacity(0.45),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: isLiked
+                                              ? const Color(0xFFEC4899)
+                                              : Colors.white.withOpacity(0.20),
+                                        ),
+                                        boxShadow: isLiked
+                                            ? [
+                                                BoxShadow(
+                                                  color: const Color(0xFFEC4899)
+                                                      .withOpacity(0.55),
+                                                  blurRadius: 10,
+                                                  spreadRadius: 1,
+                                                )
+                                              ]
+                                            : [],
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          isLiked
+                                              ? Icons.favorite_rounded
+                                              : Icons.favorite_border_rounded,
+                                          color: Colors.white,
+                                          size: 19,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        // Détails du produit
+                        Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Badge Marque
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEC4899).withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                      color: const Color(0xFFEC4899)
+                                          .withOpacity(0.35)),
+                                ),
+                                child: Text(
+                                  (product['brand'] as String? ??
+                                          product['source'] as String? ??
+                                          product['platform'] as String? ??
+                                          'Amazon')
+                                      .toUpperCase(),
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.8,
+                                    color: const Color(0xFFEC4899),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              // Titre du produit
+                              Text(
+                                product['name'] as String? ??
+                                    product['product_title'] as String? ??
+                                    product['product_name'] as String? ??
+                                    'Produit',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  height: 1.3,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 12),
+                              // Prix
+                              Builder(builder: (_) {
+                                final _priceRaw = product['price'] ??
+                                    product['product_price'];
+                                final _priceStr = _priceRaw
+                                        ?.toString()
+                                        .replaceAll('€', '')
+                                        .trim() ??
+                                    '';
+                                final _isBlank = _priceStr.isEmpty ||
+                                    _priceStr == '0' ||
+                                    _priceStr == '0.0';
+                                return Text(
+                                  _isBlank
+                                      ? context.tr('Prix non renseigné',
+                                          'Price not listed')
+                                      : '${_priceStr}€',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: _isBlank ? 15 : 26,
+                                    fontWeight: FontWeight.bold,
+                                    color: _isBlank
+                                        ? Colors.white38
+                                        : const Color(0xFFEC4899),
+                                  ),
+                                );
+                              }),
+                              const SizedBox(height: 14),
+                              // Description
+                              if (product['description'] != null &&
+                                  (product['description'] as String).isNotEmpty)
+                                Text(
+                                  product['description'] as String,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 13,
+                                    color: Colors.white60,
+                                    height: 1.5,
+                                  ),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                )
+                              else
+                                Text(
+                                  context.tr(
+                                    'Cadeau idéal sélectionné pour vous',
+                                    'Ideal gift selected for you',
+                                  ),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 13,
+                                    color: Colors.white60,
+                                    height: 1.5,
+                                  ),
+                                ),
+                              const SizedBox(height: 20),
+                              // Comparateur de prix / Liens d'achat
+                              _buildBuyLinksSection(context, product),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          product['name'] as String? ?? product['product_title'] as String? ?? product['product_name'] as String? ?? 'Produit',
-                          style: GoogleFonts.poppins(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        // #FIX-2: masquer prix si 0 ou null
-                        Builder(builder: (_) {
-                          final _priceRaw = product['price'] ?? product['product_price'];
-                          final _priceStr = _priceRaw?.toString().replaceAll('\u20ac', '').trim() ?? '';
-                          final _isBlank = _priceStr.isEmpty || _priceStr == '0' || _priceStr == '0.0';
-                          return Text(
-                            _isBlank ? context.tr('Prix non renseigné', 'Price not listed') : '${_priceStr}€',
-                            style: GoogleFonts.poppins(
-                              fontSize: _isBlank ? 16 : 32,
-                              fontWeight: FontWeight.bold,
-                              color: _isBlank ? Colors.white38 : violetColor,
-                            ),
-                          );
-                        }),
-                        const SizedBox(height: 16),
-                        if (product['description'] != null && (product['description'] as String).isNotEmpty)
-                          Text(
-                            product['description'] as String,
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.white60,
-                              height: 1.6,
-                            ),
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                          )
-                        else
-                          Text(
-                          context.tr('Cadeau parfait par ${product['brand'] as String? ?? product['source'] as String? ?? product['platform'] as String? ?? 'une marque de qualité'}', 'The perfect gift from ${product['brand'] as String? ?? product['source'] as String? ?? product['platform'] as String? ?? 'a quality brand'}'),
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.white60,
-                              height: 1.6,
-                            ),
-                          ),
-                        const SizedBox(height: 20),
-                        // ── Comparateur de prix / Liens d'achat ──────────
-                        _buildBuyLinksSection(context, product),
                       ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
-                ), // BackdropFilter (glass premium)
-              ), // ClipRRect
           );
         },
       ),

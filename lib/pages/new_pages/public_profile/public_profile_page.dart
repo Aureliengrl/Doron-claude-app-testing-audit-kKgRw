@@ -10,12 +10,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import '/services/friend_service.dart';
 import '/services/user_search_service.dart';
+import '/services/firebase_data_service.dart';
 import '/components/liquid_glass.dart';
 import '/components/liquid_glass_loader.dart';
-import '/components/shared_product_card.dart';
+import '/components/product_detail_modal.dart';
 import '/components/block_report_sheet.dart';
 
-/// Page de profil public ââ‚¬" même layout que user_profile_widget.dart
+/// Page de profil public — layout et design 100% identiques à user_profile_widget.dart
 /// Route : /public-profile/:uid
 class PublicProfilePage extends StatefulWidget {
   final String uid;
@@ -38,8 +39,6 @@ class _PublicProfilePageState extends State<PublicProfilePage>
 
   Map<String, dynamic>? _profile;
   List<Map<String, dynamic>> _wishlists = [];
-  List<Map<String, dynamic>> _likedProducts = [];
-  bool _likedProductsArePrivate = false; // true si l'onglet "Produits likés" n'est pas accessible
   FriendshipStatus _friendshipStatus = FriendshipStatus.none;
   String? _requestId;
   bool _isLoading = true;
@@ -48,6 +47,9 @@ class _PublicProfilePageState extends State<PublicProfilePage>
 
   bool get _isMyProfile =>
       FirebaseAuth.instance.currentUser?.uid == widget.uid;
+
+  bool get _isFriendsWithUser =>
+      _isMyProfile || _friendshipStatus == FriendshipStatus.friends;
 
   @override
   void initState() {
@@ -66,7 +68,6 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     await Future.wait([
       _loadProfile(),
       _loadWishlists(),
-      _loadLikedProducts(),
       if (!_isMyProfile) _loadFriendshipStatus(),
     ]);
     if (mounted) setState(() => _isLoading = false);
@@ -90,7 +91,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
           'bio': data['bio'] ?? '',
           'isOnline': data['isOnline'] ?? false,
           'lastSeen': data['lastSeen'],
-          'birthday': data['birthday'],  // F3: anniversaire
+          'birthday': data['birthday'],
         };
       }
     } catch (_) {
@@ -107,34 +108,6 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     _wishlists = wishlists;
   }
 
-  Future<void> _loadLikedProducts() async {
-    // Les produits likés sont privés : on ne charge jamais ceux d'un autre utilisateur
-    if (!_isMyProfile) {
-      _likedProductsArePrivate = true;
-      return;
-    }
-    try {
-      final snap = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.uid)
-          .collection('favorites')
-          .orderBy('createdAt', descending: true)
-          .limit(50)
-          .get();
-      _likedProducts = snap.docs.map((doc) {
-        final d = doc.data();
-        return <String, dynamic>{
-          'id': doc.id,
-          'name': d['name'] ?? '',
-          'brand': d['brand'] ?? '',
-          'price': d['price']?.toString() ?? '',
-          'image': d['image'] ?? '',
-          'url': d['url'] ?? '',
-        };
-      }).toList();
-    } catch (_) {}
-  }
-
   Future<void> _loadFriendshipStatus() async {
     final result = await FriendService.getFriendshipStatus(widget.uid);
     _friendshipStatus = result.status;
@@ -149,52 +122,75 @@ class _PublicProfilePageState extends State<PublicProfilePage>
       case FriendshipStatus.none:
         final id = await FriendService.sendRequest(widget.uid);
         if (id != null) {
-          setState(() {
-            _friendshipStatus = FriendshipStatus.pendingSent;
-            _requestId = id;
-          });
-          _showSnack('âÅ“"¦ Demande envoyée !', _green);
+          _friendshipStatus = FriendshipStatus.pendingSent;
+          _requestId = id;
+          _showSnack('Demande d\'ami envoyée ! ✉️', _violet);
         } else {
-          _showSnack('âÂÅ’ Erreur lors de l\'envoi', Colors.red);
+          _showSnack('Erreur lors de l\'envoi de la demande.', Colors.red);
         }
         break;
+
       case FriendshipStatus.pendingSent:
         if (_requestId != null) {
           final ok = await FriendService.cancelRequest(_requestId!);
           if (ok) {
-            setState(() {
-              _friendshipStatus = FriendshipStatus.none;
-              _requestId = null;
-            });
-            _showSnack('Demande annulée', Colors.grey);
+            _friendshipStatus = FriendshipStatus.none;
+            _requestId = null;
+            _showSnack('Demande annulée.', Colors.grey.shade700);
           }
         }
         break;
+
       case FriendshipStatus.pendingReceived:
         if (_requestId != null) {
           final ok = await FriendService.acceptRequest(_requestId!, widget.uid);
           if (ok) {
-            setState(() {
-              _friendshipStatus = FriendshipStatus.friends;
-              _requestId = null;
-              _friendsCount++;
-            });
-            _showSnack('?? Vous êtes maintenant amis !', _green);
+            _friendshipStatus = FriendshipStatus.friends;
+            _friendsCount++;
+            _showSnack('Vous êtes maintenant amis ! 🎉', _green);
           }
         }
         break;
+
       case FriendshipStatus.friends:
-        final ok = await FriendService.removeFriend(widget.uid);
-        if (ok) {
-          setState(() {
+        final confirm = await _confirmRemoveFriend();
+        if (confirm == true) {
+          final ok = await FriendService.removeFriend(widget.uid);
+          if (ok) {
             _friendshipStatus = FriendshipStatus.none;
-            _friendsCount = (_friendsCount - 1).clamp(0, 999);
-          });
-          _showSnack('Retiré de vos amis', Colors.grey);
+            _friendsCount = (_friendsCount - 1).clamp(0, 999999);
+            _showSnack('Ami retiré.', Colors.grey.shade700);
+          }
         }
         break;
     }
-    setState(() => _isFriendActionLoading = false);
+
+    if (mounted) setState(() => _isFriendActionLoading = false);
+  }
+
+  Future<bool?> _confirmRemoveFriend() {
+    final name = _profile?['displayName'] as String? ?? 'cet ami';
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E0B36),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Retirer des amis',
+            style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: Text('Voulez-vous vraiment retirer $name de vos amis ?',
+            style: GoogleFonts.poppins(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('Annuler', style: GoogleFonts.poppins(color: Colors.white54)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text('Retirer', style: GoogleFonts.poppins(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _openDirectChat() async {
@@ -219,10 +215,6 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     ));
   }
 
-  // â"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Â
-  // BUILD
-  // â"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Ââ"¢Â
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -231,51 +223,27 @@ class _PublicProfilePageState extends State<PublicProfilePage>
           ? const Center(child: CircularProgressIndicator(color: _violet, strokeWidth: 2))
           : _profile == null
               ? _buildNotFound()
-              : CustomScrollView(
-                  slivers: [
-                    _buildAppBar(),
-                    
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
-                        child: Row(
+              : NestedScrollView(
+                  headerSliverBuilder: (context, innerBoxIsScrolled) {
+                    return [
+                      _buildAppBar(),
+                      if (_isFriendsWithUser) _buildTabBar(),
+                    ];
+                  },
+                  body: !_isFriendsWithUser
+                      ? _buildPrivateProfileView()
+                      : TabBarView(
+                          controller: _tabController,
                           children: [
-                            const Icon(IconlyLight.document, color: Colors.white, size: 22),
-                            const SizedBox(width: 10),
-                            Text(
-                              context.tr('Listes de cadeaux', 'Gift lists'),
-                              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                            ),
+                            _buildWishlistsTab(),
+                            _buildLikedProductsTab(),
                           ],
                         ),
-                      ),
-                    ),
-                    _buildWishlistsSliver(),
-
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 32, 20, 12),
-                        child: Row(
-                          children: [
-                            const Icon(IconlyBold.heart, color: Colors.white, size: 22),
-                            const SizedBox(width: 10),
-                            Text(
-                              context.tr('Coups de coeur', 'Favourites'),
-                              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    _buildLikedProductsSliver(),
-                    
-                    const SliverToBoxAdapter(child: SizedBox(height: 140)),
-                  ],
                 ),
     );
   }
 
-  // â"â‚¬â"â‚¬â"â‚¬ App Bar (identique au profil perso) â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬
+  // ── Header / App Bar (100% identique à user_profile_widget.dart) ─────────────
 
   Widget _buildAppBar() {
     final displayName = _profile?['displayName'] as String? ?? 'Utilisateur';
@@ -320,7 +288,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                   mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Back button row
+                    // Navigation row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -341,12 +309,12 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        // Photo de profil
+                        // Photo de profil taille identique (100x100 avec halo violet)
                         Stack(
                           children: [
                             Container(
-                              width: 80,
-                              height: 80,
+                              width: 100,
+                              height: 100,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
@@ -354,7 +322,8 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                                 boxShadow: [
                                   BoxShadow(
                                     color: _violet.withOpacity(0.6),
-                                    blurRadius: 15,
+                                    blurRadius: 20,
+                                    spreadRadius: 2,
                                     offset: const Offset(0, 4),
                                   ),
                                 ],
@@ -364,13 +333,13 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                                     ? CachedNetworkImage(
                                         imageUrl: photoUrl,
                                         fit: BoxFit.cover,
-                                        cacheKey: 'pub_profile_' + photoUrl,
-                                        memCacheHeight: 160,
-                                        memCacheWidth: 160,
+                                        cacheKey: 'pub_profile_$photoUrl',
+                                        memCacheHeight: 200,
+                                        memCacheWidth: 200,
                                         placeholder: (_, __) => Container(
                                           color: Colors.grey[800],
                                           child: const Center(
-                                            child: LiquidGlassLoader(size: 16, isDark: false),
+                                            child: LiquidGlassLoader(size: 20, isDark: false),
                                           ),
                                         ),
                                         errorWidget: (_, __, ___) => _buildAvatarFallback(displayName),
@@ -381,14 +350,14 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                           ],
                         ),
                         const SizedBox(width: 24),
-                        // Stats "” Amis / Wishlists / Cadeaux
+                        // Stats : Amis / Wishlists / Cadeaux
                         Expanded(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              _buildProfileStat('Amis', '$_friendsCount'),
+                              _buildProfileStat(context.tr('Amis', 'Friends'), '$_friendsCount'),
                               _buildProfileStat(context.tr('Wishlists', 'Wishlists'), '${_wishlists.length}'),
-                              _buildProfileStat('Cadeaux', '${_likedProducts.length}'),
+                              _buildProfileStat(context.tr('Cadeaux', 'Gifts'), '${_wishlists.fold<int>(0, (sum, w) => sum + ((w['productCount'] as int?) ?? 0))}'),
                             ],
                           ),
                         ),
@@ -409,7 +378,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                         '@$handle',
                         style: GoogleFonts.poppins(fontSize: 14, color: Colors.white70),
                       ),
-                    // S9 FIX: afficher la presence en ligne sur le profil public
+                    // Statut en ligne
                     if (!_isMyProfile) Builder(builder: (ctx) {
                       final isOnline = _profile?['isOnline'] == true;
                       final lastSeen = _profile?['lastSeen'];
@@ -419,11 +388,13 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                         statusText = 'En ligne';
                         statusColor = const Color(0xFF10B981);
                       } else if (lastSeen != null) {
-                        final seen = (lastSeen as dynamic).toDate() as DateTime;
-                        final diff = DateTime.now().difference(seen);
-                        if (diff.inMinutes < 1) { statusText = 'Vu à l''instant'; statusColor = Colors.white54; }
-                        else if (diff.inMinutes < 60) { statusText = 'Vu il y a ${diff.inMinutes} min'; statusColor = Colors.white38; }
-                        else if (diff.inHours < 24) { statusText = 'Vu il y a ${diff.inHours}h'; statusColor = Colors.white38; }
+                        try {
+                          final seen = (lastSeen as dynamic).toDate() as DateTime;
+                          final diff = DateTime.now().difference(seen);
+                          if (diff.inMinutes < 1) { statusText = 'Vu à l\'instant'; statusColor = Colors.white54; }
+                          else if (diff.inMinutes < 60) { statusText = 'Vu il y a ${diff.inMinutes} min'; statusColor = Colors.white38; }
+                          else if (diff.inHours < 24) { statusText = 'Vu il y a ${diff.inHours}h'; statusColor = Colors.white38; }
+                        } catch (_) {}
                       }
                       if (statusText.isEmpty) return const SizedBox.shrink();
                       return Padding(
@@ -437,26 +408,26 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                         ),
                       );
                     }),
-                    // F3: affichage de l'anniversaire de l'ami sur son profil public
-                    if (_friendshipStatus == FriendshipStatus.friends) Builder(builder: (ctx) {
+                    // Affichage anniversaire propre
+                    if (_isFriendsWithUser) Builder(builder: (ctx) {
                       final b = _profile?['birthday'] as Map<String, dynamic>?;
                       if (b == null) return const SizedBox.shrink();
-                      const months = ['', 'jan', 'fév', 'mar', 'avr', 'mai', 'juin', 'juil', 'août', 'sep', 'oct', 'nov', 'déc'];
+                      const months = ['', 'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
                       final now = DateTime.now();
-                      final day = (b['day'] as num).toInt();
-                      final month = (b['month'] as num).toInt();
+                      final day = (b['day'] as num?)?.toInt() ?? 1;
+                      final month = (b['month'] as num?)?.toInt() ?? 1;
                       final isToday = now.day == day && now.month == month;
                       return Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Row(
                           children: [
-                            Text(isToday ? 'ðŸŽ‚' : 'ðŸŽˆ', style: const TextStyle(fontSize: 14)),
-                            const SizedBox(width: 4),
+                            Text(isToday ? '🎂' : '🎁', style: const TextStyle(fontSize: 14)),
+                            const SizedBox(width: 6),
                             Text(
-                              isToday ? "C'est son anniversaire aujourd'hui !" : 'Anniv: $day ${months[month]}',
+                              isToday ? "C'est son anniversaire aujourd'hui !" : 'Anniv : $day ${months[month]}',
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
-                                color: isToday ? const Color(0xFFEC4899) : Colors.white54,
+                                color: isToday ? const Color(0xFFEC4899) : Colors.white70,
                                 fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                               ),
                             ),
@@ -480,7 +451,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                       Row(
                         children: [
                           Expanded(child: _buildFriendButton()),
-                          if (_friendshipStatus == FriendshipStatus.friends ||
+                          if (_isFriendsWithUser ||
                               _friendshipStatus == FriendshipStatus.pendingReceived) ...[
                             const SizedBox(width: 8),
                             _buildChatButton(),
@@ -497,20 +468,20 @@ class _PublicProfilePageState extends State<PublicProfilePage>
       ),
     );
   }
+
   Widget _buildAvatarFallback(String displayName) {
+    final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U';
     return Container(
-      color: _violet.withOpacity(0.3),
-      child: displayName.isNotEmpty
-          ? Center(
-              child: Text(
-                displayName[0].toUpperCase(),
-                style: GoogleFonts.poppins(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white),
-              ),
-            )
-          : const Icon(IconlyLight.profile, size: 40, color: Colors.white),
+      color: _violet,
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: GoogleFonts.poppins(
+          fontSize: 40,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
     );
   }
 
@@ -531,15 +502,15 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   Widget _buildFriendButton() {
     final configs = {
       FriendshipStatus.none: (label: context.tr('Ajouter en ami', 'Add as friend'), icon: IconlyLight.addUser, color: _violet),
-      FriendshipStatus.pendingSent: (label: 'En attenteââ‚¬Â¦', icon: Icons.hourglass_top_rounded, color: Colors.grey.shade600),
+      FriendshipStatus.pendingSent: (label: 'En attente...', icon: Icons.hourglass_top_rounded, color: Colors.grey.shade600),
       FriendshipStatus.pendingReceived: (label: 'Accepter', icon: Icons.check_circle_rounded, color: _green),
-      FriendshipStatus.friends: (label: 'Amis âÅ“"', icon: IconlyLight.user2, color: const Color(0xFF6366F1)),
+      FriendshipStatus.friends: (label: 'Amis ✓', icon: IconlyLight.user2, color: const Color(0xFF6366F1)),
     };
     final cfg = configs[_friendshipStatus]!;
 
     return LiquidGlassCard(
       blur: LiquidGlassTokens.blurLight,
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       onTap: _isFriendActionLoading ? null : _onFriendButtonPressed,
       child: Center(
         child: _isFriendActionLoading
@@ -551,12 +522,15 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(cfg.icon, color: Colors.white, size: 16),
-                  const SizedBox(width: 6),
-                  Text(cfg.label,
-                      style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14)),
+                  const SizedBox(width: 8),
+                  Text(
+                    cfg.label,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
                 ],
               ),
       ),
@@ -566,13 +540,13 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   Widget _buildChatButton() {
     return LiquidGlassCard(
       blur: LiquidGlassTokens.blurLight,
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       onTap: _openDirectChat,
       child: const Icon(IconlyLight.chat, color: Colors.white, size: 20),
     );
   }
 
-  // â"â‚¬â"â‚¬â"â‚¬ Tab Bar (identique au profil perso) â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬
+  // ── TabBar Sticky (100% identique à user_profile_widget.dart) ────────────────
 
   Widget _buildTabBar() {
     return SliverPersistentHeader(
@@ -582,18 +556,19 @@ class _PublicProfilePageState extends State<PublicProfilePage>
           controller: _tabController,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white.withOpacity(0.45),
-          indicatorColor: Colors.white,
+          indicatorColor: const Color(0xFFEC4899),
           indicatorWeight: 3,
-          labelStyle: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
-          unselectedLabelStyle: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500),
+          indicatorSize: TabBarIndicatorSize.label,
+          labelStyle: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold),
+          unselectedLabelStyle: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500),
           tabs: [
             Tab(
               icon: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(IconlyLight.document),
+                  const Icon(Icons.redeem_rounded, size: 18),
                   const SizedBox(width: 8),
-                  Text(context.tr('Listes cadeaux', 'Gift lists')),
+                  Text(context.tr('Listes de cadeaux', 'Gift lists')),
                 ],
               ),
             ),
@@ -601,7 +576,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
               icon: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(IconlyBold.heart),
+                  const Icon(Icons.favorite_rounded, size: 18),
                   const SizedBox(width: 8),
                   Text(context.tr('Coups de coeur', 'Favourites')),
                 ],
@@ -613,70 +588,102 @@ class _PublicProfilePageState extends State<PublicProfilePage>
       ),
     );
   }
-  Widget _buildTabContent() {
-    return SliverFillRemaining(
-      child: TabBarView(
-        controller: _tabController,
-        children: [
-          CustomScrollView(slivers: [_buildWishlistsSliver()]),
-          CustomScrollView(slivers: [_buildLikedProductsSliver()]),
-        ],
+
+  // ── Vue Compte Privé (si non-ami) ───────────────────────────────────────────
+
+  Widget _buildPrivateProfileView() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.06),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withOpacity(0.12), width: 1.5),
+              ),
+              child: const Center(
+                child: Icon(Icons.lock_outline_rounded, size: 44, color: Colors.white70),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              context.tr('Ce compte est privé', 'This account is private'),
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              context.tr(
+                'Ajoutez cet utilisateur en ami pour voir ses wishlists et ses inspirations.',
+                'Add this user as a friend to see their wishlists and inspirations.',
+              ),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.white54,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 60),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildWishlistsSliver() {
+  // ── Onglet 1 : Wishlists ───────────────────────────────────────────────────
+
+  Widget _buildWishlistsTab() {
     if (_wishlists.isEmpty) {
-      return SliverToBoxAdapter(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 20),
-              Icon(IconlyLight.bookmark, size: 60, color: Colors.white.withOpacity(0.35)),
-              const SizedBox(height: 16),
-              Text(context.tr('Aucune wishlist publique', 'No public wishlists'),
-                  style: GoogleFonts.poppins(
-                      fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
-              const SizedBox(height: 8),
-              Text('Cet utilisateur n\'a pas encore de wishlist publique',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
-              const SizedBox(height: 20),
-            ],
-          ),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(IconlyLight.bookmark, size: 60, color: Colors.white.withOpacity(0.35)),
+            const SizedBox(height: 16),
+            Text(
+              context.tr('Aucune wishlist publique', 'No public wishlists'),
+              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7)),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Cet utilisateur n\'a pas encore de wishlist partagée',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500]),
+            ),
+          ],
         ),
       );
     }
 
-    return SliverToBoxAdapter(
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.85,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-        ),
-        itemCount: _wishlists.length,
-        itemBuilder: (context, index) => _buildWishlistCard(_wishlists[index]),
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.85,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
       ),
+      itemCount: _wishlists.length,
+      itemBuilder: (context, index) => _buildWishlistCard(_wishlists[index]),
     );
   }
 
   Widget _buildWishlistCard(Map<String, dynamic> wishlist) {
     final name = wishlist['name'] as String? ?? 'Wishlist';
-    final emoji = wishlist['emoji'] as String? ?? '??';
     final productCount = (wishlist['productCount'] as int?) ?? 0;
     final coverUrl = wishlist['coverPhoto'] as String?;
 
     return GestureDetector(
-      onTap: () => context.push(
-        '/wishlist-details/${wishlist['id']}',
-        extra: {'ownerUid': widget.uid},
-      ),
+      onTap: () => _showWishlistDetail(wishlist),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
@@ -703,10 +710,12 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [_violet.withOpacity(0.4), _pink.withOpacity(0.4)],
+                      colors: [_violet.withOpacity(0.8), _pink.withOpacity(0.8)],
                     ),
                   ),
-                  child: Center(child: Text(emoji, style: const TextStyle(fontSize: 40))),
+                  child: const Center(
+                    child: Icon(Icons.bolt_rounded, size: 48, color: Colors.white70),
+                  ),
                 ),
               // Overlay sombre en bas
               Positioned(
@@ -723,13 +732,20 @@ class _PublicProfilePageState extends State<PublicProfilePage>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(name,
-                          style: GoogleFonts.poppins(
-                              color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis),
-                      Text('$productCount produit${productCount != 1 ? 's' : ''}',
-                          style: GoogleFonts.poppins(color: Colors.white60, fontSize: 11)),
+                      Text(
+                        name,
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        '$productCount produit${productCount != 1 ? 's' : ''}',
+                        style: GoogleFonts.poppins(color: Colors.white60, fontSize: 11),
+                      ),
                     ],
                   ),
                 ),
@@ -741,82 +757,190 @@ class _PublicProfilePageState extends State<PublicProfilePage>
     );
   }
 
-  Widget _buildLikedProductsSliver() {
-    if (_likedProductsArePrivate) {
-      return SliverToBoxAdapter(
-        child: Center(
+  // ── Détail Wishlist (Grille 3 colonnes avec tap sur photo pour fiche produit) ──
+
+  Future<void> _showWishlistDetail(Map<String, dynamic> wishlist) async {
+    final wishlistId = wishlist['id'] as String;
+    final products = await FirebaseDataService.loadWishlistProducts(wishlistId);
+
+    if (!mounted) return;
+
+    final normalizedProducts = products.map((p) => {
+      'id': p['id'] ?? '',
+      'name': p['title'] ?? p['name'] ?? p['product_title'] ?? 'Produit',
+      'brand': p['brand'] ?? p['platform'] ?? p['source'] ?? '',
+      'price': (p['price'] ?? p['product_price'] ?? '').toString(),
+      'image': p['imageUrl'] ?? p['image'] ?? p['product_photo'] ?? p['photo'] ?? '',
+      'url': p['url'] ?? p['productUrl'] ?? p['product_url'] ?? '',
+    }).toList();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bsCtx) {
+        return Container(
+          height: MediaQuery.of(bsCtx).size.height * 0.88,
+          decoration: BoxDecoration(
+            color: LiquidGlassTokens.pageDark,
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(28), topRight: Radius.circular(28)),
+            border: Border.all(color: Colors.white.withOpacity(0.12)),
+          ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 20),
               Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.07),
-                  border: Border.all(color: Colors.white12),
-                ),
-                child: const Icon(IconlyLight.lock, size: 38, color: Colors.white38),
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
               ),
-              const SizedBox(height: 20),
-              Text(
-                'Produits likés privés',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white54,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 12, 0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            wishlist['name'] as String? ?? 'Wishlist',
+                            style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
+                          Text(
+                            '${normalizedProducts.length} ${context.tr(normalizedProducts.length > 1 ? 'articles' : 'article', normalizedProducts.length > 1 ? 'items' : 'item')}',
+                            style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF8A2BE2)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(bsCtx),
+                      icon: const Icon(Icons.close_rounded, color: Colors.white54),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
-                'Les produits likés de cet utilisateur\nsont privés et non visibles.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(fontSize: 14, color: Colors.white30),
+              Divider(color: Colors.white.withOpacity(0.08), height: 1),
+              if (normalizedProducts.isEmpty)
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.card_giftcard_rounded, size: 64, color: Colors.white.withOpacity(0.2)),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Aucun produit dans cette liste',
+                          style: GoogleFonts.poppins(fontSize: 16, color: Colors.white38, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                Expanded(
+                  child: GridView.builder(
+                    padding: const EdgeInsets.all(12),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      childAspectRatio: 1.0,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                    ),
+                    itemCount: normalizedProducts.length,
+                    itemBuilder: (context, index) {
+                      final p = normalizedProducts[index];
+                      final image = p['image'] as String? ?? '';
+                      return GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          GlobalProductDetailModal.show(context, p);
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              image.isNotEmpty
+                                  ? CachedNetworkImage(
+                                      imageUrl: image,
+                                      fit: BoxFit.cover,
+                                      placeholder: (_, __) => Container(color: Colors.white.withOpacity(0.05)),
+                                      errorWidget: (_, __, ___) => Container(
+                                        color: Colors.white.withOpacity(0.08),
+                                        child: const Icon(Icons.card_giftcard_rounded, color: Colors.white24, size: 28),
+                                      ),
+                                    )
+                                  : Container(
+                                      color: Colors.white.withOpacity(0.08),
+                                      child: const Icon(Icons.card_giftcard_rounded, color: Colors.white24, size: 28),
+                                    ),
+                              Positioned(
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                height: 32,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.bottomCenter,
+                                      end: Alignment.topCenter,
+                                      colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ── Onglet 2 : Coups de cœur privés ─────────────────────────────────────────
+
+  Widget _buildLikedProductsTab() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.07),
+                border: Border.all(color: Colors.white12),
               ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (_likedProducts.isEmpty) {
-      return SliverToBoxAdapter(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 20),
-              Icon(IconlyLight.heart, size: 60, color: Colors.white.withOpacity(0.35)),
-              const SizedBox(height: 16),
-              Text('Aucun produit liké',
-                  style: GoogleFonts.poppins(
-                      fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white.withOpacity(0.7))),
-              const SizedBox(height: 8),
-              Text('Les produits likés de cet utilisateur apparaîtront ici',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500])),
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return SliverToBoxAdapter(
-      child: ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        itemCount: _likedProducts.length,
-        itemBuilder: (context, index) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: SharedProductCard(
-            product: _likedProducts[index],
-            index: index,
-            showWishlistButton: false,
-          ),
+              child: const Icon(IconlyLight.lock, size: 38, color: Colors.white54),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Produits likés privés',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white70,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Les produits likés de cet utilisateur\nsont privés et non visibles.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.white38),
+            ),
+            const SizedBox(height: 40),
+          ],
         ),
       ),
     );
@@ -842,7 +966,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 }
 
-// â"â‚¬â"â‚¬â"â‚¬ Délégué Tab Bar sticky â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬â"â‚¬
+// ── Délégué Tab Bar sticky ───────────────────────────────────────────────────
 
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;
@@ -861,4 +985,3 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(_SliverTabBarDelegate oldDelegate) => false;
 }
-

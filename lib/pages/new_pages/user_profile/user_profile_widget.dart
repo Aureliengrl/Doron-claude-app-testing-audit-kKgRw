@@ -28,9 +28,11 @@ import 'dart:io';
 import '/components/shared_product_card.dart';
 import '/services/photo_permission_service.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '/services/favourite_service.dart';
+import '/components/product_detail_modal.dart';
 export 'user_profile_model.dart';
 import '/utils/app_tr.dart';
+import '/services/first_time_service.dart';
 
 class UserProfileWidget extends StatefulWidget {
   const UserProfileWidget({super.key});
@@ -290,7 +292,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           
           if (isMe)
             Positioned(
-              bottom: 120,
+              bottom: 108,
               left: 0,
               right: 0,
               child: FloatingCtaButton(
@@ -860,40 +862,66 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       );
     }
 
-    return ReorderableGridView.count(
-      padding: const EdgeInsets.all(16),
-      crossAxisCount: 2,
-      childAspectRatio: 0.75,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      onReorder: (oldIndex, newIndex) {
-        HapticFeedback.mediumImpact();
-        setState(() {
-          final item = _model.favourites.removeAt(oldIndex);
-          _model.favourites.insert(newIndex, item);
-        });
+    return GridView.builder(
+      padding: const EdgeInsets.all(12),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        childAspectRatio: 1.0,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+      ),
+      itemCount: _model.favourites.length,
+      itemBuilder: (context, index) {
+        return _buildFavoriteGridItem(_model.favourites[index], index);
       },
-      children: [
-        for (int i = 0; i < _model.favourites.length; i++)
-          SharedProductCard(
-            key: ValueKey(_model.favourites[i]['id'] ?? i.toString()),
-            product: _model.favourites[i],
-            index: i,
-            showWishlistButton: true,
-            onRemove: null,
-          ),
-      ],
     );
   }
 
-  // Unused after refactor
-  Widget _buildLikedProductCard(Map<String, dynamic> favourite, int index) {
-    return SharedProductCard(
-      key: ValueKey(favourite['id'] ?? index.toString()),
-      product: favourite,
-      index: index,
-      showWishlistButton: true,
-      onRemove: null,
+  Widget _buildFavoriteGridItem(Map<String, dynamic> favourite, int index) {
+    final name = favourite['name'] ?? favourite['product_title'] ?? favourite['title'] ?? 'Produit';
+    final brand = favourite['brand'] ?? favourite['platform'] ?? favourite['source'] ?? '';
+    final price = (favourite['price'] ?? favourite['product_price'] ?? '').toString();
+    final image = favourite['image'] ?? favourite['imageUrl'] ?? favourite['product_photo'] ?? favourite['image_url'] ?? favourite['photo'] ?? '';
+    final url = favourite['url'] ?? favourite['product_url'] ?? favourite['link'] ?? '';
+
+    final normalized = {
+      'name': name,
+      'brand': brand,
+      'price': price,
+      'image': image,
+      'url': url,
+      'id': favourite['id'] ?? name.hashCode,
+    };
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        GlobalProductDetailModal.show(context, normalized);
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.white.withOpacity(0.1), width: 0.5),
+          ),
+          child: image.isNotEmpty
+              ? CachedNetworkImage(
+                  imageUrl: image,
+                  fit: BoxFit.cover,
+                  placeholder: (_, __) => Container(color: Colors.white.withOpacity(0.05)),
+                  errorWidget: (_, __, ___) => Container(
+                    color: Colors.white.withOpacity(0.08),
+                    child: const Icon(Icons.card_giftcard_rounded, color: Colors.white24, size: 28),
+                  ),
+                )
+              : Container(
+                  color: Colors.white.withOpacity(0.08),
+                  child: const Icon(Icons.card_giftcard_rounded, color: Colors.white24, size: 28),
+                ),
+        ),
+      ),
     );
   }
 
@@ -1092,32 +1120,21 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       );
     }
 
-    return SliverToBoxAdapter(
-      child: ReorderableGridView.count(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
-        crossAxisCount: 2,
-        childAspectRatio: 0.75,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        onReorder: (oldIndex, newIndex) {
-          HapticFeedback.mediumImpact();
-          setState(() {
-            final item = _model.favourites.removeAt(oldIndex);
-            _model.favourites.insert(newIndex, item);
-          });
-        },
-        children: [
-          for (int i = 0; i < _model.favourites.length; i++)
-            SharedProductCard(
-              key: ValueKey(_model.favourites[i]['id'] ?? i.toString()),
-              product: _model.favourites[i],
-              index: i,
-              showWishlistButton: true,
-              onRemove: null,
-            ),
-        ],
+    return SliverPadding(
+      padding: const EdgeInsets.all(12),
+      sliver: SliverGrid(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          childAspectRatio: 1.0,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+        ),
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            return _buildFavoriteGridItem(_model.favourites[index], index);
+          },
+          childCount: _model.favourites.length,
+        ),
       ),
     );
   }
@@ -1287,7 +1304,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             ),
             // 🎯 Bouton Créer un album 🎯
             Positioned(
-              bottom: 120,
+              bottom: 108,
               left: 0,
               right: 0,
               child: FloatingCtaButton(
@@ -1593,7 +1610,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                 child: ReorderableGridView.count(
                   padding: const EdgeInsets.all(12),
                   crossAxisCount: 3,
-                  childAspectRatio: 0.75,
+                  childAspectRatio: 1.0,
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
                   onReorder: (oldIndex, newIndex) {
@@ -1906,7 +1923,34 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+              // Bouton Recommencer l'onboarding
+              LiquidGlassPill(
+                height: 52,
+                activeColor: const Color(0xFF8A2BE2),
+                isActive: true,
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  await FirstTimeService.reset();
+                  if (context.mounted) {
+                    context.push('/setup-profile');
+                  }
+                },
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.refresh_rounded, color: Colors.white, size: 20),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Recommencer l\'onboarding ✨',
+                        style: GoogleFonts.poppins(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
               LiquidGlassPill(
                 height: 56,
                 activeColor: const Color(0xFFE53935),
@@ -1989,16 +2033,43 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
+      final uid = user.uid;
+
+      // 1. Récupérer le handle pour supprimer l'index
+      try {
+        final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        final handle = doc.data()?['handle'] as String?;
+        if (handle != null && handle.isNotEmpty) {
+          await FirebaseFirestore.instance.collection('handles').doc(handle.toLowerCase()).delete();
+        }
+        // Supprimer le document utilisateur Firestore
+        await FirebaseFirestore.instance.collection('users').doc(uid).delete();
+      } catch (e) {
+        debugPrint('[DeleteAccount] Erreur suppression Firestore: $e');
+      }
+
+      // 2. Réinitialiser les préférences locales et le flag d'onboarding
+      await FirstTimeService.reset();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+
+      // 3. Supprimer le compte Firebase Auth
       await user.delete();
       await authManager.signOut();
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('anonymous_mode');
-      if (context.mounted) context.go('/authentification');
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Compte et données supprimés avec succès.', style: GoogleFonts.poppins()),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+        ));
+        context.go('/authentification');
+      }
     } on FirebaseAuthException catch (e) {
       if (!context.mounted) return;
       if (e.code == 'requires-recent-login') {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Reconnectez-vous pour supprimer votre compte.', style: GoogleFonts.poppins()),
+          content: Text('Pour des raisons de sécurité, reconnectez-vous pour confirmer la suppression.', style: GoogleFonts.poppins()),
           backgroundColor: Colors.orange[700],
           behavior: SnackBarBehavior.floating,
         ));

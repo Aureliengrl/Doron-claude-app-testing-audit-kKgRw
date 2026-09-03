@@ -14,7 +14,6 @@ import '/components/liquid_glass_loader.dart';
 import '/components/floating_cta_button.dart';
 import '/components/app_notch.dart';
 import 'create_chat_bottom_sheet.dart';
-import '/services/birthday_service.dart'; // F6: suggestions anniversaire
 import '/utils/app_tr.dart';
 
 class ChatListPage extends StatefulWidget {
@@ -71,22 +70,48 @@ class _ChatListPageState extends State<ChatListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       backgroundColor: LiquidGlassTokens.pageDark,
       body: Stack(
         children: [
           SafeArea(
+            top: false,
+            bottom: false,
             child: Column(
               children: [
                 _buildHeader(),
                 Expanded(
-                  child: _buildChatsList(),
+                  child: currentUser == null
+                      ? Center(child: Text(context.tr('Non connecté', 'Not connected'), style: const TextStyle(color: Colors.white)))
+                      : StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('chats')
+                              .where('participants', arrayContains: currentUser.uid)
+                              .snapshots(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return const Center(child: LiquidGlassLoader(size: 40));
+                            }
+
+                            final allDocs = snapshot.data?.docs ?? [];
+                            return Column(
+                              children: [
+                                _buildFilterBar(allDocs, currentUser.uid),
+                                Expanded(
+                                  child: _buildChatsList(allDocs, currentUser.uid),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                 ),
               ],
             ),
           ),
           Positioned(
-            bottom: 120,
+            bottom: 108,
             left: 0,
             right: 0,
             child: StreamBuilder<int>(
@@ -110,6 +135,131 @@ class _ChatListPageState extends State<ChatListPage> {
       ),
     );
   }
+
+  String _activeFilter = 'all'; // 'all', 'unread', 'groups', 'direct'
+
+  Widget _buildFilterBar(List<QueryDocumentSnapshot> allChats, String currentUid) {
+    final totalCount = allChats.length;
+    final unreadCount = allChats.where((c) {
+      final d = c.data() as Map<String, dynamic>;
+      final dynamic u = d['unreadCount'];
+      if (u is Map) {
+        final val = u[currentUid];
+        return val is num && val > 0;
+      }
+      return false;
+    }).length;
+    final groupsCount = allChats.where((c) => (c.data() as Map<String, dynamic>)['isGroup'] == true).length;
+    final directCount = allChats.where((c) => (c.data() as Map<String, dynamic>)['isGroup'] != true).length;
+
+    final filters = [
+      {'id': 'all', 'label': context.tr('Tous', 'All'), 'count': totalCount, 'icon': IconlyLight.chat, 'activeIcon': IconlyBold.chat},
+      {'id': 'unread', 'label': context.tr('Non lus', 'Unread'), 'count': unreadCount, 'icon': IconlyLight.notification, 'activeIcon': IconlyBold.notification},
+      {'id': 'groups', 'label': context.tr('Groupes', 'Groups'), 'count': groupsCount, 'icon': IconlyLight.user3, 'activeIcon': IconlyBold.user3},
+      {'id': 'direct', 'label': context.tr('Directs', 'Direct'), 'count': directCount, 'icon': IconlyLight.user2, 'activeIcon': IconlyBold.user2},
+    ];
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          children: filters.map((f) {
+            final filterId = f['id'] as String;
+            final isSelected = _activeFilter == filterId;
+            final count = f['count'] as int;
+            final label = f['label'] as String;
+            final icon = isSelected ? (f['activeIcon'] as IconData) : (f['icon'] as IconData);
+
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    setState(() => _activeFilter = filterId);
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                    decoration: BoxDecoration(
+                      gradient: isSelected
+                          ? const LinearGradient(
+                              colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )
+                          : null,
+                      color: isSelected ? null : Colors.white.withOpacity(0.07),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isSelected ? const Color(0xFFEC4899).withOpacity(0.6) : Colors.white.withOpacity(0.12),
+                        width: 1,
+                      ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: const Color(0xFF8A2BE2).withOpacity(0.35),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          icon,
+                          color: isSelected ? Colors.white : Colors.white70,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          label,
+                          style: GoogleFonts.poppins(
+                            color: isSelected ? Colors.white : Colors.white70,
+                            fontSize: 13,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                          ),
+                        ),
+                        if (count > 0 || isSelected) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? Colors.black.withOpacity(0.25)
+                                  : (filterId == 'unread' && count > 0)
+                                      ? const Color(0xFFEC4899)
+                                      : Colors.white.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              '$count',
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
   void _openCreateChat({bool forceGroup = false}) {
     HapticFeedback.mediumImpact();
     showModalBottomSheet(
@@ -176,50 +326,186 @@ class _ChatListPageState extends State<ChatListPage> {
     );
   }
 
-  Widget _buildChatsList() {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return Center(child: Text(context.tr('Non connecté', 'Not connected'), style: const TextStyle(color: Colors.white)));
+  Widget _buildChatsList(List<QueryDocumentSnapshot> allDocs, String currentUid) {
+    if (allDocs.isEmpty) {
+      return LiquidGlassEmptyStateWidget(
+        icon: IconlyLight.chat,
+        title: context.tr('Aucun message', 'No messages'),
+        subtitle: context.tr(
+          'Commencez à discuter avec vos proches ou collaborez sur une liste de cadeaux.',
+          'Start chatting with your friends or collaborate on a gift list.',
+        ),
+      );
+    }
 
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('chats')
-          .where('participants', arrayContains: currentUser.uid)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: LiquidGlassLoader(size: 40));
-        }
+    // Copie de la liste pour tri
+    final chats = List<QueryDocumentSnapshot>.from(allDocs);
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return LiquidGlassEmptyStateWidget(
-            icon: IconlyLight.chat,
-            title: context.tr('Aucun message', 'No messages'),
-            subtitle: context.tr(
-              'Commencez à discuter avec vos proches ou collaborez sur une liste de cadeaux.',
-              'Start chatting with your friends or collaborate on a gift list.',
+    // Trie localement par date du dernier message
+    chats.sort((a, b) {
+      final timeA = (a.data() as Map<String, dynamic>)['lastMessageTime'] as Timestamp?;
+      final timeB = (b.data() as Map<String, dynamic>)['lastMessageTime'] as Timestamp?;
+      if (timeA == null && timeB == null) return 0;
+      if (timeA == null) return 1;
+      if (timeB == null) return -1;
+      return timeB.compareTo(timeA);
+    });
+
+    // Application du filtre actif
+    final List<QueryDocumentSnapshot> filteredChats;
+    switch (_activeFilter) {
+      case 'unread':
+        filteredChats = chats.where((doc) {
+          final d = doc.data() as Map<String, dynamic>;
+          final dynamic u = d['unreadCount'];
+          if (u is Map) {
+            final val = u[currentUid];
+            return val is num && val > 0;
+          }
+          return false;
+        }).toList();
+        break;
+      case 'groups':
+        filteredChats = chats.where((doc) {
+          final d = doc.data() as Map<String, dynamic>;
+          return d['isGroup'] == true;
+        }).toList();
+        break;
+      case 'direct':
+        filteredChats = chats.where((doc) {
+          final d = doc.data() as Map<String, dynamic>;
+          return d['isGroup'] != true;
+        }).toList();
+        break;
+      case 'all':
+      default:
+        filteredChats = chats;
+        break;
+    }
+
+    if (filteredChats.isEmpty) {
+      if (_activeFilter == 'groups') {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: violetColor.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.groups_rounded, color: violetColor, size: 40),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Aucun groupe de discussion',
+                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Créez un groupe pour organiser un cadeau en commun ou discuter à plusieurs.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(color: Colors.white54, fontSize: 13),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: () => _openCreateChat(forceGroup: true),
+                  icon: const Icon(Icons.group_add_rounded, color: Colors.white, size: 18),
+                  label: Text('Créer un groupe', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: violetColor,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ],
             ),
-          );
-        }
+          ),
+        );
+      } else if (_activeFilter == 'unread') {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.done_all_rounded, color: Color(0xFF10B981), size: 40),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Tout est à jour !',
+                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Vous n\'avez aucun message non lu en attente.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(color: Colors.white54, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+        );
+      } else if (_activeFilter == 'direct') {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEC4899).withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.chat_bubble_outline_rounded, color: Color(0xFFEC4899), size: 40),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Aucune discussion directe',
+                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Démarrez une conversation privée avec l\'un de vos proches.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(color: Colors.white54, fontSize: 13),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: () => _openCreateChat(forceGroup: false),
+                  icon: const Icon(Icons.edit_note_rounded, color: Colors.white, size: 20),
+                  label: Text('Nouveau message', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFEC4899),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    }
 
-        final chats = snapshot.data!.docs;
-        
-        // Trie localement par date du dernier message
-        chats.sort((a, b) {
-          final timeA = (a.data() as Map<String, dynamic>)['lastMessageTime'] as Timestamp?;
-          final timeB = (b.data() as Map<String, dynamic>)['lastMessageTime'] as Timestamp?;
-          if (timeA == null && timeB == null) return 0;
-          if (timeA == null) return 1;
-          if (timeB == null) return -1;
-          return timeB.compareTo(timeA);
-        });
-
-        return ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          itemCount: chats.length,
-          itemBuilder: (context, index) {
-            final chatDoc = chats[index];
-            final chatData = chatDoc.data() as Map<String, dynamic>;
-            final chatId = chatDoc.id;
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      itemCount: filteredChats.length,
+      itemBuilder: (context, index) {
+        final chatDoc = filteredChats[index];
+        final chatData = chatDoc.data() as Map<String, dynamic>;
+        final chatId = chatDoc.id;
             
             final isGroup = chatData['isGroup'] == true;
             final lastMessage = chatData['lastMessage'] as String? ?? '';
@@ -229,7 +515,7 @@ class _ChatListPageState extends State<ChatListPage> {
             final dynamic unreadCountData = chatData['unreadCount'];
             int unread = 0;
             if (unreadCountData is Map) {
-              final unreadVal = unreadCountData[currentUser.uid];
+              final unreadVal = unreadCountData[currentUid];
               if (unreadVal is num) {
                 unread = unreadVal.toInt();
               }
@@ -387,11 +673,11 @@ class _ChatListPageState extends State<ChatListPage> {
               // BUG 4 FIX: utilise le cache au lieu d'un FutureBuilder par item
               final participants = List<String>.from(chatData['participants'] ?? []);
               final otherUserId = participants.firstWhere(
-                (id) => id != currentUser.uid,
-                orElse: () => currentUser.uid,
+                (id) => id != currentUid,
+                orElse: () => currentUid,
               );
 
-              if (otherUserId == currentUser.uid) {
+              if (otherUserId == currentUid) {
                 return chatTile(context.tr('Moi', 'Me'), '');
               }
 
@@ -413,8 +699,6 @@ class _ChatListPageState extends State<ChatListPage> {
             }
           },
         );
-      },
-    );
   }
 }
 

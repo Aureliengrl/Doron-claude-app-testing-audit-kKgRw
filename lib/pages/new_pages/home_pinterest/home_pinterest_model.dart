@@ -37,8 +37,8 @@ class HomePinterestModel {
   bool showFreeShipping = false;
 
   // Pagination
-  static const int productsPerPage = 12;
-  static const int infiniteScrollChunk = 25;
+  static const int productsPerPage = 40;
+  static const int infiniteScrollChunk = 40;
   int currentPage = 0;
   bool hasMore = true;
 
@@ -256,55 +256,77 @@ class HomePinterestModel {
 
     if (activeBrand != 'all') {
       final brandFilter = activeBrand.toLowerCase();
+      final filterNorm = brandFilter.replaceAll('&', '').replaceAll(' ', '').replaceAll('-', '');
       filtered = filtered.where((product) {
-        // Champ structuré (nouveaux produits importés) — priorité, match exact.
         final brandId = (product['brandId'] as String? ?? '').toLowerCase();
-        if (brandId.isNotEmpty) return brandId == brandFilter;
+        if (brandId.isNotEmpty && (brandId == brandFilter || brandId == filterNorm)) return true;
 
-        // Fallback pour les produits legacy sans brandId : sous-chaîne.
         final brand = (product['brand'] as String? ?? '').toLowerCase();
+        final brandNorm = brand.replaceAll('&', '').replaceAll(' ', '').replaceAll('-', '');
         final source = (product['source'] as String? ?? '').toLowerCase();
-        final platform = (product['platform'] as String? ?? '').toLowerCase();
-        return brand.contains(brandFilter) || source.contains(brandFilter) || platform.contains(brandFilter);
+        final cats = (product['categories'] as List<dynamic>? ?? []).map((c) => c.toString().toLowerCase()).toList();
+
+        return brand.contains(brandFilter) ||
+            brandNorm.contains(filterNorm) ||
+            source.contains(brandFilter) ||
+            cats.contains(brandFilter) ||
+            cats.contains(filterNorm);
       }).toList();
     }
 
     if (activeEventFilter != 'all') {
       final eventFilter = activeEventFilter.replaceAll('_', ' ').toLowerCase();
-      filtered = filtered.where((product) {
+      final eventId = activeEventFilter.toLowerCase();
+      final eventFiltered = filtered.where((product) {
         final name = (product['name'] as String? ?? '').toLowerCase();
         final description = (product['description'] as String? ?? '').toLowerCase();
         final keywordsList = product['keywords'] as List<dynamic>? ?? [];
         final keywordsStr = keywordsList.join(' ').toLowerCase();
-        return name.contains(eventFilter) || description.contains(eventFilter) || keywordsStr.contains(eventFilter);
+        final tagsList = product['tags'] as List<dynamic>? ?? [];
+        final tagsStr = tagsList.join(' ').toLowerCase();
+        final catsList = product['categories'] as List<dynamic>? ?? [];
+        final catsStr = catsList.join(' ').toLowerCase();
+
+        return name.contains(eventFilter) ||
+            description.contains(eventFilter) ||
+            keywordsStr.contains(eventFilter) ||
+            keywordsStr.contains(eventId) ||
+            tagsStr.contains(eventId) ||
+            catsStr.contains(eventId);
       }).toList();
+
+      if (eventFiltered.isNotEmpty) {
+        filtered = eventFiltered;
+      }
     }
     
-    // Filtrage dynamique par le sous-menu
+    // Filtrage dynamique par le sous-menu avec tolérance d'accents
     if (activeSubMenu != 'all') {
-      final subQuery = activeSubMenu.toLowerCase();
-      final cleanSubQueryWords = subQuery.replaceAll(RegExp(r'[()]'), ' ').split(' ').where((w) => w.length > 3).toList();
-      
-      // Fallback si le mot est très court (ex: "Art", "Vin")
-      if (cleanSubQueryWords.isEmpty) {
-        cleanSubQueryWords.addAll(subQuery.split(' ').where((w) => w.length > 2));
-      }
+      final subQuery = _cleanAccents(activeSubMenu.toLowerCase());
+      final cleanSubQueryWords = subQuery.replaceAll(RegExp(r'[()]'), ' ').split(' ').where((w) => w.length > 2).toList();
 
-      filtered = filtered.where((product) {
-        final name = (product['name'] as String? ?? '').toLowerCase();
-        final description = (product['description'] as String? ?? '').toLowerCase();
-        final categoriesList = (product['categories'] as List<dynamic>? ?? []).join(' ').toLowerCase();
+      final subFiltered = filtered.where((product) {
+        final name = _cleanAccents((product['name'] as String? ?? '').toLowerCase());
+        final brand = _cleanAccents((product['brand'] as String? ?? '').toLowerCase());
+        final description = _cleanAccents((product['description'] as String? ?? '').toLowerCase());
+        final categoriesList = _cleanAccents((product['categories'] as List<dynamic>? ?? []).join(' ').toLowerCase());
         final keywordsList = product['keywords'] as List<dynamic>? ?? [];
-        final keywordsStr = keywordsList.join(' ').toLowerCase();
-        
-        final combined = '$name $description $categoriesList $keywordsStr';
-        
+        final keywordsStr = _cleanAccents(keywordsList.join(' ').toLowerCase());
+        final tagsList = product['tags'] as List<dynamic>? ?? [];
+        final tagsStr = _cleanAccents(tagsList.join(' ').toLowerCase());
+
+        final combined = '$name $brand $description $categoriesList $keywordsStr $tagsStr';
+
         if (cleanSubQueryWords.isEmpty) return true;
         for (final word in cleanSubQueryWords) {
-          if (combined.contains(word)) return true; // match au moins un mot clef significatif
+          if (combined.contains(word)) return true;
         }
         return false;
       }).toList();
+
+      if (subFiltered.isNotEmpty) {
+        filtered = subFiltered;
+      }
     }
 
     // Si une recherche DB (searchResults) est active, les résultats sont déjà
@@ -334,6 +356,16 @@ class HomePinterestModel {
     }
 
     return filtered;
+  }
+
+  String _cleanAccents(String input) {
+    return input
+        .replaceAll(RegExp(r'[éèêë]'), 'e')
+        .replaceAll(RegExp(r'[àâä]'), 'a')
+        .replaceAll(RegExp(r'[îï]'), 'i')
+        .replaceAll(RegExp(r'[ôö]'), 'o')
+        .replaceAll(RegExp(r'[ùûü]'), 'u')
+        .replaceAll(RegExp(r'[ç]'), 'c');
   }
 
   void dispose() {

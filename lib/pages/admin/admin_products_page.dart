@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '/environment_values.dart';
 import '/components/liquid_glass.dart';
+import '/services/seed_catalog_service.dart';
 
 /// Page d'administration pour scanner et corriger les produits Firebase.
 /// Scanne tous les produits, identifie ceux avec des problèmes
@@ -28,11 +29,10 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
 
   bool _isLoading = false;
   String _statusMessage = '';
-  List<String> _logs = [];
-  int _progress = 0;
-  int _total = 0;
+  final List<String> _logs = [];
 
-  // Résultats du scan
+  int _total = 0;
+  int _progress = 0;
   int _noImage = 0;
   int _brokenImage = 0;
   int _noPrice = 0;
@@ -41,13 +41,48 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
   int _fixed = 0;
   int _unfixable = 0;
 
-  static const _violet = Color(0xFF8A2BE2);
+  static const Color _violet = Color(0xFF8A2BE2);
 
-  void _log(String msg) {
+  void _log(String message) {
     setState(() {
-      _logs.add(msg);
-      _statusMessage = msg;
+      _logs.add(message);
+      _statusMessage = message;
     });
+  }
+
+  // ─── INJECTER TOUT LE CATALOGUE (400+ PRODUITS) DANS FIREBASE ─────────────
+
+  Future<void> _injectFullCatalog() async {
+    setState(() {
+      _isLoading = true;
+      _logs.clear();
+      _progress = 0;
+      _total = 416;
+    });
+
+    _log('🚀 Démarrage de l\'injection complète du catalogue dans Firebase...');
+
+    try {
+      final count = await SeedCatalogService.seedFirestoreGifts(
+        onProgress: (cur, tot) {
+          setState(() {
+            _progress = cur;
+            _total = tot;
+          });
+          _log('📦 Progression : $cur / $tot produits enregistrés...');
+        },
+      );
+      _log('');
+      _log('══════════════════════════════════');
+      _log('🎉 INJECTION RÉUSSIE !');
+      _log('══════════════════════════════════');
+      _log('Total : $count produits injectés dans Firestore collection "gifts" !');
+      _log('Toutes les catégories et sous-catégories sont maintenant remplies.');
+    } catch (e) {
+      _log('❌ ERREUR injection : $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   // ─── SCAN : identifie tous les problèmes ────────────────────────────────
@@ -399,6 +434,13 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
             const SizedBox(height: 20),
 
             // Boutons
+            _buildButton(
+              label: '🚀 Injecter tout le catalogue complet (400+ produits)',
+              icon: Icons.cloud_upload_rounded,
+              color: const Color(0xFFEC4899),
+              onTap: _isLoading ? null : _injectFullCatalog,
+            ),
+            const SizedBox(height: 10),
             _buildButton(
               label: 'Scanner tous les produits',
               icon: IconlyBold.search,

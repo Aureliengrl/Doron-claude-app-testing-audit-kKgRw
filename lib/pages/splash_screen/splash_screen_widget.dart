@@ -56,16 +56,16 @@ class _SplashScreenWidgetState extends State<SplashScreenWidget> with SingleTick
 
       if (!mounted) return;
 
-      if (isFirst && !hasCompleted) {
-        Navigator.pushReplacementNamed(context, '/onboarding-advanced');
-      } else if (!isLoggedIn) {
+      if (!isLoggedIn) {
         Navigator.pushReplacementNamed(context, '/authentification');
+      } else if (isFirst && !hasCompleted) {
+        Navigator.pushReplacementNamed(context, '/setup-profile');
       } else {
-        Navigator.pushReplacementNamed(context, '/homeAlgoace');
+        Navigator.pushReplacementNamed(context, '/search-page');
       }
     } catch (e) {
       AppLogger.debug('Splash Error: $e', 'Splash');
-      if (mounted) Navigator.pushReplacementNamed(context, '/onboarding-advanced');
+      if (mounted) Navigator.pushReplacementNamed(context, '/authentification');
     }
   }
 
@@ -93,7 +93,7 @@ class _SplashScreenWidgetState extends State<SplashScreenWidget> with SingleTick
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF8A2BE2).withValues(alpha: 0.3),
+                      color: const Color(0xFF8A2BE2).withOpacity(0.3),
                       blurRadius: 50,
                       spreadRadius: 5,
                     ),
@@ -125,7 +125,7 @@ class _SplashScreenWidgetState extends State<SplashScreenWidget> with SingleTick
                   fontSize: 14,
                   fontWeight: FontWeight.w300,
                   letterSpacing: 1.5,
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: Colors.white.withOpacity(0.7),
                 ),
               ),
               const SizedBox(height: 60),

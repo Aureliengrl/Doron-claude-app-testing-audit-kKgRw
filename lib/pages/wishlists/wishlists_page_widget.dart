@@ -506,31 +506,52 @@ class _WishlistsPageWidgetState extends State<WishlistsPageWidget> {
                   const SizedBox(height: 24),
                   TextField(
                     controller: nameController,
+                    style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
+                    cursorColor: const Color(0xFFEC4899),
                     decoration: InputDecoration(
                       labelText: 'Nom de la liste',
+                      labelStyle: GoogleFonts.poppins(color: Colors.white70),
                       hintText: 'Ex: Noël 2026',
+                      hintStyle: GoogleFonts.poppins(color: Colors.white38),
+                      filled: true,
+                      fillColor: const Color(0xFF100720),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: violetColor),
+                        borderSide: BorderSide(color: Colors.white.withOpacity(0.18)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.white.withOpacity(0.18)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: violetColor, width: 2),
+                        borderSide: const BorderSide(color: Color(0xFFEC4899), width: 1.5),
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: descriptionController,
+                    style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
+                    cursorColor: const Color(0xFFEC4899),
                     decoration: InputDecoration(
                       labelText: 'Description (optionnel)',
+                      labelStyle: GoogleFonts.poppins(color: Colors.white70),
                       hintText: 'Ex: Cadeaux pour la famille',
+                      hintStyle: GoogleFonts.poppins(color: Colors.white38),
+                      filled: true,
+                      fillColor: const Color(0xFF100720),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.white.withOpacity(0.18)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.white.withOpacity(0.18)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: violetColor, width: 2),
+                        borderSide: const BorderSide(color: Color(0xFFEC4899), width: 1.5),
                       ),
                     ),
                     maxLines: 2,

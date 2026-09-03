@@ -6,6 +6,7 @@ class AppNotch extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool animateShimmer;
+  final Widget? leading;
   final Widget? trailing;
 
   const AppNotch({
@@ -13,6 +14,7 @@ class AppNotch extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.animateShimmer = true,
+    this.leading,
     this.trailing,
   });
 
@@ -51,58 +53,73 @@ class AppNotch extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-          child: Stack(
-            alignment: Alignment.center,
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
+          child: Row(
             children: [
-              if (trailing != null)
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: trailing!,
-                ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  if (animateShimmer)
-                    micro.ShimmerEffect(
-                      shimmerColor: Colors.white,
-                      duration: const Duration(milliseconds: 3000),
-                      child: Text(
+              SizedBox(
+                width: 44,
+                height: 44,
+                child: leading != null
+                    ? Align(alignment: Alignment.centerLeft, child: leading!)
+                    : const SizedBox.shrink(),
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    if (animateShimmer)
+                      micro.ShimmerEffect(
+                        shimmerColor: Colors.white,
+                        duration: const Duration(milliseconds: 3000),
+                        child: Text(
+                          title,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 19,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      )
+                    else
+                      Text(
                         title,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           color: Colors.white,
-                          fontSize: 20,
+                          fontSize: 19,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    )
-                  else
-                    Text(
-                      title,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
+                    if (subtitle.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 11.5,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  if (subtitle.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        color: Colors.white.withOpacity(0.9),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
+                    ],
                   ],
-                ],
+                ),
+              ),
+              SizedBox(
+                width: 44,
+                height: 44,
+                child: trailing != null
+                    ? Align(alignment: Alignment.centerRight, child: trailing!)
+                    : const SizedBox.shrink(),
               ),
             ],
           ),

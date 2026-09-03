@@ -1,3 +1,4 @@
+import 'dart:ui';
 import '/components/aesthetic_bottom_sheet_notch.dart';
 import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
@@ -335,8 +336,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         child: Column(
           children: [
             _buildHeader(title, isGroup),
-            // F6: Banner wishlist épinglée (groupes)
-            _buildPinnedWishlistBanner(),
             Expanded(
               child: _buildMessagesList(),
             ),
@@ -474,23 +473,26 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               ),
             ),
           ),
-          // FIX C7: bouton pour accéder aux cadeaux liés (groupes collab)
-          if (isGroup)
-            Builder(builder: (ctx) {
-              final linkedProfileId = _effectiveChatData?['linkedProfileId'] as String?;
-              return IconButton(
-                icon: const Text('🎁', style: TextStyle(fontSize: 20)),
-                tooltip: 'Voir les cadeaux',
-                onPressed: () {
-                  // Naviguer vers la page de recherche avec le profil lié
-                  if (linkedProfileId != null && linkedProfileId.isNotEmpty) {
-                    context.go('/search-page');
-                  } else {
-                    context.go('/search-page');
-                  }
-                },
-              );
-            }),
+          // Bouton cadeau 🎁 pour accéder directement aux idées de la personne liée
+          Builder(builder: (ctx) {
+            final linkedProfileId = _effectiveChatData?['linkedProfileId']?.toString() ??
+                _effectiveChatData?['profileId']?.toString() ??
+                _effectiveChatData?['personId']?.toString();
+            return IconButton(
+              icon: const Text('🎁', style: TextStyle(fontSize: 20)),
+              tooltip: 'Voir les cadeaux',
+              onPressed: () {
+                if (linkedProfileId != null && linkedProfileId.isNotEmpty) {
+                  context.go('/search-page?profileId=$linkedProfileId', extra: {
+                    'selectedProfileId': linkedProfileId,
+                    'profileId': linkedProfileId,
+                  });
+                } else {
+                  context.go('/search-page');
+                }
+              },
+            );
+          }),
           IconButton(
             icon: const Icon(IconlyLight.infoSquare, color: Colors.white),
             onPressed: () { context.push('/chat-info/' + widget.chatId, extra: _effectiveChatData); },
@@ -593,7 +595,12 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             final senderId = messageData['senderId'] as String?;
             final isMe = senderId == currentUser.uid;
             
-            final text = messageData['text'] as String? ?? '';
+            final rawText = messageData['text'] as String? ?? '';
+            final text = rawText
+                .replaceAll('ðŸŽ', '🎁')
+                .replaceAll('ðŸ‘¤', '👤')
+                .replaceAll('ðŸŽ‚', '🎂')
+                .replaceAll('âš ï¸', '⚠️');
             final timestamp = messageData['timestamp'] as Timestamp?;
             final timeStr = _formatMessageTime(timestamp);
             
@@ -865,86 +872,188 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   void _showReactionAndOptions(String msgId, String text, bool isMe) {
-    HapticFeedback.heavyImpact();
+    HapticFeedback.mediumImpact();
     final emojis = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
     
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.55),
       builder: (_) => Container(
+        margin: const EdgeInsets.fromLTRB(14, 0, 14, 20),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A0030),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
-        ),
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-                    const AestheticBottomSheetNotch(),
-            Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 24),
-            // Emoji Picker
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: emojis.map((emoji) => GestureDetector(
-                onTap: () async {
-                  Navigator.pop(context);
-                  HapticFeedback.lightImpact();
-                  final uid = FirebaseAuth.instance.currentUser?.uid;
-                  if (uid == null) return;
-                  await FirebaseFirestore.instance
-                      .collection('chats')
-                      .doc(widget.chatId)
-                      .collection('messages')
-                      .doc(msgId)
-                      .set({
-                        'reactions': { uid: emoji }
-                      }, SetOptions(merge: true));
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.08),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(emoji, style: const TextStyle(fontSize: 24)),
-                ),
-              )).toList(),
-            ),
-            const SizedBox(height: 24),
-            ListTile(
-              leading: const Icon(Icons.reply_rounded, color: Colors.white),
-              title: Text('Répondre', style: GoogleFonts.poppins(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                setState(() {
-                  _replyingToMessage = {'id': msgId, 'text': text};
-                });
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.copy_rounded, color: Colors.white),
-              title: Text('Copier', style: GoogleFonts.poppins(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                Clipboard.setData(ClipboardData(text: text));
-              },
-            ),
-            if (isMe) ListTile(
-              leading: const Icon(Icons.delete_rounded, color: Colors.red),
-              title: Text('Supprimer', style: GoogleFonts.poppins(color: Colors.red)),
-              onTap: () async {
-                Navigator.pop(context);
-                await FirebaseFirestore.instance
-                    .collection('chats')
-                    .doc(widget.chatId)
-                    .collection('messages')
-                    .doc(msgId)
-                    .delete();
-              },
+          color: const Color(0xFF140D26).withOpacity(0.85),
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(color: Colors.white.withOpacity(0.18), width: 0.8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.4),
+              blurRadius: 28,
+              offset: const Offset(0, 10),
             ),
           ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(32),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Emoji Floating Glass Capsule
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: Colors.white.withOpacity(0.15), width: 0.6),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: emojis.map((emoji) => GestureDetector(
+                          onTap: () async {
+                            Navigator.pop(context);
+                            HapticFeedback.lightImpact();
+                            final uid = FirebaseAuth.instance.currentUser?.uid;
+                            if (uid == null) return;
+                            await FirebaseFirestore.instance
+                                .collection('chats')
+                                .doc(widget.chatId)
+                                .collection('messages')
+                                .doc(msgId)
+                                .set({
+                                  'reactions': { uid: emoji }
+                                }, SetOptions(merge: true));
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(emoji, style: const TextStyle(fontSize: 26)),
+                          ),
+                        )).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Grouped iOS Action Tiles
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.06),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white.withOpacity(0.1), width: 0.6),
+                      ),
+                      child: Column(
+                        children: [
+                          _buildAppleGlassActionRow(
+                            icon: Icons.reply_rounded,
+                            label: 'Répondre',
+                            iconColor: const Color(0xFF8A2BE2),
+                            onTap: () {
+                              Navigator.pop(context);
+                              setState(() {
+                                _replyingToMessage = {'id': msgId, 'text': text};
+                              });
+                            },
+                          ),
+                          Container(height: 0.5, color: Colors.white.withOpacity(0.08), margin: const EdgeInsets.symmetric(horizontal: 16)),
+                          _buildAppleGlassActionRow(
+                            icon: Icons.copy_rounded,
+                            label: 'Copier',
+                            iconColor: Colors.white70,
+                            onTap: () {
+                              Navigator.pop(context);
+                              Clipboard.setData(ClipboardData(text: text));
+                            },
+                          ),
+                          if (isMe) ...[
+                            Container(height: 0.5, color: Colors.white.withOpacity(0.08), margin: const EdgeInsets.symmetric(horizontal: 16)),
+                            _buildAppleGlassActionRow(
+                              icon: Icons.delete_outline_rounded,
+                              label: 'Supprimer',
+                              iconColor: const Color(0xFFFF4B6B),
+                              textColor: const Color(0xFFFF4B6B),
+                              onTap: () async {
+                                Navigator.pop(context);
+                                await FirebaseFirestore.instance
+                                    .collection('chats')
+                                    .doc(widget.chatId)
+                                    .collection('messages')
+                                    .doc(msgId)
+                                    .delete();
+                              },
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAppleGlassActionRow({
+    required IconData icon,
+    required String label,
+    required Color iconColor,
+    Color textColor = Colors.white,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: iconColor.withOpacity(0.15),
+                ),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    color: textColor,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              Icon(Icons.arrow_forward_ios_rounded, size: 13, color: Colors.white.withOpacity(0.25)),
+            ],
+          ),
         ),
       ),
     );
@@ -1093,7 +1202,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: const Color(0xFF140B26),
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
                       color: Colors.white.withOpacity(0.2),
@@ -1101,11 +1210,18 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   ),
                   child: TextField(
                     controller: _messageController,
-                    style: GoogleFonts.poppins(color: Colors.white),
+                    cursorColor: const Color(0xFFEC4899),
+                    style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
                     decoration: InputDecoration(
                       hintText: context.tr('Écrire un message...', 'Write a message...'),
-                      hintStyle: GoogleFonts.poppins(color: Colors.white.withOpacity(0.4)),
+                      hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 14),
+                      filled: true,
+                      fillColor: Colors.transparent,
                       border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     onChanged: _onTextChanged,
                     onSubmitted: (_) => _sendMessage(),
@@ -1591,81 +1707,123 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   // â”€â”€ Bottom sheet : partager un produit ou une wishlist â”€â”€
 
   void _showShareSheet() {
+    HapticFeedback.mediumImpact();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.55),
       isScrollControlled: true,
       builder: (_) => Container(
+        margin: const EdgeInsets.fromLTRB(14, 0, 14, 20),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A0030),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          color: const Color(0xFF140D26).withOpacity(0.85),
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(color: Colors.white.withOpacity(0.18), width: 0.8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.4),
+              blurRadius: 28,
+              offset: const Offset(0, 10),
+            ),
+          ],
         ),
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-                    const AestheticBottomSheetNotch(),
-            Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.white24,
-                  borderRadius: BorderRadius.circular(2),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(32),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Partager',
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withOpacity(0.12),
+                            ),
+                            child: const Icon(Icons.close_rounded, color: Colors.white70, size: 17),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    _buildShareOption(
+                      icon: Icons.camera_alt_rounded,
+                      color: const Color(0xFF10B981),
+                      label: 'Prendre une photo',
+                      sublabel: 'Ouvrir l\'appareil photo',
+                      onTap: () {
+                        Navigator.pop(context);
+                        _pickAndSendImage(ImageSource.camera);
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    _buildShareOption(
+                      icon: Icons.image_rounded,
+                      color: const Color(0xFF3B82F6),
+                      label: 'Choisir depuis la galerie',
+                      sublabel: 'Envoyer une image ou capture',
+                      onTap: () {
+                        Navigator.pop(context);
+                        _pickAndSendImage(ImageSource.gallery);
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    _buildShareOption(
+                      icon: Icons.card_giftcard_rounded,
+                      color: const Color(0xFF8A2BE2),
+                      label: 'Partager un produit',
+                      sublabel: 'Fiche produit interactive dans le chat',
+                      onTap: () {
+                        Navigator.pop(context);
+                        _showProductPicker();
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    _buildShareOption(
+                      icon: IconlyBold.bookmark,
+                      color: const Color(0xFFEC4899),
+                      label: 'Partager une wishlist',
+                      sublabel: 'Album et liste complète d\'idées cadeaux',
+                      onTap: () {
+                        Navigator.pop(context);
+                        _showWishlistPicker();
+                      },
+                    ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            Text('Partager',
-                style: GoogleFonts.poppins(
-                    color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 16),
-            _buildShareOption(
-              icon: Icons.camera_alt_rounded,
-              color: const Color(0xFF10B981),
-              label: 'Prendre une photo',
-              sublabel: 'Ouvrir l\'appareil photo',
-              onTap: () {
-                Navigator.pop(context);
-                _pickAndSendImage(ImageSource.camera);
-              },
-            ),
-            const SizedBox(height: 12),
-            _buildShareOption(
-              icon: Icons.image_rounded,
-              color: const Color(0xFF3B82F6),
-              label: 'Choisir depuis la galerie',
-              sublabel: 'Envoyer une image',
-              onTap: () {
-                Navigator.pop(context);
-                _pickAndSendImage(ImageSource.gallery);
-              },
-            ),
-            const SizedBox(height: 12),
-            _buildShareOption(
-              icon: Icons.card_giftcard_rounded,
-              color: const Color(0xFF8A2BE2),
-              label: 'Partager un produit',
-              sublabel: 'Envoie une fiche produit dans le chat',
-              onTap: () {
-                Navigator.pop(context);
-                _showProductPicker();
-              },
-            ),
-            const SizedBox(height: 12),
-            _buildShareOption(
-              icon: IconlyBold.bookmark,
-              color: const Color(0xFFEC4899),
-              label: 'Partager une wishlist',
-              sublabel: 'Envoie un album complet',
-              onTap: () {
-                Navigator.pop(context);
-                _showWishlistPicker();
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -2047,43 +2205,118 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     required String sublabel,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return _AppleGlassShareTile(
+      icon: icon,
+      color: color,
+      label: label,
+      sublabel: sublabel,
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.3)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
-                shape: BoxShape.circle,
+    );
+  }
+}
+
+class _AppleGlassShareTile extends StatefulWidget {
+  final IconData icon;
+  final Color color;
+  final String label;
+  final String sublabel;
+  final VoidCallback onTap;
+
+  const _AppleGlassShareTile({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.sublabel,
+    required this.onTap,
+  });
+
+  @override
+  State<_AppleGlassShareTile> createState() => _AppleGlassShareTileState();
+}
+
+class _AppleGlassShareTileState extends State<_AppleGlassShareTile> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTapCancel: () => setState(() => _pressed = false),
+      onTap: () {
+        HapticFeedback.lightImpact();
+        widget.onTap();
+      },
+      child: AnimatedScale(
+        scale: _pressed ? 0.97 : 1.0,
+        duration: const Duration(milliseconds: 90),
+        curve: Curves.easeInOut,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: _pressed
+                ? Colors.white.withOpacity(0.12)
+                : Colors.white.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: _pressed
+                  ? Colors.white.withOpacity(0.25)
+                  : Colors.white.withOpacity(0.10),
+              width: 0.7,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: widget.color.withOpacity(0.2),
+                  border: Border.all(
+                    color: widget.color.withOpacity(0.4),
+                    width: 0.8,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: widget.color.withOpacity(0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Icon(widget.icon, color: widget.color, size: 20),
               ),
-              child: Icon(icon, color: color, size: 22),
-            ),
-            const SizedBox(width: 14),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label,
-                    style: GoogleFonts.poppins(
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.label,
+                      style: GoogleFonts.poppins(
                         color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600)),
-                Text(sublabel,
-                    style: GoogleFonts.poppins(
-                        color: Colors.white54, fontSize: 12)),
-              ],
-            ),
-            const Spacer(),
-            Icon(Icons.arrow_forward_ios_rounded, color: Colors.white30, size: 16),
-          ],
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      widget.sublabel,
+                      style: GoogleFonts.poppins(
+                        color: Colors.white.withOpacity(0.55),
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.white.withOpacity(0.25),
+                size: 14,
+              ),
+            ],
+          ),
         ),
       ),
     );

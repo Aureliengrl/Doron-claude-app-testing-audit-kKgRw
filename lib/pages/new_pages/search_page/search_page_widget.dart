@@ -28,6 +28,7 @@ import '/components/product_detail_modal.dart';
 import '/components/shared_product_card.dart';
 import '/components/floating_cta_button.dart';
 import '/services/friend_service.dart';
+import '/services/collaboration_service.dart';
 import '/services/gift_events_service.dart';
 import 'dart:async';
 import 'package:image_picker/image_picker.dart';
@@ -77,6 +78,26 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
 
   Future<void> _loadData() async {
     await _model.loadProfiles();
+    try {
+      final state = GoRouterState.of(context);
+      final extra = state.extra as Map<String, dynamic>?;
+      final targetIdStr = state.uri.queryParameters['profileId'] ??
+          state.uri.queryParameters['selectedProfileId'] ??
+          extra?['selectedProfileId']?.toString() ??
+          extra?['profileId']?.toString();
+
+      if (targetIdStr != null && targetIdStr.isNotEmpty) {
+        final targetId = int.tryParse(targetIdStr);
+        if (targetId != null) {
+          final hasProfile = _model.profiles.any((p) => (p['id'] == targetId || p['id'].toString() == targetIdStr));
+          if (hasProfile) {
+            _model.selectedProfileId = targetId;
+            await _model.selectProfile(targetId);
+          }
+        }
+      }
+    } catch (_) {}
+
     if (mounted) {
       setState(() {});
     }
@@ -225,35 +246,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
               // Info sur la personne sélectionnée
               if (_model.currentProfile != null) ...[
                 SliverToBoxAdapter(child: _buildProfileInfo()),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 0, bottom: 8, right: 24),
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: GestureDetector(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          _addPhotoForPerson(_model.currentProfile!);
-                        },
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(IconlyLight.camera, color: Colors.white70, size: 18),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Ajouter mon propre produit',
-                              style: GoogleFonts.poppins(
-                                color: Colors.white70,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                SliverToBoxAdapter(child: _buildGiftsAddButtons(_model.currentProfile!)),
               ],
 
               // Grille de produits
@@ -270,7 +263,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
 
           // CTA fixe en bas de l'écran
           Positioned(
-            bottom: 120,
+            bottom: 108,
             left: 0,
             right: 0,
             child: FloatingCtaButton(
@@ -278,7 +271,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('🎅', style: TextStyle(fontSize: 22)),
+                  const Icon(Icons.card_giftcard_rounded, color: Colors.white, size: 22),
                   const SizedBox(width: 8),
                   Text(
                     'Secret Santa',
@@ -775,209 +768,296 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
           border: Border.all(
             color: Color(
                     int.parse(profile['color'].toString().replaceAll('#', '0xFF')))
-                .withOpacity(0.2),
-            width: 2,
+                .withOpacity(0.25),
+            width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 12,
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 16,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Color(
-                    int.parse(profile['color'].toString().replaceAll('#', '0xFF'))),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  profile['initials'] as String,
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+            // ── En-tête profil (Avatar + Nom + Occasion + Bouton Modifier) ──
+            Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Color(
+                        int.parse(profile['color'].toString().replaceAll('#', '0xFF'))),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(int.parse(profile['color'].toString().replaceAll('#', '0xFF'))).withOpacity(0.4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      profile['initials'] as String,
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${context.tr('Cadeaux pour ', 'Gifts for ')}${profile['name']}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${profile['relation']} à ${profile['occasion']}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      color: Colors.white.withOpacity(0.55),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildProfileActionButton(
-                        icon: IconlyBold.send,
-                        label: context.tr('Partager', 'Share'),
-                        onTap: () async {
-                          HapticFeedback.lightImpact();
-                          _showSnackBar(context.tr('Génération du PDF en cours...', 'Generating PDF...'), isError: false);
-                          
-                          // On récupère les cadeaux sauvegardés pour cette personne
-                          final products = _model.getFilteredProducts(); 
-                          
-                          try {
-                            await PdfExportUtils.generateAndShareWishlistPdf(
-                              profile: profile,
-                              products: products,
-                            );
-                          } catch (e) {
-                            _showSnackBar('Erreur lors de la génération du PDF', isError: true);
-                          }
-                        },
+                      Text(
+                        '${context.tr('Cadeaux pour ', 'Gifts for ')}${profile['name']}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      _buildProfileActionButton(
+                      const SizedBox(height: 2),
+                      Text(
+                        '${profile['relation']} à ${profile['occasion']}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: Colors.white.withOpacity(0.6),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                // Boutons d'action dans l'en-tête (1 bouton Modifier classique OU 3 petits boutons si partagé)
+                if (profile['isShared'] == true || profile['chatId'] != null || profile['collabId'] != null)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildMiniCardButton(
                         icon: IconlyLight.edit,
-                        label: context.tr('Modifier', 'Edit'),
+                        tooltip: 'Modifier le profil',
                         onTap: () {
-                          // Retourner au quizz avec l'ID du profil
+                          HapticFeedback.lightImpact();
                           context.go('/onboarding-advanced?skipUserQuestions=true&editProfileId=${profile['id']}&returnTo=/search-page');
                         },
                       ),
-                      _buildProfileActionButton(
-                        // FIX C8: label change si collab déjà active
-                        icon: (profile['isShared'] == true || profile['chatId'] != null)
-                            ? IconlyBold.addUser
-                            : IconlyLight.addUser,
-                        label: (profile['isShared'] == true || profile['chatId'] != null)
-                            ? context.tr('Ma collab', 'My collab')
-                            : context.tr('Collaborer', 'Collaborate'),
+                      const SizedBox(width: 6),
+                      _buildMiniCardButton(
+                        icon: IconlyLight.chat,
+                        tooltip: 'Discussion',
+                        color: const Color(0xFF3B82F6),
                         onTap: () {
-                           // #FIX-9: ne pas ouvrir si aucun cadeau ajouté
-                           final profileId = profile['id']?.toString() ?? profile['personId']?.toString() ?? '';
-                           final giftsList = _model.personGifts[profileId] ?? [];
-                           if (giftsList.isEmpty) {
-                             HapticFeedback.lightImpact();
-                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                               content: Text('Ajoutez d\'abord des idées cadeaux pour partager !', style: GoogleFonts.poppins(fontSize: 13)),
-                               backgroundColor: const Color(0xFFF59E0B),
-                               behavior: SnackBarBehavior.floating,
-                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                               margin: const EdgeInsets.all(12),
-                             ));
-                             return;
-                           }
-                           showModalBottomSheet(
-                             context: context,
-                             isScrollControlled: true,
-                             backgroundColor: Colors.transparent,
-                             builder: (context) => Padding(
-                               padding: EdgeInsets.only(
-                                 bottom: MediaQuery.of(context).viewInsets.bottom,
-                                 top: MediaQuery.of(context).size.height * 0.2,
-                               ),
-                               child: ShareListBottomSheet(profile: profile), // bypassed ShareListBottomSheet
-                             ),
-                           ).then((chatId) {
-                             if (chatId != null && mounted) {
-                               final personId = profile['id']?.toString() ?? '';
-                               setState(() {
-                                 profile['chatId'] = chatId;
-                                 profile['isShared'] = true;
-                               });
-                               // FIX C6: Persister dans Firebase pour survivre au redémarrage
-                               if (personId.isNotEmpty) {
-                                 FirebaseDataService.updatePersonMeta(personId, {
-                                   'chatId': chatId,
-                                   'isShared': true,
-                                 });
-                               }
-                             }
-                           });
-                        }
-                      ),
-                      // Cadeau de groupe (cagnotte) : décision + paiement partagé
-                      _buildProfileActionButton(
-                        icon: IconlyBold.wallet,
-                        label: context.tr('Cadeau de groupe', 'Group gift'),
-                        onTap: () async {
-                          final profileId = profile['id']?.toString() ??
-                              profile['personId']?.toString() ?? '';
-                          if (profileId.isEmpty) return;
-                          final giftsList = _model.personGifts[profileId] ?? [];
-                          if (giftsList.isEmpty) {
-                            _showSnackBar(
-                                context.tr(
-                                    'Ajoutez d\'abord des idées cadeaux !',
-                                    'Add some gift ideas first!'),
-                                isError: true);
-                            return;
-                          }
-                          final profileName =
-                              profile['name']?.toString() ?? 'la liste';
-                          try {
-                            final collab = await GroupGiftService.createOrGet(
-                              profileId: profileId,
-                              profileName: profileName,
-                            );
-                            await FirebaseDataService.updatePersonMeta(profileId, {
-                              'chatId': collab['chatId'],
-                              'isShared': true,
-                              'collabId': collab['collabId'],
-                              'giftMode': 'group_gift',
+                          HapticFeedback.lightImpact();
+                          if (profile['chatId'] != null) {
+                            context.push('/chat-room/${profile['chatId']}', extra: {
+                              'id': profile['chatId'],
+                              'name': '${context.tr('Cadeaux pour ', 'Gifts for ')}${profile['name']}',
+                              'isGroup': true,
                             });
-                            if (!mounted) return;
-                            setState(() {
-                              profile['chatId'] = collab['chatId'];
-                              profile['isShared'] = true;
-                              profile['collabId'] = collab['collabId'];
-                            });
-                            context.push('/group-gift/${collab['collabId']}', extra: {
-                              'collabId': collab['collabId'],
-                              'chatId': collab['chatId'],
-                              'profileName': profileName,
-                              'ownerId': collab['ownerId'],
-                              'gifts': giftsList,
-                            });
-                          } catch (e) {
-                            _showSnackBar(
-                                context.tr('Erreur, réessaie',
-                                    'Something went wrong'),
-                                isError: true);
                           }
                         },
                       ),
-                      // FIX C1: afficher si chatId présent OU isShared=true
-                      if (profile['chatId'] != null || profile['isShared'] == true)
-                        _buildProfileActionButton(
-                          icon: IconlyLight.chat,
-                          label: 'Chat',
-                          onTap: () {
-                             context.push('/chat-room/${profile['chatId']}', extra: {
-                               'id': profile['chatId'],
-                               'name': '${context.tr('Cadeaux pour ', 'Gifts for ')}${profile['name']}',
-                               'isGroup': true,
-                             });
-                          }
-                        ),
+                      const SizedBox(width: 6),
+                      _buildMiniCardButton(
+                        icon: Icons.logout_rounded,
+                        tooltip: 'Quitter la collaboration',
+                        color: Colors.redAccent,
+                        onTap: () => _confirmLeaveCollaboration(profile),
+                      ),
                     ],
+                  )
+                else
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        context.go('/onboarding-advanced?skipUserQuestions=true&editProfileId=${profile['id']}&returnTo=/search-page');
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.15),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(IconlyLight.edit, color: Colors.white70, size: 14),
+                            const SizedBox(width: 4),
+                            Text(
+                              context.tr('Modifier', 'Edit'),
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            // ── Ligne des 3 grands boutons d'actions principales ──
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  _buildProfileActionButton(
+                    icon: IconlyBold.send,
+                    label: context.tr('Partager', 'Share'),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF8A2BE2), Color(0xFF6366F1)],
+                    ),
+                    onTap: () async {
+                      HapticFeedback.lightImpact();
+                      final profileId = profile['id']?.toString() ?? profile['personId']?.toString() ?? '';
+                      final giftsList = (_model.personGifts[profileId] != null && _model.personGifts[profileId]!.isNotEmpty)
+                          ? _model.personGifts[profileId]!
+                          : _model.getFilteredProducts();
+
+                      if (giftsList.isEmpty) {
+                        _showSnackBar(context.tr('Ajoutez d\'abord des idées cadeaux !', 'Add some gift ideas first!'), isError: true);
+                        return;
+                      }
+
+                      _showSnackBar(context.tr('Génération du PDF en cours...', 'Generating PDF...'), isError: false);
+                      
+                      try {
+                        await PdfExportUtils.generateAndShareWishlistPdf(
+                          profile: profile,
+                          products: giftsList,
+                          context: context,
+                        );
+                      } catch (e) {
+                        _showSnackBar('Erreur lors de la génération du PDF', isError: true);
+                      }
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  _buildProfileActionButton(
+                    icon: (profile['isShared'] == true || profile['chatId'] != null)
+                        ? IconlyBold.addUser
+                        : IconlyLight.addUser,
+                    label: context.tr('Collaborer', 'Collaborate'),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFEC4899), Color(0xFF8A2BE2)],
+                    ),
+                    onTap: () {
+                      final profileId = profile['id']?.toString() ?? profile['personId']?.toString() ?? '';
+                      final giftsList = _model.personGifts[profileId] ?? [];
+                      if (giftsList.isEmpty) {
+                        HapticFeedback.lightImpact();
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('Ajoutez d\'abord des idées cadeaux pour partager !', style: GoogleFonts.poppins(fontSize: 13)),
+                          backgroundColor: const Color(0xFFF59E0B),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          margin: const EdgeInsets.all(12),
+                        ));
+                        return;
+                      }
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => Padding(
+                          padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom,
+                            top: MediaQuery.of(context).size.height * 0.2,
+                          ),
+                          child: ShareListBottomSheet(profile: profile),
+                        ),
+                      ).then((chatId) {
+                        if (chatId != null && mounted) {
+                          final personId = profile['id']?.toString() ?? '';
+                          setState(() {
+                            profile['chatId'] = chatId;
+                            profile['isShared'] = true;
+                          });
+                          if (personId.isNotEmpty) {
+                            FirebaseDataService.updatePersonMeta(personId, {
+                              'chatId': chatId,
+                              'isShared': true,
+                            });
+                          }
+                        }
+                      });
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  _buildProfileActionButton(
+                    icon: IconlyBold.wallet,
+                    label: context.tr('Cadeau de groupe', 'Group gift'),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF10B981), Color(0xFF059669)],
+                    ),
+                    onTap: () async {
+                      final profileId = profile['id']?.toString() ??
+                          profile['personId']?.toString() ?? '';
+                      if (profileId.isEmpty) return;
+                      final giftsList = _model.personGifts[profileId] ?? [];
+                      if (giftsList.isEmpty) {
+                        _showSnackBar(
+                            context.tr(
+                                'Ajoutez d\'abord des idées cadeaux !',
+                                'Add some gift ideas first!'),
+                            isError: true);
+                        return;
+                      }
+                      final profileName =
+                          profile['name']?.toString() ?? 'la liste';
+                      try {
+                        final collab = await GroupGiftService.createOrGet(
+                          profileId: profileId,
+                          profileName: profileName,
+                        );
+                        await FirebaseDataService.updatePersonMeta(profileId, {
+                          'chatId': collab['chatId'],
+                          'isShared': true,
+                          'collabId': collab['collabId'],
+                          'giftMode': 'group_gift',
+                        });
+                        if (!mounted) return;
+                        setState(() {
+                          profile['chatId'] = collab['chatId'];
+                          profile['isShared'] = true;
+                          profile['collabId'] = collab['collabId'];
+                        });
+                        context.push('/group-gift/${collab['collabId']}', extra: {
+                          'collabId': collab['collabId'],
+                          'chatId': collab['chatId'],
+                          'profileName': profileName,
+                          'ownerId': collab['ownerId'],
+                          'gifts': giftsList,
+                        });
+                      } catch (e) {
+                        _showSnackBar(
+                            context.tr('Erreur, réessaie',
+                                'Something went wrong'),
+                            isError: true);
+                      }
+                    },
                   ),
                 ],
               ),
@@ -988,10 +1068,185 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
     );
   }
 
+  Widget _buildMiniCardButton({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onTap,
+    Color color = Colors.white70,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.all(7),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: color.withOpacity(0.25),
+              width: 1,
+            ),
+          ),
+          child: Icon(icon, color: color, size: 15),
+        ),
+      ),
+    );
+  }
+
+  void _confirmLeaveCollaboration(Map<String, dynamic> profile) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF130E26),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: Colors.white.withOpacity(0.12)),
+        ),
+        title: Text(
+          'Quitter la collaboration ?',
+          style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        content: Text(
+          'Tu ne pourras plus ajouter de cadeaux ni participer aux discussions de groupe pour ${profile['name']}.',
+          style: GoogleFonts.poppins(color: Colors.white70, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Annuler', style: GoogleFonts.poppins(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final personId = profile['id']?.toString() ?? '';
+              final collabId = profile['collabId']?.toString() ?? profile['chatId']?.toString();
+              if (collabId != null) {
+                await CollaborationService.leaveCollaboration(collabId);
+              }
+              if (personId.isNotEmpty) {
+                await FirebaseDataService.updatePersonMeta(personId, {
+                  'isShared': false,
+                  'chatId': null,
+                  'collabId': null,
+                });
+              }
+              setState(() {
+                profile['isShared'] = false;
+                profile['chatId'] = null;
+                profile['collabId'] = null;
+              });
+              _showSnackBar('Tu as quitté la collaboration.', isError: false);
+            },
+            child: Text('Quitter', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGiftsAddButtons(Map<String, dynamic> profile) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 44,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
+                ),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFEC4899).withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    context.push('/onboarding-gifts-result?profileId=${profile['id']}');
+                  },
+                  borderRadius: BorderRadius.circular(14),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.add_rounded, color: Colors.white, size: 20),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Ajouter un cadeau',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Container(
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.18),
+                  width: 1,
+                ),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    _addPhotoForPerson(profile);
+                  },
+                  borderRadius: BorderRadius.circular(14),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(IconlyLight.camera, color: Colors.white, size: 18),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Mon propre produit',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildProfileActionButton({
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    Gradient? gradient,
   }) {
     return Material(
       color: Colors.transparent,
@@ -1000,28 +1255,38 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
           HapticFeedback.lightImpact();
           onTap();
         },
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(14),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(20),
+            gradient: gradient != null
+                ? LinearGradient(
+                    colors: gradient.colors.map((c) => c.withOpacity(0.25)).toList(),
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
+            color: gradient == null ? Colors.white.withOpacity(0.08) : null,
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: Colors.white.withOpacity(0.2),
+              color: gradient != null
+                  ? gradient.colors.first.withOpacity(0.4)
+                  : Colors.white.withOpacity(0.18),
               width: 1,
             ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: Colors.white, size: 14),
-              const SizedBox(width: 4),
+              Icon(icon, color: Colors.white, size: 15),
+              const SizedBox(width: 6),
               Text(
                 label,
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
                   color: Colors.white,
+                  letterSpacing: 0.2,
                 ),
               ),
             ],

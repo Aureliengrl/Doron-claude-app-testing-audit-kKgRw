@@ -234,7 +234,8 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
             style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
         content: TextField(
           controller: labelController,
-          style: GoogleFonts.poppins(color: Colors.white),
+          cursorColor: violetColor,
+          style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
           decoration: InputDecoration(
             hintText: 'Ex: Anniversaire de Papa',
             hintStyle: GoogleFonts.poppins(color: Colors.white38),

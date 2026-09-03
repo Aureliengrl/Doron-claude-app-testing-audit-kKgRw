@@ -77,10 +77,19 @@ class ProductValidatorService {
 
     for (final c in candidates) {
       if (c is String && c.trim().isNotEmpty && c.startsWith('http')) {
-        final url = c.trim();
+        var url = c.trim();
         // Rejeter les Unsplash generiques (pas les vraies photos produit)
         if (url.contains('unsplash.com/photo-') && !url.contains('product')) {
           continue;
+        }
+        // Obtenir l'image originale haute résolution complète Amazon sans recadrage
+        if (url.contains('media-amazon.com/images/I/') || url.contains('images-na.ssl-images-amazon.com/images/I/')) {
+          final reg = RegExp(r'images/I/([^._]+)');
+          final match = reg.firstMatch(url);
+          if (match != null) {
+            final imageId = match.group(1);
+            url = 'https://m.media-amazon.com/images/I/$imageId._AC_SL1500_.jpg';
+          }
         }
         return url;
       }

@@ -1062,18 +1062,18 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                   ? LinearGradient(
                       colors: [
                         violetColor,
-                        violetColor.withValues(alpha: 0.8),
+                        violetColor.withOpacity(0.8),
                       ],
                     )
                   : LinearGradient(
                       colors: [
-                        Colors.white.withValues(alpha: 0.13),
-                        Colors.white.withValues(alpha: 0.07),
+                        Colors.white.withOpacity(0.13),
+                        Colors.white.withOpacity(0.07),
                       ],
                     ),
               borderRadius: BorderRadius.circular(isWrap || isGrid ? 20 : 32),
               border: Border.all(
-                color: isSelected ? Colors.white.withValues(alpha: 0.35) : Colors.white.withValues(alpha: 0.18),
+                color: isSelected ? Colors.white.withOpacity(0.35) : Colors.white.withOpacity(0.18),
                 width: isSelected ? 1.5 : 1,
               ),
             ),
@@ -1083,7 +1083,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
               style: GoogleFonts.poppins(
                 fontSize: isWrap ? 15 : (isGrid ? 14 : 17),
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.9),
+                color: isSelected ? Colors.white : Colors.white.withOpacity(0.9),
               ),
             ),
           ),

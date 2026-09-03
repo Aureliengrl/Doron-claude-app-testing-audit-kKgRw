@@ -11,7 +11,7 @@ import '/components/cached_image.dart';
 ///
 /// Après: Flutter peut réutiliser ce widget via sa `key` stable.
 /// Seules les cartes dont le `isLiked` change sont reconstruites.
-class ProductCard extends StatelessWidget {
+class ProductCard extends StatefulWidget {
   final Map<String, dynamic> product;
   final bool isLiked;
   final int index;
@@ -27,51 +27,68 @@ class ProductCard extends StatelessWidget {
     required this.onLikeTap,
   }) : super(key: key);
 
-  static const Color _violet = Color(0xFF8A2BE2);
-  static const Color _pink = Color(0xFFEC4899);
+  @override
+  State<ProductCard> createState() => _ProductCardState();
+}
 
-  // Ratios d'aspect stables (évite les layout shifts)
-  static const List<double> _ratios = [0.8, 1.25, 0.9, 1.1, 1.4, 0.75];
+class _ProductCardState extends State<ProductCard> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  static const Color _violet = Color(0xFF8A2BE2);
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = product['image'] as String? ?? '';
-    final name = product['name'] as String? ?? '';
-    final match = product['match'] as int? ?? 0;
+    super.build(context);
+    final imageUrl = widget.product['image'] as String? ?? '';
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onTap();
-        },
-        borderRadius: BorderRadius.circular(12),
-        splashColor: _violet.withOpacity(0.1),
-        highlightColor: _violet.withOpacity(0.05),
-          child: Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: AspectRatio(
-                  aspectRatio: _ratios[index % _ratios.length],
-                  child: ProductImage(
+    return RepaintBoundary(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            widget.onTap();
+          },
+          borderRadius: BorderRadius.circular(16),
+          splashColor: _violet.withOpacity(0.12),
+          highlightColor: _violet.withOpacity(0.06),
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF161626).withOpacity(0.6),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withOpacity(0.08), width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.25),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: CachedImage(
                     imageUrl: imageUrl,
-                    fit: BoxFit.cover,
-                    borderRadius: BorderRadius.zero,
+                    fit: BoxFit.fitWidth,
+                    width: double.infinity,
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-              ),
 
-              // Badge like (haut gauche)
-              if (isLiked)
-                const Positioned(
-                  top: 8,
-                  left: 8,
-                  child: _LikeBadge(),
-                ),
-            ],
+                // Badge like (haut gauche)
+                if (widget.isLiked)
+                  const Positioned(
+                    top: 8,
+                    left: 8,
+                    child: _LikeBadge(),
+                  ),
+              ],
+            ),
           ),
+        ),
       ),
     );
   }
