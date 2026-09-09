@@ -34,6 +34,7 @@ import '/services/push_notifications_service.dart';
 import '/pages/new_pages/birthday_calendar/birthday_calendar_page.dart';
 import '/services/seed_catalog_service.dart';
 import '/services/product_matching_service.dart';
+import '/components/doron_luxury_splash.dart';
 import 'index.dart';
 
 /// Service de logging d'erreurs global pour capturer les crashs en release
@@ -348,7 +349,7 @@ class _MyAppState extends State<MyApp> {
       routerConfig: _router,
       builder: (context, child) {
         if (child == null) {
-          return const Scaffold(backgroundColor: Color(0xFF062248), body: Center(child: CircularProgressIndicator()));
+          return const DoronLuxurySplashIntro();
         }
         return ShowCaseWidget(
           builder: (context) => OfflineBannerWrapper(
@@ -432,13 +433,36 @@ class _NavBarPageState extends State<NavBarPage> {
             }),
           ),
 
+          // Scrim dégradé en bas pour fondre doucement les cartes sous la navbar
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 120,
+            child: IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      const Color(0x990D071E),
+                      const Color(0xF20D071E),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
           // Navbar flottante moderne
           Positioned(
             left: 0,
             right: 0,
             bottom: 0,
             child: StreamBuilder<int>(stream: BadgeService.pendingInvitesCountStream, initialData: 0, builder: (context, snapshot) { final pendingCount = snapshot.data ?? 0; return FloatingModernNavBar(
-              margin: const EdgeInsets.only(left: 20, right: 20, bottom: 4),
+              margin: const EdgeInsets.symmetric(horizontal: 16),
               currentIndex: _currentIndex,
               onTap: (i) async {
                 safeSetState(() {

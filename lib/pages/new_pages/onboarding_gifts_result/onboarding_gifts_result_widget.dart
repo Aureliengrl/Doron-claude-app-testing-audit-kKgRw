@@ -62,15 +62,20 @@ class _OnboardingGiftsResultWidgetState
   }
 
   String? _returnTo; // Page de retour (ex: /search-page)
+  String _giftCategoryFilter = 'all'; // 'all', 'physical', 'experience'
+
 
   /// Parse les paramètres de query de l'URL et les données extra
   void _parseQueryParameters() {
     final goRouterState = GoRouterState.of(context);
-    final personId = goRouterState.uri.queryParameters['personId'];
+    final extraData = goRouterState.extra;
+    final personId = goRouterState.uri.queryParameters['personId'] ??
+        goRouterState.uri.queryParameters['profileId'] ??
+        goRouterState.uri.queryParameters['editProfileId'] ??
+        (extraData is Map ? (extraData['personId'] ?? extraData['id'])?.toString() : null);
     _returnTo = goRouterState.uri.queryParameters['returnTo'];
 
     // ?? NOUVEAU: Récupérer les données passées via extra (assistant vocal)
-    final extraData = goRouterState.extra;
     AppLogger.debug('?? Extra data détecté: ${extraData != null ? "OUI" : "NON"}', 'Debug');
 
     if (extraData != null && extraData is Map<String, dynamic>) {
@@ -732,6 +737,162 @@ class _OnboardingGiftsResultWidgetState
     );
   }
 
+    // ─── Filtrage Cadeaux Physiques vs Expériences & Activités ──────
+
+  bool _isExperienceGift(Map<String, dynamic> gift) {
+    final name = (gift['name'] ?? gift['title'] ?? '').toString().toLowerCase();
+    final desc = (gift['description'] ?? '').toString().toLowerCase();
+    final brand = (gift['brand'] ?? '').toString().toLowerCase();
+    final type = (gift['type'] ?? '').toString().toLowerCase();
+
+    final categories = gift['categories'];
+    final tags = gift['tags'];
+
+    List<String> allTokens = [];
+    if (categories is List) {
+      allTokens.addAll(categories.map((c) => c.toString().toLowerCase()));
+    }
+    if (tags is List) {
+      allTokens.addAll(tags.map((t) => t.toString().toLowerCase()));
+    }
+
+    const experienceKeywords = [
+      'experience', 'expérience', 'activite', 'activité', 'atelier', 'stage',
+      'cours', 'spa', 'massage', 'voyage', 'sejour', 'séjour', 'hotel', 'hôtel',
+      'restaurant', 'dégustation', 'degustation', 'billet', 'spectacle', 'concert',
+      'theatre', 'théâtre', 'escapade', 'vol', 'saut', 'parapente', 'escape game',
+      'visite', 'musée', 'musee', 'parc', 'aventure', 'wonderbox', 'smartbox',
+      'type_voyage_aventure', 'type_bien_etre', 'type_gastronomie', 'type_culture',
+      'passion_voyages', 'pass', 'ticket', 'abonnement', 'dîner', 'dejeuner', 'déjeuner',
+      'nuitée', 'nuitee', 'détente', 'detente', 'thalasso', 'karting', 'simulateur',
+      'oenologie', 'œnologie', 'gastronomie', 'croisière', 'croisiere', 'baptême',
+      'coffret', 'box', 'weekend', 'week-end', 'escapade', 'soin'
+    ];
+
+    for (final kw in experienceKeywords) {
+      if (type.contains(kw) || name.contains(kw) || desc.contains(kw) || brand.contains(kw)) {
+        return true;
+      }
+      for (final token in allTokens) {
+        if (token.contains(kw)) return true;
+      }
+    }
+
+    return false;
+  }
+
+  List<Map<String, dynamic>> _filterGiftsList(List<Map<String, dynamic>> list) {
+    if (_giftCategoryFilter == 'physical') {
+      return list.where((g) => !_isExperienceGift(g)).toList();
+    } else if (_giftCategoryFilter == 'experience') {
+      return list.where((g) => _isExperienceGift(g)).toList();
+    }
+    return list;
+  }
+
+  Widget _buildCategoryFilterMenu() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildFilterChip(
+              id: 'physical',
+              icon: '🎁',
+              title: context.tr('Cadeaux physiques', 'Physical gifts'),
+              isSelected: _giftCategoryFilter == 'physical',
+              onTap: () {
+                setState(() {
+                  _giftCategoryFilter = _giftCategoryFilter == 'physical' ? 'all' : 'physical';
+                });
+                HapticFeedback.selectionClick();
+              },
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _buildFilterChip(
+              id: 'experience',
+              icon: '🎟️',
+              title: context.tr('Expériences & Activités', 'Experiences & Activities'),
+              isSelected: _giftCategoryFilter == 'experience',
+              onTap: () {
+                setState(() {
+                  _giftCategoryFilter = _giftCategoryFilter == 'experience' ? 'all' : 'experience';
+                });
+                HapticFeedback.selectionClick();
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String id,
+    required String icon,
+    required String title,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? violetColor.withOpacity(0.12)
+                : Colors.white.withOpacity(0.75),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? violetColor : Colors.black.withOpacity(0.08),
+              width: isSelected ? 1.5 : 1.0,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: violetColor.withOpacity(0.12),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(icon, style: const TextStyle(fontSize: 13)),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11.5,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected ? violetColor : const Color(0xFF374151),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   // ─── Fin de quiz : 3 onglets (Recommandés · Ses envies · Recherche) ──────
 
   Widget _buildTabbedContent() {
@@ -739,6 +900,9 @@ class _OnboardingGiftsResultWidgetState
         _model.gifts.where((g) => g['fromWishlist'] != true).toList();
     final wishlist =
         _model.gifts.where((g) => g['fromWishlist'] == true).toList();
+
+    final filteredRecommended = _filterGiftsList(recommended);
+    final filteredWishlist = _filterGiftsList(wishlist);
 
     return DefaultTabController(
       length: 3,
@@ -769,22 +933,27 @@ class _OnboardingGiftsResultWidgetState
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          // Deux menus très légers en haut (Cadeaux physiques / Expériences & Activités)
+          _buildCategoryFilterMenu(),
           Expanded(
             child: TabBarView(
               children: [
-                recommended.isEmpty
-                    ? _buildEmptyState()
-                    : _buildGiftsGrid(recommended),
-                wishlist.isEmpty
-                    ? _buildTabEmpty(
-                        Icons.favorite_border_rounded,
-                        context.tr('Aucune envie connue',
-                            'No known wishes'),
-                        context.tr(
-                            'Ses produits likés et wishlists apparaîtront ici.',
-                            'Their liked products and wishlists will show here.'))
-                    : _buildGiftsGrid(wishlist),
+                filteredRecommended.isEmpty
+                    ? (recommended.isEmpty
+                        ? _buildEmptyState()
+                        : _buildFilteredEmptyState(context.tr('Aucun cadeau trouvé', 'No gifts found')))
+                    : _buildGiftsGrid(filteredRecommended),
+                filteredWishlist.isEmpty
+                    ? (wishlist.isEmpty
+                        ? _buildTabEmpty(
+                            Icons.favorite_border_rounded,
+                            context.tr('Aucune envie connue',
+                                'No known wishes'),
+                            context.tr(
+                                'Ses produits likés et wishlists apparaîtront ici.',
+                                'Their liked products and wishlists will show here.'))
+                        : _buildFilteredEmptyState(context.tr('Aucun cadeau trouvé', 'No gifts found')))
+                    : _buildGiftsGrid(filteredWishlist),
                 _buildSearchTab(),
               ],
             ),
@@ -920,6 +1089,7 @@ class _OnboardingGiftsResultWidgetState
   }
 
   Widget _buildSearchTab() {
+    final filteredSearch = _filterGiftsList(_model.searchGifts);
     return Column(
       children: [
         Padding(
@@ -966,9 +1136,55 @@ class _OnboardingGiftsResultWidgetState
                       context.tr(
                           'Tape un mot-clé pour trouver et ajouter un cadeau.',
                           'Type a keyword to find and add a gift.'))
-                  : _buildGiftsGrid(_model.searchGifts),
+                  : (filteredSearch.isEmpty
+                      ? _buildFilteredEmptyState(context.tr('Aucun cadeau trouvé', 'No gifts found'))
+                      : _buildGiftsGrid(filteredSearch)),
         ),
       ],
+    );
+  }
+
+  Widget _buildFilteredEmptyState(String title) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _giftCategoryFilter == 'physical'
+                  ? Icons.inventory_2_outlined
+                  : Icons.confirmation_number_outlined,
+              size: 44,
+              color: violetColor.withOpacity(0.4),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _giftCategoryFilter == 'physical'
+                  ? context.tr('Aucun cadeau physique dans cette sélection', 'No physical gifts in this selection')
+                  : context.tr('Aucune expérience dans cette sélection', 'No experiences in this selection'),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF1F2937),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextButton.icon(
+              onPressed: () {
+                setState(() => _giftCategoryFilter = 'all');
+              },
+              icon: const Icon(Icons.refresh, size: 16),
+              label: Text(
+                context.tr('Afficher tous les types', 'Show all types'),
+                style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+              ),
+              style: TextButton.styleFrom(foregroundColor: violetColor),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1358,11 +1574,22 @@ class _OnboardingGiftsResultWidgetState
                           AppLogger.debug('?? Sauvegarde via nouvelle architecture (personId: ${_model.personId})', 'Debug');
                           AppLogger.debug('?? ${selectedGifts.length} cadeaux sélectionnés sur ${_model.gifts.length}', 'Debug');
 
-                          // Sauvegarder la liste de cadeaux SÉLECTIONNÉS
-                          final listName = 'Liste ${DateTime.now().day}/${DateTime.now().month}';
+                          // Fusionner avec les cadeaux existants s'il y en a déjà
+                          final existingList = await FirebaseDataService.loadLatestGiftListForPerson(_model.personId!);
+                          final existingGifts = (existingList?['gifts'] as List? ?? []).cast<Map<String, dynamic>>();
+
+                          final allGifts = <Map<String, dynamic>>[...existingGifts];
+                          for (final g in selectedGifts) {
+                            final gId = g['id']?.toString() ?? '';
+                            if (gId.isNotEmpty && !allGifts.any((e) => (e['id']?.toString() ?? '') == gId)) {
+                              allGifts.add(g);
+                            }
+                          }
+
+                          final listName = existingList?['name'] as String? ?? 'Liste ${DateTime.now().day}/${DateTime.now().month}';
                           final listId = await FirebaseDataService.saveGiftListForPerson(
                             personId: _model.personId!,
-                            gifts: selectedGifts,
+                            gifts: allGifts.isNotEmpty ? allGifts : selectedGifts,
                             listName: listName,
                           );
                           AppLogger.debug('? ${selectedGifts.length} cadeaux sauvegardés (liste: $listId)', 'Debug');
@@ -1431,11 +1658,15 @@ class _OnboardingGiftsResultWidgetState
                         if (mounted) {
                           // Vérifier si l'utilisateur est déjà authentifié
                           if (FirebaseAuth.instance.currentUser != null) {
-                            // Si déjà connecté, aller directement à l'accueil
-                            AppLogger.debug('? Utilisateur déjà connecté, navigation vers home', 'Debug');
-                            context.go('/search-page');
+                            AppLogger.debug('? Utilisateur déjà connecté, navigation retour', 'Debug');
+                            if (context.canPop()) {
+                              context.pop(true);
+                            } else if (_returnTo != null && _returnTo!.isNotEmpty) {
+                              context.go(_returnTo!);
+                            } else {
+                              context.go('/search-page?selectedProfileId=${_model.personId ?? ''}');
+                            }
                           } else {
-                            // Sinon, aller à l'authentification
                             AppLogger.debug('?? Pas encore connecté, navigation vers auth', 'Debug');
                             context.go('/authentification');
                           }

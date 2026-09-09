@@ -111,7 +111,7 @@ class _ChatListPageState extends State<ChatListPage> {
             ),
           ),
           Positioned(
-            bottom: 108,
+            bottom: 76,
             left: 0,
             right: 0,
             child: StreamBuilder<int>(

@@ -76,24 +76,30 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
     });
   }
 
-  Future<void> _loadData() async {
-    await _model.loadProfiles();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadData();
+  }
+
+  Future<void> _loadData({bool forceRefresh = false}) async {
+    await _model.loadProfiles(forceRefresh: forceRefresh);
     try {
       final state = GoRouterState.of(context);
       final extra = state.extra as Map<String, dynamic>?;
       final targetIdStr = state.uri.queryParameters['profileId'] ??
           state.uri.queryParameters['selectedProfileId'] ??
+          state.uri.queryParameters['personId'] ??
           extra?['selectedProfileId']?.toString() ??
-          extra?['profileId']?.toString();
+          extra?['profileId']?.toString() ??
+          extra?['personId']?.toString();
 
       if (targetIdStr != null && targetIdStr.isNotEmpty) {
-        final targetId = int.tryParse(targetIdStr);
-        if (targetId != null) {
-          final hasProfile = _model.profiles.any((p) => (p['id'] == targetId || p['id'].toString() == targetIdStr));
-          if (hasProfile) {
-            _model.selectedProfileId = targetId;
-            await _model.selectProfile(targetId);
-          }
+        final targetId = int.tryParse(targetIdStr) ?? targetIdStr.hashCode;
+        final hasProfile = _model.profiles.any((p) => (p['id'] == targetId || p['id'].toString() == targetIdStr || p['id'].hashCode == targetId));
+        if (hasProfile) {
+          _model.selectedProfileId = targetId;
+          await _model.selectProfile(targetId);
         }
       }
     } catch (_) {}
@@ -263,7 +269,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
 
           // CTA fixe en bas de l'écran
           Positioned(
-            bottom: 108,
+            bottom: 76,
             left: 0,
             right: 0,
             child: FloatingCtaButton(
@@ -497,7 +503,12 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () => context.go('/onboarding-advanced?skipUserQuestions=true&returnTo=/search-page'),
+                  onTap: () async {
+                  HapticFeedback.lightImpact();
+                  await context.push('/onboarding-advanced?skipUserQuestions=true&returnTo=/search-page');
+                  SearchPageModel.clearCache();
+                  await _loadData(forceRefresh: true);
+                },
                   borderRadius: BorderRadius.circular(50),
                   child: Column(
                     children: [
@@ -1174,9 +1185,12 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () {
+                  onTap: () async {
                     HapticFeedback.lightImpact();
-                    context.push('/onboarding-gifts-result?profileId=${profile['id']}');
+                    final personId = profile['id']?.toString() ?? '';
+                    await context.push('/onboarding-gifts-result?personId=$personId&returnTo=/search-page');
+                    SearchPageModel.clearCache();
+                    await _loadData(forceRefresh: true);
                   },
                   borderRadius: BorderRadius.circular(14),
                   child: Row(

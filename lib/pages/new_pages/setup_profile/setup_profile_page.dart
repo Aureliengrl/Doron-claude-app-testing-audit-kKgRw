@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/utils/app_tr.dart';
+import '/services/multi_account_service.dart';
 import '/components/premium_3d_icon.dart';
 
 /// Page affichée une seule fois après la première connexion,
@@ -151,6 +152,11 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
       } catch (indexErr) {
         debugPrint('[SetupProfile] handles index write failed: $indexErr');
       }
+
+      // 5. Sauvegarder dans MultiAccountService
+      try {
+        await MultiAccountService.saveCurrentAccount(profileData: profileData);
+      } catch (_) {}
 
       if (mounted) {
         context.go('/search-page');

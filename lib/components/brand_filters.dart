@@ -110,6 +110,25 @@ class PopularBrands {
     ),
   ];
 
+  static String? getBrandAsset(String id) {
+    switch (id) {
+      case 'all': return 'assets/images/brand_all.png';
+      case 'amazon': return 'assets/images/brand_amazon.png';
+      case 'zara': return 'assets/images/brand_zara.png';
+      case 'hm': return 'assets/images/brand_hm.png';
+      case 'nike': return 'assets/images/brand_nike.png';
+      case 'sephora': return 'assets/images/brand_sephora.png';
+      case 'apple': return 'assets/images/brand_apple.png';
+      case 'fnac': return 'assets/images/brand_fnac.png';
+      case 'decathlon': return 'assets/images/brand_decathlon.png';
+      case 'ikea': return 'assets/images/brand_ikea.png';
+      case 'lego': return 'assets/images/brand_lego.png';
+      case 'dyson': return 'assets/images/brand_dyson.png';
+      case 'sony': return 'assets/images/brand_sony.png';
+      default: return null;
+    }
+  }
+
   static BrandModel? getById(String id) {
     try {
       return all.firstWhere((b) => b.id == id);
@@ -169,7 +188,7 @@ class BrandFiltersWidget extends StatefulWidget {
     required this.activeBrandId,
     required this.onBrandSelected,
     this.primaryColor,
-    this.height = 50,
+    this.height = 38,
   });
 
   @override
@@ -179,147 +198,143 @@ class BrandFiltersWidget extends StatefulWidget {
 class _BrandFiltersWidgetState extends State<BrandFiltersWidget> {
   @override
   Widget build(BuildContext context) {
-    final primaryColor = widget.primaryColor ?? const Color(0xFF8A2BE2);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Titre
-        // Liste des marques
-        SizedBox(
-          height: 56, // Homogénéisation de la hauteur des bulles
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 24), // Uniformisation du padding global
-            scrollDirection: Axis.horizontal,
-            itemCount: PopularBrands.all.length,
-            physics: const BouncingScrollPhysics(),
-            itemBuilder: (context, index) {
-              final brand = PopularBrands.all[index];
-              return _buildBrandChip(brand, primaryColor, index);
-            },
-          ),
-        ),
-      ],
+    return SizedBox(
+      height: widget.height,
+      child: ListView.builder(
+        clipBehavior: Clip.none,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        scrollDirection: Axis.horizontal,
+        itemCount: PopularBrands.all.length,
+        physics: const BouncingScrollPhysics(),
+        itemBuilder: (context, index) {
+          final brand = PopularBrands.all[index];
+          return _buildBrandChip(brand, index);
+        },
+      ),
     );
   }
 
-  Widget _buildBrandChip(BrandModel brand, Color primaryColor, int index) {
+  Widget _buildBrandChip(BrandModel brand, int index) {
     final isActive = widget.activeBrandId == brand.id;
-    final brandColor = brand.color ?? primaryColor;
     final isAll = brand.id == 'all';
+    final localAsset = PopularBrands.getBrandAsset(brand.id);
+    final primary = widget.primaryColor ?? const Color(0xFF8A2BE2);
 
     return Padding(
-      padding: const EdgeInsets.only(right: 16), // Espacement constant entre bulles
-      child: GestureDetector(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          widget.onBrandSelected(brand.id);
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
-          width: isAll ? null : 56,
-          height: 56,
-          padding: isAll ? const EdgeInsets.symmetric(horizontal: 16, vertical: 10) : EdgeInsets.zero,
-          decoration: BoxDecoration(
-            color: isActive ? brandColor : Colors.white,
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(
+      padding: const EdgeInsets.only(right: 8),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            widget.onBrandSelected(brand.id);
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            height: widget.height,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
               color: isActive
-                  ? brandColor.withOpacity(0.5)
-                  : const Color(0xFFE5E7EB),
-              width: isActive ? 2 : 1.5,
-            ),
-            boxShadow: isActive
-                ? [
-                    BoxShadow(
-                      color: brandColor.withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-          ),
-          child: isAll
-              ? Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (brand.icon != null) ...[
-                      Icon(
-                        brand.icon,
-                        size: 20,
-                        color: isActive ? Colors.white : brandColor,
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                    Text(
-                      brand.label,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: isActive ? Colors.white : const Color(0xFF374151),
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ],
-                )
-              : ClipRRect(
-                  borderRadius: BorderRadius.circular(28),
-                  child: brand.logo != null
-                      ? Container(
-                          padding: EdgeInsets.all(isAll ? 0 : 8), // Padding pour éviter que le logo touche les bords
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Image.network(
-                              brand.logo!,
-                              width: 40,
-                              height: 40,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) => Center(
-                                child: Text(
-                                  brand.name.substring(0, 1).toUpperCase(),
-                                  style: TextStyle(
-                                      color: isActive ? Colors.white : brandColor,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18),
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
-                      : Center(
-                          child: Icon(
-                            brand.icon ?? IconlyLight.buy,
-                            color: isActive ? Colors.white : brandColor,
-                          ),
-                        ),
+                  ? primary
+                  : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isActive
+                    ? primary
+                    : const Color(0xFFE5E7EB),
+                width: 1.0,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: isActive
+                      ? primary.withOpacity(0.35)
+                      : Colors.black.withOpacity(0.06),
+                  blurRadius: isActive ? 8 : 4,
+                  offset: const Offset(0, 2),
                 ),
-        ).animate(target: isActive ? 1 : 0)
-          .scale(
-            begin: const Offset(1.0, 1.0),
-            end: const Offset(1.05, 1.05),
-            duration: 200.ms,
-            curve: Curves.easeOutBack,
-          )
-          .shimmer(
-            duration: 1500.ms,
-            color: Colors.white.withOpacity(0.3),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Logo miniature
+                if (isAll)
+                  const Padding(
+                    padding: EdgeInsets.only(right: 5),
+                    child: Text(
+                      '✨',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  )
+                else if (localAsset != null)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      padding: const EdgeInsets.all(2),
+                      child: Image.asset(
+                        localAsset,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => Text(
+                          brand.name.substring(0, 1).toUpperCase(),
+                          style: const TextStyle(
+                            color: Color(0xFF111827),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  )
+                else if (brand.logo != null)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      padding: const EdgeInsets.all(2),
+                      child: Image.network(
+                        brand.logo!,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => Text(
+                          brand.name.substring(0, 1).toUpperCase(),
+                          style: const TextStyle(
+                            color: Color(0xFF111827),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
+                // Nom de la marque
+                Text(
+                  brand.name,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12.5,
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
+                    color: isActive ? Colors.white : const Color(0xFF1F2937),
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ],
+            ),
           ),
-      ).animate()
-        .fadeIn(delay: Duration(milliseconds: index * 50))
-        .slideX(
-          begin: -0.2,
-          end: 0,
-          delay: Duration(milliseconds: index * 50),
-          duration: 400.ms,
-          curve: Curves.easeOutCubic,
         ),
+      ),
     );
   }
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '/utils/iconly_compat.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Barre de recherche pour la page d'accueil
+/// Barre de recherche pour la page d'accueil (Style moderne ultra-arrondi)
 class SearchBarWidget extends StatelessWidget {
   final TextEditingController controller;
   final Function(String) onChanged;
@@ -20,51 +20,70 @@ class SearchBarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
+        height: 48,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(100),
+          border: Border.all(
+            color: const Color(0xFFE5E7EB),
+            width: 1.0,
+          ),
           boxShadow: [
             BoxShadow(
-              color: violetColor.withOpacity(0.1),
-              blurRadius: 12,
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 18,
               offset: const Offset(0, 4),
+              spreadRadius: -2,
+            ),
+            BoxShadow(
+              color: violetColor.withOpacity(0.10),
+              blurRadius: 12,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: TextField(
           controller: controller,
           onChanged: onChanged,
+          textAlignVertical: TextAlignVertical.center,
           style: GoogleFonts.poppins(
-            fontSize: 14,
-            color: const Color(0xFF1F2937),
+            fontSize: 14.5,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF111827),
           ),
           decoration: InputDecoration(
-            hintText: 'Rechercher un cadeau, une marque...',
+            hintText: 'Commencer ma recherche...',
             hintStyle: GoogleFonts.poppins(
-              fontSize: 14,
-              color: const Color(0xFF9CA3AF),
+              fontSize: 14.5,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF6B7280),
             ),
-            prefixIcon: Icon(
-              IconlyLight.search,
-              color: violetColor,
-              size: 22,
+            prefixIcon: const Padding(
+              padding: EdgeInsets.only(left: 16, right: 10),
+              child: Icon(
+                Icons.search_rounded,
+                color: Color(0xFF374151),
+                size: 22,
+              ),
             ),
+            prefixIconConstraints: const BoxConstraints(minWidth: 48, minHeight: 48),
             suffixIcon: controller.text.isNotEmpty
                 ? IconButton(
-                    icon: Icon(
-                      Icons.clear,
-                      size: 20,
-                      color: Colors.grey[600],
+                    icon: const Icon(
+                      Icons.clear_rounded,
+                      size: 18,
+                      color: Color(0xFF9CA3AF),
                     ),
                     onPressed: onClear,
                   )
                 : null,
             border: InputBorder.none,
+            isDense: true,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
-              vertical: 14,
+              vertical: 12,
             ),
           ),
         ),

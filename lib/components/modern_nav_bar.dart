@@ -41,9 +41,9 @@ class FloatingModernNavBar extends StatefulWidget {
     this.onTabScrub,
     required this.items,
     this.primaryColor,
-    this.height = 64,
-    this.borderRadius = 32,
-    this.margin = const EdgeInsets.only(left: 20, right: 20, top: 12, bottom: 2),
+    this.height = 60,
+    this.borderRadius = 30,
+    this.margin = const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 0),
   });
 
   @override
@@ -144,100 +144,114 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
   Widget build(BuildContext context) {
     final primary = widget.primaryColor ?? LiquidGlassTokens.primary;
     final bottomPad = MediaQuery.of(context).padding.bottom;
+    final bottomMargin = (bottomPad > 0 ? 10.0 : 8.0) + widget.margin.bottom;
 
     return Padding(
       padding: EdgeInsets.only(
         left: widget.margin.left,
         right: widget.margin.right,
-        bottom: bottomPad + widget.margin.bottom,
+        bottom: bottomMargin,
       ),
       child: Container(
           height: widget.height,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(widget.borderRadius),
             boxShadow: [
-              // Main shadow
+              // Main deep drop shadow
               BoxShadow(
-                color: Colors.black.withOpacity(0.32),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-                spreadRadius: -4,
+                color: Colors.black.withOpacity(0.42),
+                blurRadius: 28,
+                offset: const Offset(0, 10),
+                spreadRadius: -2,
               ),
-              // Color glow
+              // Vibrant neon back-glow (makes it pop on dark/violet backgrounds)
               BoxShadow(
-                color: primary.withOpacity(0.10),
-                blurRadius: 36,
-                offset: const Offset(0, 12),
-                spreadRadius: -8,
+                color: const Color(0xFF9D4EDD).withOpacity(0.36),
+                blurRadius: 32,
+                offset: const Offset(0, 4),
+                spreadRadius: 0,
+              ),
+              // Crisp rim halo
+              BoxShadow(
+                color: const Color(0xFFE0AAFF).withOpacity(0.16),
+                blurRadius: 14,
+                offset: const Offset(0, -1),
+                spreadRadius: 1,
               ),
             ],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(widget.borderRadius),
             child: BackdropFilter(
-              filter: ui.ImageFilter.blur(sigmaX: 50, sigmaY: 50),
-              child: CustomPaint(
-                painter: _GlassBarPainter(
-                  borderRadius: widget.borderRadius,
-                  primary: primary,
+              filter: ui.ImageFilter.blur(sigmaX: 32, sigmaY: 32),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(widget.borderRadius),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xF63E2370), // Luminous rich satin purple
+                      Color(0xF9221244), // Deep luxury violet
+                    ],
+                  ),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.30),
+                    width: 1.0,
+                  ),
                 ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(widget.borderRadius),
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.white.withOpacity(0.13),
-                        Colors.white.withOpacity(0.05),
+                child: LayoutBuilder(builder: (ctx, constraints) {
+                  final barW = constraints.maxWidth;
+                  return GestureDetector(
+                    onHorizontalDragStart: _onDragStart,
+                    onHorizontalDragUpdate: (d) => _onDragUpdate(d, barW),
+                    onHorizontalDragEnd: _onDragEnd,
+                    behavior: HitTestBehavior.opaque,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        // ─── SPECULAR GLASS HIGHLIGHTS ───
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: CustomPaint(
+                              painter: _GlassBarPainter(
+                                borderRadius: widget.borderRadius,
+                                primary: primary,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // ─── ACTIVE SLIDING INDICATOR ───
+                        _buildSlidingBlock(barW, primary),
+
+                        // ─── TAB ITEMS ──────────────────────────────────────
+                        Row(
+                          children: List.generate(_count, (i) {
+                            final dist = (_indicatorPos - i).abs();
+                            final isActive = dist < 0.45;
+                            return Expanded(
+                              child: _TabItem(
+                                item: widget.items[i],
+                                isActive: isActive,
+                                primary: primary,
+                                height: widget.height,
+                                onTap: () {
+                                  _animateTo(i.toDouble());
+                                  HapticFeedback.mediumImpact();
+                                  widget.onTap(i);
+                                },
+                              ),
+                            );
+                          }),
+                        ),
                       ],
                     ),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.20),
-                      width: 0.7,
-                    ),
-                  ),
-                  child: LayoutBuilder(builder: (ctx, constraints) {
-                    final barW = constraints.maxWidth;
-                    return GestureDetector(
-                      onHorizontalDragStart: _onDragStart,
-                      onHorizontalDragUpdate: (d) => _onDragUpdate(d, barW),
-                      onHorizontalDragEnd: _onDragEnd,
-                      behavior: HitTestBehavior.opaque,
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          // ─── TRANSPARENT SLIDING BLOCK (Apple Store style) ───
-                          _buildSlidingBlock(barW, primary),
-
-                          // ─── TAB ITEMS ──────────────────────────────────────
-                          Row(
-                            children: List.generate(_count, (i) {
-                              final dist = (_indicatorPos - i).abs();
-                              final isActive = dist < 0.45;
-                              return Expanded(
-                                child: _TabItem(
-                                  item: widget.items[i],
-                                  isActive: isActive,
-                                  primary: primary,
-                                  height: widget.height,
-                                  onTap: () {
-                                    _animateTo(i.toDouble());
-                                    HapticFeedback.mediumImpact();
-                                    widget.onTap(i);
-                                  },
-                                ),
-                              );
-                            }),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                ),
+                  );
+                }),
               ),
+            ),
           ),
-        ),
       ),
     )
         .animate()
@@ -246,11 +260,11 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
   }
 
   // ═══════════════════════════════════════════════════════════════════════
-  // SLIDING TRANSPARENT BLOCK — Apple Store style capsule
+  // SLIDING ACTIVE INDICATOR
   // ═══════════════════════════════════════════════════════════════════════
   Widget _buildSlidingBlock(double barW, Color primary) {
     final tabW = barW / _count;
-    final blockW = tabW - 10;
+    final blockW = tabW - 12;
 
     // Calculate morphing stretch when between tabs
     final lower = _indicatorPos.floor().clamp(0, _count - 1);
@@ -260,7 +274,7 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
     final finalW = blockW + extraW;
 
     final centerX = (_indicatorPos * tabW) + tabW / 2;
-    final left = (centerX - finalW / 2).clamp(5.0, barW - finalW - 5.0);
+    final left = (centerX - finalW / 2).clamp(6.0, barW - finalW - 6.0);
 
     final vertPad = 8.0;
     final blockH = widget.height - vertPad * 2;
@@ -270,31 +284,29 @@ class _FloatingModernNavBarState extends State<FloatingModernNavBar>
       left: left,
       top: vertPad,
       child: Container(
-        width: finalW.clamp(32.0, barW - 10),
+        width: finalW.clamp(32.0, barW - 12),
         height: blockH,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(blockH / 2),
-          // ── The transparent glass block ──
-          color: Colors.white.withOpacity(0.13),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              primary.withOpacity(0.35),
+              primary.withOpacity(0.18),
+            ],
+          ),
           border: Border.all(
-            color: Colors.white.withOpacity(0.25),
-            width: 0.5,
+            color: primary.withOpacity(0.45),
+            width: 0.8,
           ),
           boxShadow: [
             BoxShadow(
-              color: primary.withOpacity(0.15),
-              blurRadius: 12,
+              color: primary.withOpacity(0.28),
+              blurRadius: 10,
               offset: const Offset(0, 2),
-              spreadRadius: -2,
             ),
           ],
-        ),
-        // Inner specular highlight
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(blockH / 2),
-          child: CustomPaint(
-            painter: _BlockSpecularPainter(borderRadius: blockH / 2),
-          ),
         ),
       ),
     );
@@ -328,7 +340,7 @@ class _GlassBarPainter extends CustomPainter {
     // Top specular shine
     canvas.drawRRect(
       RRect.fromRectAndCorners(
-        Rect.fromLTWH(0, 0, size.width, size.height * 0.40),
+        Rect.fromLTWH(0, 0, size.width, size.height * 0.45),
         topLeft: Radius.circular(r),
         topRight: Radius.circular(r),
       ),
@@ -337,43 +349,51 @@ class _GlassBarPainter extends CustomPainter {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.white.withOpacity(0.16),
+            Colors.white.withOpacity(0.24),
             Colors.white.withOpacity(0.0),
           ],
-        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.40)),
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.45)),
     );
 
-    // Top edge highlight
+    // Top edge high-gloss rim line
     final topEdge = Path()
-      ..moveTo(r + 10, 0.5)
-      ..lineTo(size.width - r - 10, 0.5);
+      ..moveTo(r + 6, 0.8)
+      ..lineTo(size.width - r - 6, 0.8);
     canvas.drawPath(
       topEdge,
       Paint()
-        ..color = Colors.white.withOpacity(0.35)
-        ..strokeWidth = 0.6
+        ..shader = LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.1),
+            Colors.white.withOpacity(0.65),
+            Colors.white.withOpacity(0.65),
+            Colors.white.withOpacity(0.1),
+          ],
+          stops: const [0.0, 0.2, 0.8, 1.0],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, 1))
+        ..strokeWidth = 1.0
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,
     );
 
     // Bottom iridescent edge (liquid glass signature)
     final bottomEdge = Path()
-      ..moveTo(r + 16, size.height - 0.5)
-      ..lineTo(size.width - r - 16, size.height - 0.5);
+      ..moveTo(r + 14, size.height - 0.5)
+      ..lineTo(size.width - r - 14, size.height - 0.5);
     canvas.drawPath(
       bottomEdge,
       Paint()
         ..shader = LinearGradient(
           colors: [
             primary.withOpacity(0.0),
-            primary.withOpacity(0.18),
-            const Color(0xFFEC4899).withOpacity(0.14),
-            const Color(0xFF00D4FF).withOpacity(0.10),
+            primary.withOpacity(0.35),
+            const Color(0xFFEC4899).withOpacity(0.28),
+            const Color(0xFF00D4FF).withOpacity(0.22),
             primary.withOpacity(0.0),
           ],
           stops: const [0.0, 0.25, 0.5, 0.75, 1.0],
         ).createShader(Rect.fromLTWH(0, size.height - 2, size.width, 2))
-        ..strokeWidth = 1.0
+        ..strokeWidth = 1.2
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,
     );
@@ -404,7 +424,7 @@ class _BlockSpecularPainter extends CustomPainter {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.white.withOpacity(0.12),
+            Colors.white.withOpacity(0.18),
             Colors.white.withOpacity(0.0),
           ],
         ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.45)),
@@ -444,10 +464,10 @@ class _TabItemState extends State<_TabItem> {
   Widget build(BuildContext context) {
     final color = widget.isActive
         ? Colors.white
-        : Colors.white.withOpacity(0.42);
+        : Colors.white.withOpacity(0.72);
 
     final shadows = widget.isActive
-        ? [Shadow(color: widget.primary.withOpacity(0.65), blurRadius: 16)]
+        ? [Shadow(color: widget.primary.withOpacity(0.85), blurRadius: 18)]
         : <Shadow>[];
 
     return GestureDetector(

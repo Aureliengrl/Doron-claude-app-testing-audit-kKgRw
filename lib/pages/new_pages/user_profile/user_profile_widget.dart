@@ -33,6 +33,7 @@ import '/components/product_detail_modal.dart';
 export 'user_profile_model.dart';
 import '/utils/app_tr.dart';
 import '/services/first_time_service.dart';
+import '/services/multi_account_service.dart';
 
 class UserProfileWidget extends StatefulWidget {
   const UserProfileWidget({super.key});
@@ -122,6 +123,9 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
   void _onModelChanged() {
     if (mounted) {
+      if (_model.userProfile != null) {
+        MultiAccountService.saveCurrentAccount(profileData: _model.userProfile);
+      }
       setState(() {});
     }
   }
@@ -292,7 +296,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           
           if (isMe)
             Positioned(
-              bottom: 108,
+              bottom: 76,
               left: 0,
               right: 0,
               child: FloatingCtaButton(
@@ -500,41 +504,45 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         // En-tête gauche (Style Instagram)
-                        GestureDetector(
+                        InkWell(
                           onTap: () {
                              HapticFeedback.lightImpact();
                              _showAccountSwitcherBottomSheet(context);
                           },
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Builder(
-                                builder: (context) {
-                                  final handle = _model.userProfile?['handle'] as String?;
-                                  final display = handle != null && handle.isNotEmpty ? '@$handle' : 'Profil';
-                                  
-                                  return Text(
-                                    display,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  );
-                                },
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(IconlyLight.arrowDown, color: Colors.white, size: 20),
-                              const SizedBox(width: 6),
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFFEC4899),
-                                  shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(12),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Builder(
+                                  builder: (context) {
+                                    final handle = _model.userProfile?['handle'] as String?;
+                                    final display = handle != null && handle.isNotEmpty ? '@$handle' : 'Profil';
+                                    
+                                    return Text(
+                                      display,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    );
+                                  },
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 4),
+                                const Icon(IconlyLight.arrowDown, color: Colors.white, size: 20),
+                                const SizedBox(width: 6),
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFEC4899),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         // Boutons d'action droite
@@ -1304,7 +1312,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
             ),
             // 🎯 Bouton Créer un album 🎯
             Positioned(
-              bottom: 108,
+              bottom: 76,
               left: 0,
               right: 0,
               child: FloatingCtaButton(
@@ -2278,83 +2286,346 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (ctx) {
-        return Container(
-          decoration: BoxDecoration(
-            color: LiquidGlassTokens.pageDark,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
-              const SizedBox(height: 24),
-              Text('Changer de compte', style: GoogleFonts.poppins(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 16),
-              
-              // Compte actuel
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Colors.grey[800],
-                      backgroundImage: currentUserPhoto?.isNotEmpty == true ? CachedNetworkImageProvider(currentUserPhoto!) : null,
-                      child: currentUserPhoto?.isEmpty ?? true ? const Icon(IconlyLight.profile, color: Colors.white, size: 20) : null,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+        return StatefulBuilder(
+          builder: (bottomSheetContext, setModalState) {
+            return FutureBuilder<List<SavedAccount>>(
+              future: MultiAccountService.getSavedAccounts(),
+              builder: (context, snapshot) {
+                final accounts = snapshot.data ?? [];
+                final currentUid = FirebaseAuth.instance.currentUser?.uid;
+
+                return Container(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.75,
+                  ),
+                  decoration: BoxDecoration(
+                    color: LiquidGlassTokens.pageDark,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                    border: Border.all(color: Colors.white.withOpacity(0.12)),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Poignée de glissement
+                      Center(
+                        child: Container(
+                          width: 44,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // En-tête
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(currentUserDisplayName.isNotEmpty ? currentUserDisplayName : 'Utilisateur', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600)),
-                          if (_model.userProfile?['handle'] != null)
-                            Text('@${_model.userProfile!['handle']}', style: GoogleFonts.poppins(color: Colors.white54, fontSize: 12)),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Comptes enregistrés',
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white,
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Basculez d\'un compte à l\'autre à tout moment',
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white54,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF8A2BE2).withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFF8A2BE2).withOpacity(0.3)),
+                            ),
+                            child: Text(
+                              '${accounts.length} ${accounts.length > 1 ? "comptes" : "compte"}',
+                              style: GoogleFonts.poppins(
+                                color: const Color(0xFFC084FC),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-                    const Icon(Icons.check_circle, color: Color(0xFF8A2BE2), size: 20),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              
-              // Action Se déconnecter pour changer
-              InkWell(
-                onTap: () async {
-                  HapticFeedback.mediumImpact();
-                  Navigator.pop(ctx);
-                  await authManager.signOut();
-                  if (context.mounted) {
-                    context.go('/authentification');
-                  }
-                },
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), shape: BoxShape.circle),
-                        child: const Icon(Icons.add_rounded, color: Colors.white, size: 20),
+                      const SizedBox(height: 18),
+
+                      // Liste des comptes
+                      if (snapshot.connectionState == ConnectionState.waiting && accounts.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 30),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: Color(0xFF8A2BE2),
+                              strokeWidth: 2.5,
+                            ),
+                          ),
+                        )
+                      else
+                        Flexible(
+                          child: ListView.separated(
+                            shrinkWrap: true,
+                            itemCount: accounts.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 10),
+                            itemBuilder: (context, index) {
+                              final acc = accounts[index];
+                              final isCurrent = acc.uid == currentUid;
+
+                              return InkWell(
+                                onTap: () async {
+                                  if (isCurrent) {
+                                    Navigator.pop(ctx);
+                                  } else {
+                                    await MultiAccountService.switchAccount(context, acc);
+                                  }
+                                },
+                                borderRadius: BorderRadius.circular(16),
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: isCurrent
+                                        ? const Color(0xFF8A2BE2).withOpacity(0.15)
+                                        : Colors.white.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: isCurrent
+                                          ? const Color(0xFF8A2BE2).withOpacity(0.5)
+                                          : Colors.white.withOpacity(0.08),
+                                      width: isCurrent ? 1.5 : 1.0,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      // Avatar
+                                      Container(
+                                        width: 44,
+                                        height: 44,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: const LinearGradient(
+                                            colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
+                                          ),
+                                          boxShadow: isCurrent
+                                              ? [
+                                                  BoxShadow(
+                                                    color: const Color(0xFF8A2BE2).withOpacity(0.4),
+                                                    blurRadius: 8,
+                                                    offset: const Offset(0, 2),
+                                                  ),
+                                                ]
+                                              : null,
+                                        ),
+                                        padding: const EdgeInsets.all(2),
+                                        child: ClipOval(
+                                          child: acc.photoUrl.isNotEmpty
+                                              ? CachedNetworkImage(
+                                                  imageUrl: acc.photoUrl,
+                                                  fit: BoxFit.cover,
+                                                  errorWidget: (_, __, ___) => const Icon(
+                                                    IconlyLight.profile,
+                                                    color: Colors.white,
+                                                    size: 22,
+                                                  ),
+                                                )
+                                              : Container(
+                                                  color: const Color(0xFF2A163B),
+                                                  child: Center(
+                                                    child: Text(
+                                                      acc.displayName.isNotEmpty
+                                                          ? acc.displayName[0].toUpperCase()
+                                                          : (acc.handle.isNotEmpty ? acc.handle[0].toUpperCase() : 'U'),
+                                                      style: GoogleFonts.poppins(
+                                                        color: Colors.white,
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 18,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 14),
+
+                                      // Informations du compte
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Flexible(
+                                                  child: Text(
+                                                    acc.displayName.isNotEmpty ? acc.displayName : 'Utilisateur',
+                                                    style: GoogleFonts.poppins(
+                                                      color: Colors.white,
+                                                      fontWeight: FontWeight.w600,
+                                                      fontSize: 15,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                                if (isCurrent) ...[
+                                                  const SizedBox(width: 6),
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(0xFF8A2BE2).withOpacity(0.3),
+                                                      borderRadius: BorderRadius.circular(8),
+                                                    ),
+                                                    child: Text(
+                                                      'Actuel',
+                                                      style: GoogleFonts.poppins(
+                                                        color: const Color(0xFFC084FC),
+                                                        fontSize: 10,
+                                                        fontWeight: FontWeight.w700,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              acc.handle.isNotEmpty
+                                                  ? '@${acc.handle}'
+                                                  : (acc.email.isNotEmpty ? acc.email : 'Compte Doron'),
+                                              style: GoogleFonts.poppins(
+                                                color: isCurrent ? const Color(0xFFE9D5FF) : Colors.white54,
+                                                fontSize: 12,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      // Indicateur / Actions
+                                      if (isCurrent)
+                                        const Icon(
+                                          Icons.check_circle_rounded,
+                                          color: Color(0xFFC084FC),
+                                          size: 24,
+                                        )
+                                      else
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            // Bouton basculer
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white.withOpacity(0.08),
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              child: Text(
+                                                'Basculer',
+                                                style: GoogleFonts.poppins(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            // Bouton retirer compte
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.close_rounded,
+                                                color: Colors.white38,
+                                                size: 18,
+                                              ),
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(),
+                                              tooltip: 'Retirer ce compte',
+                                              onPressed: () async {
+                                                HapticFeedback.lightImpact();
+                                                await MultiAccountService.removeAccount(acc.uid);
+                                                setModalState(() {});
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+
+                      const SizedBox(height: 18),
+
+                      // Action Ajouter un autre compte
+                      InkWell(
+                        onTap: () async {
+                          Navigator.pop(ctx);
+                          await MultiAccountService.startAddAccount(context);
+                        },
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.06),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xFF8A2BE2).withOpacity(0.35),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF8A2BE2).withOpacity(0.2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.add_rounded,
+                                  color: Color(0xFFC084FC),
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                'Se connecter à un autre compte',
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      const SizedBox(width: 12),
-                      Text('Se connecter à un autre compte', style: GoogleFonts.poppins(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500)),
+                      const SizedBox(height: 16),
                     ],
                   ),
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
+                );
+              },
+            );
+          },
         );
       },
     );

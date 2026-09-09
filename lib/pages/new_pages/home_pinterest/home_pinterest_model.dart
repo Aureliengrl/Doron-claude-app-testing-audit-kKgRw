@@ -1,9 +1,11 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import '/utils/app_logger.dart';
 
 class HomePinterestModel {
   String activeCategory = 'Pour toi'; // Label d'affichage (traduit dynamiquement dans le widget)
   String activeCategoryId = 'all';    // ID logique — utilisé pour Firestore & comparaisons
-  String activeEventFilter = 'all';
+  String activeEventFilter = '';
   String activeBrand = 'all'; // Filtre par marque/retailer
   String activeSubMenu = 'all'; // Filtre de sous-menu personnalisé
 
@@ -42,6 +44,118 @@ class HomePinterestModel {
   int currentPage = 0;
   bool hasMore = true;
 
+  static IconData getCategoryIcon(String id) {
+    switch (id) {
+      case 'all': return CupertinoIcons.sparkles;
+      case 'trending': return CupertinoIcons.flame_fill;
+      case 'tech': return Icons.devices_rounded;
+      case 'fashion': return Icons.checkroom_rounded;
+      case 'home': return CupertinoIcons.house_fill;
+      case 'beauty': return Icons.face_retouching_natural_rounded;
+      case 'food': return Icons.restaurant_rounded;
+      case 'aeronautic': return CupertinoIcons.airplane;
+      case 'mechanic': return Icons.directions_car_filled_rounded;
+      case 'sport': return Icons.fitness_center_rounded;
+      case 'art': return Icons.palette_rounded;
+      case 'reading': return CupertinoIcons.book_fill;
+      case 'travel': return Icons.luggage_rounded;
+      case 'gaming': return Icons.sports_esports_rounded;
+      case 'music': return Icons.headphones_rounded;
+      case 'garden': return Icons.eco_rounded;
+      case 'wellness': return Icons.self_improvement_rounded;
+      default: return CupertinoIcons.circle_grid_hex_fill;
+    }
+  }
+
+  static IconData getEventIcon(String id) {
+    switch (id) {
+      case 'all': return CupertinoIcons.calendar_today;
+      case 'noel': return Icons.ac_unit_rounded;
+      case 'anniversaire': return Icons.cake_rounded;
+      case 'st_valentin': return CupertinoIcons.heart_fill;
+      case 'fete_meres': return Icons.local_florist_rounded;
+      case 'fete_peres': return Icons.watch_rounded;
+      case 'fete_musique': return Icons.music_note_rounded;
+      case 'fete_nationale': return Icons.celebration_rounded;
+      case 'world_cup': return Icons.emoji_events_rounded;
+      case 'fete_grand_meres': return Icons.family_restroom_rounded;
+      case 'pot_depart': return Icons.flight_takeoff_rounded;
+      case 'mariage': return Icons.diamond_rounded;
+      case 'naissance': return Icons.child_friendly_rounded;
+      case 'cremaillere': return Icons.key_rounded;
+      case 'diplome': return Icons.school_rounded;
+      case 'halloween': return Icons.nightlight_round;
+      default: return CupertinoIcons.gift_fill;
+    }
+  }
+
+  static String getCategoryEmoji(String id) {
+    switch (id) {
+      case 'all': return '✨';
+      case 'trending': return '🔥';
+      case 'tech': return '📱';
+      case 'fashion': return '👗';
+      case 'home': return '🏠';
+      case 'beauty': return '💄';
+      case 'food': return '🍷';
+      case 'aeronautic': return '✈️';
+      case 'mechanic': return '🏎️';
+      case 'sport': return '⚽';
+      case 'art': return '🎨';
+      case 'reading': return '📚';
+      case 'travel': return '🧳';
+      case 'gaming': return '🎮';
+      case 'music': return '🎧';
+      case 'garden': return '🌱';
+      case 'wellness': return '🧘';
+      default: return '✨';
+    }
+  }
+
+  static String? getEventImageAsset(String id) {
+    switch (id) {
+      case 'all': return 'assets/images/event_all.png';
+      case 'noel': return 'assets/images/event_noel.png';
+      case 'anniversaire': return 'assets/images/event_anniversaire.png';
+      case 'st_valentin': return 'assets/images/event_st_valentin.png';
+      case 'fete_meres': return 'assets/images/event_fete_meres.png';
+      case 'fete_peres': return 'assets/images/event_fete_peres.png';
+      case 'fete_musique': return 'assets/images/event_fete_musique.png';
+      case 'fete_nationale': return 'assets/images/event_fete_nationale.png';
+      case 'world_cup': return 'assets/images/event_world_cup.png';
+      case 'fete_grand_meres': return 'assets/images/event_fete_grand_meres.png';
+      case 'pot_depart': return 'assets/images/event_pot_depart.png';
+      case 'mariage': return 'assets/images/event_mariage.png';
+      case 'naissance': return 'assets/images/event_naissance.png';
+      case 'cremaillere': return 'assets/images/event_cremaillere.png';
+      case 'diplome': return 'assets/images/event_diplome.png';
+      case 'halloween': return 'assets/images/event_halloween.png';
+      default: return null;
+    }
+  }
+
+  static String getEventEmoji(String id) {
+    switch (id) {
+      case 'all': return '📅';
+      case 'noel': return '🎄';
+      case 'anniversaire': return '🎂';
+      case 'st_valentin': return '❤️';
+      case 'fete_meres': return '💐';
+      case 'fete_peres': return '👔';
+      case 'fete_musique': return '🎵';
+      case 'fete_nationale': return '🎆';
+      case 'world_cup': return '🏆';
+      case 'fete_grand_meres': return '👵';
+      case 'pot_depart': return '👋';
+      case 'mariage': return '💍';
+      case 'naissance': return '👶';
+      case 'cremaillere': return '🗝️';
+      case 'diplome': return '🎓';
+      case 'halloween': return '🎃';
+      default: return '🎁';
+    }
+  }
+
   final List<Map<String, String>> categories = [
     {'id': 'all', 'name': 'Pour toi', 'emoji': '✨'},
     {'id': 'trending', 'name': 'Tendances', 'emoji': '🔥'},
@@ -55,30 +169,29 @@ class HomePinterestModel {
     {'id': 'sport', 'name': 'Sport', 'emoji': '⚽'},
     {'id': 'art', 'name': 'Art', 'emoji': '🎨'},
     {'id': 'reading', 'name': 'Lecture', 'emoji': '📚'},
-    {'id': 'travel', 'name': 'Voyage', 'emoji': '✈️'},
+    {'id': 'travel', 'name': 'Voyage', 'emoji': '🧳'},
     {'id': 'gaming', 'name': 'Jeux vidéo', 'emoji': '🎮'},
-    {'id': 'music', 'name': 'Musique', 'emoji': '🎵'},
+    {'id': 'music', 'name': 'Musique', 'emoji': '🎧'},
     {'id': 'garden', 'name': 'Jardinage', 'emoji': '🌱'},
     {'id': 'wellness', 'name': 'Bien-être', 'emoji': '🧘'},
   ];
 
   final List<Map<String, String>> defaultEvents = [
-    {'id': 'all', 'name': 'Tous les événements'},
-    {'id': 'noel', 'name': '🎄 Noël'},
-    {'id': 'anniversaire', 'name': '🎂 Anniversaire'},
-    {'id': 'st_valentin', 'name': '❤️ St Valentin'},
-    {'id': 'fete_meres', 'name': '💐 Fête des Mères'},
-    {'id': 'fete_peres', 'name': '👔 Fête des Pères'},
-    {'id': 'fete_musique', 'name': '🎵 Fête de la musique'},
-    {'id': 'fete_nationale', 'name': '🎆 Fête Nationale'},
-    {'id': 'world_cup', 'name': '🏆 Finale Coupe du monde'},
-    {'id': 'fete_grand_meres', 'name': '👵 Fête des grands-mères'},
-    {'id': 'pot_depart', 'name': '👋 Pot de départ'},
-    {'id': 'mariage', 'name': '💍 Mariage'},
-    {'id': 'naissance', 'name': '👶 Naissance'},
-    {'id': 'cremaillere', 'name': '🏠 Crémaillère'},
-    {'id': 'diplome', 'name': '🎓 Diplôme'},
-    {'id': 'halloween', 'name': '🎃 Halloween'},
+    {'id': 'noel', 'name': 'Noël', 'emoji': '🎄'},
+    {'id': 'anniversaire', 'name': 'Anniversaire', 'emoji': '🎂'},
+    {'id': 'st_valentin', 'name': 'St Valentin', 'emoji': '❤️'},
+    {'id': 'fete_meres', 'name': 'Fête des Mères', 'emoji': '💐'},
+    {'id': 'fete_peres', 'name': 'Fête des Pères', 'emoji': '👔'},
+    {'id': 'fete_musique', 'name': 'Fête Musique', 'emoji': '🎵'},
+    {'id': 'fete_nationale', 'name': 'Fête Nationale', 'emoji': '🎆'},
+    {'id': 'world_cup', 'name': 'Coupe du Monde', 'emoji': '🏆'},
+    {'id': 'fete_grand_meres', 'name': 'Grands-Mères', 'emoji': '👵'},
+    {'id': 'pot_depart', 'name': 'Pot de départ', 'emoji': '👋'},
+    {'id': 'mariage', 'name': 'Mariage', 'emoji': '💍'},
+    {'id': 'naissance', 'name': 'Naissance', 'emoji': '👶'},
+    {'id': 'cremaillere', 'name': 'Crémaillère', 'emoji': '🗝️'},
+    {'id': 'diplome', 'name': 'Diplôme', 'emoji': '🎓'},
+    {'id': 'halloween', 'name': 'Halloween', 'emoji': '🎃'},
   ];
 
   final Map<String, List<String>> subMenusMap = {
@@ -142,7 +255,7 @@ class HomePinterestModel {
       activeCategoryId = 'all';
     }
     if (activeType != 'event') {
-      activeEventFilter = 'all';
+      activeEventFilter = '';
     }
     if (activeType != 'brand') {
       activeBrand = 'all';
@@ -274,7 +387,7 @@ class HomePinterestModel {
       }).toList();
     }
 
-    if (activeEventFilter != 'all') {
+    if (activeEventFilter.isNotEmpty && activeEventFilter != 'all') {
       final eventFilter = activeEventFilter.replaceAll('_', ' ').toLowerCase();
       final eventId = activeEventFilter.toLowerCase();
       final eventFiltered = filtered.where((product) {

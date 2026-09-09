@@ -43,6 +43,7 @@ import '/pages/new_pages/birthday_calendar/birthday_calendar_page.dart'; // F3
 import '/pages/new_pages/secret_santa/secret_santa_hub_page.dart';
 import '/pages/new_pages/secret_santa/secret_santa_create_page.dart';
 import '/pages/new_pages/secret_santa/secret_santa_lobby_page.dart';
+import '/components/doron_luxury_splash.dart';
 import '/pages/new_pages/secret_santa/secret_santa_reveal_page.dart';
 import '/pages/new_pages/secret_santa/secret_santa_wishlist_page.dart';
 import '/pages/new_pages/notifications/notifications_page.dart';
@@ -668,14 +669,7 @@ class FFRoute {
                 )
               : builder(context, ffParams);
           final child = appStateNotifier.loading
-              ? Container(
-                  color: const Color(0xFF062248),
-                  child: const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF8A2BE2),
-                    ),
-                  ),
-                )
+              ? const DoronLuxurySplashIntro()
               : page;
 
           final transitionInfo = state.transitionInfo;
@@ -769,37 +763,35 @@ class RootSplashWidget extends StatefulWidget {
 }
 
 class _RootSplashWidgetState extends State<RootSplashWidget> {
-  String _status = "Initialisation...";
+  String _status = "Préparation de votre univers...";
+  String? _resolvedRoute;
 
   @override
   void initState() {
     super.initState();
-    _resolveRoute();
   }
 
-  Future<void> _resolveRoute() async {
+  Future<void> _initializeSession() async {
     try {
-      safeSetState(() => _status = "Analyse de session en cours...");
-      final route = await _determineInitialRoute();
-      
-      safeSetState(() => _status = "Démarrage de l'application...");
-
-      if (mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            try {
-              context.go(route);
-            } catch (e) {
-              safeSetState(() => _status = "Erreur de routage: $e");
-            }
-          }
-        });
-      }
-    } catch (e, stack) {
-      if (mounted) {
-        safeSetState(() => _status = "EXCEPTION CRITIQUE: $e\n$stack");
-      }
+      if (mounted) safeSetState(() => _status = "Connexion à votre espace...");
+      _resolvedRoute = await _determineInitialRoute();
+      if (mounted) safeSetState(() => _status = "Bienvenue sur Doron");
+    } catch (e) {
+      if (mounted) safeSetState(() => _status = "Erreur: $e");
     }
+  }
+
+  void _onSplashFinished() {
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final target = _resolvedRoute ?? '/authentification';
+      try {
+        context.go(target);
+      } catch (e) {
+        AppLogger.debug('Navigation error: $e', 'Nav');
+      }
+    });
   }
 
   void safeSetState(VoidCallback fn) {
@@ -810,49 +802,11 @@ class _RootSplashWidgetState extends State<RootSplashWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF062248), // Dark blue
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Clean Splash Image
-              Image.asset(
-                'assets/images/splash_screen.jpeg',
-                width: 180,
-                height: 180,
-                fit: BoxFit.contain,
-              ),
-              const SizedBox(height: 48),
-              // Loader
-              const CircularProgressIndicator(
-                color: Color(0xFF8A2BE2), // Violet
-              ),
-              const SizedBox(height: 32),
-              // N'afficher le texte que s'il y a une erreur critique
-              if (_status.toLowerCase().contains('erreur') || _status.toLowerCase().contains('exception'))
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    _status,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.redAccent,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
+    return DoronLuxurySplashIntro(
+      statusText: _status,
+      onInitialize: _initializeSession,
+      onFinished: _onSplashFinished,
     );
   }
 }
+

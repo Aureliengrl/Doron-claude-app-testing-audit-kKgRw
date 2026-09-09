@@ -80,19 +80,19 @@ class OnboardingAdvancedModel {
         'id': 'personInfo',
         'type': 'dual_text',
         'question': 'Pour qui cherches-tu ?',
-        'subtitle': 'En renseignant son pseudo Doron, l''IA s''inspirera de ses propres wishlists et préférences enregistrées pour trouver le cadeau parfait !',
+        'subtitle': 'En renseignant son pseudo Doron, l\'IA s\'inspirera de ses propres wishlists et préférences enregistrées pour trouver le cadeau parfait !',
         'icon': '📝',
         'fields': [
           {
             'field': 'personName',
             'label': 'Prénom',
             'placeholder': 'Ex: Marie',
-            'required': true,
-            'hint': 'REQUIS',
+            'required': false,
+            'hint': '',
           },
           {
             'field': 'personIdentifier',
-            'label': 'Nom d''utilisateur DORON',
+            'label': 'Nom d\'utilisateur DORON',
             'placeholder': '@username',
             'required': false,
             'hint': 'OPTIONNEL - Pour lier ses Wishlists',
@@ -278,19 +278,8 @@ class OnboardingAdvancedModel {
       return value != null && value.toString().trim().isNotEmpty;
     }
 
-    // Gestion du type dual_text (Pr�nom + Pseudo)
+    // Gestion du type dual_text (Prénom + Pseudo) - Toujours autorisé
     if (type == 'dual_text') {
-      final fields = stepData['fields'] as List;
-      // V�rifier que tous les champs requis sont remplis
-      for (var fieldData in fields) {
-        final field = fieldData['field'] as String;
-        final required = fieldData['required'] as bool? ?? false;
-        final value = answers[field];
-
-        if (required && (value == null || value.toString().trim().isEmpty)) {
-          return false;
-        }
-      }
       return true;
     }
 
@@ -387,10 +376,16 @@ class OnboardingAdvancedModel {
         final isUsername = answers['personIdentifierType']?.contains('utilisateur') == true;
         final identifier = answers['personIdentifier'] ?? '';
 
+        final rawPersonName = (answers['personName'] ?? '').toString().trim();
+        final rawIdentifier = (answers['personIdentifier'] ?? '').toString().trim();
+        final resolvedName = rawPersonName.isNotEmpty
+            ? rawPersonName
+            : (rawIdentifier.isNotEmpty ? rawIdentifier : 'Mon proche');
+
         final personTags = {
-          'name': answers['personIdentifier'] == null || answers['personIdentifier'].toString().isEmpty ? answers['personName'] : answers['personIdentifier'],
-          'username': answers['personIdentifier']?.replaceAll('@', ''),
-          'isUsername': answers['personIdentifier'] != null && answers['personIdentifier'].toString().isNotEmpty,
+          'name': resolvedName,
+          'username': rawIdentifier.isNotEmpty ? rawIdentifier.replaceAll('@', '') : null,
+          'isUsername': rawIdentifier.isNotEmpty,
           'gender': answers['personGender'],
           'age': answers['personAge'],
           'location': answers['location'],
@@ -475,9 +470,7 @@ class OnboardingAdvancedModel {
 
   /// Vrai dès qu'on connaît le nom (ou le @username) du destinataire :
   /// à partir de là on peut passer les questions de goûts ou créer direct.
-  bool get hasRecipientName =>
-      (answers['personName']?.toString().trim().isNotEmpty == true) ||
-      (answers['personIdentifier']?.toString().trim().isNotEmpty == true);
+  bool get hasRecipientName => true;
 
   /// « Passer » : avance à la question suivante sans exiger de réponse.
   void skipStep(List<Map<String, dynamic>> steps) {

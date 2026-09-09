@@ -11,6 +11,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '/services/push_notifications_service.dart';
 import '/services/first_time_service.dart';
+import '/services/multi_account_service.dart';
 import 'authentification_model.dart';
 export 'authentification_model.dart';
 
@@ -30,6 +31,8 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   String? _returnTo;
+  String? _targetHandle;
+  bool _isAddingAccount = false;
   bool _isLoading = false;
 
   @override
@@ -39,7 +42,11 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final uri = GoRouterState.of(context).uri;
-      _returnTo = uri.queryParameters['returnTo'];
+      setState(() {
+        _returnTo = uri.queryParameters['returnTo'];
+        _targetHandle = uri.queryParameters['targetHandle'];
+        _isAddingAccount = uri.queryParameters['addingAccount'] == 'true';
+      });
     });
   }
 
@@ -131,6 +138,10 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
   Future<void> _afterSignIn() async {
     try {
       await PushNotificationsService.initialize();
+    } catch (_) {}
+
+    try {
+      await MultiAccountService.saveCurrentAccount();
     } catch (_) {}
 
     if (!mounted) return;
@@ -247,7 +258,11 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Connecte-toi pour accéder à tes listes de cadeaux et retrouver tes amis.',
+                    _targetHandle != null && _targetHandle!.isNotEmpty
+                        ? 'Connecte-toi avec le compte de @$_targetHandle'
+                        : (_isAddingAccount
+                            ? 'Connecte-toi avec un autre compte à ajouter.'
+                            : 'Connecte-toi pour accéder à tes listes de cadeaux et retrouver tes amis.'),
                     style: GoogleFonts.poppins(
                       fontSize: 15,
                       color: Colors.white.withOpacity(0.6),
@@ -255,6 +270,36 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
                     ),
                     textAlign: TextAlign.center,
                   ),
+                  if (_targetHandle != null && _targetHandle!.isNotEmpty || _isAddingAccount) ...[
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF8A2BE2).withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFF8A2BE2).withOpacity(0.4)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _targetHandle != null ? Icons.swap_horiz_rounded : Icons.person_add_rounded,
+                            size: 16,
+                            color: const Color(0xFFEC4899),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            _targetHandle != null ? 'Changer pour @$_targetHandle' : 'Ajouter un compte',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
 
                   const Spacer(flex: 2),
 

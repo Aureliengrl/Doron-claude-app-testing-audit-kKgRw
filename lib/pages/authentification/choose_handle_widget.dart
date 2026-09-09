@@ -6,6 +6,7 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/components/liquid_glass.dart';
 import '/services/user_search_service.dart';
+import '/services/multi_account_service.dart';
 import '/utils/app_logger.dart';
 
 class ChooseHandleWidget extends StatefulWidget {
@@ -69,6 +70,10 @@ class _ChooseHandleWidgetState extends State<ChooseHandleWidget> {
         'handle': rawHandle,
         'searchName': rawHandle.toLowerCase(),
       });
+
+      try {
+        await MultiAccountService.saveCurrentAccount(profileData: {'handle': rawHandle});
+      } catch (_) {}
 
       AppLogger.debug('✅ Handle saved successfully: $rawHandle', 'Debug');
 

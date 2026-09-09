@@ -2,7 +2,7 @@ import '/services/firebase_data_service.dart';
 import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:doron/services/voice_assistant_service.dart';
+import '/services/voice_assistant_service.dart';
 import '/utils/app_tr.dart';
 import '/utils/iconly_compat.dart';
 import 'package:google_fonts/google_fonts.dart';

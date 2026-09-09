@@ -160,7 +160,7 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
           ),
           if (!_isAppleCalendarConnected)
             Positioned(
-              bottom: 108,
+              bottom: 76,
               left: 0,
               right: 0,
               child: FloatingCtaButton(

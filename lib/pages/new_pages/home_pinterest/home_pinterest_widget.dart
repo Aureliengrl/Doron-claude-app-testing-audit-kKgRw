@@ -804,6 +804,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
               // Header violet arrondi
               SliverToBoxAdapter(child: _buildHeader()),
 
+              // Espace uniforme (8px)
+              const SliverToBoxAdapter(child: SizedBox(height: 8)),
+
               // Barre de recherche
               SliverToBoxAdapter(
                 child: SearchBarWidget(
@@ -825,7 +828,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 ),
               ),
 
-              // Quick filters
+              // Espace uniforme (8px)
+              const SliverToBoxAdapter(child: SizedBox(height: 8)),
+
+              // Quick filters (désactivé)
               SliverToBoxAdapter(
                 child: QuickFiltersWidget(
                   showOnlyFavorites: _model.showOnlyFavorites,
@@ -838,16 +844,19 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 ),
               ),
 
-              // Message de bienvenue (retir pour design plus pur)
-              // SliverToBoxAdapter(child: _buildWelcomeMessage()),
-
-              // Catégories
+              // Niveau 1 : Onglets Catégories avec trait indicateur actif centré
               SliverToBoxAdapter(child: _buildCategories()),
 
-              // Espace uniforme (16px) entre chaque bloc de filtres
-              const SliverToBoxAdapter(child: SizedBox(height: 16)),
+              // Espace uniforme (8px)
+              const SliverToBoxAdapter(child: SizedBox(height: 8)),
 
-              // Filtres par marques
+              // Niveau 2 : Galerie visuelle d'icônes 3D (Événements)
+              SliverToBoxAdapter(child: _buildEventFilters()),
+
+              // Espace uniforme (8px)
+              const SliverToBoxAdapter(child: SizedBox(height: 8)),
+
+              // Niveau 3 : Chips Filtres / Marques
               SliverToBoxAdapter(
                 child: BrandFiltersWidget(
                   activeBrandId: _model.activeBrand,
@@ -861,21 +870,12 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                   primaryColor: violetColor,
                 ),
               ),
-
-              // Espace uniforme (16px)
-              const SliverToBoxAdapter(child: SizedBox(height: 16)),
-
-              // Filtres par événements
-              SliverToBoxAdapter(child: _buildEventFilters()),
               
-              // Sous-menu (dynamique selon le filtre actif)
+              // Niveau 4 : Sous-menu Liquid Glass (dynamique selon le filtre actif)
               SliverToBoxAdapter(child: _buildSubMenu()),
 
-              // Sections thématiques désactivées - Pinterest uniquement
-              // if (_model.sections.isNotEmpty) ...[
-              //   SliverToBoxAdapter(child: _buildSections()),
-              //   const SliverToBoxAdapter(child: SizedBox(height: 16)),
-              // ],
+              // Espace uniforme avant la grille (8px)
+              const SliverToBoxAdapter(child: SizedBox(height: 8)),
 
               // Grille Pinterest 2 colonnes
               _buildPinterestGrid(),
@@ -937,7 +937,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          padding: const EdgeInsets.fromLTRB(20, 6, 20, 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -1011,174 +1011,184 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
   }
 
   Widget _buildCategories() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 24, bottom: 8), // Aligné avec 24
-          child: Text(
-            context.tr('Cat\u00e9gories', 'Categories'),
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF6B7280),
-            ),
-          ),
-        ),
-        SizedBox(
-          height: 56, // Hauteur uniformisée avec les marques (56)
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 24), // Padding uniforme
-            scrollDirection: Axis.horizontal,
-            itemCount: _model.categories.length,
-            itemBuilder: (context, index) {
-              final category = _model.categories[index];
-              // BUG FIX: isActive utilise l'ID (insensible a la langue)
-              final isActive = _model.activeCategoryId == category['id'];
+    return SizedBox(
+      height: 38,
+      child: ListView.builder(
+        clipBehavior: Clip.none,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        scrollDirection: Axis.horizontal,
+        itemCount: _model.categories.length,
+        physics: const BouncingScrollPhysics(),
+        itemBuilder: (context, index) {
+          final category = _model.categories[index];
+          final isActive = _model.activeCategoryId == category['id'];
+          final emoji = HomePinterestModel.getCategoryEmoji(category['id'] as String);
+          final categoryName = _translateCategory(category['id'] as String, category['name'] as String);
 
           return Padding(
-            padding: const EdgeInsets.only(right: 16), // Espacement uniforme constant (16)
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {
-                  // Haptic feedback
-                  HapticFeedback.lightImpact();
-                  setState(() {
-                    _model.activeCategory = category['name'] as String;
-                    _model.activeCategoryId = category['id'] as String;
-                    _model.resetOtherFilters('category');
-                  });
-                  _loadProducts(); // Recharger les produits pour la nouvelle catégorie
-                },
-                borderRadius: BorderRadius.circular(50),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isActive
-                        ? violetColor
-                        : violetColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(50),
-                    boxShadow: isActive
-                        ? [
-                            BoxShadow(
-                              color: violetColor.withOpacity(0.2),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ]
-                        : [],
-                  ),
-                  child: Row(
+            padding: const EdgeInsets.only(right: 20),
+            child: InkWell(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                setState(() {
+                  _model.activeCategory = category['name'] as String;
+                  _model.activeCategoryId = category['id'] as String;
+                  _model.resetOtherFilters('category');
+                });
+                _loadProducts();
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        category['emoji'] as String,
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        _translateCategory(category['id'] as String, category['name'] as String),
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isActive ? Colors.white : violetColor,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          emoji,
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          categoryName,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14.5,
+                            fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                            color: isActive ? Colors.white : Colors.white.withOpacity(0.55),
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    // Trait indicateur actif centré et symétrique
+                    Center(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeOutCubic,
+                        height: 3.0,
+                        width: isActive ? 34.0 : 0.0,
+                        decoration: BoxDecoration(
+                          color: isActive ? Colors.white : Colors.transparent,
+                          borderRadius: BorderRadius.circular(2),
+                          boxShadow: isActive
+                              ? [
+                                  BoxShadow(
+                                    color: Colors.white.withOpacity(0.8),
+                                    blurRadius: 4,
+                                  ),
+                                ]
+                              : null,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          )
-              .animate()
-              .fadeIn(
-                delay: Duration(milliseconds: 100 * index),
-                duration: 300.ms,
-              )
-              .slideX(
-                begin: -0.2,
-                end: 0,
-                delay: Duration(milliseconds: 100 * index),
-                duration: 300.ms,
-                curve: Curves.easeOut,
-              );
-            },
-          ),
-        ),
-      ],
+            );
+          },
+      ),
     );
   }
 
   Widget _buildEventFilters() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          height: 50,
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            scrollDirection: Axis.horizontal,
-            itemCount: _model.currentEvents.length,
-            itemBuilder: (context, index) {
-              final filter = _model.currentEvents[index];
-              final isActive = _model.activeEventFilter == filter['id'];
+    return SizedBox(
+      height: 80,
+      child: ListView.builder(
+        clipBehavior: Clip.none,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        scrollDirection: Axis.horizontal,
+        itemCount: _model.currentEvents.length,
+        physics: const BouncingScrollPhysics(),
+        itemBuilder: (context, index) {
+          final filter = _model.currentEvents[index];
+          final eventId = filter['id'] as String;
+          final isActive = _model.activeEventFilter == eventId;
+          final imageAsset = HomePinterestModel.getEventImageAsset(eventId);
+          final emoji = HomePinterestModel.getEventEmoji(eventId);
+          final eventName = filter['name'] as String;
 
-              return Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      setState(() {
-                        _model.activeEventFilter = filter['id'] as String;
-                        _model.resetOtherFilters('event');
-                      });
-                      _loadProducts();
-                    },
-                    borderRadius: BorderRadius.circular(50),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isActive
-                            ? const Color(0xFFEC4899) // Rose
-                            : const Color(0xFFEC4899).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(50),
-                        boxShadow: isActive
-                            ? [
-                                BoxShadow(
-                                  color: const Color(0xFFEC4899).withOpacity(0.2),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  setState(() {
+                    if (_model.activeEventFilter == eventId) {
+                      _model.activeEventFilter = '';
+                    } else {
+                      _model.activeEventFilter = eventId;
+                    }
+                    _model.resetOtherFilters('event');
+                  });
+                  _loadProducts();
+                },
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Icône 3D détourée grand format
+                    AnimatedScale(
+                      scale: isActive ? 1.08 : 1.0,
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOutCubic,
+                      child: SizedBox(
+                        width: 52,
+                        height: 52,
+                        child: Center(
+                          child: imageAsset != null
+                              ? Image.asset(
+                                  imageAsset,
+                                  width: 52,
+                                  height: 52,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) => Text(
+                                    emoji,
+                                    style: const TextStyle(fontSize: 34),
+                                  ),
+                                )
+                              : Text(
+                                  emoji,
+                                  style: const TextStyle(fontSize: 34),
                                 ),
-                              ]
-                            : [],
-                      ),
-                      child: Text(
-                        filter['name'] as String,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isActive ? Colors.white : const Color(0xFFEC4899),
                         ),
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 4),
+                    // Nom affiché sous l'icône 3D
+                    AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOutCubic,
+                      style: GoogleFonts.poppins(
+                        fontSize: isActive ? 11.5 : 10.5,
+                        fontWeight: isActive ? FontWeight.w900 : FontWeight.w600,
+                        color: Colors.white,
+                        letterSpacing: -0.2,
+                        shadows: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(isActive ? 0.9 : 0.6),
+                            blurRadius: isActive ? 6 : 3,
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        eventName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 16),
-      ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -1285,7 +1295,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     // Afficher des skeletons pendant le chargement initial
     if (_model.isLoading) {
       return SliverPadding(
-        padding: const EdgeInsets.fromLTRB(12, 16, 12, 0),
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
         sliver: SliverMasonryGrid.count(
           crossAxisCount: 2,
           mainAxisSpacing: 8,
@@ -1478,10 +1488,10 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         ),
       );
     }
-    // Layout Masonry dsordonn faon Pinterest
+    // Layout Masonry désordonné façon Pinterest
     // Plus de colonnes et moins d'espacement pour un effet plus dense et inspirant
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(12, 16, 12, 0),
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
       sliver: SliverMasonryGrid.count(
         crossAxisCount: 2, // 2 colonnes pour garder des produits bien visibles
         mainAxisSpacing: 8, // Rduit pour effet "dans tous les sens"
@@ -2025,86 +2035,86 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     final subMenus = _model.subMenusMap[currentKey] ?? [];
 
     return AnimatedSize(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOut,
       child: subMenus.isEmpty
           ? const SizedBox.shrink()
           : Padding(
-              padding: const EdgeInsets.only(top: 8, bottom: 16),
+              padding: const EdgeInsets.only(top: 8),
               child: SizedBox(
-                height: 40,
+                height: 36,
                 child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: subMenus.length,
-                  itemBuilder: (context, index) {
-                    final subMenu = subMenus[index];
-                    final isActive = _model.activeSubMenu == subMenu;
+                clipBehavior: Clip.none,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                scrollDirection: Axis.horizontal,
+                itemCount: subMenus.length,
+                physics: const BouncingScrollPhysics(),
+                itemBuilder: (context, index) {
+                  final subMenu = subMenus[index];
+                  final isActive = _model.activeSubMenu == subMenu;
 
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 12),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            setState(() {
-                              _model.activeSubMenu = isActive ? 'all' : subMenu;
-                            });
-                            _loadProducts();
-                          },
-                          borderRadius: BorderRadius.circular(20),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          setState(() {
+                            _model.activeSubMenu = isActive ? 'all' : subMenu;
+                          });
+                          _loadProducts();
+                        },
+                        borderRadius: BorderRadius.circular(18),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeOut,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          decoration: BoxDecoration(
+                            // Style Liquid Glass gris givré
+                            color: isActive
+                                ? Colors.white.withOpacity(0.28)
+                                : Colors.white.withOpacity(0.10),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
                               color: isActive
-                                  ? const Color(0xFF8B5CF6)
-                                  : Colors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: isActive ? Colors.transparent : Colors.white.withOpacity(0.2),
-                              ),
-                              boxShadow: isActive
-                                  ? [
-                                      BoxShadow(
-                                        color: const Color(0xFF8B5CF6).withOpacity(0.4),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ]
-                                  : [],
+                                  ? Colors.white.withOpacity(0.60)
+                                  : Colors.white.withOpacity(0.18),
+                              width: 0.8,
                             ),
-                            child: Center(
-                              child: Text(
-                                subMenu,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                                  color: isActive ? Colors.white : Colors.white.withOpacity(0.9),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(isActive ? 0.15 : 0.08),
+                                blurRadius: isActive ? 6 : 3,
+                                offset: const Offset(0, 2),
+                              ),
+                              if (isActive)
+                                BoxShadow(
+                                  color: Colors.white.withOpacity(0.20),
+                                  blurRadius: 8,
+                                  spreadRadius: -1,
                                 ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              subMenu,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12.5,
+                                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                                color: Colors.white,
+                                letterSpacing: -0.2,
                               ),
                             ),
                           ),
                         ),
                       ),
-                    )
-                        .animate()
-                        .fadeIn(
-                          delay: Duration(milliseconds: 50 * index),
-                          duration: 300.ms,
-                        )
-                        .slideX(
-                          begin: 0.2,
-                          end: 0,
-                          delay: Duration(milliseconds: 50 * index),
-                          duration: 300.ms,
-                          curve: Curves.easeOutCubic,
-                        );
-                  },
-                ),
+                    ),
+                  );
+                },
               ),
             ),
+          ),
     );
   }
 

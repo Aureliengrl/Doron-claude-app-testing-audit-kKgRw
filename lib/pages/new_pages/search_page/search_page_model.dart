@@ -7,6 +7,12 @@ import '/backend/backend.dart';
 import '/auth/firebase_auth/auth_util.dart';
 
 class SearchPageModel {
+  static void clearCache() {
+    _cachedProfiles = null;
+    _cachedPersonGifts = null;
+    _cachedPersonSuggestions = null;
+  }
+
   static List<Map<String, dynamic>>? _cachedProfiles;
   static Map<String, List<Map<String, dynamic>>>? _cachedPersonGifts;
   static Map<String, List<Map<String, dynamic>>>? _cachedPersonSuggestions;
@@ -30,7 +36,13 @@ class SearchPageModel {
   }
 
   /// Charge les profils depuis Firebase/Local Storage (nouvelle architecture)
-  Future<void> loadProfiles() async {
+  Future<void> loadProfiles({bool forceRefresh = false}) async {
+    if (forceRefresh) {
+      clearCache();
+      profiles = [];
+      personGifts.clear();
+      personSuggestions.clear();
+    }
     try {
       isLoading = profiles.isEmpty; // N'affiche le chargement bloquant que s'il n'y a pas de cache
       errorMessage = null;
