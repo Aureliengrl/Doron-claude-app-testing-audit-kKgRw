@@ -18,14 +18,80 @@ class TagsDefinitions {
 
   /// 2️⃣ CATÉGORIE PRINCIPALE (OBLIGATOIRE - 1 seul tag)
   /// Règle : STRICTE - correspondance exacte requise
+  ///
+  /// 'cat_tendances' est conservé pour compatibilité avec les produits déjà
+  /// tagués ainsi, mais n'est plus attribué par le pipeline d'enrichissement :
+  /// un produit tendance/viral reçoit sa vraie catégorie (cat_tech, cat_mode...)
+  /// et le signal "tendance" passe par 'popularite_5' à la place.
   static const List<String> categoryTags = [
-    'cat_tendances', // Produits viraux, TikTok, nouveautés tendances
+    'cat_tendances', // Legacy - ne plus attribuer, voir popularite_5
     'cat_tech', // High-tech, gadgets, électronique
     'cat_mode', // Vêtements, accessoires mode
     'cat_maison', // Déco, maison, intérieur
     'cat_beaute', // Beauté, soins, parfums
     'cat_food', // Gastronomie, cuisine, alimentaire
   ];
+
+  /// 2️⃣bis SOUS-CATÉGORIE (OBLIGATOIRE dès qu'une cat_* est connue - 1 seule valeur)
+  /// Règle : STRICTE - doit appartenir à la liste autorisée pour la cat_* du produit.
+  /// Sert à lever les ambiguïtés entre familles proches (ex : écouteurs vs bijoux,
+  /// montre connectée vs montre classique, appareil de beauté vs électroménager).
+  static const Map<String, List<String>> subcategoryTagsByCategory = {
+    'cat_tech': [
+      'subcat_smartphones_tablettes',
+      'subcat_ordinateurs_accessoires',
+      'subcat_audio',
+      'subcat_wearables',
+      'subcat_photo_video',
+      'subcat_gaming',
+      'subcat_maison_connectee',
+      'subcat_gadgets_divers',
+    ],
+    'cat_mode': [
+      'subcat_vetements_femme',
+      'subcat_vetements_homme',
+      'subcat_chaussures',
+      'subcat_sacs_maroquinerie',
+      'subcat_bijoux',
+      'subcat_montres_classiques',
+      'subcat_accessoires_mode',
+      'subcat_lingerie_nuit',
+    ],
+    'cat_maison': [
+      'subcat_deco_murale_objets',
+      'subcat_linge_maison',
+      'subcat_cuisine_arts_de_la_table',
+      'subcat_ambiance_bougies_senteurs',
+      'subcat_rangement_organisation',
+      'subcat_jardin_exterieur',
+      'subcat_electromenager',
+    ],
+    'cat_beaute': [
+      'subcat_parfum',
+      'subcat_soin_visage',
+      'subcat_soin_corps',
+      'subcat_maquillage',
+      'subcat_cheveux_coiffure',
+      'subcat_rasage_barbe',
+      'subcat_bienetre_spa',
+      'subcat_appareils_beaute',
+    ],
+    'cat_food': [
+      'subcat_epicerie_fine',
+      'subcat_vins_spiritueux',
+      'subcat_chocolats_confiseries',
+      'subcat_cafe_the',
+      'subcat_coffrets_degustation',
+    ],
+  };
+
+  /// Vérifie qu'une sous-catégorie appartient bien à la catégorie donnée.
+  static bool isValidSubcategoryForCategory(String cat, String subcat) =>
+      subcategoryTagsByCategory[cat]?.contains(subcat) ?? false;
+
+  /// Retourne toutes les sous-catégories valides, toutes catégories confondues.
+  static List<String> get allSubcategoryTags =>
+      subcategoryTagsByCategory.values.expand((v) => v).toList();
 
   /// 3️⃣ TRANCHE DE PRIX (OBLIGATOIRE - 1 seul tag)
   /// Règle : STRICTE - correspondance exacte requise
