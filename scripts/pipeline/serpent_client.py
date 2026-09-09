@@ -1,23 +1,37 @@
 """
-Client Serpent API (wrapper Google Shopping — apiserpent.com).
+Client Serpent API (apiserpent.com) — endpoint Deep Search.
 
-⚠️ À FINALISER : cet environnement n'a pas d'accès réseau sortant vers
-apiserpent.com, donc les 5 constantes ci-dessous (endpoint, méthode HTTP,
-nom des paramètres, style d'authentification, forme de la réponse JSON)
-sont posées sur la base d'un wrapper Google Shopping "standard" mais n'ont
-PAS été vérifiées contre la vraie doc. Avant le premier run réel :
+Contrat confirmé contre la doc officielle (apiserpent.com) :
+    - Endpoint  : GET https://apiserpent.com/api/search  (Deep Search)
+                  (/api/search/quick existe aussi, /api/shopping n'est PAS actif — 404)
+    - Auth      : header "X-API-Key: <clé>"
+    - Params    : q, country, language, engine (google|bing|yahoo|ddg|brave), num
+    - Réponse   : { success, query, results: { organic: [...], shopping: [...] }, meta }
 
-    python scripts/pipeline/serpent_client.py --test-query "Apple écouteurs"
+⚠️ Point important non couvert par la doc : ce n'est PAS une API produit
+dédiée mais un wrapper de résultats de recherche multi-moteurs. Les
+produits (titre/image/prix/marchand/lien) ne sont présents que dans
+`results.shopping[]`, qui peut être vide si Google ne déclenche pas de
+carrousel shopping pour la requête (c'est le cas dans l'exemple officiel
+pour "Apple écouteurs" — shopping: []). `results.organic[]` ne contient
+que title/url/snippet/position/displayedUrl, pas de prix ni d'image :
+inutilisable comme fiche produit, donc ignoré par parse_response().
 
-... et compare la réponse brute affichée avec ce que documente
-apiserpent.com. Ajuste ensuite SEARCH_PATH / QUERY_PARAM / AUTH_STYLE /
-parse_response() en conséquence. Rien d'autre dans le pipeline n'a besoin
-de changer : tout le reste consomme uniquement la sortie de
-`SerpentClient.search()`.
+Conséquence pratique : il faut s'attendre à un taux de requêtes "vides"
+(0 résultat shopping) non négligeable, et potentiellement reformuler les
+requêtes (ex. ajouter "acheter" ou "prix") pour augmenter les chances que
+Google affiche un carrousel shopping. À valider sur le run de test avant
+de lancer le run complet.
+
+La doc ne précise pas les champs exacts des éléments de `results.shopping`
+(seul l'exemple avec shopping: [] est fourni) — parse_response() essaie
+plusieurs noms de champs courants (title/price/source/thumbnail/link et
+variantes) et log les clés brutes du premier item au premier run réel
+pour permettre un ajustement rapide si besoin.
 
 Variables d'environnement :
-    SERPENT_API_KEY       (obligatoire)
-    SERPENT_API_BASE_URL  (défaut : https://api.apiserpent.com)
+    SERPENT_API_KEY         (obligatoire)
+    SERPENT_API_BASE_URL    (défaut : https://apiserpent.com)
     SERPENT_REQUEST_DELAY_S (défaut : 1.0 — pause entre 2 requêtes)
 """
 
@@ -36,14 +50,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ============================================================================
-# ⚠️ CONFIG À CONFIRMER CONTRE LA DOC OFFICIELLE (voir docstring ci-dessus)
+# Contrat API confirmé (apiserpent.com)
 # ============================================================================
-DEFAULT_BASE_URL = "https://api.apiserpent.com"
-SEARCH_PATH = "/search"  # TODO: confirmer le chemin exact
-QUERY_PARAM = "q"  # TODO: confirmer le nom du paramètre de requête
-AUTH_STYLE = "bearer_header"  # "bearer_header" | "api_key_header" | "query_param"
-API_KEY_QUERY_PARAM_NAME = "api_key"  # utilisé seulement si AUTH_STYLE == "query_param"
-API_KEY_HEADER_NAME = "X-API-Key"  # utilisé seulement si AUTH_STYLE == "api_key_header"
+DEFAULT_BASE_URL = "https://apiserpent.com"
+SEARCH_PATH = "/api/search"  # Deep Search (recommandé par la doc)
+QUERY_PARAM = "q"
+API_KEY_HEADER_NAME = "X-API-Key"
+DEFAULT_ENGINE = "google"
+DEFAULT_NUM_RESULTS = 50  # plus de résultats = plus de chances d'avoir un carrousel shopping
 # ============================================================================
 
 
@@ -78,28 +92,33 @@ class SerpentClient:
         self.max_retries = max_retries
         self.request_delay_s = float(os.environ.get("SERPENT_REQUEST_DELAY_S", "1.0"))
 
-    def _build_request(self, query: str, country: str, language: str) -> dict:
-        params = {QUERY_PARAM: query, "gl": country, "hl": language}
-        headers = {}
-
-        if AUTH_STYLE == "bearer_header":
-            headers["Authorization"] = f"Bearer {self.api_key}"
-        elif AUTH_STYLE == "api_key_header":
-            headers[API_KEY_HEADER_NAME] = self.api_key
-        elif AUTH_STYLE == "query_param":
-            params[API_KEY_QUERY_PARAM_NAME] = self.api_key
-        else:
-            raise SerpentApiError(f"AUTH_STYLE inconnu: {AUTH_STYLE}")
-
+    def _build_request(
+        self, query: str, country: str, language: str, engine: str, num: int
+    ) -> dict:
+        params = {
+            QUERY_PARAM: query,
+            "country": country,
+            "language": language,
+            "engine": engine,
+            "num": num,
+        }
+        headers = {API_KEY_HEADER_NAME: self.api_key}
         return {"url": f"{self.base_url}{SEARCH_PATH}", "params": params, "headers": headers}
 
-    def search(self, query: str, country: str = "fr", language: str = "fr") -> SerpentResult:
-        """Lance une recherche Google Shopping via Serpent API pour `query`.
+    def search(
+        self,
+        query: str,
+        country: str = "fr",
+        language: str = "fr",
+        engine: str = DEFAULT_ENGINE,
+        num: int = DEFAULT_NUM_RESULTS,
+    ) -> SerpentResult:
+        """Lance une recherche via Serpent API pour `query`.
 
         Retry avec backoff exponentiel sur 429/5xx. Lève SerpentApiError
         sur échec définitif ou sur toute autre erreur HTTP.
         """
-        req = self._build_request(query, country, language)
+        req = self._build_request(query, country, language, engine, num)
         last_exc: Optional[Exception] = None
 
         for attempt in range(1, self.max_retries + 1):
@@ -108,10 +127,13 @@ class SerpentClient:
                     req["url"], params=req["params"], headers=req["headers"], timeout=self.timeout_s
                 )
                 if resp.status_code == 200:
+                    data = resp.json()
+                    if not data.get("success", True):
+                        raise SerpentApiError(f"success=false sur '{query}': {json.dumps(data)[:300]}")
                     return SerpentResult(
                         query=query,
                         http_status=200,
-                        raw_response=resp.json(),
+                        raw_response=data,
                         fetched_at=_now_iso(),
                     )
                 if resp.status_code in (429, 500, 502, 503, 504):
@@ -131,26 +153,26 @@ class SerpentClient:
         raise SerpentApiError(f"Échec définitif sur '{query}': {last_exc}")
 
     @staticmethod
-    def parse_response(raw: Any) -> list[dict]:
-        """Normalise la réponse brute Serpent en liste de produits plats.
+    def parse_response(raw: Any, warn_unknown_fields: bool = True) -> list[dict]:
+        """Extrait les produits de `results.shopping[]`.
 
-        ⚠️ À adapter selon la forme réelle du JSON retourné par l'API.
-        Hypothèse actuelle (wrapper Google Shopping typique) : une clé
-        top-level "shopping_results" contenant une liste d'objets avec
-        title / thumbnail / extracted_price / source / link.
+        `results.organic[]` est délibérément ignoré : il n'a ni image ni
+        prix ni marchand (juste title/url/snippet), donc inexploitable
+        comme fiche produit pour ce pipeline.
         """
-        items = raw.get("shopping_results") or raw.get("results") or []
+        shopping = ((raw or {}).get("results") or {}).get("shopping") or []
         products = []
-        for item in items:
-            products.append(
-                {
-                    "title": item.get("title"),
-                    "image": item.get("thumbnail") or item.get("image"),
-                    "price": item.get("extracted_price") or item.get("price"),
-                    "merchant": item.get("source") or item.get("merchant"),
-                    "link": item.get("link") or item.get("product_link"),
-                }
-            )
+        for item in shopping:
+            product = {
+                "title": item.get("title") or item.get("name"),
+                "image": item.get("thumbnail") or item.get("image") or item.get("imageUrl"),
+                "price": item.get("price") or item.get("extracted_price") or item.get("extractedPrice"),
+                "merchant": item.get("source") or item.get("merchant") or item.get("seller"),
+                "link": item.get("link") or item.get("url") or item.get("productLink"),
+            }
+            if warn_unknown_fields and not any(product.values()):
+                print(f"  ⚠️  Item shopping avec champs inconnus, clés brutes: {list(item.keys())}")
+            products.append(product)
         return products
 
 
@@ -162,8 +184,8 @@ def _now_iso() -> str:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Test manuel d'une requête Serpent API — sert à valider "
-        "le contrat exact (endpoint/auth/forme de réponse) avant le run batch."
+        description="Test manuel d'une requête Serpent API — permet de vérifier "
+        "la forme exacte de results.shopping[] avant le run batch."
     )
     parser.add_argument("--test-query", required=True, help='Ex: "Apple écouteurs"')
     args = parser.parse_args()
@@ -171,5 +193,11 @@ if __name__ == "__main__":
     client = SerpentClient()
     result = client.search(args.test_query)
     print(json.dumps(result.raw_response, indent=2, ensure_ascii=False)[:4000])
+
+    shopping = ((result.raw_response or {}).get("results") or {}).get("shopping") or []
+    print(f"\n--- results.shopping: {len(shopping)} item(s) ---")
+    if shopping:
+        print("Clés du premier item :", list(shopping[0].keys()))
+
     print("\n--- Parsé (à vérifier / ajuster parse_response) ---")
     print(json.dumps(SerpentClient.parse_response(result.raw_response), indent=2, ensure_ascii=False))
