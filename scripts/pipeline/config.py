@@ -22,6 +22,7 @@ SUBCATEGORIES_BY_CATEGORY = {
         "subcat_photo_video",
         "subcat_gaming",
         "subcat_maison_connectee",
+        "subcat_accessoires_auto_tech",
         "subcat_gadgets_divers",
     ],
     "cat_mode": [
@@ -33,6 +34,7 @@ SUBCATEGORIES_BY_CATEGORY = {
         "subcat_montres_classiques",
         "subcat_accessoires_mode",
         "subcat_lingerie_nuit",
+        "subcat_sportswear_outdoor",
     ],
     "cat_maison": [
         "subcat_deco_murale_objets",
@@ -42,6 +44,7 @@ SUBCATEGORIES_BY_CATEGORY = {
         "subcat_rangement_organisation",
         "subcat_jardin_exterieur",
         "subcat_electromenager",
+        "subcat_bricolage_outillage",
     ],
     "cat_beaute": [
         "subcat_parfum",
@@ -59,6 +62,7 @@ SUBCATEGORIES_BY_CATEGORY = {
         "subcat_chocolats_confiseries",
         "subcat_cafe_the",
         "subcat_coffrets_degustation",
+        "subcat_accessoires_sommellerie_bar",
     ],
 }
 
@@ -72,6 +76,7 @@ QUERY_TERM_BY_SUBCATEGORY = {
     "subcat_photo_video": "appareil photo",
     "subcat_gaming": "console de jeux",
     "subcat_maison_connectee": "enceinte connectée",
+    "subcat_accessoires_auto_tech": "accessoire auto connecté",
     "subcat_gadgets_divers": "gadget high-tech",
     "subcat_vetements_femme": "robe",
     "subcat_vetements_homme": "pull homme",
@@ -81,6 +86,7 @@ QUERY_TERM_BY_SUBCATEGORY = {
     "subcat_montres_classiques": "montre",
     "subcat_accessoires_mode": "ceinture",
     "subcat_lingerie_nuit": "lingerie",
+    "subcat_sportswear_outdoor": "vêtement sport",
     "subcat_deco_murale_objets": "cadre décoratif",
     "subcat_linge_maison": "plaid",
     "subcat_cuisine_arts_de_la_table": "vaisselle",
@@ -88,6 +94,7 @@ QUERY_TERM_BY_SUBCATEGORY = {
     "subcat_rangement_organisation": "boîte de rangement",
     "subcat_jardin_exterieur": "coussin extérieur",
     "subcat_electromenager": "cafetière",
+    "subcat_bricolage_outillage": "outil multifonction",
     "subcat_parfum": "parfum",
     "subcat_soin_visage": "crème visage",
     "subcat_soin_corps": "soin corps",
@@ -101,6 +108,7 @@ QUERY_TERM_BY_SUBCATEGORY = {
     "subcat_chocolats_confiseries": "chocolats",
     "subcat_cafe_the": "coffret thé",
     "subcat_coffrets_degustation": "coffret dégustation",
+    "subcat_accessoires_sommellerie_bar": "accessoire vin sommelier",
 }
 
 # ============================================================================

@@ -45,6 +45,7 @@ class TagsDefinitions {
       'subcat_photo_video',
       'subcat_gaming',
       'subcat_maison_connectee',
+      'subcat_accessoires_auto_tech',
       'subcat_gadgets_divers',
     ],
     'cat_mode': [
@@ -56,6 +57,7 @@ class TagsDefinitions {
       'subcat_montres_classiques',
       'subcat_accessoires_mode',
       'subcat_lingerie_nuit',
+      'subcat_sportswear_outdoor',
     ],
     'cat_maison': [
       'subcat_deco_murale_objets',
@@ -65,6 +67,7 @@ class TagsDefinitions {
       'subcat_rangement_organisation',
       'subcat_jardin_exterieur',
       'subcat_electromenager',
+      'subcat_bricolage_outillage',
     ],
     'cat_beaute': [
       'subcat_parfum',
@@ -82,6 +85,7 @@ class TagsDefinitions {
       'subcat_chocolats_confiseries',
       'subcat_cafe_the',
       'subcat_coffrets_degustation',
+      'subcat_accessoires_sommellerie_bar',
     ],
   };
 
