@@ -265,10 +265,14 @@ class TagsDefinitions {
   /// Vérifie si un tag de passion est valide
   static bool isValidPassionTag(String tag) => passionTags.contains(tag);
 
+  /// Vérifie si un tag de sous-catégorie est valide
+  static bool isValidSubcategoryTag(String tag) => allSubcategoryTags.contains(tag);
+
   /// Retourne tous les tags valides (toutes catégories confondues)
   static List<String> get allValidTags => [
         ...genderTags,
         ...categoryTags,
+        ...allSubcategoryTags,
         ...budgetTags,
         ...giftTypeTags,
         ...styleTags,
