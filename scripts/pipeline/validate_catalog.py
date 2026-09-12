@@ -17,7 +17,7 @@ FALLBACK_JSON = BASE_DIR / "assets" / "jsons" / "fallback_products.json"
 
 # Définition des tags autorisés dans TagsDefinitions
 GENDER_TAGS = {"gender_femme", "gender_homme", "gender_mixte"}
-CATEGORY_TAGS = {"cat_tendances", "cat_tech", "cat_mode", "cat_maison", "cat_beaute", "cat_food"}
+CATEGORY_TAGS = set(SUBCATEGORIES_BY_CATEGORY.keys()) | {"cat_tendances"}
 ALL_SUBCATS = {s for sublist in SUBCATEGORIES_BY_CATEGORY.values() for s in sublist}
 BUDGET_TAGS = {"budget_0_50", "budget_50_100", "budget_100_200", "budget_200+"}
 
@@ -32,7 +32,7 @@ STYLES = {
     "style_elegant", "style_tendance", "style_minimaliste", "style_classique",
     "style_decontracte", "style_sportif", "style_vintage", "style_moderne",
     "style_luxe", "style_boheme", "style_streetwear", "style_eco_responsable",
-    "style_creatif", "style_geek", "style_zen", "style_gourmand", "style_festif", "style_pratique", "style_romantique", "style_tech"
+    "style_creatif", "style_geek", "style_zen", "style_gourmand", "style_festif", "style_pratique", "style_romantique", "style_tech", "style_cool"
 }
 
 PERSOS = {
@@ -122,8 +122,8 @@ def audit_catalog():
     print("=" * 60)
     print("📈 BILAN DE QUALITÉ DU CATALOGUE")
     print("=" * 60)
-    print(f"✅ Catégories couvertes : {len(cats_found)}/5 -> {cats_found}")
-    print(f"✅ Sous-catégories couvertes : {len(subcats_found)}/35 ({len(subcats_found)/35*100:.0f}%)")
+    print(f"✅ Catégories couvertes : {len(cats_found)}/{len(SUBCATEGORIES_BY_CATEGORY)} -> {cats_found}")
+    print(f"✅ Sous-catégories couvertes : {len(subcats_found)}/{len(ALL_SUBCATS)} ({len(subcats_found)/len(ALL_SUBCATS)*100:.0f}%)")
     print(f"✅ Marques couvertes : {len(brands_found)} marques différentes")
     print(f"   ({', '.join(sorted(list(brands_found))[:15])}...)")
     

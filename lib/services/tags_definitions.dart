@@ -18,24 +18,27 @@ class TagsDefinitions {
 
   /// 2️⃣ CATÉGORIE PRINCIPALE (OBLIGATOIRE - 1 seul tag)
   /// Règle : STRICTE - correspondance exacte requise
-  ///
-  /// 'cat_tendances' est conservé pour compatibilité avec les produits déjà
-  /// tagués ainsi, mais n'est plus attribué par le pipeline d'enrichissement :
-  /// un produit tendance/viral reçoit sa vraie catégorie (cat_tech, cat_mode...)
-  /// et le signal "tendance" passe par 'popularite_5' à la place.
   static const List<String> categoryTags = [
     'cat_tendances', // Legacy - ne plus attribuer, voir popularite_5
-    'cat_tech', // High-tech, gadgets, électronique
-    'cat_mode', // Vêtements, accessoires mode
-    'cat_maison', // Déco, maison, intérieur
-    'cat_beaute', // Beauté, soins, parfums
-    'cat_food', // Gastronomie, cuisine, alimentaire
+    'cat_tech', // High-tech, informatique, audio, photo
+    'cat_mode', // Mode, vêtements, maroquinerie, bijoux
+    'cat_maison', // Déco, maison, intérieur, cuisine
+    'cat_beaute', // Beauté, cosmétiques, parfums, soins
+    'cat_food', // Gastronomie, vins, spiritueux, chocolats
+    'cat_sport', // Sport, performance, outdoor, fitness
+    'cat_art', // Art, dessin, peinture, création
+    'cat_lecture', // Livres, BD, mangas, liseuses
+    'cat_voyage', // Voyage, bagagerie, aventure nomade
+    'cat_jeuxvideo', // Jeux vidéo, consoles, gaming, rétrogaming
+    'cat_musique', // Instruments, vinyles, sono, home studio
+    'cat_jardinage', // Jardin, plantes, potager d'intérieur
+    'cat_bienetre', // Bien-être, relaxation, yoga, sommeil
+    'cat_mecanique_auto', // Automobile, moto, mécanique, garage
+    'cat_aeronautique', // Aéronautique, aviation, drones, espace
   ];
 
   /// 2️⃣bis SOUS-CATÉGORIE (OBLIGATOIRE dès qu'une cat_* est connue - 1 seule valeur)
   /// Règle : STRICTE - doit appartenir à la liste autorisée pour la cat_* du produit.
-  /// Sert à lever les ambiguïtés entre familles proches (ex : écouteurs vs bijoux,
-  /// montre connectée vs montre classique, appareil de beauté vs électroménager).
   static const Map<String, List<String>> subcategoryTagsByCategory = {
     'cat_tech': [
       'subcat_smartphones_tablettes',
@@ -43,7 +46,6 @@ class TagsDefinitions {
       'subcat_audio',
       'subcat_wearables',
       'subcat_photo_video',
-      'subcat_gaming',
       'subcat_maison_connectee',
       'subcat_accessoires_auto_tech',
       'subcat_gadgets_divers',
@@ -65,9 +67,8 @@ class TagsDefinitions {
       'subcat_cuisine_arts_de_la_table',
       'subcat_ambiance_bougies_senteurs',
       'subcat_rangement_organisation',
-      'subcat_jardin_exterieur',
       'subcat_electromenager',
-      'subcat_bricolage_outillage',
+      'subcat_luminaire_ambiance',
     ],
     'cat_beaute': [
       'subcat_parfum',
@@ -76,7 +77,6 @@ class TagsDefinitions {
       'subcat_maquillage',
       'subcat_cheveux_coiffure',
       'subcat_rasage_barbe',
-      'subcat_bienetre_spa',
       'subcat_appareils_beaute',
     ],
     'cat_food': [
@@ -86,6 +86,87 @@ class TagsDefinitions {
       'subcat_cafe_the',
       'subcat_coffrets_degustation',
       'subcat_accessoires_sommellerie_bar',
+    ],
+    'cat_sport': [
+      'subcat_running_athletisme',
+      'subcat_fitness_musculation',
+      'subcat_sports_outdoor_rando',
+      'subcat_sports_raquette',
+      'subcat_sports_glisse_eau',
+      'subcat_nutrition_recuperation_sport',
+      'subcat_vetements_techniques_sport',
+    ],
+    'cat_art': [
+      'subcat_peinture_dessin',
+      'subcat_sculpture_modelage',
+      'subcat_loisirs_creatifs_diy',
+      'subcat_livres_art_monographies',
+      'subcat_affiches_tirages_dart',
+      'subcat_materiel_arts_graphiques',
+    ],
+    'cat_lecture': [
+      'subcat_romans_litterature',
+      'subcat_bd_romans_graphiques',
+      'subcat_mangas_comics',
+      'subcat_developpement_personnel_essais',
+      'subcat_liseuses_accessoires_lecture',
+      'subcat_beaux_livres_coffee_table',
+    ],
+    'cat_voyage': [
+      'subcat_valises_bagagerie',
+      'subcat_sacs_a_dos_voyage',
+      'subcat_accessoires_nomades',
+      'subcat_organisation_bagages',
+      'subcat_equipement_bivouac_aventure',
+      'subcat_guides_carnets_voyage',
+    ],
+    'cat_jeuxvideo': [
+      'subcat_consoles_gaming',
+      'subcat_manettes_accessoires_gaming',
+      'subcat_casques_audio_gaming',
+      'subcat_jeux_video_hits',
+      'subcat_fauteuils_mobilier_gaming',
+      'subcat_goodies_figurines_gaming',
+    ],
+    'cat_musique': [
+      'subcat_instruments_cordes',
+      'subcat_claviers_pianos',
+      'subcat_platines_vinyles',
+      'subcat_home_studio_mao',
+      'subcat_accessoires_musiciens',
+      'subcat_percussions_batteries',
+    ],
+    'cat_jardinage': [
+      'subcat_plantes_interieur_cache_pots',
+      'subcat_potager_interieur_connecte',
+      'subcat_outils_jardinage_ergonomiques',
+      'subcat_graines_kits_plantation',
+      'subcat_mobilier_deco_jardin',
+      'subcat_arrosage_entretien_plantes',
+    ],
+    'cat_bienetre': [
+      'subcat_massages_relaxation',
+      'subcat_yoga_meditation',
+      'subcat_sommeil_reveils_lumiere',
+      'subcat_aromatherapie_diffuseurs',
+      'subcat_bains_thalasso_maison',
+      'subcat_thermotherapie_acupression',
+    ],
+    'cat_mecanique_auto': [
+      'subcat_accessoires_auto_interieur',
+      'subcat_entretien_nettoyage_auto_prestige',
+      'subcat_outils_mecanique_diagnostic',
+      'subcat_dashcam_securite_auto',
+      'subcat_lifestyle_passion_automobile',
+      'subcat_accessoires_moto_motard',
+    ],
+    'cat_aeronautique': [
+      'subcat_drones_prises_de_vue',
+      'subcat_maquettes_avions_collection',
+      'subcat_simulation_vol_pilotage',
+      'subcat_livres_histoire_aviation',
+      'subcat_accessoires_lifestyle_aviateur',
+      'subcat_astronomie_espace',
     ],
   };
 
@@ -347,6 +428,7 @@ class TagsDefinitions {
     'Tendances': 'cat_tendances',
     'Tech': 'cat_tech',
     'Électronique': 'cat_tech',
+    'High-Tech': 'cat_tech',
     'Mode': 'cat_mode',
     'Vêtements': 'cat_mode',
     'Maison': 'cat_maison',
@@ -356,6 +438,25 @@ class TagsDefinitions {
     'Food': 'cat_food',
     'Gastronomie': 'cat_food',
     'Cuisine': 'cat_food',
+    'Sport': 'cat_sport',
+    'Fitness': 'cat_sport',
+    'Art': 'cat_art',
+    'Création': 'cat_art',
+    'Lecture': 'cat_lecture',
+    'Livres': 'cat_lecture',
+    'Voyage': 'cat_voyage',
+    'Aventure': 'cat_voyage',
+    'Jeux Vidéo': 'cat_jeuxvideo',
+    'Gaming': 'cat_jeuxvideo',
+    'Musique': 'cat_musique',
+    'Jardinage': 'cat_jardinage',
+    'Plantes': 'cat_jardinage',
+    'Bien-être': 'cat_bienetre',
+    'Relaxation': 'cat_bienetre',
+    'Automobile': 'cat_mecanique_auto',
+    'Mécanique': 'cat_mecanique_auto',
+    'Aéronautique': 'cat_aeronautique',
+    'Aviation': 'cat_aeronautique',
   };
 
   /// Conversion occasion utilisateur → tag produit
