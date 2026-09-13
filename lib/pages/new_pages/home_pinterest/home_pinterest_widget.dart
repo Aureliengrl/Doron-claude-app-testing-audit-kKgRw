@@ -346,7 +346,7 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     try {
       // ⚡ PARALLÉLISER : charger tags utilisateur + SharedPreferences en même temps
       final futures = await Future.wait<dynamic>([
-        FirebaseDataService.loadUserProfileTags(),
+        FirebaseDataService.loadUserProfileTags().timeout(const Duration(seconds: 2), onTimeout: () => null),
         SharedPreferences.getInstance(),
       ]);
 
