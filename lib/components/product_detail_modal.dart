@@ -17,8 +17,9 @@ import '/components/cached_image.dart';
 import '/components/connection_required_dialog.dart';
 import '/components/wishlist_picker_sheet.dart';
 import '/utils/app_logger.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '/services/api/multi_market_service.dart';
+import '/components/store_locator_sheet.dart';
+import '/services/store_locator_service.dart';
 
 class GlobalProductDetailModal {
   static final Color violetColor = const Color(0xFF8A2BE2);
@@ -375,6 +376,8 @@ class GlobalProductDetailModal {
                               const SizedBox(height: 20),
                               // Comparateur de prix / Liens d'achat
                               _buildBuyLinksSection(context, product),
+                              // Où l'acheter près de chez moi (Store Locator)
+                              _buildStoreLocatorSection(context, product),
                             ],
                           ),
                         ),
@@ -386,6 +389,93 @@ class GlobalProductDetailModal {
             ),
           );
         },
+      ),
+    );
+  }
+
+  /// Bloc de localisation des magasins / ateliers à proximité
+  static Widget _buildStoreLocatorSection(BuildContext context, Map<String, dynamic> product) {
+    final stores = StoreLocatorService.getNearbyStoresForProduct(product);
+    if (stores.isEmpty) return const SizedBox.shrink();
+
+    final closest = stores.first;
+
+    return Container(
+      margin: const EdgeInsets.only(top: 14),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF8A2BE2).withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.location_on, color: Color(0xFFC77DFF), size: 18),
+              const SizedBox(width: 6),
+              Text(
+                'Disponible près de vous',
+                style: GoogleFonts.outfit(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Dès ${closest.distanceKm.toStringAsFixed(1)} km',
+                  style: GoogleFonts.outfit(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF10B981),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${closest.name} • ${closest.stockLabel}',
+            style: GoogleFonts.outfit(
+              fontSize: 12,
+              color: Colors.white.withOpacity(0.7),
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            height: 38,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                StoreLocatorSheet.show(context, product);
+              },
+              icon: const Icon(Icons.map_outlined, color: Color(0xFFC77DFF), size: 16),
+              label: Text(
+                'Voir la carte & les magasins (${stores.length})',
+                style: GoogleFonts.outfit(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFFC77DFF),
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: const Color(0xFF8A2BE2).withOpacity(0.5)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
