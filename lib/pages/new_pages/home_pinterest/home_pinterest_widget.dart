@@ -360,10 +360,21 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       final firstName = userProfileTags?['firstName'] as String? ?? '';
       _model.setFirstName(firstName);
 
-      final tagsToUse = userProfileTags ?? {};
+      final tagsToUse = Map<String, dynamic>.from(userProfileTags ?? {});
+      if (_model.activeEventFilter.isNotEmpty && _model.activeEventFilter != 'all') {
+        tagsToUse['event'] = _model.activeEventFilter;
+        tagsToUse['occasion'] = _model.activeEventFilter;
+        if (_model.activeEventFilter == 'fete_meres' || _model.activeEventFilter == 'fete_grand_meres') {
+          tagsToUse['gender'] = 'Femme';
+          tagsToUse['recipientGender'] = 'Femme';
+        } else if (_model.activeEventFilter == 'fete_peres') {
+          tagsToUse['gender'] = 'Homme';
+          tagsToUse['recipientGender'] = 'Homme';
+        }
+      }
 
       // Charger les sections thématiques EN ARRIÈRE-PLAN (ne bloque PAS les produits)
-      if (_model.activeCategoryId == 'all' && userProfileTags != null) {
+      if (_model.activeCategoryId == 'all' && _model.activeEventFilter.isEmpty && userProfileTags != null) {
         // Lancer sans await — les produits s'affichent immédiatement
         Future.microtask(() async {
           try {
@@ -488,10 +499,22 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
       _model.incrementPage();
 
       final userProfileTags = _cachedUserTags ?? await FirebaseDataService.loadUserProfileTags();
+      final tagsToUse = Map<String, dynamic>.from(userProfileTags ?? {});
+      if (_model.activeEventFilter.isNotEmpty && _model.activeEventFilter != 'all') {
+        tagsToUse['event'] = _model.activeEventFilter;
+        tagsToUse['occasion'] = _model.activeEventFilter;
+        if (_model.activeEventFilter == 'fete_meres' || _model.activeEventFilter == 'fete_grand_meres') {
+          tagsToUse['gender'] = 'Femme';
+          tagsToUse['recipientGender'] = 'Femme';
+        } else if (_model.activeEventFilter == 'fete_peres') {
+          tagsToUse['gender'] = 'Homme';
+          tagsToUse['recipientGender'] = 'Homme';
+        }
+      }
       final currentLoadedIds = _model.products.map((p) => p['id']?.toString() ?? '').where((id) => id.isNotEmpty).toList();
 
       final rawProducts = await ProductMatchingService.getPersonalizedProducts(
-        userTags: userProfileTags ?? {},
+        userTags: tagsToUse,
         count: HomePinterestModel.productsPerPage,
         category: _model.activeCategoryId != 'all' ? _model.activeCategoryId : null,
         brand: _model.activeBrand != 'all' ? _model.activeBrand : null,

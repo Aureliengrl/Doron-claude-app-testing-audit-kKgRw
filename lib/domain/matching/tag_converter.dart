@@ -68,11 +68,89 @@ class TagConverter {
   static void _addGenderTag(Map<String, dynamic> profile, Set<String> tags) {
     final gender = (profile['gender'] ?? profile['recipientGender'])?.toString() ?? '';
     final g = gender.toLowerCase();
+    
+    // 1. Détection directe
     if (g.contains('femme') || g.contains('fille')) {
       tags.add('gender_femme');
+      return;
     } else if (g.contains('homme') || g.contains('garçon') || g.contains('garcon')) {
       tags.add('gender_homme');
-    } else if (gender.isNotEmpty) {
+      return;
+    }
+
+    // 2. Détection par la relation
+    final relation = (profile['relation'] ??
+            profile['recipient'] ??
+            profile['recipientRelation'])
+        ?.toString()
+        .toLowerCase() ??
+        '';
+    if (relation.isNotEmpty) {
+      if (relation.contains('maman') ||
+          relation.contains('mère') ||
+          relation.contains('mere') ||
+          relation.contains('mamie') ||
+          relation.contains('grand-mère') ||
+          relation.contains('grand mere') ||
+          relation.contains('soeur') ||
+          relation.contains('sœur') ||
+          relation.contains('fille') ||
+          relation.contains('copine') ||
+          relation.contains('épouse') ||
+          relation.contains('epouse') ||
+          relation.contains('femme') ||
+          relation.contains('amie') ||
+          relation.contains('tante') ||
+          relation.contains('marraine') ||
+          relation.contains('belle-mère') ||
+          relation.contains('nièce') ||
+          relation.contains('niece')) {
+        tags.add('gender_femme');
+        return;
+      }
+      if (relation.contains('papa') ||
+          relation.contains('père') ||
+          relation.contains('pere') ||
+          relation.contains('papy') ||
+          relation.contains('grand-père') ||
+          relation.contains('grand pere') ||
+          relation.contains('frere') ||
+          relation.contains('frère') ||
+          relation.contains('fils') ||
+          relation.contains('copain') ||
+          relation.contains('mari') ||
+          relation.contains('époux') ||
+          relation.contains('epoux') ||
+          relation.contains('ami') ||
+          relation.contains('oncle') ||
+          relation.contains('parrain') ||
+          relation.contains('beau-père') ||
+          relation.contains('neveu')) {
+        tags.add('gender_homme');
+        return;
+      }
+    }
+
+    // 3. Détection par l'événement / occasion
+    final event = (profile['event'] ?? profile['occasion'] ?? profile['moment'])
+        ?.toString()
+        .toLowerCase() ??
+        '';
+    if (event.contains('fete_meres') ||
+        event.contains('fete_grand_meres') ||
+        event.contains('meres') ||
+        event.contains('mères')) {
+      tags.add('gender_femme');
+      return;
+    }
+    if (event.contains('fete_peres') ||
+        event.contains('peres') ||
+        event.contains('pères')) {
+      tags.add('gender_homme');
+      return;
+    }
+
+    if (gender.isNotEmpty) {
       tags.add('gender_mixte');
     }
   }

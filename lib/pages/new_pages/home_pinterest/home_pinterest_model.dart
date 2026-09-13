@@ -387,56 +387,20 @@ class HomePinterestModel {
       }).toList();
     }
 
+    // 1. Filtrage par Catégorie principale (avec normalisation)
+    if (activeCategoryId != 'all' && activeCategoryId.isNotEmpty) {
+      filtered = filtered.where((p) => _matchesCategory(activeCategoryId, p)).toList();
+    }
+
+    // 2. Filtrage par Événement (avec règles strictes de genre et thématiques)
     if (activeEventFilter.isNotEmpty && activeEventFilter != 'all') {
-      final eventFilter = activeEventFilter.replaceAll('_', ' ').toLowerCase();
-      final eventId = activeEventFilter.toLowerCase();
-      final eventFiltered = filtered.where((product) {
-        final name = (product['name'] as String? ?? '').toLowerCase();
-        final description = (product['description'] as String? ?? '').toLowerCase();
-        final keywordsList = product['keywords'] as List<dynamic>? ?? [];
-        final keywordsStr = keywordsList.join(' ').toLowerCase();
-        final tagsList = product['tags'] as List<dynamic>? ?? [];
-        final tagsStr = tagsList.join(' ').toLowerCase();
-        final catsList = product['categories'] as List<dynamic>? ?? [];
-        final catsStr = catsList.join(' ').toLowerCase();
-
-        return name.contains(eventFilter) ||
-            description.contains(eventFilter) ||
-            keywordsStr.contains(eventFilter) ||
-            keywordsStr.contains(eventId) ||
-            tagsStr.contains(eventId) ||
-            catsStr.contains(eventId);
-      }).toList();
-
-      if (eventFiltered.isNotEmpty) {
-        filtered = eventFiltered;
-      }
+      final eventFiltered = filtered.where((p) => _matchesEvent(activeEventFilter, p)).toList();
+      filtered = eventFiltered;
     }
     
-    // Filtrage dynamique par le sous-menu avec tolérance d'accents
-    if (activeSubMenu != 'all') {
-      final subQuery = _cleanAccents(activeSubMenu.toLowerCase());
-      final cleanSubQueryWords = subQuery.replaceAll(RegExp(r'[()]'), ' ').split(' ').where((w) => w.length > 2).toList();
-
-      final subFiltered = filtered.where((product) {
-        final name = _cleanAccents((product['name'] as String? ?? '').toLowerCase());
-        final brand = _cleanAccents((product['brand'] as String? ?? '').toLowerCase());
-        final description = _cleanAccents((product['description'] as String? ?? '').toLowerCase());
-        final categoriesList = _cleanAccents((product['categories'] as List<dynamic>? ?? []).join(' ').toLowerCase());
-        final keywordsList = product['keywords'] as List<dynamic>? ?? [];
-        final keywordsStr = _cleanAccents(keywordsList.join(' ').toLowerCase());
-        final tagsList = product['tags'] as List<dynamic>? ?? [];
-        final tagsStr = _cleanAccents(tagsList.join(' ').toLowerCase());
-
-        final combined = '$name $brand $description $categoriesList $keywordsStr $tagsStr';
-
-        if (cleanSubQueryWords.isEmpty) return true;
-        for (final word in cleanSubQueryWords) {
-          if (combined.contains(word)) return true;
-        }
-        return false;
-      }).toList();
-
+    // 3. Filtrage dynamique par le sous-menu
+    if (activeSubMenu != 'all' && activeSubMenu.isNotEmpty) {
+      final subFiltered = filtered.where((p) => _matchesSubMenu(activeSubMenu, p)).toList();
       if (subFiltered.isNotEmpty) {
         filtered = subFiltered;
       }
@@ -469,6 +433,261 @@ class HomePinterestModel {
     }
 
     return filtered;
+  }
+
+  bool _matchesCategory(String catId, Map<String, dynamic> product) {
+    final c = catId.toLowerCase().trim();
+    if (c == 'all' || c.isEmpty) return true;
+
+    const categoryTagMap = {
+      'tech': 'cat_tech',
+      'fashion': 'cat_mode',
+      'home': 'cat_maison',
+      'beauty': 'cat_beaute',
+      'food': 'cat_food',
+      'sport': 'cat_sport',
+      'art': 'cat_art',
+      'reading': 'cat_lecture',
+      'travel': 'cat_voyage',
+      'gaming': 'cat_jeuxvideo',
+      'music': 'cat_musique',
+      'garden': 'cat_jardinage',
+      'wellness': 'cat_bienetre',
+      'mechanic': 'cat_mecanique_auto',
+      'aeronautic': 'cat_aeronautique',
+    };
+
+    final targetTag = categoryTagMap[c] ?? c;
+    final pCat = (product['category'] ?? '').toString().toLowerCase();
+    final pCats = (product['categories'] as List<dynamic>? ?? []).map((e) => e.toString().toLowerCase()).toList();
+    final pTags = (product['tags'] as List<dynamic>? ?? []).map((e) => e.toString().toLowerCase()).toList();
+    final allList = {pCat, ...pCats, ...pTags};
+
+    if (c == 'trending') {
+      return allList.contains('popularite_5') || allList.contains('popularite_4') || allList.contains('cat_tendances');
+    }
+
+    return allList.contains(targetTag) || allList.contains(c);
+  }
+
+  bool _matchesEvent(String eventId, Map<String, dynamic> product) {
+    final tags = ((product['tags'] as List?)?.cast<dynamic>() ?? [])
+        .map((t) => t.toString().toLowerCase())
+        .toSet();
+    final categories = ((product['categories'] as List?)?.cast<dynamic>() ?? [])
+        .map((c) => c.toString().toLowerCase())
+        .toSet();
+    final pCat = (product['category'] ?? '').toString().toLowerCase();
+    final allTags = {...tags, ...categories, if (pCat.isNotEmpty) pCat};
+
+    final name = (product['name'] ?? '').toString().toLowerCase();
+    final brand = (product['brand'] ?? '').toString().toLowerCase();
+    final description = (product['description'] ?? '').toString().toLowerCase();
+    final text = '$name $brand $description';
+
+    final isMaleProduct = allTags.contains('gender_homme') ||
+        allTags.contains('subcat_vetements_homme') ||
+        allTags.contains('subcat_rasage_barbe') ||
+        text.contains('pour homme') ||
+        (text.contains('homme') && !text.contains('femme'));
+
+    final isFemaleProduct = allTags.contains('gender_femme') ||
+        allTags.contains('subcat_vetements_femme') ||
+        allTags.contains('subcat_lingerie_nuit') ||
+        allTags.contains('subcat_maquillage') ||
+        text.contains('pour femme');
+
+    switch (eventId) {
+      case 'fete_meres':
+        // STRICTEMENT FEMININ OU MIXTE - EXCLUSION TOTALE HOMME
+        if (isMaleProduct) return false;
+        return allTags.contains('gender_femme') ||
+            allTags.contains('gender_mixte') ||
+            allTags.contains('cat_beaute') ||
+            allTags.contains('cat_bienetre') ||
+            allTags.contains('subcat_bijoux') ||
+            allTags.contains('subcat_sacs_maroquinerie') ||
+            allTags.contains('subcat_ambiance_bougies_senteurs') ||
+            allTags.contains('subcat_linge_maison') ||
+            allTags.contains('subcat_deco_murale_objets') ||
+            allTags.contains('subcat_cuisine_arts_de_la_table') ||
+            allTags.contains('subcat_chocolats_confiseries') ||
+            allTags.contains('subcat_cafe_the') ||
+            allTags.contains('subcat_coffrets_degustation') ||
+            allTags.contains('subcat_plantes_interieur_cache_pots') ||
+            allTags.contains('subcat_parfum') ||
+            allTags.contains('subcat_soin_visage') ||
+            allTags.contains('subcat_soin_corps') ||
+            allTags.contains('occasion_fete');
+
+      case 'fete_grand_meres':
+        if (isMaleProduct) return false;
+        return allTags.contains('gender_femme') ||
+            allTags.contains('gender_mixte') ||
+            allTags.contains('age_senior') ||
+            allTags.contains('cat_bienetre') ||
+            allTags.contains('cat_lecture') ||
+            allTags.contains('subcat_cafe_the') ||
+            allTags.contains('subcat_chocolats_confiseries') ||
+            allTags.contains('subcat_plantes_interieur_cache_pots') ||
+            allTags.contains('subcat_bijoux') ||
+            allTags.contains('subcat_ambiance_bougies_senteurs') ||
+            allTags.contains('subcat_linge_maison');
+
+      case 'fete_peres':
+        // STRICTEMENT MASCULIN OU MIXTE - EXCLUSION TOTALE FEMME
+        if (isFemaleProduct) return false;
+        return allTags.contains('gender_homme') ||
+            allTags.contains('gender_mixte') ||
+            allTags.contains('cat_mecanique_auto') ||
+            allTags.contains('cat_tech') ||
+            allTags.contains('subcat_vins_spiritueux') ||
+            allTags.contains('subcat_accessoires_sommellerie_bar') ||
+            allTags.contains('subcat_montres_classiques') ||
+            allTags.contains('subcat_vetements_homme') ||
+            allTags.contains('subcat_rasage_barbe') ||
+            allTags.contains('subcat_sacs_maroquinerie') ||
+            allTags.contains('cat_sport') ||
+            allTags.contains('cat_aeronautique') ||
+            allTags.contains('subcat_massages_relaxation') ||
+            allTags.contains('occasion_fete');
+
+      case 'st_valentin':
+        return allTags.contains('occasion_saint_valentin') ||
+            allTags.contains('subcat_bijoux') ||
+            allTags.contains('subcat_parfum') ||
+            allTags.contains('subcat_lingerie_nuit') ||
+            allTags.contains('subcat_chocolats_confiseries') ||
+            allTags.contains('subcat_vins_spiritueux') ||
+            allTags.contains('subcat_ambiance_bougies_senteurs') ||
+            allTags.contains('subcat_bains_thalasso_maison') ||
+            allTags.contains('subcat_massages_relaxation') ||
+            allTags.contains('subcat_montres_classiques') ||
+            allTags.contains('perso_romantique');
+
+      case 'naissance':
+        return allTags.contains('occasion_naissance') ||
+            allTags.contains('age_enfant') ||
+            allTags.contains('cat_bienetre') ||
+            allTags.contains('subcat_linge_maison') ||
+            allTags.contains('subcat_ambiance_bougies_senteurs') ||
+            allTags.contains('subcat_soin_corps') ||
+            allTags.contains('subcat_massages_relaxation') ||
+            allTags.contains('subcat_graines_kits_plantation');
+
+      case 'mariage':
+        return allTags.contains('occasion_mariage') ||
+            allTags.contains('subcat_cuisine_arts_de_la_table') ||
+            allTags.contains('subcat_linge_maison') ||
+            allTags.contains('subcat_electromenager') ||
+            allTags.contains('subcat_luminaire_ambiance') ||
+            allTags.contains('subcat_vins_spiritueux') ||
+            allTags.contains('subcat_bijoux') ||
+            allTags.contains('subcat_montres_classiques') ||
+            allTags.contains('subcat_valises_bagagerie');
+
+      case 'cremaillere':
+        return allTags.contains('occasion_cremaillere') ||
+            allTags.contains('cat_maison') ||
+            allTags.contains('cat_jardinage') ||
+            allTags.contains('subcat_cuisine_arts_de_la_table') ||
+            allTags.contains('subcat_deco_murale_objets') ||
+            allTags.contains('subcat_ambiance_bougies_senteurs') ||
+            allTags.contains('subcat_luminaire_ambiance') ||
+            allTags.contains('subcat_plantes_interieur_cache_pots') ||
+            allTags.contains('subcat_potager_interieur_connecte') ||
+            allTags.contains('subcat_vins_spiritueux') ||
+            allTags.contains('subcat_epicerie_fine') ||
+            allTags.contains('subcat_accessoires_sommellerie_bar');
+
+      case 'diplome':
+        return allTags.contains('occasion_diplome') ||
+            allTags.contains('subcat_ordinateurs_accessoires') ||
+            allTags.contains('subcat_audio') ||
+            allTags.contains('subcat_smartphones_tablettes') ||
+            allTags.contains('subcat_montres_classiques') ||
+            allTags.contains('subcat_sacs_maroquinerie') ||
+            allTags.contains('subcat_valises_bagagerie') ||
+            allTags.contains('subcat_beaux_livres_coffee_table');
+
+      case 'fete_musique':
+        return allTags.contains('cat_musique') ||
+            allTags.contains('subcat_audio') ||
+            allTags.contains('passion_musique') ||
+            allTags.contains('type_musique_audio');
+
+      case 'world_cup':
+        return allTags.contains('cat_sport') ||
+            allTags.contains('passion_sport') ||
+            allTags.contains('subcat_sportswear_outdoor');
+
+      case 'pot_depart':
+        return allTags.contains('context_colleague') ||
+            allTags.contains('subcat_vins_spiritueux') ||
+            allTags.contains('subcat_coffrets_degustation') ||
+            allTags.contains('subcat_valises_bagagerie') ||
+            allTags.contains('subcat_sacs_maroquinerie') ||
+            allTags.contains('subcat_accessoires_sommellerie_bar') ||
+            allTags.contains('subcat_beaux_livres_coffee_table') ||
+            allTags.contains('subcat_plantes_interieur_cache_pots');
+
+      case 'halloween':
+        return allTags.contains('subcat_chocolats_confiseries') ||
+            allTags.contains('cat_jeuxvideo') ||
+            allTags.contains('subcat_ambiance_bougies_senteurs') ||
+            allTags.contains('subcat_mangas_comics');
+
+      case 'fete_nationale':
+        return allTags.contains('subcat_vins_spiritueux') ||
+            allTags.contains('subcat_epicerie_fine') ||
+            allTags.contains('subcat_coffrets_degustation') ||
+            allTags.contains('subcat_accessoires_sommellerie_bar') ||
+            brand.contains('bonsoirs') ||
+            brand.contains('dalloyau') ||
+            brand.contains('le creuset') ||
+            brand.contains('hédène') ||
+            brand.contains('hedene') ||
+            brand.contains('mariage frères') ||
+            brand.contains('mariage freres');
+
+      case 'noel':
+        return allTags.contains('occasion_noel') ||
+            allTags.contains('popularite_5') ||
+            allTags.contains('popularite_4') ||
+            allTags.contains('style_luxe') ||
+            allTags.contains('style_festif');
+
+      case 'anniversaire':
+        return allTags.contains('occasion_anniversaire') ||
+            allTags.contains('popularite_5') ||
+            allTags.contains('popularite_4');
+
+      default:
+        final eventFilter = eventId.replaceAll('_', ' ').toLowerCase();
+        return text.contains(eventFilter) || allTags.contains(eventId);
+    }
+  }
+
+  bool _matchesSubMenu(String subMenu, Map<String, dynamic> product) {
+    final subQuery = _cleanAccents(subMenu.toLowerCase());
+    final cleanSubQueryWords = subQuery.replaceAll(RegExp(r'[()]'), ' ').split(' ').where((w) => w.length > 2).toList();
+
+    final name = _cleanAccents((product['name'] as String? ?? '').toLowerCase());
+    final brand = _cleanAccents((product['brand'] as String? ?? '').toLowerCase());
+    final description = _cleanAccents((product['description'] as String? ?? '').toLowerCase());
+    final categoriesList = _cleanAccents((product['categories'] as List<dynamic>? ?? []).join(' ').toLowerCase());
+    final keywordsList = product['keywords'] as List<dynamic>? ?? [];
+    final keywordsStr = _cleanAccents(keywordsList.join(' ').toLowerCase());
+    final tagsList = product['tags'] as List<dynamic>? ?? [];
+    final tagsStr = _cleanAccents(tagsList.join(' ').toLowerCase());
+
+    final combined = '$name $brand $description $categoriesList $keywordsStr $tagsStr';
+
+    if (cleanSubQueryWords.isEmpty) return true;
+    for (final word in cleanSubQueryWords) {
+      if (combined.contains(word)) return true;
+    }
+    return false;
   }
 
   String _cleanAccents(String input) {

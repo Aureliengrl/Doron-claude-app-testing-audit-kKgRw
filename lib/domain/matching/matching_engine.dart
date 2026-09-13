@@ -165,14 +165,25 @@ class MatchingEngine {
       return s + 50.0; // Produit universel
     }
 
+    // Exclusions par sous-catégories spécifiques au genre opposé
+    if (userGender == 'gender_femme') {
+      if (productTags.contains('subcat_vetements_homme') ||
+          productTags.contains('subcat_rasage_barbe')) {
+        return -10000.0;
+      }
+    } else if (userGender == 'gender_homme') {
+      if (productTags.contains('subcat_vetements_femme') ||
+          productTags.contains('subcat_lingerie_nuit') ||
+          productTags.contains('subcat_maquillage')) {
+        return -10000.0;
+      }
+    }
+
     if (productGenderTags.contains(userGender)) return s + 100.0; // Match exact
     if (productGenderTags.contains('gender_mixte')) return s + 70.0; // Mixte OK
 
-    // Pas de match
-    if (isHome || isPerson) return -10000.0; // Exclusion stricte
-    if (hasCategoryFilter) return s - 30.0;
-    if (isDiscovery) return s - 10.0;
-    return s - 80.0;
+    // Règle DORÕN : exclusion absolue pour le genre opposé (ex: chemise homme pour femme)
+    return -10000.0;
   }
 
   static bool _isStronglyFeminine(String name) {

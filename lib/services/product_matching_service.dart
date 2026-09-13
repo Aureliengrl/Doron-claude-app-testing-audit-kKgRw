@@ -99,6 +99,58 @@ class ProductMatchingService {
     }
   }
 
+  /// Normalise un identifiant ou nom de catégorie vers le tag officiel cat_*
+  static String? normalizeCategoryTag(String? category) {
+    if (category == null) return null;
+    final c = category.toLowerCase().trim();
+    if (c == 'all' || c == 'pour toi' || c.isEmpty) return null;
+    if (c.startsWith('cat_')) return c;
+
+    const mapping = {
+      'tech': 'cat_tech',
+      'fashion': 'cat_mode',
+      'mode': 'cat_mode',
+      'home': 'cat_maison',
+      'maison': 'cat_maison',
+      'beauty': 'cat_beaute',
+      'beaute': 'cat_beaute',
+      'beauté': 'cat_beaute',
+      'food': 'cat_food',
+      'sport': 'cat_sport',
+      'art': 'cat_art',
+      'reading': 'cat_lecture',
+      'lecture': 'cat_lecture',
+      'livres': 'cat_lecture',
+      'travel': 'cat_voyage',
+      'voyage': 'cat_voyage',
+      'gaming': 'cat_jeuxvideo',
+      'jeuxvideo': 'cat_jeuxvideo',
+      'jeux video': 'cat_jeuxvideo',
+      'music': 'cat_musique',
+      'musique': 'cat_musique',
+      'garden': 'cat_jardinage',
+      'jardinage': 'cat_jardinage',
+      'jardin': 'cat_jardinage',
+      'wellness': 'cat_bienetre',
+      'bienetre': 'cat_bienetre',
+      'bien-etre': 'cat_bienetre',
+      'bien-être': 'cat_bienetre',
+      'mechanic': 'cat_mecanique_auto',
+      'mecanique': 'cat_mecanique_auto',
+      'mécanique': 'cat_mecanique_auto',
+      'auto': 'cat_mecanique_auto',
+      'automobile': 'cat_mecanique_auto',
+      'aeronautic': 'cat_aeronautique',
+      'aeronautique': 'cat_aeronautique',
+      'aéronautique': 'cat_aeronautique',
+      'aviation': 'cat_aeronautique',
+      'trending': 'popularite_5',
+      'tendances': 'popularite_5',
+    };
+
+    return mapping[c] ?? (TagsDefinitions.categoryConversion[c] ?? c);
+  }
+
   /// - "discovery": Mode Inspirations - Très souple, variété maximale
   static Future<List<Map<String, dynamic>>> getPersonalizedProducts({
     required Map<String, dynamic> userTags,
@@ -145,9 +197,8 @@ class ProductMatchingService {
         }
       }
 
-      final cleanCatLower = (category != null && category != 'Pour toi' && category != 'all')
-          ? category.toLowerCase().trim()
-          : null;
+      final normalizedCat = normalizeCategoryTag(category);
+      final cleanCatLower = normalizedCat?.toLowerCase().trim();
       final cleanBrandLower = (brand != null && brand != 'all')
           ? brand.toLowerCase().trim()
           : null;
@@ -162,20 +213,27 @@ class ProductMatchingService {
             final pBrandNorm = pBrand.replaceAll('&', '').replaceAll(' ', '').replaceAll('-', '');
             final filterNorm = cleanBrandLower.replaceAll('&', '').replaceAll(' ', '').replaceAll('-', '');
             final pCats = (p['categories'] as List<dynamic>? ?? []).map((c) => c.toString().toLowerCase()).toList();
-            return pBrand.contains(cleanBrandLower) ||
+            final matchesBrand = pBrand.contains(cleanBrandLower) ||
                 pBrandNorm.contains(filterNorm) ||
                 pCats.contains(cleanBrandLower) ||
                 pCats.contains(filterNorm);
+            if (!matchesBrand) return false;
           }
           if (cleanCatLower != null) {
+            final pCat = (p['category'] ?? '').toString().toLowerCase();
             final pCats = (p['categories'] as List<dynamic>? ?? []).map((c) => c.toString().toLowerCase()).toList();
-            return pCats.contains(cleanCatLower);
+            final pTags = (p['tags'] as List<dynamic>? ?? []).map((t) => t.toString().toLowerCase()).toList();
+            final allPList = {pCat, ...pCats, ...pTags};
+            if (cleanCatLower == 'popularite_5') {
+              return allPList.contains('popularite_5') || allPList.contains('popularite_4');
+            }
+            return allPList.contains(cleanCatLower) || (category != null && allPList.contains(category.toLowerCase()));
           }
           return true;
         }).toList();
 
         // Si le filtre spécifique ne donne rien en mémoire, fallback sur le catalogue complet
-        if (allProducts.isEmpty) {
+        if (allProducts.isEmpty && cleanCatLower == null && cleanBrandLower == null) {
           allProducts = List.from(_inMemoryCatalog);
         }
       }
