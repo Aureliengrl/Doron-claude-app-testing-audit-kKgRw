@@ -282,10 +282,18 @@ class HomePinterestModel {
 
   void setProducts(List<Map<String, dynamic>> newProducts) {
     final seenIds = <dynamic>{};
+    final seenNames = <String>{};
     products = newProducts.where((product) {
+      final img = (product['image'] ?? '').toString().trim();
+      if (img.isEmpty || img.contains('placeholder')) return false;
+
       final productId = product['id'];
-      if (seenIds.contains(productId)) return false;
-      seenIds.add(productId);
+      final name = (product['name'] ?? '').toString().trim().toLowerCase();
+      if (productId != null && seenIds.contains(productId)) return false;
+      if (name.isNotEmpty && seenNames.contains(name)) return false;
+
+      if (productId != null) seenIds.add(productId);
+      if (name.isNotEmpty) seenNames.add(name);
       return true;
     }).toList();
   }
@@ -304,8 +312,19 @@ class HomePinterestModel {
 
   void addProducts(List<Map<String, dynamic>> newProducts) {
     final existingIds = products.map((p) => p['id']).toSet();
+    final existingNames = products.map((p) => (p['name'] ?? '').toString().trim().toLowerCase()).where((s) => s.isNotEmpty).toSet();
     final uniqueNewProducts = newProducts.where((product) {
-      return !existingIds.contains(product['id']);
+      final img = (product['image'] ?? '').toString().trim();
+      if (img.isEmpty || img.contains('placeholder')) return false;
+
+      final id = product['id'];
+      final name = (product['name'] ?? '').toString().trim().toLowerCase();
+      if (id != null && existingIds.contains(id)) return false;
+      if (name.isNotEmpty && existingNames.contains(name)) return false;
+
+      if (id != null) existingIds.add(id);
+      if (name.isNotEmpty) existingNames.add(name);
+      return true;
     }).toList();
     products.addAll(uniqueNewProducts);
   }

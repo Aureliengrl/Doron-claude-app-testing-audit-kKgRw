@@ -35,12 +35,17 @@ class _ProductCardState extends State<ProductCard> with AutomaticKeepAliveClient
   @override
   bool get wantKeepAlive => true;
 
+  bool _hasError = false;
   static const Color _violet = Color(0xFF8A2BE2);
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     final imageUrl = widget.product['image'] as String? ?? '';
+
+    if (imageUrl.isEmpty || _hasError || imageUrl.contains('placeholder')) {
+      return const SizedBox.shrink();
+    }
 
     return RepaintBoundary(
       child: Material(
@@ -75,6 +80,16 @@ class _ProductCardState extends State<ProductCard> with AutomaticKeepAliveClient
                     fit: BoxFit.fitWidth,
                     width: double.infinity,
                     borderRadius: BorderRadius.circular(16),
+                    errorWidget: const SizedBox.shrink(),
+                    onError: () {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted && !_hasError) {
+                          setState(() {
+                            _hasError = true;
+                          });
+                        }
+                      });
+                    },
                   ),
                 ),
 

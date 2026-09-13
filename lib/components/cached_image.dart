@@ -76,6 +76,7 @@ class CachedImage extends StatelessWidget {
   final Widget? placeholder;
   final Widget? errorWidget;
   final Color? placeholderColor;
+  final VoidCallback? onError;
 
   const CachedImage({
     super.key,
@@ -87,12 +88,14 @@ class CachedImage extends StatelessWidget {
     this.placeholder,
     this.errorWidget,
     this.placeholderColor,
+    this.onError,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (imageUrl.isEmpty) {
-      return _buildErrorWidget();
+    if (imageUrl.isEmpty || imageUrl.contains('placeholder')) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => onError?.call());
+      return errorWidget ?? const SizedBox.shrink();
     }
 
     return ClipRRect(
@@ -102,7 +105,6 @@ class CachedImage extends StatelessWidget {
         width: width,
         height: height,
         fit: fit,
-        // PERF AXE 3: Shimmer au lieu de CircularProgressIndicator — perception 4× plus fluide
         placeholder: (context, url) =>
             placeholder ??
             _ShimmerBox(
@@ -112,7 +114,8 @@ class CachedImage extends StatelessWidget {
             ),
         errorWidget: (context, url, error) {
           AppLogger.debug('❌ Erreur chargement image: $url - $error', 'Debug');
-          return errorWidget ?? _buildErrorWidget();
+          WidgetsBinding.instance.addPostFrameCallback((_) => onError?.call());
+          return errorWidget ?? const SizedBox.shrink();
         },
         fadeInDuration: const Duration(milliseconds: 50),
         fadeOutDuration: const Duration(milliseconds: 50),
