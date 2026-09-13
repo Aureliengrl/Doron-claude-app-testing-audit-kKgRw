@@ -1,0 +1,2347 @@
+[
+  {
+    "name": "Apple AirPods Pro 2 (USB-C)",
+    "brand": "Apple",
+    "price": 279.0,
+    "url": "https://www.apple.com/fr/airpods-pro/",
+    "image": "https://m.media-amazon.com/images/I/61SUj2aKoEL._AC_SL1500_.jpg",
+    "description": "Écouteurs sans fil avec réduction active du bruit de niveau pro, audio spatial personnalisé et boîtier MagSafe USB-C.",
+    "categories": [
+      "tech",
+      "audio",
+      "trending",
+      "apple"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_adulte",
+      "age_ado",
+      "budget_200-300",
+      "tech",
+      "audio",
+      "lifestyle"
+    ]
+  },
+  {
+    "name": "Apple Watch Series 9 GPS 45mm",
+    "brand": "Apple",
+    "price": 479.0,
+    "url": "https://www.apple.com/fr/apple-watch-series-9/",
+    "image": "https://m.media-amazon.com/images/I/71XMTLtZd5L._AC_SL1500_.jpg",
+    "description": "Montre connectée avec puce S9 puissante, geste toucher deux fois, écran ultra-lumineux et suivi d'entraînement de pointe.",
+    "categories": [
+      "tech",
+      "sport",
+      "fashion",
+      "apple"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_adulte",
+      "budget_plus_300",
+      "tech",
+      "sport",
+      "montres"
+    ]
+  },
+  {
+    "name": "Apple MacBook Air 13\" Puce M3",
+    "brand": "Apple",
+    "price": 1299.0,
+    "url": "https://www.apple.com/fr/macbook-air/",
+    "image": "https://m.media-amazon.com/images/I/71ItMeqpN3L._AC_SL1500_.jpg",
+    "description": "Ordinateur portable ultra-fin et ultra-rapide avec puce Apple M3, écran Liquid Retina et jusqu'à 18h d'autonomie.",
+    "categories": [
+      "tech",
+      "apple",
+      "trending"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_adulte",
+      "budget_plus_300",
+      "tech",
+      "ordinateurs",
+      "bureau"
+    ]
+  },
+  {
+    "name": "Apple iPhone 15 Pro Titane Naturel",
+    "brand": "Apple",
+    "price": 1199.0,
+    "url": "https://www.apple.com/fr/iphone-15-pro/",
+    "image": "https://m.media-amazon.com/images/I/81+GIkwqLIL._AC_SL1500_.jpg",
+    "description": "Design en titane aérospatial, puce A17 Pro révolutionnaire, bouton Action et système photo pro surpuissant.",
+    "categories": [
+      "tech",
+      "trending",
+      "apple"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_adulte",
+      "budget_plus_300",
+      "tech",
+      "smartphones"
+    ]
+  },
+  {
+    "name": "Sony PlayStation 5 Slim Edition Standard",
+    "brand": "Sony",
+    "price": 549.99,
+    "url": "https://www.playstation.com/fr-fr/ps5/",
+    "image": "https://m.media-amazon.com/images/I/51051FiD9UL._AC_SL1000_.jpg",
+    "description": "Console de jeux next-gen avec SSD ultra-rapide, retour haptique DualSense et graphismes 4K éblouissants.",
+    "categories": [
+      "gaming",
+      "tech",
+      "trending",
+      "sony"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_ado",
+      "age_adulte",
+      "budget_plus_300",
+      "gaming",
+      "consoles"
+    ]
+  },
+  {
+    "name": "Sony WH-1000XM5 Casque Bluetooth ANC",
+    "brand": "Sony",
+    "price": 329.0,
+    "url": "https://www.sony.fr/electronics/casque-bandeau/wh-1000xm5",
+    "image": "https://m.media-amazon.com/images/I/61+btxzpfDL._AC_SL1500_.jpg",
+    "description": "Casque audio circum-aural avec réduction de bruit leader du marché, 8 micros et confort longue durée.",
+    "categories": [
+      "tech",
+      "music",
+      "travel",
+      "sony"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_adulte",
+      "budget_plus_300",
+      "tech",
+      "audio",
+      "music"
+    ]
+  },
+  {
+    "name": "Nike Air Force 1 '07 White",
+    "brand": "Nike",
+    "price": 119.99,
+    "url": "https://www.nike.com/fr/t/air-force-1-07-chaussure-pour-homme-jBrhbr/CW2288-111",
+    "image": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-force-1-07-chaussure-pour-homme.png",
+    "description": "Baskets Nike Air Force 1 blanches classiques pour homme",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "homme",
+      "sports",
+      "20-30ans",
+      "30-50ans",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Nike Air Force 1 '07 Black",
+    "brand": "Nike",
+    "price": 119.99,
+    "url": "https://www.nike.com/fr/w/noir-air-force-1-chaussures-90poyz5sj3yzy7ok",
+    "image": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/350e7f3a-979a-402b-9396-a8a998dd76ab/air-force-1-07-chaussure-pour-homme.png",
+    "description": "Baskets Nike Air Force 1 noires classiques pour homme",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "homme",
+      "sports",
+      "20-30ans",
+      "30-50ans",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Nike Air Max 90 White",
+    "brand": "Nike",
+    "price": 149.99,
+    "url": "https://www.nike.com/fr/w/blanc-air-max-90-chaussures-4g797zauqmozy7ok",
+    "image": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/zwxes8uud05rkuei1mpt/air-max-90-chaussure-pour-homme.png",
+    "description": "Nike Air Max 90 blanches - icône intemporelle avec amorti Air visible",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "homme",
+      "sports",
+      "20-30ans",
+      "30-50ans",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Adidas Samba OG White Black",
+    "brand": "Adidas",
+    "price": 120,
+    "url": "https://www.adidas.fr/chaussure-samba-og/JH8798.html",
+    "image": "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/3bbecbdf584e40398446a8bf0117cf62_9366/Chaussure_Samba_OG_Blanc_JH8798_01_standard.jpg",
+    "description": "Adidas Samba OG blanches - classique du futsal avec semelle gomme",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "homme",
+      "femme",
+      "20-30ans",
+      "30-50ans",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Asics Gel-Lyte III OG White Yellow",
+    "brand": "Asics",
+    "price": 139.99,
+    "url": "https://www.asics.com/fr/fr-fr/gel-lyte-iii/p/1191A266-100.html",
+    "image": "https://images.asics.com/is/image/asics/1191A266_100_SR_RT_GLB?$zoom$",
+    "description": "Asics Gel-Lyte III OG blanches et jaunes - running rétro avec langue fendue",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "homme",
+      "20-30ans",
+      "30-50ans",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Asics GT-2160 White Silver",
+    "brand": "Asics",
+    "price": 149.99,
+    "url": "https://www.asics.com/fr/fr-fr/gt-2160/p/1203A320-100.html",
+    "image": "https://images.asics.com/is/image/asics/1203A320_100_SR_RT_GLB?$zoom$",
+    "description": "Asics GT-2160 blanches argentées - design Y2K avec technologie Gel",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "homme",
+      "femme",
+      "20-30ans",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Puma Suede Classic Black",
+    "brand": "Puma",
+    "price": 74.99,
+    "url": "https://www.amazon.fr/PUMA-Suede-Classic-Baskets-Homme/dp/B00NQ4IQUS",
+    "image": "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/352634/77/sv01/fnd/PNA/fmt/png/Suede-Classic-XXI-Unisex-Sneakers",
+    "description": "Puma Suede Classic noires - icône en daim depuis 1968, première chaussure de breakdance",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "homme",
+      "femme",
+      "20-30ans",
+      "30-50ans",
+      "budget_50-100"
+    ]
+  },
+  {
+    "name": "Puma Suede Classic Blue",
+    "brand": "Puma",
+    "price": 74.99,
+    "url": "https://www.puma.com/suede-classic",
+    "image": "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/374915/06/sv01/fnd/PNA/fmt/png/Suede-Classic-XXI-Unisex-Sneakers",
+    "description": "Puma Suede Classic bleues - coloris vintage en daim premium",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "homme",
+      "femme",
+      "20-30ans",
+      "budget_50-100"
+    ]
+  },
+  {
+    "name": "Puma Clyde All-Pro Black",
+    "brand": "Puma",
+    "price": 99.99,
+    "url": "https://www.puma.com/clyde-all-pro",
+    "image": "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/378331/01/sv01/fnd/PNA/fmt/png/Clyde-All-Pro-Basketball-Shoes",
+    "description": "Puma Clyde All-Pro noires - héritage basket avec technologie moderne",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "homme",
+      "sports",
+      "20-30ans",
+      "budget_50-100"
+    ]
+  },
+  {
+    "name": "Puma RS-X White Blue",
+    "brand": "Puma",
+    "price": 119.99,
+    "url": "https://www.puma.com/rs-x",
+    "image": "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_2000,h_2000/global/380462/01/sv01/fnd/PNA/fmt/png/RS-X-Reinvention-Sneakers",
+    "description": "Puma RS-X blanches et bleues - chunky sneaker avec amorti RS",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "homme",
+      "femme",
+      "20-30ans",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Apple iPhone 15 Pro 128GB Titanium",
+    "brand": "Apple",
+    "price": 1229,
+    "url": "https://www.apple.com/fr/shop/buy-iphone/iphone-15-pro",
+    "image": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-7inch-naturaltitanium?wid=5120&hei=2880&fmt=p-jpg&qlt=80&.v=1693009279896",
+    "description": "iPhone 15 Pro avec puce A17 Pro, appareil photo 48MP et design titane",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "tech",
+      "30-50ans",
+      "50ans-plus",
+      "budget_200-plus"
+    ]
+  },
+  {
+    "name": "Apple iPhone 15 Pro Max 256GB Black Titanium",
+    "brand": "Apple",
+    "price": 1479,
+    "url": "https://www.apple.com/fr/shop/buy-iphone/iphone-15-pro",
+    "image": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-7inch-blacktitanium?wid=5120&hei=2880&fmt=p-jpg&qlt=80&.v=1692895702781",
+    "description": "iPhone 15 Pro Max grand écran 6.7 pouces avec zoom optique 5x",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "tech",
+      "30-50ans",
+      "50ans-plus",
+      "budget_200-plus"
+    ]
+  },
+  {
+    "name": "Apple iPhone 15 128GB Pink",
+    "brand": "Apple",
+    "price": 969,
+    "url": "https://www.apple.com/fr/shop/buy-iphone/iphone-15",
+    "image": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-finish-select-202309-6-1inch-pink?wid=5120&hei=2880&fmt=p-jpg&qlt=80&.v=1692923777972",
+    "description": "iPhone 15 rose avec puce A16 Bionic et Dynamic Island",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "tech",
+      "femme",
+      "20-30ans",
+      "30-50ans",
+      "budget_200-plus"
+    ]
+  },
+  {
+    "name": "Apple iPhone 14 128GB Midnight",
+    "brand": "Apple",
+    "price": 769,
+    "url": "https://www.apple.com/fr/shop/buy-iphone/iphone-14",
+    "image": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-14-finish-select-202209-6-1inch-midnight?wid=5120&hei=2880&fmt=p-jpg&qlt=80&.v=1661027858430",
+    "description": "iPhone 14 noir minuit avec système de caméra avancé",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "tech",
+      "20-30ans",
+      "30-50ans",
+      "budget_200-plus"
+    ]
+  },
+  {
+    "name": "Apple MacBook Pro M3 Pro 14 pouces",
+    "brand": "Apple",
+    "price": 2499,
+    "url": "https://www.apple.com/fr/shop/buy-mac/macbook-pro/14-pouces",
+    "image": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/mbp14-spacegray-select-202310?wid=904&hei=840&fmt=jpeg&qlt=90&.v=1697311054290",
+    "description": "MacBook Pro M3 Pro 14 pouces - performances pro avec écran Liquid Retina XDR",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "tech",
+      "travail",
+      "30-50ans",
+      "50ans-plus",
+      "budget_200-plus"
+    ]
+  },
+  {
+    "name": "Apple AirPods Pro 2 USB-C",
+    "brand": "Apple",
+    "price": 279,
+    "url": "https://www.amazon.fr/Apple-Écouteurs-Transparence-personnalisé-Haute-fidélité/dp/B0CHWZ9TZS",
+    "image": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/MQD83?wid=1144&hei=1144&fmt=jpeg&qlt=90&.v=1660803972361",
+    "description": "AirPods Pro 2 avec réduction de bruit active 2x plus puissante et boîtier USB-C",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "tech",
+      "musique",
+      "20-30ans",
+      "30-50ans",
+      "budget_200-plus"
+    ]
+  },
+  {
+    "name": "Apple AirPods 3",
+    "brand": "Apple",
+    "price": 199,
+    "url": "https://www.apple.com/fr/shop/product/MPNYxxx/airpods-3",
+    "image": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/MME73?wid=1144&hei=1144&fmt=jpeg&qlt=90&.v=1632861342000",
+    "description": "AirPods 3ème génération avec audio spatial et résistance à l'eau",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "tech",
+      "musique",
+      "20-30ans",
+      "30-50ans",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Apple AirPods Max Silver",
+    "brand": "Apple",
+    "price": 629,
+    "url": "https://www.apple.com/fr/shop/product/MGYM3xxx/airpods-max-argent",
+    "image": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/airpods-max-select-silver-202011?wid=940&hei=1112&fmt=png-alpha&.v=1604709508000",
+    "description": "AirPods Max argent - casque circum-auriculaire haut de gamme avec réduction de bruit",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "tech",
+      "musique",
+      "30-50ans",
+      "50ans-plus",
+      "budget_200-plus"
+    ]
+  },
+  {
+    "name": "Sony WH-1000XM4 Black",
+    "brand": "Sony",
+    "price": 279,
+    "url": "https://www.sony.fr/electronics/casque-bandeau/wh-1000xm4",
+    "image": "https://m.media-amazon.com/images/I/71o8Q5XJS5L._AC_SL1500_.jpg",
+    "description": "Sony WH-1000XM4 noir - génération précédente toujours excellente",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "tech",
+      "musique",
+      "20-30ans",
+      "30-50ans",
+      "budget_200-plus"
+    ]
+  },
+  {
+    "name": "Sony PlayStation 5 Standard Edition",
+    "brand": "Sony",
+    "price": 549,
+    "url": "https://direct.playstation.com/fr-fr/consoles/console/playstation5-console.1000031638",
+    "image": "https://m.media-amazon.com/images/I/619BkvKW35L._AC_SL1500_.jpg",
+    "description": "PlayStation 5 Standard avec lecteur Blu-ray Ultra HD 4K",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "tech",
+      "gaming",
+      "20-30ans",
+      "30-50ans",
+      "budget_200-plus"
+    ]
+  },
+  {
+    "name": "Ray-Ban Wayfarer RB2140 Black",
+    "brand": "Ray-Ban",
+    "price": 169,
+    "url": "https://www.ray-ban.com/france/lunettes-de-soleil/wayfarer",
+    "image": "https://assets.ray-ban.com/is/image/RayBan/8056597626187__STD__shad__qt.png?impolicy=RB_Product&width=1024&bgc=F2F2F2",
+    "description": "Ray-Ban Wayfarer RB2140 noires - modèle le plus reconnaissable de l'histoire",
+    "categories": [
+      "mode"
+    ],
+    "tags": [
+      "homme",
+      "femme",
+      "accessoires",
+      "20-30ans",
+      "30-50ans",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Ray-Ban Aviator RB3025 Gold Green",
+    "brand": "Ray-Ban",
+    "price": 179,
+    "url": "https://www.ray-ban.com/france/lunettes-de-soleil/aviator",
+    "image": "https://assets.ray-ban.com/is/image/RayBan/8056597625548__STD__shad__qt.png?impolicy=RB_Product&width=1024&bgc=F2F2F2",
+    "description": "Ray-Ban Aviator RB3025 dorées verres verts - icône militaire depuis 1937",
+    "categories": [
+      "mode"
+    ],
+    "tags": [
+      "homme",
+      "femme",
+      "accessoires",
+      "20-30ans",
+      "30-50ans",
+      "50ans-plus",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Ray-Ban Clubmaster RB3016 Black",
+    "brand": "Ray-Ban",
+    "price": 179,
+    "url": "https://www.ray-ban.com/france/lunettes-de-soleil/clubmaster",
+    "image": "https://assets.ray-ban.com/is/image/RayBan/8056597625555__STD__shad__qt.png?impolicy=RB_Product&width=1024&bgc=F2F2F2",
+    "description": "Ray-Ban Clubmaster RB3016 noires - style rétro intellectuel browline",
+    "categories": [
+      "mode"
+    ],
+    "tags": [
+      "homme",
+      "femme",
+      "accessoires",
+      "20-30ans",
+      "30-50ans",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Ray-Ban Round RB2447 Black",
+    "brand": "Ray-Ban",
+    "price": 169,
+    "url": "https://www.ray-ban.com/france/lunettes-de-soleil/round",
+    "image": "https://assets.ray-ban.com/is/image/RayBan/8056597625784__STD__shad__qt.png?impolicy=RB_Product&width=1024&bgc=F2F2F2",
+    "description": "Ray-Ban Round RB2447 noires - lunettes rondes style années 60",
+    "categories": [
+      "mode"
+    ],
+    "tags": [
+      "homme",
+      "femme",
+      "accessoires",
+      "20-30ans",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Levi's 501 Original Jeans Blue",
+    "brand": "Levi's",
+    "price": 109,
+    "url": "https://www.levi.com/FR/fr_FR/clothing/men/jeans/501-original-jeans/p/005010000",
+    "image": "https://lsco.scene7.com/is/image/lsco/005010000-front-pdp?fmt=jpeg&qlt=70&resMode=sharp2&fit=crop,1&op_usm=0.6,0.6,8&wid=2000&hei=1840",
+    "description": "Levi's 501 Original bleu - jean droit iconique créé en 1873",
+    "categories": [
+      "mode"
+    ],
+    "tags": [
+      "homme",
+      "20-30ans",
+      "30-50ans",
+      "50ans-plus",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Levi's 505 Regular Fit Jeans Dark Blue",
+    "brand": "Levi's",
+    "price": 99,
+    "url": "https://www.levi.com/FR/fr_FR/clothing/men/jeans/505-regular-fit-jeans/p/005050216",
+    "image": "https://lsco.scene7.com/is/image/lsco/005050216-front-pdp?fmt=jpeg&qlt=70&resMode=sharp2&fit=crop,1&op_usm=0.6,0.6,8&wid=2000&hei=1840",
+    "description": "Levi's 505 Regular Fit bleu foncé - coupe droite confortable",
+    "categories": [
+      "mode"
+    ],
+    "tags": [
+      "homme",
+      "30-50ans",
+      "50ans-plus",
+      "budget_50-100"
+    ]
+  },
+  {
+    "name": "Ralph Lauren Polo Shirt Custom Slim Fit White",
+    "brand": "Ralph Lauren",
+    "price": 109,
+    "url": "https://www.ralphlauren.fr/polo-custom-slim-fit-en-coton-pique-3616301.html",
+    "image": "https://s7d2.scene7.com/is/image/PoloGSI/s7-1267932_lifestyle?wid=1200&hei=1404&fmt=jpeg",
+    "description": "Ralph Lauren Polo Custom Slim Fit blanc - polo iconique avec petit poney brodé",
+    "categories": [
+      "mode"
+    ],
+    "tags": [
+      "homme",
+      "30-50ans",
+      "50ans-plus",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Logitech G502 HERO Gaming Mouse",
+    "brand": "Logitech",
+    "price": 79.99,
+    "url": "https://www.amazon.fr/Logitech-G502-HERO-Gaming-Mouse/dp/B07GBZ4Q68",
+    "image": "https://m.media-amazon.com/images/I/61mpMH5TzkL._AC_SL1500_.jpg",
+    "description": "Logitech G502 HERO - souris gaming avec capteur HERO 25K",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "tech",
+      "gaming",
+      "20-30ans",
+      "budget_50-100"
+    ]
+  },
+  {
+    "name": "Amazon Kindle Paperwhite 16GB",
+    "brand": "Amazon",
+    "price": 159.99,
+    "url": "https://www.amazon.fr/Kindle-Paperwhite/dp/B08N41Y4Q2",
+    "image": "https://m.media-amazon.com/images/I/51QCk82iGcL._AC_SL1000_.jpg",
+    "description": "Kindle Paperwhite - liseuse étanche avec écran 6.8 pouces anti-reflet",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "tech",
+      "30-50ans",
+      "50ans-plus",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Canada Goose Expedition Parka",
+    "brand": "Canada Goose",
+    "price": 1695,
+    "url": "https://www.canadagoose.com/fr/fr/expedition-parka-4565M.html",
+    "image": "https://images.canadagoose.com/image/upload/f_auto,q_auto/v1/product-image/4565M_61.png",
+    "description": "Canada Goose Expedition - parka grand froid extrême -30°C",
+    "categories": [
+      "mode"
+    ],
+    "tags": [
+      "homme",
+      "30-50ans",
+      "50ans-plus",
+      "budget_200-plus"
+    ]
+  },
+  {
+    "name": "Canada Goose Chilliwack Bomber",
+    "brand": "Canada Goose",
+    "price": 1095,
+    "url": "https://www.canadagoose.com/fr/fr/chilliwack-bomber-7950M.html",
+    "image": "https://images.canadagoose.com/image/upload/f_auto,q_auto/v1/product-image/7950M_61.png",
+    "description": "Canada Goose Chilliwack - bomber iconique avec fourrure coyote",
+    "categories": [
+      "mode"
+    ],
+    "tags": [
+      "homme",
+      "30-50ans",
+      "budget_200-plus"
+    ]
+  },
+  {
+    "name": "Dr. Martens 1460 Smooth Black 8-Eye Boot",
+    "brand": "Dr. Martens",
+    "price": 179,
+    "url": "https://www.drmartens.com/fr/fr/1460-smooth-black",
+    "image": "https://i8.amplience.net/i/drmartens/11822006.80.jpg",
+    "description": "Dr. Martens 1460 noires - boots rebelles iconiques 8 œillets",
+    "categories": [
+      "mode"
+    ],
+    "tags": [
+      "homme",
+      "femme",
+      "20-30ans",
+      "30-50ans",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Dr. Martens 1461 Smooth Black 3-Eye Shoe",
+    "brand": "Dr. Martens",
+    "price": 159,
+    "url": "https://www.drmartens.com/fr/fr/1461-smooth-black",
+    "image": "https://i8.amplience.net/i/drmartens/10085001.80.jpg",
+    "description": "Dr. Martens 1461 noires - derbies 3 œillets couture jaune",
+    "categories": [
+      "mode"
+    ],
+    "tags": [
+      "homme",
+      "femme",
+      "20-30ans",
+      "30-50ans",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "UGG Classic Ultra Mini Boot",
+    "brand": "UGG",
+    "price": 169,
+    "url": "https://www.ugg.com/fr/classic-ultra-mini",
+    "image": "https://www.ugg.com/dw/image/v2/BCLQ_PRD/on/demandware.static/-/Sites-ugg-master/default/dw8e9a7d5a/classic-ultra-mini.jpg",
+    "description": "UGG Classic Ultra Mini - boots courtes en peau de mouton",
+    "categories": [
+      "mode"
+    ],
+    "tags": [
+      "femme",
+      "20-30ans",
+      "30-50ans",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Apple Magic Keyboard French AZERTY",
+    "brand": "Apple",
+    "price": 109,
+    "url": "https://www.apple.com/fr/shop/product/MK2A3F/A/magic-keyboard-francais",
+    "image": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/MK2A3?wid=1144&hei=1144&fmt=jpeg&qlt=90&.v=1628010471000",
+    "description": "Apple Magic Keyboard - clavier sans fil Bluetooth rechargeable",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "tech",
+      "travail",
+      "30-50ans",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Apple Magic Mouse 3",
+    "brand": "Apple",
+    "price": 85,
+    "url": "https://www.apple.com/fr/shop/product/MK2E3ZM/A/magic-mouse",
+    "image": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/MK2E3?wid=1144&hei=1144&fmt=jpeg&qlt=90&.v=1628010471000",
+    "description": "Apple Magic Mouse - souris sans fil multi-touch rechargeable",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "tech",
+      "travail",
+      "20-30ans",
+      "30-50ans",
+      "budget_50-100"
+    ]
+  },
+  {
+    "name": "Apple Magic Trackpad 3",
+    "brand": "Apple",
+    "price": 149,
+    "url": "https://www.apple.com/fr/shop/product/MK2D3ZM/A/magic-trackpad",
+    "image": "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/MK2D3?wid=1144&hei=1144&fmt=jpeg&qlt=90&.v=1628010471000",
+    "description": "Apple Magic Trackpad - trackpad sans fil Force Touch multi-touch",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "tech",
+      "travail",
+      "30-50ans",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Saucony Endorphin Speed 3",
+    "brand": "Saucony",
+    "price": 179.99,
+    "url": "https://www.saucony.com/endorphin-speed-3",
+    "image": "https://www.saucony.com/endorphin-speed-3.jpg",
+    "description": "Saucony Endorphin Speed 3 - tempo run plaque nylon",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "homme",
+      "femme",
+      "sports",
+      "30-50ans",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Saucony Kinvara 14",
+    "brand": "Saucony",
+    "price": 129.99,
+    "url": "https://www.saucony.com/kinvara-14",
+    "image": "https://www.saucony.com/kinvara-14.jpg",
+    "description": "Saucony Kinvara 14 - running léger minimaliste",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "homme",
+      "femme",
+      "sports",
+      "20-30ans",
+      "30-50ans",
+      "budget_100-200"
+    ]
+  },
+  {
+    "name": "Apple MacBook Air 13\" Puce M3 (512 Go)",
+    "brand": "Apple",
+    "price": 1299.0,
+    "url": "https://www.apple.com/fr/macbook-air/",
+    "image": "https://m.media-amazon.com/images/I/71ItMeqpN3L._AC_SL1500_.jpg",
+    "description": "Ordinateur portable Apple ultra-fin avec puce M3 surpuissante, écran Retina et autonomie de 18 heures.",
+    "categories": [
+      "tech",
+      "apple",
+      "trending"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_adulte",
+      "budget_150_plus",
+      "tech",
+      "ordinateurs"
+    ]
+  },
+  {
+    "name": "Apple iPhone 15 Pro Max Titane Bleu",
+    "brand": "Apple",
+    "price": 1479.0,
+    "url": "https://www.apple.com/fr/iphone-15-pro/",
+    "image": "https://m.media-amazon.com/images/I/81+GIkwqLIL._AC_SL1500_.jpg",
+    "description": "Châssis titane ultraléger, puce A17 Pro, téléobjectif 5x optique et autonomie record.",
+    "categories": [
+      "tech",
+      "apple",
+      "trending"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_adulte",
+      "budget_150_plus",
+      "tech",
+      "smartphones"
+    ]
+  },
+  {
+    "name": "Sony WH-1000XM5 Casque Réduction de Bruit Argent",
+    "brand": "Sony",
+    "price": 349.0,
+    "url": "https://www.sony.fr/",
+    "image": "https://m.media-amazon.com/images/I/61+btxzpfDL._AC_SL1500_.jpg",
+    "description": "Le roi des casques audio avec deux processeurs de réduction de bruit et son Hi-Res Audio.",
+    "categories": [
+      "tech",
+      "music",
+      "sony",
+      "trending"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_adulte",
+      "budget_150_plus",
+      "tech",
+      "audio",
+      "music"
+    ]
+  },
+  {
+    "name": "Bose QuietComfort Ultra Casque Audio Spatial",
+    "brand": "Bose",
+    "price": 449.0,
+    "url": "https://www.bose.fr/",
+    "image": "https://m.media-amazon.com/images/I/51051FiD9UL._AC_SL1000_.jpg",
+    "description": "Audio immersif Bose CustomTune et réduction de bruit de classe mondiale pour un confort absolu.",
+    "categories": [
+      "tech",
+      "music"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_adulte",
+      "budget_150_plus",
+      "tech",
+      "audio"
+    ]
+  },
+  {
+    "name": "Philips Hue Pack de Démarrage 3 Ampoules E27 White & Color",
+    "brand": "Philips Hue",
+    "price": 149.99,
+    "url": "https://www.philips-hue.com/fr-fr",
+    "image": "https://m.media-amazon.com/images/I/71XMTLtZd5L._AC_SL1500_.jpg",
+    "description": "Éclairage connecté intelligent 16 millions de couleurs avec pont Hue et télécommande variateur.",
+    "categories": [
+      "tech",
+      "home"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_adulte",
+      "budget_75-150",
+      "tech",
+      "home",
+      "objets_connectes"
+    ]
+  },
+  {
+    "name": "Garmin Forerunner 265 Montre GPS de Running AMOLED",
+    "brand": "Garmin",
+    "price": 449.99,
+    "url": "https://www.garmin.com/fr-FR/",
+    "image": "https://m.media-amazon.com/images/I/61SUj2aKoEL._AC_SL1500_.jpg",
+    "description": "Écran tactile AMOLED ultra-lumineux, métriques avancées d'entraînement et suggestions quotidiennes.",
+    "categories": [
+      "tech",
+      "sport"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_adulte",
+      "budget_150_plus",
+      "tech",
+      "sport"
+    ]
+  },
+  {
+    "name": "Sony Alpha 7 IV Appareil Photo Hybride Plein Format",
+    "brand": "Sony",
+    "price": 2399.0,
+    "url": "https://www.sony.fr/",
+    "image": "https://m.media-amazon.com/images/I/81+GIkwqLIL._AC_SL1500_.jpg",
+    "description": "Capteur 33 Mpx rétroéclairé, autofocus en temps réel avec IA et enregistrement vidéo 4K 60p.",
+    "categories": [
+      "tech",
+      "art",
+      "sony"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_adulte",
+      "budget_150_plus",
+      "tech",
+      "photo"
+    ]
+  },
+  {
+    "name": "Apple AirPods Pro 2 avec Boîtier MagSafe (USB-C)",
+    "brand": "Apple",
+    "price": 279.0,
+    "url": "https://www.apple.com/fr/airpods-pro/",
+    "image": "https://m.media-amazon.com/images/I/61SUj2aKoEL._AC_SL1500_.jpg",
+    "description": "Écouteurs sans fil avec réduction active du bruit pro, audio spatial et puce H2.",
+    "categories": [
+      "tech",
+      "audio",
+      "apple",
+      "trending"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_adulte",
+      "budget_150_plus",
+      "tech",
+      "audio"
+    ]
+  },
+  {
+    "name": "Apple iPhone 15 Pro Max Titane Naturel 256 Go",
+    "brand": "Apple",
+    "price": 1479.0,
+    "url": "https://www.apple.com/fr/iphone-15-pro/",
+    "image": "https://m.media-amazon.com/images/I/81+GIkwqLIL._AC_SL1500_.jpg",
+    "description": "Design en titane aérospatial, puce A17 Pro, zoom optique 5x et bouton Action polyvalent.",
+    "categories": [
+      "tech",
+      "apple",
+      "trending"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_adulte",
+      "budget_150_plus",
+      "tech",
+      "smartphones"
+    ]
+  },
+  {
+    "name": "Apple Watch Ultra 2 GPS + Cellular 49mm Titane",
+    "brand": "Apple",
+    "price": 899.0,
+    "url": "https://www.apple.com/fr/apple-watch-ultra-2/",
+    "image": "https://m.media-amazon.com/images/I/71XMTLtZd5L._AC_SL1500_.jpg",
+    "description": "Montre de sport extrême avec écran 3000 nits, GPS double fréquence et autonomie jusqu'à 72h.",
+    "categories": [
+      "tech",
+      "sport",
+      "apple"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_adulte",
+      "budget_150_plus",
+      "tech",
+      "sport"
+    ]
+  },
+  {
+    "name": "Nike Air Force 1 '07 Triple White",
+    "brand": "Nike",
+    "price": 119.99,
+    "url": "https://www.nike.com/fr/t/air-force-1-07-chaussure-pour-homme-jBrhbr/CW2288-111",
+    "image": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-force-1-07-chaussure-pour-homme.png",
+    "description": "La basket légendaire en cuir blanc immaculé avec amorti Nike Air encapsulé.",
+    "categories": [
+      "fashion",
+      "sport",
+      "nike",
+      "trending"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_ado",
+      "age_adulte",
+      "budget_75-150",
+      "fashion",
+      "sneakers"
+    ]
+  },
+  {
+    "name": "Sony PlayStation 5 Slim Edition Standard Blanche",
+    "brand": "Sony",
+    "price": 549.99,
+    "url": "https://www.playstation.com/fr-fr/",
+    "image": "https://m.media-amazon.com/images/I/51051FiD9UL._AC_SL1000_.jpg",
+    "description": "Console next-gen 4K avec SSD ultra-rapide 1 To et manette DualSense à retour haptique.",
+    "categories": [
+      "gaming",
+      "tech",
+      "sony",
+      "trending"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_ado",
+      "age_adulte",
+      "budget_150_plus",
+      "gaming",
+      "sony"
+    ]
+  },
+  {
+    "name": "Sony WH-1000XM5 Casque Bluetooth Réduction de Bruit Noir",
+    "brand": "Sony",
+    "price": 329.0,
+    "url": "https://www.sony.fr/",
+    "image": "https://m.media-amazon.com/images/I/61+btxzpfDL._AC_SL1500_.jpg",
+    "description": "Réduction de bruit exceptionnelle, 8 micros et son haute résolution sans fil LDAC.",
+    "categories": [
+      "tech",
+      "music",
+      "sony",
+      "trending"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_adulte",
+      "budget_150_plus",
+      "tech",
+      "audio",
+      "sony"
+    ]
+  },
+  {
+    "name": "Sony Alpha 7 IV Boîtier Hybride Plein Format 33 Mpx",
+    "brand": "Sony",
+    "price": 2399.0,
+    "url": "https://www.sony.fr/",
+    "image": "https://m.media-amazon.com/images/I/81+GIkwqLIL._AC_SL1500_.jpg",
+    "description": "Appareil photo hybride professionnel avec suivi autofocus temps réel IA et vidéo 4K 60p.",
+    "categories": [
+      "tech",
+      "art",
+      "sony"
+    ],
+    "tags": [
+      "gender_mixte",
+      "age_adulte",
+      "budget_150_plus",
+      "tech",
+      "photo",
+      "sony"
+    ]
+  },
+  {
+    "name": "Nike Air Max 90",
+    "brand": "Nike",
+    "price": 140,
+    "url": "https://www.nike.com/t/air-max-90-mens-shoes-6n8kDt/CN8490-002",
+    "image": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/zwxes8uud05rkuei1mpt/air-max-90-mens-shoes-6n8kDt.png",
+    "description": "Nike Air Max 90 iconiques",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "Nike Jordan 1 Low",
+    "brand": "Nike",
+    "price": 130,
+    "url": "https://www.nike.com/t/air-jordan-1-low-shoes-6Q1tFM/553558-132",
+    "image": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/4f37fca8-6bce-43e7-ad07-f57ae3c13142/air-jordan-1-low-shoes-6Q1tFM.png",
+    "description": "Air Jordan 1 Low blanches",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 550 White Green",
+    "brand": "New Balance",
+    "price": 120,
+    "url": "https://www.newbalance.fr/550",
+    "image": "https://nb.scene7.com/is/image/NB/bb550wt1_nb_02_i.jpg",
+    "description": "Baskets New Balance 550 blanches et vertes",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 2002R Protection Pack",
+    "brand": "New Balance",
+    "price": 150,
+    "url": "https://www.newbalance.fr/2002r",
+    "image": "https://nb.scene7.com/is/image/NB/ml2002ra_nb_02_i.jpg",
+    "description": "New Balance 2002R Protection Pack",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "tech",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 990v5 Grey",
+    "brand": "New Balance",
+    "price": 185,
+    "url": "https://www.newbalance.fr/990v5",
+    "image": "https://nb.scene7.com/is/image/NB/m990gl5_nb_02_i.jpg",
+    "description": "New Balance 990v5 Made in USA",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 327 Casablanca",
+    "brand": "New Balance",
+    "price": 200,
+    "url": "https://www.newbalance.fr/327-casablanca",
+    "image": "https://nb.scene7.com/is/image/NB/ms327cba_nb_02_i.jpg",
+    "description": "Collaboration New Balance x Casablanca",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_200+",
+      "sports",
+      "50+",
+      "30-50ans"
+    ]
+  },
+  {
+    "name": "New Balance Fresh Foam X 1080v13",
+    "brand": "New Balance",
+    "price": 170,
+    "url": "https://www.newbalance.fr/1080v13",
+    "image": "https://nb.scene7.com/is/image/NB/m1080m13_nb_02_i.jpg",
+    "description": "Chaussures de running Fresh Foam 1080",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 574 Core Grey",
+    "brand": "New Balance",
+    "price": 90,
+    "url": "https://www.newbalance.fr/574",
+    "image": "https://nb.scene7.com/is/image/NB/ml574evg_nb_02_i.jpg",
+    "description": "Baskets classiques New Balance 574",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "budget_50-100",
+      "femme",
+      "homme",
+      "sports",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 237 Vintage",
+    "brand": "New Balance",
+    "price": 100,
+    "url": "https://www.newbalance.fr/237",
+    "image": "https://nb.scene7.com/is/image/NB/ms237sa_nb_02_i.jpg",
+    "description": "New Balance 237 style vintage",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance Hierro v7 Trail",
+    "brand": "New Balance",
+    "price": 140,
+    "url": "https://www.newbalance.fr/hierro-v7",
+    "image": "https://nb.scene7.com/is/image/NB/mthierl7_nb_02_i.jpg",
+    "description": "Chaussures de trail Hierro v7",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "Maje Tweed Jacket",
+    "brand": "Maje",
+    "price": 425,
+    "url": "https://www.maje.com/tweed-jacket",
+    "image": "https://maje.com/images/tweed.jpg",
+    "description": "Veste en tweed Maje",
+    "categories": [
+      "mode-fast-fashion"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_200+",
+      "50+",
+      "30-50ans",
+      "fashion"
+    ]
+  },
+  {
+    "name": "Maje Pleated Midi Skirt",
+    "brand": "Maje",
+    "price": 225,
+    "url": "https://www.maje.com/pleated-skirt",
+    "image": "https://maje.com/images/pleated-skirt.jpg",
+    "description": "Jupe plissée midi Maje",
+    "categories": [
+      "mode-fast-fashion"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_200+",
+      "50+",
+      "30-50ans",
+      "fashion"
+    ]
+  },
+  {
+    "name": "Maje Embroidered Blouse",
+    "brand": "Maje",
+    "price": 195,
+    "url": "https://www.maje.com/embroidered-blouse",
+    "image": "https://maje.com/images/blouse.jpg",
+    "description": "Blouse brodée Maje",
+    "categories": [
+      "mode-fast-fashion"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans",
+      "fashion"
+    ]
+  },
+  {
+    "name": "Maje Mini M Bag",
+    "brand": "Maje",
+    "price": 295,
+    "url": "https://www.maje.com/mini-m-bag",
+    "image": "https://maje.com/images/m-bag.jpg",
+    "description": "Sac Maje Mini M",
+    "categories": [
+      "mode-fast-fashion"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_200+",
+      "50+",
+      "30-50ans",
+      "fashion"
+    ]
+  },
+  {
+    "name": "Logitech G Pro X Superlight",
+    "brand": "Logitech G",
+    "price": 159,
+    "url": "https://www.logitechg.com/pro-x-superlight",
+    "image": "https://logitech.com/images/superlight.jpg",
+    "description": "Souris gaming Logitech Pro X Superlight",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_100-200",
+      "tech",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "Logitech G915 TKL Keyboard",
+    "brand": "Logitech G",
+    "price": 229,
+    "url": "https://www.logitechg.com/g915-tkl",
+    "image": "https://logitech.com/images/g915.jpg",
+    "description": "Clavier mécanique Logitech G915 TKL",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_200+",
+      "50+",
+      "30-50ans"
+    ]
+  },
+  {
+    "name": "Logitech G Pro X Headset",
+    "brand": "Logitech G",
+    "price": 129,
+    "url": "https://www.logitechg.com/pro-x-headset",
+    "image": "https://logitech.com/images/headset.jpg",
+    "description": "Casque gaming Logitech Pro X",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_100-200",
+      "tech",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "Seiko 5 Sports Automatic SRPD",
+    "brand": "Seiko",
+    "price": 295,
+    "url": "https://www.seikowatches.com/5-sports-srpd",
+    "image": "https://www.seikowatches.com/image.jpg",
+    "description": "Seiko 5 Sports Automatic SRPD - Produit Seiko authentique",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_200+",
+      "50+",
+      "30-50ans",
+      "sport"
+    ]
+  },
+  {
+    "name": "Seiko Presage Cocktail Time",
+    "brand": "Seiko",
+    "price": 425,
+    "url": "https://www.seikowatches.com/presage-cocktail",
+    "image": "https://www.seikowatches.com/image.jpg",
+    "description": "Seiko Presage Cocktail Time - Produit Seiko authentique",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_200+",
+      "50+",
+      "30-50ans"
+    ]
+  },
+  {
+    "name": "Seiko Prospex Diver SKX",
+    "brand": "Seiko",
+    "price": 275,
+    "url": "https://www.seikowatches.com/prospex-skx",
+    "image": "https://www.seikowatches.com/image.jpg",
+    "description": "Seiko Prospex Diver SKX - Produit Seiko authentique",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "femme",
+      "tech",
+      "homme",
+      "budget_200+",
+      "50+",
+      "30-50ans"
+    ]
+  },
+  {
+    "name": "Seiko Astron GPS Solar",
+    "brand": "Seiko",
+    "price": 1100,
+    "url": "https://www.seikowatches.com/astron-gps",
+    "image": "https://www.seikowatches.com/image.jpg",
+    "description": "Seiko Astron GPS Solar - Produit Seiko authentique",
+    "categories": [
+      "tech"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_200+",
+      "50+",
+      "30-50ans"
+    ]
+  },
+  {
+    "name": "Nike Air Force 1 '07 White Black",
+    "brand": "Nike",
+    "price": 115,
+    "url": "https://www.nike.com/t/air-force-1-07-mens-shoes-jBrhbr/CW2288-111-black",
+    "image": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-force-1-07-mens-shoes-jBrhbr.png",
+    "description": "Baskets Nike Air Force 1 blanches classiques - Coloris Black",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "Nike Air Force 1 '07 White Grey",
+    "brand": "Nike",
+    "price": 115,
+    "url": "https://www.nike.com/t/air-force-1-07-mens-shoes-jBrhbr/CW2288-111-grey",
+    "image": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-force-1-07-mens-shoes-jBrhbr.png",
+    "description": "Baskets Nike Air Force 1 blanches classiques - Coloris Grey",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "Nike Air Force 1 '07 White Beige",
+    "brand": "Nike",
+    "price": 115,
+    "url": "https://www.nike.com/t/air-force-1-07-mens-shoes-jBrhbr/CW2288-111-beige",
+    "image": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/air-force-1-07-mens-shoes-jBrhbr.png",
+    "description": "Baskets Nike Air Force 1 blanches classiques - Coloris Beige",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "Nike Air Max 90 Black",
+    "brand": "Nike",
+    "price": 140,
+    "url": "https://www.nike.com/t/air-max-90-mens-shoes-6n8kDt/CN8490-002-black",
+    "image": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/zwxes8uud05rkuei1mpt/air-max-90-mens-shoes-6n8kDt.png",
+    "description": "Nike Air Max 90 iconiques - Coloris Black",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "Nike Air Max 90 Navy",
+    "brand": "Nike",
+    "price": 140,
+    "url": "https://www.nike.com/t/air-max-90-mens-shoes-6n8kDt/CN8490-002-navy",
+    "image": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/zwxes8uud05rkuei1mpt/air-max-90-mens-shoes-6n8kDt.png",
+    "description": "Nike Air Max 90 iconiques - Coloris Navy",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "Nike Air Max 90 Beige",
+    "brand": "Nike",
+    "price": 140,
+    "url": "https://www.nike.com/t/air-max-90-mens-shoes-6n8kDt/CN8490-002-beige",
+    "image": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/zwxes8uud05rkuei1mpt/air-max-90-mens-shoes-6n8kDt.png",
+    "description": "Nike Air Max 90 iconiques - Coloris Beige",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "Nike Jordan 1 Low Blue",
+    "brand": "Nike",
+    "price": 130,
+    "url": "https://www.nike.com/t/air-jordan-1-low-shoes-6Q1tFM/553558-132-blue",
+    "image": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/4f37fca8-6bce-43e7-ad07-f57ae3c13142/air-jordan-1-low-shoes-6Q1tFM.png",
+    "description": "Air Jordan 1 Low blanches - Coloris Blue",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "Nike Jordan 1 Low Green",
+    "brand": "Nike",
+    "price": 130,
+    "url": "https://www.nike.com/t/air-jordan-1-low-shoes-6Q1tFM/553558-132-green",
+    "image": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/4f37fca8-6bce-43e7-ad07-f57ae3c13142/air-jordan-1-low-shoes-6Q1tFM.png",
+    "description": "Air Jordan 1 Low blanches - Coloris Green",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "Nike Jordan 1 Low White",
+    "brand": "Nike",
+    "price": 130,
+    "url": "https://www.nike.com/t/air-jordan-1-low-shoes-6Q1tFM/553558-132-white",
+    "image": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/4f37fca8-6bce-43e7-ad07-f57ae3c13142/air-jordan-1-low-shoes-6Q1tFM.png",
+    "description": "Air Jordan 1 Low blanches - Coloris White",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 550 White Green Grey",
+    "brand": "New Balance",
+    "price": 120,
+    "url": "https://www.newbalance.fr/550-grey",
+    "image": "https://nb.scene7.com/is/image/NB/bb550wt1_nb_02_i.jpg",
+    "description": "Baskets New Balance 550 blanches et vertes - Coloris Grey",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 550 White Green Navy",
+    "brand": "New Balance",
+    "price": 120,
+    "url": "https://www.newbalance.fr/550-navy",
+    "image": "https://nb.scene7.com/is/image/NB/bb550wt1_nb_02_i.jpg",
+    "description": "Baskets New Balance 550 blanches et vertes - Coloris Navy",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 550 White Green Black",
+    "brand": "New Balance",
+    "price": 120,
+    "url": "https://www.newbalance.fr/550-black",
+    "image": "https://nb.scene7.com/is/image/NB/bb550wt1_nb_02_i.jpg",
+    "description": "Baskets New Balance 550 blanches et vertes - Coloris Black",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 2002R Protection Pack Grey",
+    "brand": "New Balance",
+    "price": 150,
+    "url": "https://www.newbalance.fr/2002r-grey",
+    "image": "https://nb.scene7.com/is/image/NB/ml2002ra_nb_02_i.jpg",
+    "description": "New Balance 2002R Protection Pack - Coloris Grey",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "tech",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 2002R Protection Pack Beige",
+    "brand": "New Balance",
+    "price": 150,
+    "url": "https://www.newbalance.fr/2002r-beige",
+    "image": "https://nb.scene7.com/is/image/NB/ml2002ra_nb_02_i.jpg",
+    "description": "New Balance 2002R Protection Pack - Coloris Beige",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "tech",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 2002R Protection Pack Blue",
+    "brand": "New Balance",
+    "price": 150,
+    "url": "https://www.newbalance.fr/2002r-blue",
+    "image": "https://nb.scene7.com/is/image/NB/ml2002ra_nb_02_i.jpg",
+    "description": "New Balance 2002R Protection Pack - Coloris Blue",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "tech",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 990v5 Grey White",
+    "brand": "New Balance",
+    "price": 185,
+    "url": "https://www.newbalance.fr/990v5-white",
+    "image": "https://nb.scene7.com/is/image/NB/m990gl5_nb_02_i.jpg",
+    "description": "New Balance 990v5 Made in USA - Coloris White",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 990v5 Grey Red",
+    "brand": "New Balance",
+    "price": 185,
+    "url": "https://www.newbalance.fr/990v5-red",
+    "image": "https://nb.scene7.com/is/image/NB/m990gl5_nb_02_i.jpg",
+    "description": "New Balance 990v5 Made in USA - Coloris Red",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 990v5 Grey Green",
+    "brand": "New Balance",
+    "price": 185,
+    "url": "https://www.newbalance.fr/990v5-green",
+    "image": "https://nb.scene7.com/is/image/NB/m990gl5_nb_02_i.jpg",
+    "description": "New Balance 990v5 Made in USA - Coloris Green",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 327 Casablanca Black",
+    "brand": "New Balance",
+    "price": 200,
+    "url": "https://www.newbalance.fr/327-casablanca-black",
+    "image": "https://nb.scene7.com/is/image/NB/ms327cba_nb_02_i.jpg",
+    "description": "Collaboration New Balance x Casablanca - Coloris Black",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_200+",
+      "sports",
+      "50+",
+      "30-50ans"
+    ]
+  },
+  {
+    "name": "New Balance 327 Casablanca White",
+    "brand": "New Balance",
+    "price": 200,
+    "url": "https://www.newbalance.fr/327-casablanca-white",
+    "image": "https://nb.scene7.com/is/image/NB/ms327cba_nb_02_i.jpg",
+    "description": "Collaboration New Balance x Casablanca - Coloris White",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_200+",
+      "sports",
+      "50+",
+      "30-50ans"
+    ]
+  },
+  {
+    "name": "New Balance 327 Casablanca Red",
+    "brand": "New Balance",
+    "price": 200,
+    "url": "https://www.newbalance.fr/327-casablanca-red",
+    "image": "https://nb.scene7.com/is/image/NB/ms327cba_nb_02_i.jpg",
+    "description": "Collaboration New Balance x Casablanca - Coloris Red",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_200+",
+      "sports",
+      "50+",
+      "30-50ans"
+    ]
+  },
+  {
+    "name": "New Balance 574 Core Grey Blue",
+    "brand": "New Balance",
+    "price": 90,
+    "url": "https://www.newbalance.fr/574-blue",
+    "image": "https://nb.scene7.com/is/image/NB/ml574evg_nb_02_i.jpg",
+    "description": "Baskets classiques New Balance 574 - Coloris Blue",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "budget_50-100",
+      "femme",
+      "homme",
+      "sports",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 574 Core Grey Beige",
+    "brand": "New Balance",
+    "price": 90,
+    "url": "https://www.newbalance.fr/574-beige",
+    "image": "https://nb.scene7.com/is/image/NB/ml574evg_nb_02_i.jpg",
+    "description": "Baskets classiques New Balance 574 - Coloris Beige",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "budget_50-100",
+      "femme",
+      "homme",
+      "sports",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 574 Core Grey Navy",
+    "brand": "New Balance",
+    "price": 90,
+    "url": "https://www.newbalance.fr/574-navy",
+    "image": "https://nb.scene7.com/is/image/NB/ml574evg_nb_02_i.jpg",
+    "description": "Baskets classiques New Balance 574 - Coloris Navy",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "budget_50-100",
+      "femme",
+      "homme",
+      "sports",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 237 Vintage Blue",
+    "brand": "New Balance",
+    "price": 100,
+    "url": "https://www.newbalance.fr/237-blue",
+    "image": "https://nb.scene7.com/is/image/NB/ms237sa_nb_02_i.jpg",
+    "description": "New Balance 237 style vintage - Coloris Blue",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 237 Vintage Grey",
+    "brand": "New Balance",
+    "price": 100,
+    "url": "https://www.newbalance.fr/237-grey",
+    "image": "https://nb.scene7.com/is/image/NB/ms237sa_nb_02_i.jpg",
+    "description": "New Balance 237 style vintage - Coloris Grey",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 237 Vintage Red",
+    "brand": "New Balance",
+    "price": 100,
+    "url": "https://www.newbalance.fr/237-red",
+    "image": "https://nb.scene7.com/is/image/NB/ms237sa_nb_02_i.jpg",
+    "description": "New Balance 237 style vintage - Coloris Red",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "Nike Air Max 90 Grey",
+    "brand": "Nike",
+    "price": 140,
+    "url": "https://www.nike.com/t/air-max-90-mens-shoes-6n8kDt/CN8490-002-grey",
+    "image": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/zwxes8uud05rkuei1mpt/air-max-90-mens-shoes-6n8kDt.png",
+    "description": "Nike Air Max 90 iconiques",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "Nike Jordan 1 Low Black",
+    "brand": "Nike",
+    "price": 130,
+    "url": "https://www.nike.com/t/air-jordan-1-low-shoes-6Q1tFM/553558-132-black",
+    "image": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/4f37fca8-6bce-43e7-ad07-f57ae3c13142/air-jordan-1-low-shoes-6Q1tFM.png",
+    "description": "Air Jordan 1 Low blanches",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "Nike Jordan 1 Low Grey",
+    "brand": "Nike",
+    "price": 130,
+    "url": "https://www.nike.com/t/air-jordan-1-low-shoes-6Q1tFM/553558-132-grey",
+    "image": "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/u_126ab356-44d8-4a06-89b4-fcdcc8df0245,c_scale,fl_relative,w_1.0,h_1.0,fl_layer_apply/4f37fca8-6bce-43e7-ad07-f57ae3c13142/air-jordan-1-low-shoes-6Q1tFM.png",
+    "description": "Air Jordan 1 Low blanches",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 2002R Protection Pack Black",
+    "brand": "New Balance",
+    "price": 150,
+    "url": "https://www.newbalance.fr/2002r-black",
+    "image": "https://nb.scene7.com/is/image/NB/ml2002ra_nb_02_i.jpg",
+    "description": "New Balance 2002R Protection Pack",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "tech",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 2002R Protection Pack White",
+    "brand": "New Balance",
+    "price": 150,
+    "url": "https://www.newbalance.fr/2002r-white",
+    "image": "https://nb.scene7.com/is/image/NB/ml2002ra_nb_02_i.jpg",
+    "description": "New Balance 2002R Protection Pack",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "tech",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 327 Casablanca Grey",
+    "brand": "New Balance",
+    "price": 200,
+    "url": "https://www.newbalance.fr/327-casablanca-grey",
+    "image": "https://nb.scene7.com/is/image/NB/ms327cba_nb_02_i.jpg",
+    "description": "Collaboration New Balance x Casablanca",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_200+",
+      "sports",
+      "50+",
+      "30-50ans"
+    ]
+  },
+  {
+    "name": "New Balance 237 Vintage Black",
+    "brand": "New Balance",
+    "price": 100,
+    "url": "https://www.newbalance.fr/237-black",
+    "image": "https://nb.scene7.com/is/image/NB/ms237sa_nb_02_i.jpg",
+    "description": "New Balance 237 style vintage",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "New Balance 237 Vintage White",
+    "brand": "New Balance",
+    "price": 100,
+    "url": "https://www.newbalance.fr/237-white",
+    "image": "https://nb.scene7.com/is/image/NB/ms237sa_nb_02_i.jpg",
+    "description": "New Balance 237 style vintage",
+    "categories": [
+      "sport"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "sports",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans"
+    ]
+  },
+  {
+    "name": "Maje Tweed Jacket Noir",
+    "brand": "Maje",
+    "price": 425,
+    "url": "https://www.maje.com/tweed-jacket-noir",
+    "image": "https://maje.com/images/tweed.jpg",
+    "description": "Veste en tweed Maje",
+    "categories": [
+      "mode-fast-fashion"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_200+",
+      "50+",
+      "30-50ans",
+      "fashion"
+    ]
+  },
+  {
+    "name": "Maje Tweed Jacket Blanc",
+    "brand": "Maje",
+    "price": 425,
+    "url": "https://www.maje.com/tweed-jacket-blanc",
+    "image": "https://maje.com/images/tweed.jpg",
+    "description": "Veste en tweed Maje",
+    "categories": [
+      "mode-fast-fashion"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_200+",
+      "50+",
+      "30-50ans",
+      "fashion"
+    ]
+  },
+  {
+    "name": "Maje Tweed Jacket Marine",
+    "brand": "Maje",
+    "price": 425,
+    "url": "https://www.maje.com/tweed-jacket-marine",
+    "image": "https://maje.com/images/tweed.jpg",
+    "description": "Veste en tweed Maje",
+    "categories": [
+      "mode-fast-fashion"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_200+",
+      "50+",
+      "30-50ans",
+      "fashion"
+    ]
+  },
+  {
+    "name": "Maje Pleated Midi Skirt Noir",
+    "brand": "Maje",
+    "price": 225,
+    "url": "https://www.maje.com/pleated-skirt-noir",
+    "image": "https://maje.com/images/pleated-skirt.jpg",
+    "description": "Jupe plissée midi Maje",
+    "categories": [
+      "mode-fast-fashion"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_200+",
+      "50+",
+      "30-50ans",
+      "fashion"
+    ]
+  },
+  {
+    "name": "Maje Pleated Midi Skirt Blanc",
+    "brand": "Maje",
+    "price": 225,
+    "url": "https://www.maje.com/pleated-skirt-blanc",
+    "image": "https://maje.com/images/pleated-skirt.jpg",
+    "description": "Jupe plissée midi Maje",
+    "categories": [
+      "mode-fast-fashion"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_200+",
+      "50+",
+      "30-50ans",
+      "fashion"
+    ]
+  },
+  {
+    "name": "Maje Pleated Midi Skirt Marine",
+    "brand": "Maje",
+    "price": 225,
+    "url": "https://www.maje.com/pleated-skirt-marine",
+    "image": "https://maje.com/images/pleated-skirt.jpg",
+    "description": "Jupe plissée midi Maje",
+    "categories": [
+      "mode-fast-fashion"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_200+",
+      "50+",
+      "30-50ans",
+      "fashion"
+    ]
+  },
+  {
+    "name": "Maje Embroidered Blouse Noir",
+    "brand": "Maje",
+    "price": 195,
+    "url": "https://www.maje.com/embroidered-blouse-noir",
+    "image": "https://maje.com/images/blouse.jpg",
+    "description": "Blouse brodée Maje",
+    "categories": [
+      "mode-fast-fashion"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans",
+      "fashion"
+    ]
+  },
+  {
+    "name": "Maje Embroidered Blouse Blanc",
+    "brand": "Maje",
+    "price": 195,
+    "url": "https://www.maje.com/embroidered-blouse-blanc",
+    "image": "https://maje.com/images/blouse.jpg",
+    "description": "Blouse brodée Maje",
+    "categories": [
+      "mode-fast-fashion"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans",
+      "fashion"
+    ]
+  },
+  {
+    "name": "Maje Embroidered Blouse Marine",
+    "brand": "Maje",
+    "price": 195,
+    "url": "https://www.maje.com/embroidered-blouse-marine",
+    "image": "https://maje.com/images/blouse.jpg",
+    "description": "Blouse brodée Maje",
+    "categories": [
+      "mode-fast-fashion"
+    ],
+    "tags": [
+      "femme",
+      "homme",
+      "budget_100-200",
+      "30-50ans",
+      "20-30ans",
+      "fashion"
+    ]
+  }
+]

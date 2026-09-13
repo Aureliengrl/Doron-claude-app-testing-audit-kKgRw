@@ -92,7 +92,7 @@ class ClaudeApiService {
       final response = await callable.call(<String, dynamic>{
         'products': simplifiedProducts,
         'userProfile': userProfile,
-      });
+      }).timeout(const Duration(milliseconds: 1500));
       
       final data = response.data;
       if (data != null && data['rerankedProducts'] != null) {
@@ -130,7 +130,7 @@ class ClaudeApiService {
       }
       return products; // fallback
     } catch (e) {
-      AppLogger.error('❌ Erreur lors du reranking Claude: $e', 'ClaudeApi');
+      AppLogger.error('❌ Erreur ou timeout lors du reranking Claude: $e', 'ClaudeApi');
       return products; // fallback au matching classique
     }
   }
