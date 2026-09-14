@@ -15,7 +15,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.append(str(Path(__file__).resolve().parent))
-from doron_tagging_engine import determine_popularity_score, clean_price
+from doron_tagging_engine import determine_popularity_score, determine_gender, clean_price
 
 CATALOG_FILE = Path(__file__).resolve().parent / "final_doron_catalog.json"
 FALLBACK_JSON = BASE_DIR / "assets" / "jsons" / "fallback_products.json"
@@ -93,7 +93,7 @@ def audit_and_clean_catalog():
     print(f"  - Rejetés (morts): {broken_count}")
     print("=" * 60)
     
-    # Recalcul de popularité et tendance uniforme
+    # Recalcul de popularité, genre et tendance uniforme
     for p in valid_products:
         name = p.get("name") or p.get("product_title") or ""
         brand = p.get("brand") or "DORÕN Prestige"
@@ -101,9 +101,21 @@ def audit_and_clean_catalog():
         subcat = p.get("subcategory") or "subcat_gadgets_divers"
         price = clean_price(p.get("price") or p.get("product_price"))
         is_act = p.get("is_activity", False)
+        gender = determine_gender(name, cat, subcat, brand)
+        
         p["category"] = cat
         p["subcategory"] = subcat
+        p["gender"] = gender
         p["popularity"] = determine_popularity_score(name, brand, cat, subcat, price, is_act)
+        
+        # Tags de genre stricts
+        raw_tags = [t for t in p.get("tags", []) if not str(t).startswith("gender_")]
+        raw_tags.append(gender)
+        p["tags"] = list(set(raw_tags))
+        
+        raw_cats = [c for c in p.get("categories", []) if not str(c).startswith("gender_")]
+        raw_cats.append(gender)
+        p["categories"] = list(set(raw_cats))
 
     # Sauvegarde des produits 100% validés
     with open(CATALOG_FILE, "w", encoding="utf-8") as f:

@@ -9,6 +9,7 @@ import '/services/tags_definitions.dart';
 import '/domain/matching/tag_converter.dart';
 import '/domain/matching/matching_engine.dart';
 import '/services/claude_api_service.dart';
+import '/services/serp_live_search_service.dart';
 
 /// Service de matching de produits basé sur les tags.
 /// 
@@ -317,6 +318,19 @@ class ProductMatchingService {
                if (index != -1) allProducts[index]['isFromRecipientWishlist'] = true;
              }
            }
+        }
+      }
+
+      // ⚡ RECHERCHE EN DIRECT SERPAPI (Google Shopping France) POUR LE QUESTIONNAIRE
+      if (filteringMode == "person") {
+        try {
+          final liveProducts = await SerpLiveSearchService.fetchLiveProductsForQuiz(userTags);
+          if (liveProducts.isNotEmpty) {
+            AppLogger.info('✨ [LiveSearch] ${liveProducts.length} produits Google Shopping en direct injectés !', 'Matching');
+            allProducts.insertAll(0, liveProducts);
+          }
+        } catch (e) {
+          AppLogger.warning('⚠️ LiveSearch error (non bloquant): $e', 'Matching');
         }
       }
 
@@ -953,70 +967,53 @@ class ProductMatchingService {
     // RÈGLES STRICTES - EXCLUSION OU PÉNALITÉ SELON MODE
     // ========================================================================
 
-    // 🔒 1. GENRE (EXCLUSION STRICTE sauf si filtre de catégorie actif)
+    // 🔒 1. GENRE (EXCLUSION STRICTE 0% FUITE)
     final userGenderTags = searchTags.where((t) => t.startsWith('gender_')).toList();
     if (userGenderTags.isNotEmpty) {
       final userGender = userGenderTags.first.toLowerCase();
       final productGenderTags = allProductTags.where((t) => t.toLowerCase().startsWith('gender_')).map((t) => t.toLowerCase()).toList();
+      final productName = (product['name'] ?? '').toString().toLowerCase();
+      final productBrand = (product['brand'] ?? '').toString().toLowerCase();
+      final subcat = (product['subcategory'] ?? '').toString().toLowerCase();
 
-      if (productGenderTags.isEmpty) {
-        // Produit sans tag de genre explicite
-        // 🔒 On essaie de deviner le genre depuis le nom (MOTS-CLÉS TRÈS SPÉCIFIQUES uniquement)
-        final productName = (product['name'] ?? '').toString().toLowerCase();
+      final strongFeminineKeywords = [
+        'robe', 'jupe', 'escarpin', 'talons', 'lingerie', 'soutien-gorge', 'culotte', 'dentelle',
+        'maquillage', 'rouge à lèvres', 'mascara', 'blush', 'palette', 'vernis', 'dyson airwrap',
+        'airwrap', 'lisseur', 'sac à main', 'sac cabas', 'pochette soirée', 'polène', 'polene',
+        'jacquemus', 'chiquito', 'bambino', 'miss dior', 'coco mademoiselle', 'gabrielle chanel',
+        'black opium', 'la vie est belle', 'boucles d\'oreilles'
+      ];
 
-        // Mots-clés TRÈS SPÉCIFIQUES pour femmes (exclusion forte)
-        final strongFeminineKeywords = ['robe de soirée', 'jupe', 'lingerie', 'soutien-gorge',
-          'culotte femme', 'collant', 'maquillage', 'rouge à lèvres', 'mascara'];
+      final strongMasculineKeywords = [
+        'cravate', 'nœud papillon', 'tondeuse barbe', 'rasoir barbe', 'barbe', 'aftershave',
+        'costume homme', 'caleçon', 'boxer homme', 'sauvage dior', 'bleu de chanel', 'terre d\'hermès'
+      ];
 
-        // Mots-clés TRÈS SPÉCIFIQUES pour hommes (exclusion forte)
-        final strongMasculineKeywords = ['cravate', 'rasoir électrique', 'tondeuse barbe',
-          'after shave', 'costume homme'];
+      final isStrongFeminine = strongFeminineKeywords.any((kw) => productName.contains(kw) || productBrand.contains(kw)) ||
+          subcat == 'subcat_vetements_femme' || subcat == 'subcat_maquillage' || subcat == 'subcat_lingerie_nuit';
 
-        final isStrongFeminine = strongFeminineKeywords.any((kw) => productName.contains(kw));
-        final isStrongMasculine = strongMasculineKeywords.any((kw) => productName.contains(kw));
+      final isStrongMasculine = strongMasculineKeywords.any((kw) => productName.contains(kw)) ||
+          subcat == 'subcat_vetements_homme' || subcat == 'subcat_rasage_barbe';
 
-        if (userGender == 'gender_homme' && isStrongFeminine) {
-          AppLogger.debug('❌ PRODUIT CLAIREMENT FÉMININ (exclu, recherche homme): "$productName"', 'Matching');
-          return -10000.0;
-        }
-        if (userGender == 'gender_femme' && isStrongMasculine) {
-          AppLogger.debug('❌ PRODUIT CLAIREMENT MASCULIN (exclu, recherche femme): "$productName"', 'Matching');
-          return -10000.0;
-        }
+      // 🛑 VÉRIFICATION DE FUITE CROISÉE : EXCLUSION ABSOLUE 0% FUITE
+      if (userGender == 'gender_homme' && (isStrongFeminine || productGenderTags.contains('gender_femme'))) {
+        AppLogger.debug('❌ EXCLUSION STRICTE PRODUIT FÉMININ POUR HOMME: "$productName"', 'Matching');
+        return -10000.0;
+      }
 
-        AppLogger.debug('📝 Produit sans genre → universel: +50', 'Matching');
-        score += 50.0;
-      } else if (productGenderTags.contains(userGender)) {
-        // Match exact du genre
+      if (userGender == 'gender_femme' && (isStrongMasculine || productGenderTags.contains('gender_homme'))) {
+        AppLogger.debug('❌ EXCLUSION STRICTE PRODUIT MASCULIN POUR FEMME: "$productName"', 'Matching');
+        return -10000.0;
+      }
+
+      if (productGenderTags.contains(userGender)) {
         AppLogger.debug('✅ GENRE MATCH: $userGender +100pts', 'Matching');
         score += 100.0;
-      } else if (productGenderTags.contains('gender_mixte')) {
-        // Produit mixte accepté pour tout genre
+      } else if (productGenderTags.contains('gender_mixte') || productGenderTags.isEmpty) {
         AppLogger.debug('✅ Produit mixte accepté: +70pts', 'Matching');
         score += 70.0;
-      } else {
-        // Genre ne correspond PAS
-        if (isPersonMode) {
-          // 🔒 MODE PERSON: TOUJOURS EXCLUSION STRICTE
-          AppLogger.debug('❌ GENRE NE CORRESPOND PAS (person): $userGender ≠ ${productGenderTags.join(", ")} => EXCLUSION STRICTE', 'Debug');
-          return -10000.0;
-        } else if (hasCategoryFilter) {
-          // Si filtre de catégorie ou marque actif -> Pas d'exclusion bloquante
-          AppLogger.debug('⚠️ GENRE NE CORRESPOND PAS (filtre catégorie/marque actif): $userGender ≠ ${productGenderTags.join(", ")} => Pénalité -10', 'Debug');
-          score -= 10.0;
-        } else if (isDiscoveryMode) {
-          // Discovery: très petite pénalité
-          AppLogger.debug('⚠️ GENRE NE CORRESPOND PAS (discovery): ${productGenderTags.join(", ")} => Pénalité -10', 'Debug');
-          score -= 10.0;
-        } else if (isHomeMode) {
-          // Sur le feed principal, petite pénalité de classement sans suppression totale
-          score -= 40.0;
-        } else {
-          score -= 30.0;
-        }
       }
     } else {
-      // Pas de tag genre utilisateur = on accepte tout
       AppLogger.debug('📝 Utilisateur sans préférence genre: +50 pour tous les produits', 'Debug');
       score += 50.0;
     }

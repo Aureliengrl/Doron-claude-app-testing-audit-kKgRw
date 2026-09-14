@@ -15,18 +15,22 @@ OUTPUT_CATALOG = Path(__file__).resolve().parent / "final_doron_catalog.json"
 FALLBACK_JSON = BASE_DIR / "assets" / "jsons" / "fallback_products.json"
 
 FEMALE_KEYWORDS = [
-    "femme", "femmes", "féminin", "féminine", "femme", "robe", "jupe", "escarpin", "talons", 
-    "sac à main", "rouge à lèvres", "maquillage", "blush", "mascara", "vernis", "lingerie", 
-    "soutien-gorge", "culotte", "dentelle", "maman", "fête des mères", "grossesse", "maternité", 
-    "boucles d'oreilles", "collier diamant", "mademoiselle", "blouse femme", "palette maquillage",
-    "soin anti-rides femme", "lisseur", "dyson airwrap", "bougie", "parfum femme"
+    "femme", "femmes", "féminin", "féminine", "pour elle", "robe", "jupe", "escarpin", "escarpins", "talons", 
+    "sac à main", "sac cabas", "sac seau", "pochette soirée", "sac bandoulière femme", "rouge à lèvres", 
+    "maquillage", "blush", "mascara", "vernis", "lingerie", "soutien-gorge", "culotte", "dentelle", 
+    "maman", "fête des mères", "grossesse", "maternité", "boucles d'oreilles", "collier", "bague", 
+    "mademoiselle", "blouse femme", "palette maquillage", "soin anti-rides femme", "lisseur", "boucleur", 
+    "dyson airwrap", "airwrap", "brosse soufflante", "parfum femme", "polène", "polene", "jacquemus", 
+    "chiquito", "bambino", "miss dior", "j'adore", "jadore", "coco mademoiselle", "gabrielle chanel", 
+    "black opium", "la vie est belle", "prada paradoxe", "fond de teint", "fard à paupières", "gloss"
 ]
 
 MALE_KEYWORDS = [
-    "homme", "hommes", "masculin", "barbe", "rasage", "tondeuse barbe", "cravate", "caleçon", 
-    "boxer", "costume homme", "chemise homme", "polo homme", "papa", "fête des pères", 
-    "montre homme", "aftershave", "blaireau", "blouson homme", "chaussures homme", "parfum homme",
-    "sauvage", "costume", "boutons de manchette"
+    "homme", "hommes", "masculin", "pour lui", "pour homme", "barbe", "rasage", "tondeuse barbe", 
+    "cravate", "nœud papillon", "caleçon", "boxer", "costume homme", "chemise homme", "polo homme", 
+    "papa", "fête des pères", "montre homme", "aftershave", "after shave", "blaireau", "blouson homme", 
+    "chaussures homme", "parfum homme", "sauvage", "bleu de chanel", "terre d'hermès", "terre d'hermes", 
+    "boss bottled", "boutons de manchette"
 ]
 
 KIDS_KEYWORDS = [
@@ -119,12 +123,19 @@ def determine_brand(title: str, default_source: str) -> str:
         return src
     return "DORÕN Prestige"
 
-def determine_gender(title: str, cat: str, subcat: str) -> str:
-    t_low = title.lower()
+def determine_gender(title: str, cat: str, subcat: str, brand: str = "") -> str:
+    t_low = f"{title} {brand}".lower()
     
-    # Priorité absolue aux exclusions strictes
-    is_fem = any(w in t_low for w in FEMALE_KEYWORDS) or subcat in ["subcat_vetements_femme", "subcat_maquillage", "subcat_lingerie_nuit"]
-    is_mal = any(w in t_low for w in MALE_KEYWORDS) or subcat in ["subcat_vetements_homme", "subcat_rasage_barbe"]
+    # Nettoyage des expressions pièges (ex: écouteurs "mains libres" vs parfum Libre)
+    t_clean = t_low.replace("mains libres", "").replace("mains-libres", "").replace("libre de droit", "")
+    
+    is_fem = any(w in t_clean for w in FEMALE_KEYWORDS) or subcat in [
+        "subcat_vetements_femme", "subcat_maquillage", "subcat_lingerie_nuit"
+    ] or (brand in ["Polène", "Jacquemus", "Rare Beauty"] and subcat in ["subcat_sacs_maroquinerie", "subcat_maquillage", "subcat_bijoux"])
+    
+    is_mal = any(w in t_clean for w in MALE_KEYWORDS) or subcat in [
+        "subcat_vetements_homme", "subcat_rasage_barbe"
+    ]
     
     if is_fem and not is_mal:
         return "gender_femme"
@@ -333,7 +344,7 @@ def tag_raw_catalog():
             continue
             
         brand = determine_brand(title, source)
-        gender = determine_gender(title, cat, subcat)
+        gender = determine_gender(title, cat, subcat, brand)
         age_groups = determine_age_groups(title, price, cat, subcat)
         budget_tag = determine_budget_tag(price)
         persos = determine_personalities(title, cat)
