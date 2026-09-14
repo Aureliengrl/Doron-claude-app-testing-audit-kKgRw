@@ -236,6 +236,64 @@ def determine_events_and_subfilters(title: str, gender: str, cat: str, subcat: s
         
     return list(set(events))
 
+FLAGSHIP_PATTERNS = [
+    # Smartphones & High-Tech Stars (98-100)
+    (r"\b(iphone 1[5-7]|airpods pro|airpods max|apple watch ultra|apple watch series|macbook air|macbook pro|ipad pro)\b", 100),
+    (r"\b(dyson airwrap|dyson supersonic|dyson airstrait|dyson corrale|dyson v15|dyson v12)\b", 100),
+    (r"\b(playstation 5|ps5|ps5 slim|dualsense)\b", 99),
+    (r"\b(switch oled|zelda|mario kart|mario wonder|pokemon)\b", 98),
+    (r"\b(wh-1000xm[45]|wf-1000xm5)\b", 98),
+    (r"\b(dji mini [34]|gopro hero 1[23])\b", 98),
+    # Fashion & Streetwear Hits (98-100)
+    (r"\b(dunk low|air jordan 1|air force 1|travis scott|vomero)\b", 99),
+    (r"\b(samba og|gazelle indoor|spezial|campus 00s)\b", 99),
+    (r"\b(zara.*(collection|robe|manteau|blazer|studio)|nouvelle collection zara)\b", 98),
+    (r"\b(jacquemus|le chiquito|le bambino|polène|polene)\b", 99),
+    (r"\b(tissot prx|seiko presage|seiko 5 sports)\b", 98),
+    # Fragrances & Beauty Stars (98-100)
+    (r"\b(sauvage|bleu de chanel|coco mademoiselle|libre|black opium|baccarat rouge|j'adore)\b", 99),
+    (r"\b(diptyque.*(baies|figuier|tubereuse)|rare beauty.*blush)\b", 98),
+    (r"\b(the ritual of sakura|the ritual of karma|the ritual of mehr)\b", 96),
+    # Gastronomy & Living (98-100)
+    (r"\b(le creuset.*cocotte|magnifica s|delonghi dedica|kitchenaid artisan)\b", 98),
+    (r"\b(ruinart blanc de blancs|dom perignon|grand cru|champagne)\b", 98),
+    # Experiences & Workshops (98-100)
+    (r"\b(wecandoo|atelier artisan|poterie|joaillerie|maroquinerie|soufflage)\b", 99),
+    (r"\b(saut en parachute|vol en hélicoptère|stage de pilotage|nuit insolite château|spa cinq mondes)\b", 99),
+    (r"\b(shure sm7b|audio-technica lp120|marshall stanmore|marshall emberton)\b", 98),
+    (r"\b(lego.*(icons|concorde|faucon|star wars|porsche))\b", 98),
+]
+
+def determine_popularity_score(title: str, brand: str, cat: str, subcat: str, price: float, is_activity: bool) -> int:
+    t_low = title.lower()
+    
+    # 1. Correspondance avec un produit Flagship / Trending
+    for pattern, score in FLAGSHIP_PATTERNS:
+        if re.search(pattern, t_low):
+            return score
+            
+    # 2. Marques très fortes / désirables
+    if brand in ["Apple", "Dyson", "Dior", "Chanel", "Jacquemus", "Polène", "Wecandoo", "Sony", "Nike", "Adidas", "Tissot"]:
+        if price >= 100 or is_activity:
+            return 96
+        return 94
+        
+    if brand in ["Zara", "Rituals", "Sephora", "Lego", "Garmin", "DJI", "Le Creuset", "DeLonghi", "Ray-Ban", "Ralph Lauren", "Lacoste"]:
+        return 92
+        
+    if is_activity:
+        return 95
+        
+    # 3. Barème par défaut selon le positionnement prix
+    if price >= 150:
+        return 90
+    elif price >= 50:
+        return 88
+    elif price >= 25:
+        return 84
+    else:
+        return 80
+
 BOX_EXCLUSIONS = [
     "smartbox", "wonderbox", "dakotabox", "dakota box", "coffret cadeau smartbox", 
     "coffret cadeau wonderbox", "coffret cadeau multi", "box multi-activités"
@@ -313,6 +371,8 @@ def tag_raw_catalog():
         
         is_activity = (cat == "cat_activites_experiences") or any(k in title.lower() for k in ["stage", "vol", "atelier", "séjour", "nuit", "visite", "coffret cadeau", "cours", "baptême"])
         
+        pop_score = determine_popularity_score(title, brand, cat, subcat, price, is_activity)
+        
         product_doc = {
             "id": doc_id,
             "name": title,
@@ -326,13 +386,15 @@ def tag_raw_catalog():
             "url": url,
             "product_url": url,
             "description": f"{title} — Sélection officielle DORÕN {brand}. Idéal pour offrir ou se faire plaisir.",
+            "category": cat,
+            "subcategory": subcat,
             "categories": flutter_categories,
             "tags": all_tags,
             "gender": gender,
             "age_groups": age_groups,
             "budget": budget_tag,
             "is_activity": is_activity,
-            "popularity": 95 if is_activity or price > 80 else 88,
+            "popularity": pop_score,
             "active": True,
             "source": source
         }

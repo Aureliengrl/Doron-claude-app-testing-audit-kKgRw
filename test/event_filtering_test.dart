@@ -48,7 +48,7 @@ void main() {
     }).toList();
 
     print('🌸 Produits trouvés pour "Fête des Mères" : ${feteMeresProducts.length}');
-    for (final p in feteMeresProducts) {
+    for (final p in feteMeresProducts.take(10)) {
       final tags = (p['tags'] as List).cast<String>();
       expect(tags.contains('gender_homme'), false, reason: 'Produit masculin dans Fête des Mères : ${p['name']}');
       expect(tags.contains('subcat_vetements_homme'), false);

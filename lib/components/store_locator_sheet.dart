@@ -270,7 +270,9 @@ class StoreLocatorSheet extends StatelessWidget {
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF8A2BE2),
-                shape: RoundedRectangle.circular(10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 elevation: 0,
               ),
             ),

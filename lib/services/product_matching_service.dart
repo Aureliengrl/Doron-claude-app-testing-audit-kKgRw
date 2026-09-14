@@ -427,21 +427,27 @@ class ProductMatchingService {
         AppLogger.info('📊 Mode discovery: AUCUN filtrage par score, ${relevantProducts.length} produits disponibles', 'Matching');
       }
 
-      // 🎲 SHUFFLE PARTIEL AMÉLIORÉ pour VRAIMENT éviter les mêmes produits
-      // On garde le top 20% intact (meilleurs scores), mais on shuffle 80% restants
-      final topCount = (relevantProducts.length * 0.2).ceil();
-      final topProducts = relevantProducts.take(topCount).toList();
-      final middleProducts = relevantProducts.skip(topCount).toList();
-
-      // Shuffle les produits du milieu avec seed basé sur timestamp + microsecond pour plus de variation
+      // 🎲 PRÉSERVATION DU TOP & SHUFFLE INTELLIGENT
       final random = Random(DateTime.now().microsecondsSinceEpoch);
-      middleProducts.shuffle(random);
+      List<Map<String, dynamic>> shuffledProducts;
 
-      // 🎯 SHUFFLE TOTAL pour vraiment varier (on mélange même le top pour plus de variété)
-      final shuffledProducts = [...topProducts, ...middleProducts];
-      shuffledProducts.shuffle(random);
-
-      AppLogger.debug('🎲 Shuffle effectué: top ${topCount} produits + ${middleProducts.length} produits mélangés', 'Matching');
+      if (filteringMode == 'home' || category != null || brand != null) {
+        // En mode Home/Catégorie/Marque : On garde les 25% meilleurs produits (flagships & tendances phares) strictement au sommet, et on shuffle le reste pour la découverte
+        final topCount = (relevantProducts.length * 0.25).ceil();
+        final topProducts = relevantProducts.take(topCount).toList();
+        final restProducts = relevantProducts.skip(topCount).toList();
+        restProducts.shuffle(random);
+        shuffledProducts = [...topProducts, ...restProducts];
+        AppLogger.debug('🏆 Top $topCount produits phares maintenus en tête, ${restProducts.length} produits secondaires mélangés', 'Matching');
+      } else {
+        // En mode Quiz : Top 15% préservé en tête, 85% mélangé pour la variété
+        final topCount = (relevantProducts.length * 0.15).ceil();
+        final topProducts = relevantProducts.take(topCount).toList();
+        final middleProducts = relevantProducts.skip(topCount).toList();
+        middleProducts.shuffle(random);
+        shuffledProducts = [...topProducts, ...middleProducts];
+        AppLogger.debug('🎲 Quiz: top $topCount préservé + ${middleProducts.length} mélangés', 'Matching');
+      }
 
       // ⚠️ VÉRIFICATION CRITIQUE: Y a-t-il des produits à ce stade ?
       if (shuffledProducts.isEmpty) {
@@ -1298,12 +1304,12 @@ class ProductMatchingService {
     // BONUS SECONDAIRES
     // ========================================================================
 
-    // 📈 Popularité (max 20 points)
-    final popularity = product['popularity'] as int? ?? 0;
-    if (popularity > 0) {
-      final popularityScore = (popularity * 0.2).clamp(0, 20);
+    // 📈 Popularité & Tendance Flagship (bonus dynamique jusqu'à 45 points pour les produits stars/tendances)
+    final popularity = product['popularity'] as int? ?? 85;
+    if (popularity > 70) {
+      final popularityScore = ((popularity - 70) * 1.5).clamp(0.0, 45.0);
       score += popularityScore;
-      AppLogger.debug('📈 Popularité: $popularity = +${popularityScore.toStringAsFixed(1)} points', 'Debug');
+      AppLogger.debug('📈 Popularité & Tendance: $popularity = +${popularityScore.toStringAsFixed(1)} points', 'Debug');
     }
 
     // 🎲 Variation aléatoire légère (0-5 points pour éviter ordre identique)
