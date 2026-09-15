@@ -3,7 +3,7 @@
     "apps": [],
     "details": [
       {
-        "appID": "TEAMID.com.mycompany.doron",
+        "appID": "8G596X24DA.com.mycompany.doron",
         "paths": [
           "/join/*",
           "/collab/*",
@@ -14,7 +14,7 @@
   },
   "webcredentials": {
     "apps": [
-      "TEAMID.com.mycompany.doron"
+      "8G596X24DA.com.mycompany.doron"
     ]
   }
 }
