@@ -55,15 +55,20 @@ class FirebaseDataService {
   /// À appeler juste avant le signOut() pour éviter que les données
   /// d'un compte ne s'affichent sur le suivant.
   static Future<void> clearLocalCache() async {
-    final uid = _auth.currentUser?.uid;
-    if (uid == null) return;
+    final uid = currentUserId ?? _auth.currentUser?.uid;
     // Invalider le cache mémoire immédiatement (avant le signOut)
     invalidateProfileTagsCache();
+    _activeUidOverride = null;
     try {
       final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('active_account_uid');
       final allKeys = prefs.getKeys();
-      final userKeys = allKeys.where((k) => k.startsWith('${uid}_')).toList();
-      for (final k in userKeys) {
+      final keysToRemove = allKeys.where((k) {
+        if (uid != null && k.startsWith('${uid}_')) return true;
+        if (k.startsWith('guest_')) return true;
+        return false;
+      }).toList();
+      for (final k in keysToRemove) {
         await prefs.remove(k);
       }
       AppLogger.info('Local cache cleared for user $uid', 'Firebase');
@@ -1428,6 +1433,7 @@ class FirebaseDataService {
 
     // ⚠️ FIX ONBOARDING: Si LOCAL a des données, TOUJOURS les inclure
     // Merge avec Firebase si disponible, sinon retourner local uniquement
+    List<Map<String, dynamic>> finalPeople = [];
     if (localPeople.isNotEmpty) {
       if (firebasePeople != null && firebasePeople.isNotEmpty) {
         // Les deux ont des données: merger (local en priorité SAUF champs collab)
@@ -1467,29 +1473,90 @@ class FirebaseDataService {
         }
 
         final deduplicated = _deduplicatePeopleByName(merged);
-        // Sort by createdAt descending (most recent first)
         final sorted = _sortPeopleByDate(deduplicated);
-        AppLogger.success('✅ RETURN: ${sorted.length} people (merged & sorted)', 'Firebase');
-        return sorted;
+        finalPeople = sorted;
       } else {
         // Seulement local - trier par date
         final deduplicated = _deduplicatePeopleByName(localPeople);
         final sorted = _sortPeopleByDate(deduplicated);
-        AppLogger.success('✅ RETURN: ${sorted.length} people (local only, sorted)', 'Firebase');
-        return sorted;
+        finalPeople = sorted;
+      }
+    } else if (firebasePeople != null && firebasePeople.isNotEmpty) {
+      final deduplicated = _deduplicatePeopleByName(firebasePeople);
+      finalPeople = deduplicated;
+    }
+
+    // ── Collaborations partagées reçues (où currentUserId est membre mais pas owner) ──
+    if (isLoggedIn) {
+      try {
+        final collabsSnap = await _firestore
+            .collection('collaborations')
+            .where('members', arrayContains: currentUserId)
+            .get();
+
+        final existingIds = finalPeople.map((p) => p['id']?.toString() ?? '').toSet();
+
+        for (final doc in collabsSnap.docs) {
+          final data = doc.data();
+          final ownerId = data['ownerId'] as String?;
+          if (ownerId != currentUserId) {
+            // C'est une liste partagée reçue par cet utilisateur
+            final profileId = data['profileId']?.toString() ?? doc.id;
+            if (!existingIds.contains(profileId)) {
+              existingIds.add(profileId);
+              final profileName = data['profileName'] as String? ?? 'Proche partagé';
+              final personData = data['personData'] as Map<String, dynamic>? ?? {};
+              final rawCollabGifts = data['gifts'] as List?;
+              final List<Map<String, dynamic>> gifts = rawCollabGifts == null
+                  ? []
+                  : rawCollabGifts.map((item) {
+                      if (item is Map) return Map<String, dynamic>.from(item);
+                      return <String, dynamic>{};
+                    }).where((m) => m.isNotEmpty).toList();
+
+              final sharedPerson = {
+                'id': profileId,
+                'name': profileName,
+                'tags': personData['tags'] ?? {
+                  'name': profileName,
+                  'personName': profileName,
+                  'relation': personData['relation'] ?? 'Partagé',
+                  'occasion': personData['occasion'] ?? 'Cadeaux',
+                },
+                'relation': personData['relation'] ?? 'Partagé',
+                'occasion': personData['occasion'] ?? 'Cadeaux',
+                'color': personData['color'] ?? '#8A2BE2',
+                'initials': personData['initials'] ?? (profileName.isNotEmpty ? profileName[0].toUpperCase() : '🎁'),
+                'isShared': true,
+                'isInvited': true,
+                'collabId': doc.id,
+                'chatId': data['chatId'],
+                'ownerId': ownerId,
+                'ownerName': data['ownerName'] ?? 'Un ami',
+                'gifts': gifts,
+                'meta': {
+                  'isShared': true,
+                  'isInvited': true,
+                  'collabId': doc.id,
+                  'chatId': data['chatId'],
+                  'ownerId': ownerId,
+                  'ownerName': data['ownerName'] ?? 'Un ami',
+                  'createdAt': (data['createdAt'] is Timestamp)
+                      ? (data['createdAt'] as Timestamp).toDate().toIso8601String()
+                      : DateTime.now().toIso8601String(),
+                },
+              };
+              finalPeople.add(sharedPerson);
+            }
+          }
+        }
+      } catch (e) {
+        AppLogger.debug('⚠️ Erreur collaborations partagées: $e', 'Collab');
       }
     }
 
-    // Local vide: retourner Firebase si disponible (déjà trié par Firebase)
-    if (firebasePeople != null && firebasePeople.isNotEmpty) {
-      final deduplicated = _deduplicatePeopleByName(firebasePeople);
-      AppLogger.success('✅ RETURN: ${deduplicated.length} people (firebase only)', 'Firebase');
-      return deduplicated;
-    }
-
-    // Aucune donnée
-    AppLogger.warning('⚠️ RETURN: 0 people (nothing found)', 'Firebase');
-    return [];
+    AppLogger.success('✅ RETURN: ${finalPeople.length} people (including shared)', 'Firebase');
+    return finalPeople;
   }
 
   /// FIX Bug 3: Déduplique les personnes par nom (garde la plus récente)
@@ -1803,12 +1870,60 @@ class FirebaseDataService {
           .map((e) => e as Map<String, dynamic>)
           .toList();
 
-      AppLogger.success('Loaded ${lists.length} gift lists from local storage', 'Firebase');
-      return lists;
+      if (lists.isNotEmpty) {
+        AppLogger.success('Loaded ${lists.length} gift lists from local storage', 'Firebase');
+        return lists;
+      }
     } catch (e) {
       AppLogger.error('Error loading gift lists locally', 'Firebase', e);
-      return [];
     }
+
+    // Fallback collaborations partagées
+    if (isLoggedIn) {
+      try {
+        var collabDoc = await _firestore.collection('collaborations').doc(personId).get();
+        Map<String, dynamic>? collabData;
+        String collabDocId = personId;
+
+        if (collabDoc.exists) {
+          collabData = collabDoc.data();
+        } else {
+          final collabSnap = await _firestore
+              .collection('collaborations')
+              .where('profileId', isEqualTo: personId)
+              .limit(1)
+              .get();
+          if (collabSnap.docs.isNotEmpty) {
+            collabDoc = collabSnap.docs.first;
+            collabData = collabDoc.data();
+            collabDocId = collabDoc.id;
+          }
+        }
+
+        if (collabData != null) {
+          final rawCollabGifts = collabData['gifts'] as List?;
+          final gifts = rawCollabGifts == null
+              ? <Map<String, dynamic>>[]
+              : rawCollabGifts.map((e) => e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{}).where((m) => m.isNotEmpty).toList();
+
+          if (gifts.isNotEmpty) {
+            AppLogger.info('Loaded ${gifts.length} gifts from shared collaboration', 'Collab');
+            return [
+              {
+                'id': collabDocId,
+                'name': collabData['profileName'] ?? 'Liste partagée',
+                'gifts': gifts,
+                'isShared': true,
+              }
+            ];
+          }
+        }
+      } catch (e) {
+        AppLogger.debug('Collab gifts fallback error: $e', 'Collab');
+      }
+    }
+
+    return [];
   }
 
   /// Charge la dernière liste de cadeaux pour une personne
@@ -1842,25 +1957,46 @@ class FirebaseDataService {
     // ── Firebase ───────────────────────────────────────────────────────────
     if (!isLoggedIn) return;
     try {
-      final snap = await _firestore
-          .collection('users')
-          .doc(currentUserId)
-          .collection('people')
-          .doc(personId)
-          .collection('gift_lists')
-          .orderBy('createdAt', descending: true)
-          .limit(1)
-          .get();
-
-      if (snap.docs.isEmpty) {
-        // Aucune liste existante → on en crée une
-        await saveGiftListForPerson(personId: personId, gifts: gifts);
-        return;
+      // 1. Toujours synchroniser avec la collaboration si c'est un profil partagé
+      try {
+        var collabDoc = await _firestore.collection('collaborations').doc(personId).get();
+        if (collabDoc.exists) {
+          await collabDoc.reference.set({'gifts': gifts}, SetOptions(merge: true));
+          AppLogger.debug('✅ Cadeaux réordonnés synchronisés avec la collab (docId)', 'Collab');
+        } else {
+          final collabSnap = await _firestore
+              .collection('collaborations')
+              .where('profileId', isEqualTo: personId)
+              .limit(1)
+              .get();
+          if (collabSnap.docs.isNotEmpty) {
+            await collabSnap.docs.first.reference.set({'gifts': gifts}, SetOptions(merge: true));
+            AppLogger.debug('✅ Cadeaux réordonnés synchronisés avec la collab (profileId)', 'Collab');
+          }
+        }
+      } catch (e) {
+        AppLogger.debug('Collab sync error on reorder: $e', 'Collab');
       }
 
-      // Met à jour le doc le plus récent
-      await snap.docs.first.reference.update({'gifts': gifts});
-      AppLogger.firebase('Gift order updated for person $personId');
+      // 2. Mettre à jour le sous-document de l'utilisateur si existant
+      try {
+        final snap = await _firestore
+            .collection('users')
+            .doc(currentUserId)
+            .collection('people')
+            .doc(personId)
+            .collection('gift_lists')
+            .orderBy('createdAt', descending: true)
+            .limit(1)
+            .get();
+
+        if (snap.docs.isEmpty) {
+          await saveGiftListForPerson(personId: personId, gifts: gifts);
+        } else {
+          await snap.docs.first.reference.update({'gifts': gifts});
+          AppLogger.firebase('Gift order updated for person $personId');
+        }
+      } catch (_) {}
     } catch (e) {
       AppLogger.error('Error updating gift order on Firebase', 'Firebase', e);
     }
@@ -1875,20 +2011,11 @@ class FirebaseDataService {
       // Charger la liste actuelle
       final currentList = await loadLatestGiftListForPerson(personId);
 
-      if (currentList == null) {
-        // Aucune liste existante, créer une nouvelle
-        await saveGiftListForPerson(
-          personId: personId,
-          gifts: [gift],
-          listName: 'Liste ${DateTime.now().day}/${DateTime.now().month}',
-        );
-        AppLogger.success('New gift list created with gift for person $personId', 'Firebase');
-        return true;
+      List<Map<String, dynamic>> gifts = [];
+      if (currentList != null && currentList['gifts'] is List) {
+        final rawG = currentList['gifts'] as List;
+        gifts = rawG.map((e) => e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{}).where((m) => m.isNotEmpty).toList();
       }
-
-      // Liste existante, ajouter le cadeau
-      final List<Map<String, dynamic>> gifts =
-          (currentList['gifts'] as List?)?.cast<Map<String, dynamic>>() ?? [];
 
       // Vérifier si le cadeau existe déjà (par ID ou nom)
       final giftId = gift['id'];
@@ -1903,10 +2030,7 @@ class FirebaseDataService {
         return false;
       }
 
-      gifts.add(gift);
-
-      // Sauvegarder la liste mise à jour
-      final listId = currentList['id'] as String;
+      gifts.insert(0, gift);
 
       // Sauvegarder localement (BUG 4 FIX: clé préfixée par uid)
       try {
@@ -1914,12 +2038,19 @@ class FirebaseDataService {
         final listsJson = prefs.getString(_key('gift_lists_$personId')) ?? '[]';
         final lists = (json.decode(listsJson) as List).cast<Map<String, dynamic>>();
 
-        final listIndex = lists.indexWhere((l) => l['id'] == listId);
-        if (listIndex != -1) {
-          lists[listIndex]['gifts'] = gifts;
+        if (lists.isNotEmpty) {
+          lists.first['gifts'] = gifts;
+          await prefs.setString(_key('gift_lists_$personId'), json.encode(lists));
+        } else {
+          lists.add({
+            'id': const Uuid().v4(),
+            'personId': personId,
+            'name': 'Liste ${DateTime.now().day}/${DateTime.now().month}',
+            'gifts': gifts,
+            'createdAt': DateTime.now().toIso8601String(),
+          });
           await prefs.setString(_key('gift_lists_$personId'), json.encode(lists));
         }
-
         AppLogger.success('Gift added locally for person $personId', 'Firebase');
       } catch (e) {
         AppLogger.error('Error adding gift locally', 'Firebase', e);
@@ -1927,25 +2058,121 @@ class FirebaseDataService {
 
       // Sauvegarder sur Firebase si connecté
       if (isLoggedIn) {
+        // 1. Synchroniser immédiatement avec la collaboration si partagée
         try {
-          await _firestore
+          var collabDoc = await _firestore.collection('collaborations').doc(personId).get();
+          if (collabDoc.exists) {
+            await collabDoc.reference.set({'gifts': gifts}, SetOptions(merge: true));
+            AppLogger.debug('✅ Nouveau cadeau synchronisé avec la collab (docId)', 'Collab');
+          } else {
+            final collabSnap = await _firestore
+                .collection('collaborations')
+                .where('profileId', isEqualTo: personId)
+                .limit(1)
+                .get();
+            if (collabSnap.docs.isNotEmpty) {
+              await collabSnap.docs.first.reference.set({'gifts': gifts}, SetOptions(merge: true));
+              AppLogger.debug('✅ Nouveau cadeau synchronisé avec la collab (profileId)', 'Collab');
+            }
+          }
+        } catch (e) {
+          AppLogger.debug('Collab sync error on addGift: $e', 'Collab');
+        }
+
+        // 2. Sauvegarder sur le sous-document de l'utilisateur si possible
+        try {
+          final snap = await _firestore
               .collection('users')
               .doc(currentUserId)
               .collection('people')
               .doc(personId)
               .collection('gift_lists')
-              .doc(listId)
-              .update({'gifts': gifts});
+              .orderBy('createdAt', descending: true)
+              .limit(1)
+              .get();
 
+          if (snap.docs.isEmpty) {
+            await saveGiftListForPerson(personId: personId, gifts: gifts);
+          } else {
+            await snap.docs.first.reference.update({'gifts': gifts});
+          }
           AppLogger.firebase('Gift added to Firebase for person $personId');
-        } catch (e) {
-          AppLogger.error('Error adding gift to Firebase', 'Firebase', e);
-        }
+        } catch (_) {}
       }
 
       return true;
     } catch (e) {
       AppLogger.error('Error adding gift to person', 'Firebase', e);
+      return false;
+    }
+  }
+
+  /// Supprime un cadeau d'une liste (hôte ou invité) et synchronise
+  static Future<bool> removeGiftFromPerson({
+    required String personId,
+    required String giftId,
+  }) async {
+    try {
+      final currentList = await loadLatestGiftListForPerson(personId);
+      if (currentList == null) return false;
+
+      final rawG = currentList['gifts'] as List?;
+      if (rawG == null || rawG.isEmpty) return false;
+
+      final gifts = rawG.map((e) => e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{}).where((m) => m.isNotEmpty).toList();
+      gifts.removeWhere((g) => g['id']?.toString() == giftId || g['name']?.toString() == giftId);
+
+      // 1. Local
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final listsJson = prefs.getString(_key('gift_lists_$personId')) ?? '[]';
+        final lists = (json.decode(listsJson) as List).cast<Map<String, dynamic>>();
+        if (lists.isNotEmpty) {
+          lists.first['gifts'] = gifts;
+          await prefs.setString(_key('gift_lists_$personId'), json.encode(lists));
+        }
+      } catch (_) {}
+
+      // 2. Collab
+      if (isLoggedIn) {
+        try {
+          var collabDoc = await _firestore.collection('collaborations').doc(personId).get();
+          if (collabDoc.exists) {
+            await collabDoc.reference.set({'gifts': gifts}, SetOptions(merge: true));
+            AppLogger.debug('✅ Cadeau supprimé synchronisé avec la collab (docId)', 'Collab');
+          } else {
+            final collabSnap = await _firestore
+                .collection('collaborations')
+                .where('profileId', isEqualTo: personId)
+                .limit(1)
+                .get();
+            if (collabSnap.docs.isNotEmpty) {
+              await collabSnap.docs.first.reference.set({'gifts': gifts}, SetOptions(merge: true));
+              AppLogger.debug('✅ Cadeau supprimé synchronisé avec la collab (profileId)', 'Collab');
+            }
+          }
+        } catch (_) {}
+
+        // 3. User subcollection
+        try {
+          final snap = await _firestore
+              .collection('users')
+              .doc(currentUserId)
+              .collection('people')
+              .doc(personId)
+              .collection('gift_lists')
+              .orderBy('createdAt', descending: true)
+              .limit(1)
+              .get();
+          if (snap.docs.isNotEmpty) {
+            await snap.docs.first.reference.update({'gifts': gifts});
+          }
+        } catch (_) {}
+      }
+
+      return true;
+    } catch (e) {
+      AppLogger.error('Error removing gift from person', 'Firebase', e);
       return false;
     }
   }

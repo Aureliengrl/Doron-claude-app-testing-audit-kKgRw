@@ -7,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '/components/liquid_glass.dart';
 import '/services/secret_santa_service.dart';
+import '/services/firebase_data_service.dart';
 
 class SecretSantaHubPage extends StatefulWidget {
   const SecretSantaHubPage({super.key});
@@ -24,7 +25,7 @@ class _SecretSantaHubPageState extends State<SecretSantaHubPage> {
   final Color _indigo = const Color(0xFF6366F1);
   final Color _cyan = const Color(0xFF06B6D4);
 
-  String? get _myUid => FirebaseAuth.instance.currentUser?.uid;
+  String? get _myUid => FirebaseDataService.currentUserId;
 
   void _showJoinDialog() {
     final tokenController = TextEditingController();

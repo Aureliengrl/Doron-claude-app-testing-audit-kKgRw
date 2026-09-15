@@ -40,7 +40,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
 
   /// true si la wishlist appartient à l'utilisateur courant
   bool get _isOwner {
-    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    final myUid = FirebaseDataService.currentUserId;
     if (myUid == null) return false;
     if (widget.ownerUid == null) return true;
     return widget.ownerUid == myUid;
@@ -48,7 +48,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
 
   /// UID effectif du propriétaire (l'ami ou soi-même)
   String? get _effectiveOwnerUid =>
-      widget.ownerUid ?? FirebaseAuth.instance.currentUser?.uid;
+      widget.ownerUid ?? FirebaseDataService.currentUserId;
 
   /// Fixé à 2 colonnes pour un rendu premium dans les albums
   final int _gridColumns = 2;
@@ -282,7 +282,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
 
   // ─── Réservation de cadeau ─────────────────────────────────────────────────
   Future<void> _toggleReservation(String productId) async {
-    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    final myUid = FirebaseDataService.currentUserId;
     if (myUid == null) return;
 
     final ownerUid = _wishlistData?['ownerUid'] as String? ?? myUid;
@@ -447,7 +447,7 @@ class _WishlistDetailsWidgetState extends State<WishlistDetailsWidget> {
 
   /// Persiste l'ordre des produits dans Firestore
   Future<void> _saveProductOrder() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId;
     if (uid == null) return;
     try {
       // ── Firebase : écriture du champ 'order' sur chaque produit ──────────

@@ -160,45 +160,20 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
   /// Charge les favoris depuis Firebase users/{uid}/favorites
   Future<void> _loadFavorites() async {
-    if (FirebaseAuth.instance.currentUser == null) {
-      // Charger les favoris locaux depuis SharedPreferences
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        final localFavorites = prefs.getStringList('local_favorite_titles') ?? [];
-        if (mounted && localFavorites.isNotEmpty) {
-          setState(() {
-            _model.likedProductTitles.clear();
-            _model.likedProductTitles.addAll(localFavorites);
-          });
-        }
-      } catch (_) {}
+    final uid = FirebaseDataService.currentUserId;
+    if (uid == null || uid.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _model.likedProductTitles.clear();
+        });
+        _likedTitles.value = {};
+      }
       return;
     }
 
     try {
-      final uid = FirebaseAuth.instance.currentUser!.uid;
       final col = FirebaseFirestore.instance.collection('users').doc(uid).collection('favorites');
       final snap = await col.get();
-
-      // #FIX-7: migrer les favoris locaux vers Firebase si présents
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        final localTitles = prefs.getStringList('local_favorite_titles') ?? [];
-        if (localTitles.isNotEmpty) {
-          final fbTitles = snap.docs.map((d) => d.data()['name'] as String? ?? '').toSet();
-          final toMigrate = localTitles.where((t) => t.isNotEmpty && !fbTitles.contains(t)).toList();
-          if (toMigrate.isNotEmpty) {
-            final batch = FirebaseFirestore.instance.batch();
-            for (final title in toMigrate) {
-              final docId = 'fav_m_${title.hashCode}';
-              batch.set(col.doc(docId), {'id': docId, 'name': title, 'brand': '', 'price': '', 'image': '', 'url': '', 'createdAt': FieldValue.serverTimestamp()});
-            }
-            await batch.commit();
-            AppLogger.debug('📦 Migration: ${toMigrate.length} favoris locaux vers Firebase', 'Fav');
-          }
-          await prefs.remove('local_favorite_titles');
-        }
-      } catch (_) {}
 
       if (mounted) {
         setState(() {
@@ -208,15 +183,12 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
             if (name.isNotEmpty) _model.likedProductTitles.add(name);
           }
         });
-        // PERF AXE 5: Synchroniser le ValueNotifier avec les favoris chargés
         _likedTitles.value = Set<String>.from(_model.likedProductTitles);
-        AppLogger.debug('✅ ${_model.likedProductTitles.length} favoris chargés depuis users/$uid/favorites', 'Debug');
       }
     } catch (e) {
-      AppLogger.debug('❌ Erreur chargement favoris: $e', 'Debug');
+      AppLogger.debug('Erreur chargement favoris: $e', 'Debug');
     }
   }
-
 
   void _onScroll() {
     if (_scrollController.position.pixels >=
@@ -563,9 +535,9 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     }
   }
 
-  /// Toggle favorite — écrit dans users/{uid}/favorites (Firestore rules autorisent)
+  /// Toggle favorite — écrit dans users/{uid}/favorites (Firestore rules autorisent isOwner)
   Future<void> _toggleFavorite(Map<String, dynamic> product) async {
-    final user = FirebaseAuth.instance.currentUser;
+    final uid = FirebaseDataService.currentUserId;
     final productTitle = product['name'] ?? product['title'] ?? '';
     final isCurrentlyLiked = _model.likedProductTitles.contains(productTitle);
 
@@ -596,17 +568,18 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
     // Sauvegarder toujours en local
     try {
       final prefs = await SharedPreferences.getInstance();
-      final localFavorites = prefs.getStringList('local_favorite_titles') ?? [];
+      final key = uid != null ? '${uid}_local_favorite_titles' : 'guest_local_favorite_titles';
+      final localFavorites = prefs.getStringList(key) ?? [];
       if (isCurrentlyLiked) {
         localFavorites.remove(productTitle);
       } else {
         if (!localFavorites.contains(productTitle)) localFavorites.add(productTitle);
       }
-      await prefs.setStringList('local_favorite_titles', localFavorites);
+      await prefs.setStringList(key, localFavorites);
     } catch (_) {}
 
     // Si non connecté → message de connexion
-    if (user == null) {
+    if (uid == null || uid.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
@@ -629,7 +602,6 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
 
     // Sauvegarder dans users/{uid}/favorites (règles Firestore autorisent isOwner)
     try {
-      final uid = user.uid;
       final favoritesRef = FirebaseFirestore.instance
           .collection('users')
           .doc(uid)

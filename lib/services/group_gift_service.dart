@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '/services/firebase_data_service.dart';
 import '/utils/app_logger.dart';
 import 'collaboration_service.dart';
 
@@ -17,7 +18,7 @@ import 'collaboration_service.dart';
 /// est manuelle (« j'ai envoyé » côté participant, « j'ai reçu » côté hôte).
 class GroupGiftService {
   static final _db = FirebaseFirestore.instance;
-  static String? get _uid => FirebaseAuth.instance.currentUser?.uid;
+  static String? get _uid => FirebaseDataService.currentUserId;
 
   // ─── Création ────────────────────────────────────────────────────────────
 

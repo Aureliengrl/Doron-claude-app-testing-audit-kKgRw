@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '/services/firebase_data_service.dart';
 import '/utils/app_logger.dart';
 
 /// Service centralisé pour les produits likés.
@@ -13,7 +14,7 @@ class FavouriteService {
 
   /// Retourne true si le produit (par nom) est déjà liké.
   static Future<bool> isLiked(String productName) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId;
     if (uid == null) return false;
     try {
       final snap = await _favCol(uid)
@@ -28,7 +29,7 @@ class FavouriteService {
 
   /// Like ou unlike un produit. Retourne true si succès.
   static Future<bool> toggle(Map<String, dynamic> product) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId;
     if (uid == null) return false;
 
     final name = product['name'] as String? ??
@@ -81,7 +82,7 @@ class FavouriteService {
 
   /// Like direct (pas de toggle — ajoute même si pas encore liké).
   static Future<bool> like(Map<String, dynamic> product) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId;
     if (uid == null) return false;
 
     final name = product['name'] as String? ??
@@ -97,7 +98,7 @@ class FavouriteService {
 
   /// Unlike direct (retire si présent, ne fait rien sinon).
   static Future<bool> unlike(Map<String, dynamic> product) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId;
     if (uid == null) return false;
 
     final name = product['name'] as String? ??
@@ -119,7 +120,7 @@ class FavouriteService {
 
   /// Stream temps réel des produits likés.
   static Stream<List<Map<String, dynamic>>> favStream() {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId;
     if (uid == null) return Stream.value([]);
     return _favCol(uid)
         .orderBy('createdAt', descending: true)

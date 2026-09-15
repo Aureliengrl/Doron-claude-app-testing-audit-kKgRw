@@ -8,6 +8,7 @@ import '/components/liquid_glass.dart';
 import '../chat/chat_list_page.dart';
 import '../chat/create_chat_bottom_sheet.dart';
 import '/components/app_notch.dart';
+import '/services/firebase_data_service.dart';
 
 class SocialPageWidget extends StatefulWidget {
   const SocialPageWidget({super.key});
@@ -45,10 +46,10 @@ class _SocialPageWidgetState extends State<SocialPageWidget> {
             title: 'Social',
             subtitle: 'Interagissez et retrouvez vos amis',
             leading: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseAuth.instance.currentUser != null
+              stream: (FirebaseDataService.currentUserId ?? FirebaseAuth.instance.currentUser?.uid) != null
                   ? FirebaseFirestore.instance
                       .collection('notifications')
-                      .doc(FirebaseAuth.instance.currentUser!.uid)
+                      .doc(FirebaseDataService.currentUserId ?? FirebaseAuth.instance.currentUser!.uid)
                       .collection('items')
                       .where('read', isEqualTo: false)
                       .snapshots()

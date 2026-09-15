@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
+import '/services/firebase_data_service.dart';
 import '/utils/app_logger.dart';
 
 /// Service de partage de wishlists via lien unique.
 class WishlistSharingService {
   static final _db = FirebaseFirestore.instance;
-  static String? get _myUid => FirebaseAuth.instance.currentUser?.uid;
+  static String? get _myUid => FirebaseDataService.currentUserId;
 
   /// Génère ou récupère un lien de partage pour une wishlist.
   /// Retourne le token (court, 12 caractères).

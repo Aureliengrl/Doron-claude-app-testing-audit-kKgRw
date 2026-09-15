@@ -7,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '/components/liquid_glass.dart';
 import '/components/cached_image.dart';
 import '/services/secret_santa_service.dart';
+import '/services/firebase_data_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class SecretSantaLobbyPage extends StatefulWidget {
@@ -25,7 +26,7 @@ class _SecretSantaLobbyPageState extends State<SecretSantaLobbyPage> {
   final Color _pink = const Color(0xFFEC4899);
   final Color _green = const Color(0xFF10B981);
 
-  String get _myUid => FirebaseAuth.instance.currentUser?.uid ?? '';
+  String get _myUid => FirebaseDataService.currentUserId ?? '';
   bool _drawing = false;
 
   Future<void> _launchDraw(SecretSantaGroup group) async {

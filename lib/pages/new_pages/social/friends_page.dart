@@ -16,6 +16,7 @@ import '/utils/app_logger.dart';
 import '/components/block_report_sheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '/services/firebase_data_service.dart';
 
 /// Page Amis "” 3 onglets : Mes amis / Rechercher / Demandes reçues
 /// â”€ Chaque résultat de recherche affiche le statut exact (none/pending/friend)
@@ -50,7 +51,7 @@ class _FriendsPageState extends State<FriendsPage>
 
   // Historique de recherche
   List<String> _searchHistory = [];
-  static const String _historyKey = 'friends_search_history';
+  String get _historyKey => '${FirebaseDataService.currentUserId ?? "guest"}_friends_search_history';
 
   // Onglet Demandes "” stream temps réel
   Stream<List<Map<String, dynamic>>>? _requestsStream;

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '/services/firebase_data_service.dart';
 import '/utils/app_logger.dart';
 import '/services/friend_service.dart';
 
@@ -40,7 +41,7 @@ class UserSearchService {
     try {
       if (query.trim().isEmpty) return [];
 
-      final currentUid = FirebaseAuth.instance.currentUser?.uid;
+      final currentUid = FirebaseDataService.currentUserId;
       final queryLower = query.toLowerCase().trim();
 
       // Recherche par searchName (champ index)
@@ -167,7 +168,7 @@ class UserSearchService {
   static Future<void> setWishlistVisibility(
       String wishlistId, bool isPublic) async {
     try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
+      final uid = FirebaseDataService.currentUserId;
       if (uid == null) throw Exception('Not authenticated');
       await _db.collection('users').doc(uid).collection('wishlists').doc(wishlistId).update({
         'isPublic': isPublic,

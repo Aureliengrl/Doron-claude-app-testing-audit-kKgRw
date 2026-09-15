@@ -9,6 +9,7 @@ import '/backend/backend.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:stream_transform/stream_transform.dart';
 import 'firebase_auth_manager.dart';
+import '/services/firebase_data_service.dart';
 
 export 'firebase_auth_manager.dart';
 
@@ -18,7 +19,8 @@ FirebaseAuthManager get authManager => _authManager;
 String get currentUserEmail =>
     currentUserDocument?.email ?? currentUser?.email ?? '';
 
-String get currentUserUid => currentUser?.uid ?? '';
+String get currentUserUid =>
+    FirebaseDataService.currentUserId ?? currentUser?.uid ?? '';
 
 String get currentUserDisplayName =>
     currentUserDocument?.displayName ?? currentUser?.displayName ?? '';

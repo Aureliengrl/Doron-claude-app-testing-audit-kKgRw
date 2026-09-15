@@ -69,7 +69,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     _model = UserProfileModel();
     _tabController = TabController(length: 2, vsync: this);
 
-    _lastLoadedUid = FirebaseAuth.instance.currentUser?.uid;
+    _lastLoadedUid = FirebaseDataService.currentUserId;
 
     // Vérifier le mode anonyme
     _checkAnonymousMode();
@@ -159,7 +159,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
     if (pickedFile == null || !mounted) return;
 
     final file = File(pickedFile.path);
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId;
     if (uid == null) return;
 
     // âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬ Affichage OPTIMISTE IMMÉDIAT âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬âà¢â"šÂ¬Ã‚Âà¢ââ‚¬Å¡Ã‚Â¬
@@ -518,7 +518,14 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                 Builder(
                                   builder: (context) {
                                     final handle = _model.userProfile?['handle'] as String?;
-                                    final display = handle != null && handle.isNotEmpty ? '@$handle' : 'Profil';
+                                    final displayName = (_model.userProfile?['displayName'] as String?) ??
+                                        (_model.userProfile?['display_name'] as String?) ??
+                                        (_model.userProfile?['first_name'] as String?);
+                                    final display = handle != null && handle.isNotEmpty
+                                        ? '@$handle'
+                                        : (displayName != null && displayName.isNotEmpty
+                                            ? displayName
+                                            : 'Profil');
                                     
                                     return Text(
                                       display,
@@ -1149,7 +1156,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
   Future<void> _loadFriendsCount() async {
     try {
-      final uid = currentUserReference?.id;
+      final uid = FirebaseDataService.currentUserId;
       if (uid == null) return;
       final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
       if (!mounted) return;
@@ -1460,7 +1467,8 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
 
     try {
       // 2. Upload to Firebase Storage
-      final String uid = FirebaseAuth.instance.currentUser!.uid;
+      final String? uid = FirebaseDataService.currentUserId;
+      if (uid == null) return;
       final fileExtension = pickedFile.name.split('.').last;
       final fileName = 'wishlist_$wishlistId.${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
       final ref = FirebaseStorage.instance.ref().child('users/$uid/wishlist_covers/$fileName');
@@ -2212,7 +2220,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                       onPressed: isSaving ? null : () async {
                         setModal(() => isSaving = true);
                         try {
-                          final uid = FirebaseAuth.instance.currentUser?.uid;
+                          final uid = FirebaseDataService.currentUserId;
                           if (uid != null) {
                             final newHandle = handleCtrl.text.trim().replaceAll('@', '').toLowerCase();
                             await FirebaseFirestore.instance.collection('users').doc(uid).update({
@@ -2294,7 +2302,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
               future: MultiAccountService.getSavedAccounts(),
               builder: (context, snapshot) {
                 final accounts = snapshot.data ?? [];
-                final currentUid = FirebaseAuth.instance.currentUser?.uid;
+                final currentUid = FirebaseDataService.currentUserId;
 
                 return Container(
                   constraints: BoxConstraints(
@@ -2399,7 +2407,13 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                                   if (isCurrent) {
                                     Navigator.pop(ctx);
                                   } else {
-                                    await MultiAccountService.switchAccount(context, acc);
+                                    await MultiAccountService.switchAccount(
+                                      context,
+                                      acc,
+                                      onAccountSwitched: () {
+                                        _reloadForAccountSwitch();
+                                      },
+                                    );
                                   }
                                 },
                                 borderRadius: BorderRadius.circular(16),

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '/services/firebase_data_service.dart';
 import '/utils/app_logger.dart';
 
 /// Service de rappels d'événements liés aux wishlists.
@@ -8,7 +9,7 @@ import '/utils/app_logger.dart';
 /// des rappels (7j avant, 1j avant).
 class EventReminderService {
   static final _db = FirebaseFirestore.instance;
-  static String? get _myUid => FirebaseAuth.instance.currentUser?.uid;
+  static String? get _myUid => FirebaseDataService.currentUserId;
 
   /// Associe une date d'événement à une wishlist.
   static Future<void> setEventDate({

@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
 import '/utils/app_logger.dart';
+import '/services/firebase_data_service.dart';
 
 /// Service de présence en ligne — met à jour `lastSeen` et `isOnline`
 /// dans le document utilisateur Firestore.
@@ -52,7 +53,7 @@ class PresenceService with WidgetsBindingObserver {
   }
 
   static Future<void> _goOnline() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId ?? FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
     try {
       await _db.collection('users').doc(uid).update({
@@ -65,7 +66,7 @@ class PresenceService with WidgetsBindingObserver {
   }
 
   static Future<void> _goOffline() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId ?? FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
     try {
       await _db.collection('users').doc(uid).update({

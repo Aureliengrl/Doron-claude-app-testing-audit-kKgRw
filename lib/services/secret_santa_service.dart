@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
+import '/services/firebase_data_service.dart';
 import '/utils/app_logger.dart';
 
 /// Modèle léger pour un groupe Secret Santa.
@@ -120,7 +121,7 @@ class SecretSantaGroup {
 /// Service Secret Santa — gestion des groupes, participants, tirage.
 class SecretSantaService {
   static final _db = FirebaseFirestore.instance;
-  static String? get _myUid => FirebaseAuth.instance.currentUser?.uid;
+  static String? get _myUid => FirebaseDataService.currentUserId;
 
   // ── Créer un groupe ─────────────────────────────────────────────────────────
 

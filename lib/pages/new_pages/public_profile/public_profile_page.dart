@@ -46,7 +46,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   int _friendsCount = 0;
 
   bool get _isMyProfile =>
-      FirebaseAuth.instance.currentUser?.uid == widget.uid;
+      FirebaseDataService.currentUserId == widget.uid;
 
   bool get _isFriendsWithUser =>
       _isMyProfile || _friendshipStatus == FriendshipStatus.friends;
@@ -100,7 +100,7 @@ class _PublicProfilePageState extends State<PublicProfilePage>
   }
 
   Future<void> _loadWishlists() async {
-    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    final myUid = FirebaseDataService.currentUserId;
     final wishlists = await UserSearchService.getVisibleWishlists(
       widget.uid,
       viewerUid: myUid,

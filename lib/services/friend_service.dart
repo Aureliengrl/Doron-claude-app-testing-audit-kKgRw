@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '/services/firebase_data_service.dart';
 import '/utils/app_logger.dart';
 
 /// Statut de relation entre deux utilisateurs.
@@ -13,7 +14,7 @@ enum FriendshipStatus {
 /// Service gérant les demandes d'amis et la liste d'amis.
 class FriendService {
   static final _db = FirebaseFirestore.instance;
-  static String? get _myUid => FirebaseAuth.instance.currentUser?.uid;
+  static String? get _myUid => FirebaseDataService.currentUserId;
 
   // ─── Vérifier si ami (simple) ──────────────────────────────────────────────
 
@@ -386,32 +387,33 @@ class FriendService {
   static Future<List<Map<String, dynamic>>> getFriends(String uid) async {
     try {
       final doc = await _db.collection('users').doc(uid).get();
-      final friendUids = (doc.data()?['friends'] as List?)?.cast<String>() ?? [];
+      final rawFriends = doc.data()?['friends'];
+      List<String> friendUids = [];
+      if (rawFriends is List) {
+        friendUids = rawFriends.map((e) => e.toString().trim()).where((id) => id.isNotEmpty).toList();
+      }
       if (friendUids.isEmpty) return [];
 
+      final docs = await Future.wait(
+        friendUids.map((friendUid) => _db.collection('users').doc(friendUid).get()),
+      );
+
       final profiles = <Map<String, dynamic>>[];
-      for (var i = 0; i < friendUids.length; i += 10) {
-        final chunk = friendUids.sublist(
-            i, i + 10 > friendUids.length ? friendUids.length : i + 10);
-        final snap = await _db
-            .collection('users')
-            .where(FieldPath.documentId, whereIn: chunk)
-            .get();
-        for (final d in snap.docs) {
-          final data = d.data();
-          profiles.add({
-            'uid': d.id,
-            'displayName': data['first_name'] as String? ??
-                           data['display_name'] as String? ??
-                           data['name'] as String? ?? 'Utilisateur',
-            'handle': data['handle'] ?? data['username'] ?? '',
-            'photoUrl': (data['photo_url'] as String?)?.isNotEmpty == true
-                ? data['photo_url'] as String
-                : (data['photoUrl'] as String?)?.isNotEmpty == true
-                    ? data['photoUrl'] as String
-                    : (data['photoURL'] as String?) ?? '',
-          });
-        }
+      for (final d in docs) {
+        if (!d.exists) continue;
+        final data = d.data() ?? {};
+        profiles.add({
+          'uid': d.id,
+          'displayName': data['first_name'] as String? ??
+                         data['display_name'] as String? ??
+                         data['name'] as String? ?? 'Utilisateur',
+          'handle': data['handle'] ?? data['username'] ?? '',
+          'photoUrl': (data['photo_url'] as String?)?.isNotEmpty == true
+              ? data['photo_url'] as String
+              : (data['photoUrl'] as String?)?.isNotEmpty == true
+                  ? data['photoUrl'] as String
+                  : (data['photoURL'] as String?) ?? '',
+        });
       }
       return profiles;
     } catch (e) {

@@ -7,17 +7,20 @@ import 'package:share_plus/share_plus.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '/services/firebase_data_service.dart';
 import '/components/liquid_glass.dart';
 import '/services/friend_service.dart';
 import '/services/collaboration_service.dart';
+import '/pages/new_pages/search_page/search_page_model.dart';
 
 /// Bottom sheet de collaboration — 2 méthodes d'invitation :
 /// 1. Amis (accès rapide, ajout direct)
 /// 2. Lien (copier / partager ? redirige vers App Store si pas installé)
 class ShareListBottomSheet extends StatefulWidget {
   final Map<String, dynamic> profile;
+  final List<Map<String, dynamic>>? gifts;
 
-  const ShareListBottomSheet({super.key, required this.profile});
+  const ShareListBottomSheet({super.key, required this.profile, this.gifts});
 
   @override
   State<ShareListBottomSheet> createState() => _ShareListBottomSheetState();
@@ -72,6 +75,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
     try {
       // Chercher l'id dans plusieurs champs possibles
       final profileId = widget.profile['id']?.toString() ??
+          widget.profile['personId']?.toString() ??
           widget.profile['uid']?.toString() ??
           widget.profile['userId']?.toString() ?? '';
       final profileName = widget.profile['name'] as String? ??
@@ -84,6 +88,8 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
       final collab = await CollaborationService.createOrGetCollab(
         profileId: profileId,
         profileName: profileName,
+        personData: widget.profile,
+        gifts: widget.gifts,
       );
 
       _collabId = collab['collabId'] as String?;
@@ -110,7 +116,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
   Future<void> _loadFriends() async {
     try {
       // Utilise getFriends directement au lieu du stream (évite le bug de chargement infini)
-      final uid = FirebaseAuth.instance.currentUser?.uid;
+      final uid = FirebaseDataService.currentUserId;
       if (uid == null) {
         if (mounted) setState(() => _loadingFriends = false);
         return;
@@ -142,7 +148,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
       await CollaborationService.addMember(collabId: _collabId!, uid: uid);
       // Envoyer notification à l'ami ajouté
       try {
-        final myUid = FirebaseAuth.instance.currentUser?.uid;
+        final myUid = FirebaseDataService.currentUserId;
         final profileName = widget.profile['name'] as String? ?? 'quelqu\'un';
         if (myUid != null) {
           await FirebaseFirestore.instance
@@ -201,20 +207,16 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
     );
     if (confirmed != true || !mounted) return;
     try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid != null && _collabId != null) {
-        await FirebaseFirestore.instance
-            .collection('collaborations')
-            .doc(_collabId)
-            .update({'members': FieldValue.arrayRemove([uid])});
-        if (_chatId != null) {
-          await FirebaseFirestore.instance
-              .collection('chats')
-              .doc(_chatId)
-              .update({'participants': FieldValue.arrayRemove([uid])});
-        }
+      final profileId = widget.profile['id']?.toString();
+      if (_collabId != null) {
+        await CollaborationService.leaveCollaboration(
+          collabId: _collabId!,
+          chatId: _chatId,
+          profileId: profileId,
+        );
       }
-      if (mounted) Navigator.pop(context, null);
+      SearchPageModel.clearCache();
+      if (mounted) Navigator.pop(context, 'left_collab');
     } catch (e) {
       if (mounted) _showSnack('Erreur lors de la sortie', Colors.red);
     }

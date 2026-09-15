@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '/utils/iconly_compat.dart';
 import '/components/liquid_glass.dart';
 import '/utils/app_tr.dart';
+import '/services/firebase_data_service.dart';
 
 /// Page de notifications in-app.
 /// Affiche toutes les notifs de la collection notifications/{uid}/items
@@ -27,8 +28,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
+    // Utilise FirebaseDataService.currentUserId pour respecter le compte actif
+    // (même en cas de multi-compte avec override)
+    final uid = FirebaseDataService.currentUserId ?? FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null || uid.isEmpty) {
       return Scaffold(
         backgroundColor: LiquidGlassTokens.pageDark,
         body: Center(
@@ -60,7 +63,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => _markAllRead(user.uid),
+            onPressed: () => _markAllRead(uid),
             child: Row(
               children: [
                 const Icon(Icons.done_all_rounded, color: _violet, size: 16),
@@ -78,7 +81,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('notifications')
-            .doc(user.uid)
+            .doc(uid)
             .collection('items')
             .orderBy('createdAt', descending: true)
             .limit(50)
@@ -133,9 +136,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
               final data = doc.data() as Map<String, dynamic>;
               return _NotificationTile(
                 docId: doc.id,
-                uid: user.uid,
+                uid: uid,
                 data: data,
-                onTap: () => _handleNotificationTap(data, doc.id, user.uid),
+                onTap: () => _handleNotificationTap(data, doc.id, uid),
               );
             },
           );

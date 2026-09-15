@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '/utils/iconly_compat.dart';
 import '/services/friend_service.dart';
+import '/services/firebase_data_service.dart';
 import '/utils/app_tr.dart';
 
 class CreateChatBottomSheet extends StatefulWidget {
@@ -78,7 +79,7 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
   }
 
   Future<void> _loadFriends() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId;
     if (uid == null) {
       if (mounted) setState(() => _loading = false);
       return;
@@ -107,7 +108,7 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
   }
 
   Future<void> _startDirectChat(Map<String, dynamic> friend) async {
-    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    final myUid = FirebaseDataService.currentUserId;
     final otherUid = friend['uid']?.toString();
     if (myUid == null || otherUid == null) return;
 
@@ -176,7 +177,7 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
   }
 
   Future<void> _createGroupChat() async {
-    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    final myUid = FirebaseDataService.currentUserId;
     if (myUid == null) return;
 
     final groupName = _groupNameCtrl.text.trim();

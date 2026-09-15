@@ -56,7 +56,7 @@ class _WishlistPickerSheetState extends State<WishlistPickerSheet> {
   }
 
   Future<void> _loadWishlists() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId;
     if (uid == null) {
       if (mounted) setState(() => _isLoading = false);
       return;
@@ -83,7 +83,7 @@ class _WishlistPickerSheetState extends State<WishlistPickerSheet> {
   Future<void> _addToWishlist(String wishlistId, String wishlistName) async {
     if (_isSaving) return;
 
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId;
     if (uid == null) return;
 
     setState(() => _isSaving = true);

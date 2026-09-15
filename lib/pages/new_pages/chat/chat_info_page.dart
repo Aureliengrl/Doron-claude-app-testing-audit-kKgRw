@@ -11,6 +11,8 @@ import "/components/liquid_glass.dart";
 import "/components/product_detail_modal.dart";
 import "/services/friend_service.dart";
 import "/services/collaboration_service.dart";
+import "/services/firebase_data_service.dart";
+import "/pages/new_pages/search_page/search_page_model.dart";
 
 /// Page de details et parametres de discussion (style Instagram / DORON)
 /// Route : /chat-info/:id
@@ -52,7 +54,7 @@ class _ChatInfoPageState extends State<ChatInfoPage>
 
   late TabController _mediaTabController;
 
-  String get _currentUid => FirebaseAuth.instance.currentUser?.uid ?? "";
+  String get _currentUid => FirebaseDataService.currentUserId ?? "";
 
   bool get _isGroup => _chatData["isGroup"] == true;
 
@@ -475,10 +477,16 @@ class _ChatInfoPageState extends State<ChatInfoPage>
             .get();
 
         if (collabSnap.docs.isNotEmpty) {
-          await collabSnap.docs.first.reference.update({
+          final collabDoc = collabSnap.docs.first;
+          await collabDoc.reference.update({
             "members": FieldValue.arrayRemove([_currentUid]),
           });
+          final profileId = collabDoc.data()['profileId']?.toString();
+          if (profileId != null && profileId.isNotEmpty) {
+            await FirebaseDataService.deletePerson(profileId);
+          }
         }
+        SearchPageModel.clearCache();
 
         if (mounted) {
           context.go("/chat-list");

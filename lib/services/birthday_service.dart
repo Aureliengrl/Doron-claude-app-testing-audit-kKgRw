@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '/services/firebase_data_service.dart';
 
 /// Service gérant les anniversaires et les fêtes importantes
 /// F3: Utilisé par la BirthdayCalendarPage et le profil public
@@ -14,7 +15,7 @@ class BirthdayService {
   // ─────────────────────────────────────────────────────────────────────────
 
   static Future<void> saveBirthday(int day, int month) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId;
     if (uid == null) return;
     await _db.collection('users').doc(uid).set({
       'birthday': {'day': day, 'month': month}
@@ -22,7 +23,7 @@ class BirthdayService {
   }
 
   static Future<Map<String, int>?> getMyBirthday() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId;
     if (uid == null) return null;
     return getBirthday(uid);
   }
@@ -44,7 +45,7 @@ class BirthdayService {
   // ─────────────────────────────────────────────────────────────────────────
 
   static Future<List<Map<String, dynamic>>> getFriendsBirthdays() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId;
     if (uid == null) return [];
 
     try {
@@ -180,7 +181,7 @@ class BirthdayService {
     String emoji = '🎉',
     String? id,
   }) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId;
     if (uid == null) return;
 
     final eventId = id ?? DateTime.now().millisecondsSinceEpoch.toString();
@@ -223,7 +224,7 @@ class BirthdayService {
   }
 
   static Future<List<Map<String, dynamic>>> getCustomEvents() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId;
     if (uid == null) return [];
 
     final result = <Map<String, dynamic>>[];
@@ -276,7 +277,7 @@ class BirthdayService {
   }
 
   static Future<void> deleteCustomEvent(String eventId) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId;
     if (uid == null) return;
     try {
       final userDoc = await _db.collection('users').doc(uid).get();

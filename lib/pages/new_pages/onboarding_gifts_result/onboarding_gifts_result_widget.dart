@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:confetti/confetti.dart';
 import '/services/product_matching_service.dart';
 import '/services/product_search_service.dart';
@@ -17,9 +18,10 @@ import '/services/firebase_data_service.dart';
 import '/services/product_url_service.dart';
 import '/services/claude_api_service.dart';
 import '/services/amazon_affiliation_service.dart';
-import '/components/bounce_button.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '/components/bounce_button.dart';
+import '/components/liquid_ai_gift_loader.dart';
+import '/pages/new_pages/search_page/search_page_model.dart';
 import 'onboarding_gifts_result_model.dart';
 export 'onboarding_gifts_result_model.dart';
 
@@ -341,37 +343,10 @@ class _OnboardingGiftsResultWidgetState
       if (mounted) {
         setState(() {
           _model.setGifts(gifts);
-          // FIX P2-C: clear s\u00e9lection pour \u00e9viter les saves non voulus
           _model.selectedGiftIds.clear();
           _model.setLoading(false);
           _model.clearError();
         });
-      }
-
-      // ?? AUTO-SAUVEGARDE si premi\u00e8re g\u00e9n\u00e9ration
-      if (_model.personId != null && gifts.isNotEmpty) {
-        try {
-          final people = await FirebaseDataService.loadPeople();
-          final person = people.firstWhere(
-            (p) => p['id'] == _model.personId,
-            orElse: () => {},
-          );
-          final isPendingFirstGen = person['meta']?['isPendingFirstGen'] == true;
-          if (isPendingFirstGen && !forceRefresh) {
-            AppLogger.debug('?? Auto-sauvegarde: première génération détectée', 'Debug');
-            final listName = 'Liste ${DateTime.now().day}/${DateTime.now().month}';
-            final listId = await FirebaseDataService.saveGiftListForPerson(
-              personId: _model.personId!,
-              gifts: gifts,
-              listName: listName,
-            );
-            AppLogger.debug('? ${gifts.length} cadeaux auto-sauvegardés (liste: $listId)', 'Debug');
-            await FirebaseDataService.updatePersonPendingFlag(_model.personId!, false);
-            await FirebaseDataService.setCurrentPersonContext(_model.personId!);
-          }
-        } catch (e) {
-          AppLogger.debug('?? Erreur auto-sauvegarde (non-bloquant): $e', 'Debug');
-        }
       }
     } catch (e) {
       AppLogger.debug('? Erreur chargement cadeaux: $e', 'Debug');
@@ -418,19 +393,32 @@ class _OnboardingGiftsResultWidgetState
 
   @override
   Widget build(BuildContext context) {
+    if (_model.isLoading) {
+      return Scaffold(
+        key: scaffoldKey,
+        backgroundColor: const Color(0xFFFDF2F8),
+        body: LiquidAIGiftLoader(
+          label: "L'IA prépare vos cadeaux...",
+          doneLabel: "Tes cadeaux sont prêts",
+          subtitle: "Matching intelligent par tags (sexe, âge, centres d'intérêt)",
+          onRestart: () => _loadGifts(forceRefresh: true),
+        ),
+      );
+    }
+
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: const Color(0xFFFAF5FF),
       body: Stack(
         children: [
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFFFAF5FF),
-                  const Color(0xFFFCE7F3),
+                  Color(0xFFFAF5FF),
+                  Color(0xFFFCE7F3),
                   Colors.white,
                 ],
               ),
@@ -443,11 +431,9 @@ class _OnboardingGiftsResultWidgetState
 
                   // Contenu
                   Expanded(
-                    child: _model.isLoading
-                        ? _buildLoader()
-                        : _model.errorMessage != null
-                            ? _buildErrorState()
-                            : _buildTabbedContent(),
+                    child: _model.errorMessage != null
+                        ? _buildErrorState()
+                        : _buildTabbedContent(),
                   ),
 
                   // Boutons d'action
@@ -501,13 +487,13 @@ class _OnboardingGiftsResultWidgetState
                   if (!mounted) return;
                   if (_returnTo != null && _returnTo!.isNotEmpty) {
                     AppLogger.debug('Retour vers: $_returnTo', 'Debug');
-                    final pid = _personId ?? _model.personId;
+                    final pid = _model.personId;
                     final target = (pid != null && pid.isNotEmpty && !_returnTo!.contains('personId'))
                         ? '$_returnTo${_returnTo!.contains('?') ? '&' : '?'}personId=$pid'
                         : _returnTo!;
                     context.go(target);
                   } else {
-                    final pid = _personId ?? _model.personId ?? '';
+                    final pid = _model.personId ?? '';
                     context.go('/search-page?personId=$pid');
                   }
                 },
@@ -560,34 +546,7 @@ class _OnboardingGiftsResultWidgetState
     );
   }
 
-  Widget _buildLoader() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Premium3DIcon(assetName: 'gift_3d.png', size: 160),
-          const SizedBox(height: 32),
-          Text(
-            "L'IA prépare vos cadeaux...",
-            style: GoogleFonts.poppins(
-              color: Colors.black87,
-              fontSize: 16,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Matching intelligent par tags (sexe, âge, centres d\'intérêt)',
-            style: GoogleFonts.poppins(
-              color: Colors.grey[500],
-              fontSize: 14,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildEmptyState() {
     return Center(
@@ -1594,39 +1553,42 @@ class _OnboardingGiftsResultWidgetState
 
                         // Nouvelle architecture: sauvegarder la liste de cadeaux pour une personne
                         if (_model.personId != null) {
-                          AppLogger.debug('?? Sauvegarde via nouvelle architecture (personId: ${_model.personId})', 'Debug');
-                          AppLogger.debug('?? ${selectedGifts.length} cadeaux sélectionnés sur ${_model.gifts.length}', 'Debug');
+                          AppLogger.debug('💾 Sauvegarde sélection quiz pour personId: ${_model.personId}', 'Debug');
+                          AppLogger.debug('💾 ${selectedGifts.length} cadeaux sélectionnés', 'Debug');
 
-                          // Fusionner avec les cadeaux existants s'il y en a déjà
-                          final existingList = await FirebaseDataService.loadLatestGiftListForPerson(_model.personId!);
-                          final existingGifts = (existingList?['gifts'] as List? ?? []).cast<Map<String, dynamic>>();
+                          // Récupérer le nom de la personne
+                          String personName = '';
+                          try {
+                            final people = await FirebaseDataService.loadPeople();
+                            final person = people.firstWhere(
+                              (p) => p['id'] == _model.personId,
+                              orElse: () => {},
+                            );
+                            personName = (person['tags']?['name'] as String?) ??
+                                (person['tags']?['personName'] as String?) ??
+                                (person['tags']?['recipient'] as String?) ?? '';
+                          } catch (_) {}
 
-                          final allGifts = <Map<String, dynamic>>[...existingGifts];
-                          for (final g in selectedGifts) {
-                            final gId = g['id']?.toString() ?? '';
-                            if (gId.isNotEmpty && !allGifts.any((e) => (e['id']?.toString() ?? '') == gId)) {
-                              allGifts.add(g);
-                            }
-                          }
+                          final listName = personName.isNotEmpty
+                              ? 'Sélection pour $personName'
+                              : 'Idées cadeaux (${DateTime.now().day}/${DateTime.now().month})';
 
-                          final listName = existingList?['name'] as String? ?? 'Liste ${DateTime.now().day}/${DateTime.now().month}';
                           final listId = await FirebaseDataService.saveGiftListForPerson(
                             personId: _model.personId!,
-                            gifts: allGifts.isNotEmpty ? allGifts : selectedGifts,
+                            gifts: selectedGifts,
                             listName: listName,
                           );
-                          AppLogger.debug('? ${selectedGifts.length} cadeaux sauvegardés (liste: $listId)', 'Debug');
+                          AppLogger.debug('✅ ${selectedGifts.length} cadeaux sélectionnés sauvegardés (liste: $listId)', 'Debug');
 
                           // Retirer le flag isPendingFirstGen
                           await FirebaseDataService.updatePersonPendingFlag(_model.personId!, false);
-                          AppLogger.debug('? Flag isPendingFirstGen retiré', 'Debug');
-
-                          // Définir le contexte pour que les futurs favoris soient liés à cette personne
                           await FirebaseDataService.setCurrentPersonContext(_model.personId!);
-                          AppLogger.debug('? Contexte de personne défini: ${_model.personId}', 'Debug');
+
+                          // Vider le cache de la page recherche pour forcer le chargement de la sélection
+                          SearchPageModel.clearCache();
                         } else {
                           // Ancienne méthode (compatibilité)
-                          AppLogger.debug('?? Sauvegarde via ancienne architecture', 'Debug');
+                          AppLogger.debug('💾 Sauvegarde via ancienne architecture', 'Debug');
                           if (_model.userProfile != null) {
                             final profileWithGifts = {
                               ..._model.userProfile!,
@@ -1634,12 +1596,12 @@ class _OnboardingGiftsResultWidgetState
                               'savedAt': DateTime.now().toIso8601String(),
                             };
                             final profileId = await FirebaseDataService.saveGiftProfile(profileWithGifts);
-                            AppLogger.debug('? Profil et ${selectedGifts.length} cadeaux sauvegardés', 'Debug');
+                            AppLogger.debug('✅ Profil et ${selectedGifts.length} cadeaux sauvegardés', 'Debug');
 
                             if (profileId != null) {
                               await FirebaseDataService.setCurrentPersonContext(profileId);
-                              AppLogger.debug('? Contexte de personne défini: $profileId', 'Debug');
                             }
+                            SearchPageModel.clearCache();
                           }
                         }
 
@@ -1685,7 +1647,7 @@ class _OnboardingGiftsResultWidgetState
                             if (context.canPop()) {
                               context.pop(true);
                             } else if (_returnTo != null && _returnTo!.isNotEmpty) {
-                              final pid = _personId ?? _model.personId;
+                              final pid = _model.personId;
                               final target = (pid != null && pid.isNotEmpty && !_returnTo!.contains('personId'))
                                   ? '$_returnTo${_returnTo!.contains('?') ? '&' : '?'}personId=$pid'
                                   : _returnTo!;

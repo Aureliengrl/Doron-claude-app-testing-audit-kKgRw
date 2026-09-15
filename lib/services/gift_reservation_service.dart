@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '/services/firebase_data_service.dart';
 import '/utils/app_logger.dart';
 
 /// Service de réservation de cadeaux dans les wishlists partagées.
@@ -7,7 +8,7 @@ import '/utils/app_logger.dart';
 /// tout en le gardant invisible pour le propriétaire de la wishlist.
 class GiftReservationService {
   static final _db = FirebaseFirestore.instance;
-  static String? get _myUid => FirebaseAuth.instance.currentUser?.uid;
+  static String? get _myUid => FirebaseDataService.currentUserId;
 
   /// Réserve un produit dans une wishlist partagée.
   /// [ownerUid] = propriétaire de la wishlist.

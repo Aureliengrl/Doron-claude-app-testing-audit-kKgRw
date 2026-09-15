@@ -33,6 +33,8 @@ import '/services/gift_events_service.dart';
 import 'dart:async';
 import 'package:image_picker/image_picker.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
+import '/utils/app_logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SearchPageWidget extends StatefulWidget {
   const SearchPageWidget({super.key});
@@ -53,11 +55,21 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
   final Color violetColor = const Color(0xFF8A2BE2);
   bool _searchReorderMode = false;
   StreamSubscription<GiftAddedEvent>? _giftEventSub;
+  // Listener pour détecter les changements de compte (sign in/out)
+  StreamSubscription<User?>? _authSub; // User from firebase_auth
+  String? _lastLoadedUid;
+
+  int _normalizeId(dynamic id) {
+    if (id is int) return id;
+    if (id is String) return int.tryParse(id) ?? id.hashCode;
+    return 0;
+  }
 
   @override
   void initState() {
     super.initState();
     _model = SearchPageModel();
+    _lastLoadedUid = FirebaseDataService.currentUserId;
     _loadData();
 
     // Écoute les cadeaux ajoutés depuis le modal produit (3 points → "Ajouter pour quelqu'un")
@@ -74,12 +86,30 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
         }
       });
     });
+
+    // Écoute les changements d'authentification Firebase (connexion / déconnexion)
+    // pour forcer un rechargement complet des données quand le compte change.
+    _authSub = FirebaseAuth.instance.authStateChanges().listen((user) {
+      final newUid = user?.uid;
+      if (newUid != _lastLoadedUid && mounted) {
+        _lastLoadedUid = newUid;
+        SearchPageModel.clearCache();
+        _loadData(forceRefresh: true);
+      }
+    });
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loadData();
+    final currentUid = FirebaseDataService.currentUserId;
+    if (_lastLoadedUid != currentUid) {
+      _lastLoadedUid = currentUid;
+      SearchPageModel.clearCache();
+      _loadData(forceRefresh: true);
+    } else {
+      _loadData();
+    }
   }
 
   Future<void> _loadData({bool forceRefresh = false}) async {
@@ -106,11 +136,207 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
 
     if (mounted) {
       setState(() {});
+      _checkNewCollabWelcome();
     }
+  }
+
+  Future<void> _checkNewCollabWelcome() async {
+    try {
+      final currentUid = FirebaseDataService.currentUserId;
+      if (currentUid == null) return;
+
+      final prefs = await SharedPreferences.getInstance();
+      for (final profile in _model.profiles) {
+        if (profile['isShared'] == true &&
+            profile['isInvited'] == true &&
+            profile['collabId'] != null) {
+          final collabId = profile['collabId'].toString();
+          final hasSeen = prefs.getBool('seen_collab_welcome_${currentUid}_$collabId') ?? false;
+          if (!hasSeen) {
+            await prefs.setBool('seen_collab_welcome_${currentUid}_$collabId', true);
+            if (mounted) {
+              _showSharedListWelcomeDialog(profile);
+            }
+            break; // n'en afficher qu'un à la fois
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
+  void _showSharedListWelcomeDialog(Map<String, dynamic> profile) {
+    final ownerName = profile['ownerName'] as String? ?? 'Un proche';
+    final profileName = profile['name'] as String? ?? 'ce proche';
+    final chatId = profile['chatId'] as String?;
+    const violet = Color(0xFF8A2BE2);
+    const pink = Color(0xFFEC4899);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dCtx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        child: Container(
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            color: const Color(0xFF130E26),
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: pink.withOpacity(0.4), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: pink.withOpacity(0.25),
+                blurRadius: 30,
+                spreadRadius: 2,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icône festive animée
+              Container(
+                width: 84,
+                height: 84,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [violet, pink],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: pink.withOpacity(0.4),
+                      blurRadius: 20,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Text('🎁', style: TextStyle(fontSize: 42)),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Nouvelle liste partagée !',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  style: GoogleFonts.poppins(color: Colors.white70, fontSize: 15, height: 1.4),
+                  children: [
+                    TextSpan(
+                      text: ownerName,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                    const TextSpan(text: ' a partagé la liste de cadeaux pour '),
+                    TextSpan(
+                      text: profileName,
+                      style: const TextStyle(color: pink, fontWeight: FontWeight.bold),
+                    ),
+                    const TextSpan(text: ' avec vous ! 🎉'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Ce proche a été ajouté à vos profils. Vous pouvez dès maintenant consulter les idées cadeaux et échanger sur la messagerie.',
+                style: GoogleFonts.poppins(color: Colors.white60, fontSize: 13, height: 1.4),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              // Bouton Principal : Rejoindre la discussion
+              if (chatId != null && chatId.isNotEmpty) ...[
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(colors: [violet, pink]),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: pink.withOpacity(0.4),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.pop(dCtx);
+                        context.push('/chat-room/$chatId', extra: {
+                          'id': chatId,
+                          'name': 'Cadeaux pour $profileName',
+                          'isGroup': true,
+                        });
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.chat_bubble_outline_rounded, color: Colors.white, size: 20),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Rejoindre la discussion 💬',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+              // Bouton Secondaire : Voir la liste de cadeaux
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.white.withOpacity(0.2)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(dCtx);
+                    final targetId = _normalizeId(profile['id']);
+                    _model.selectProfile(targetId);
+                    setState(() {
+                      _model.selectedProfileId = targetId;
+                    });
+                  },
+                  child: Text(
+                    'Voir la liste de cadeaux 🎁',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   void dispose() {
+    _authSub?.cancel();
     _giftEventSub?.cancel();
     _model.dispose();
     super.dispose();
@@ -790,7 +1016,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
     final profile = _model.currentProfile!;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -996,7 +1222,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                     ),
                     onTap: () {
                       final profileId = profile['id']?.toString() ?? profile['personId']?.toString() ?? '';
-                      final giftsList = _model.personGifts[profileId] ?? [];
+                      final giftsList = (_model.personGifts[profileId] != null && _model.personGifts[profileId]!.isNotEmpty)
+                          ? _model.personGifts[profileId]!
+                          : _model.getFilteredProducts();
                       if (giftsList.isEmpty) {
                         HapticFeedback.lightImpact();
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -1017,11 +1245,25 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                             bottom: MediaQuery.of(context).viewInsets.bottom,
                             top: MediaQuery.of(context).size.height * 0.2,
                           ),
-                          child: ShareListBottomSheet(profile: profile),
+                          child: ShareListBottomSheet(profile: profile, gifts: giftsList),
                         ),
-                      ).then((chatId) {
-                        if (chatId != null && mounted) {
-                          final personId = profile['id']?.toString() ?? '';
+                      ).then((res) {
+                        if (res == 'left_collab') {
+                          setState(() {
+                            _model.profiles.removeWhere((p) => p['id'] == profile['id']);
+                            if (_model.profiles.isNotEmpty) {
+                              _model.selectedProfileId = _normalizeId(_model.profiles.first['id']);
+                              _model.selectProfile(_model.selectedProfileId!);
+                            } else {
+                              _model.selectedProfileId = null;
+                            }
+                          });
+                          SearchPageModel.clearCache();
+                          return;
+                        }
+                        if (res != null && mounted) {
+                          final chatId = res.toString();
+                          final personId = profile['id']?.toString() ?? profile['personId']?.toString() ?? '';
                           setState(() {
                             profile['chatId'] = chatId;
                             profile['isShared'] = true;
@@ -1047,7 +1289,9 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                       final profileId = profile['id']?.toString() ??
                           profile['personId']?.toString() ?? '';
                       if (profileId.isEmpty) return;
-                      final giftsList = _model.personGifts[profileId] ?? [];
+                      final giftsList = (_model.personGifts[profileId] != null && _model.personGifts[profileId]!.isNotEmpty)
+                          ? _model.personGifts[profileId]!
+                          : _model.getFilteredProducts();
                       if (giftsList.isEmpty) {
                         _showSnackBar(
                             context.tr(
@@ -1079,10 +1323,12 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                           'collabId': collab['collabId'],
                           'chatId': collab['chatId'],
                           'profileName': profileName,
-                          'ownerId': collab['ownerId'],
+                          'ownerId': collab['ownerId'] ?? FirebaseDataService.currentUserId ?? '',
                           'gifts': giftsList,
                         });
-                      } catch (e) {
+                      } catch (e, stack) {
+                        AppLogger.error('GroupGift error in search page', 'SearchPage', e);
+                        debugPrint('GroupGift error: $e\n$stack');
                         _showSnackBar(
                             context.tr('Erreur, réessaie',
                                 'Something went wrong'),
@@ -1158,20 +1404,40 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
               final personId = profile['id']?.toString() ?? '';
               final collabId = profile['collabId']?.toString() ?? profile['chatId']?.toString();
               if (collabId != null) {
-                await CollaborationService.leaveCollaboration(collabId);
+                await CollaborationService.leaveCollaboration(
+                  collabId: collabId,
+                  chatId: profile['chatId'] as String?,
+                  profileId: personId,
+                );
               }
-              if (personId.isNotEmpty) {
-                await FirebaseDataService.updatePersonMeta(personId, {
-                  'isShared': false,
-                  'chatId': null,
-                  'collabId': null,
+              final isInvited = profile['isInvited'] == true || (profile['ownerId'] != null && profile['ownerId'] != FirebaseDataService.currentUserId);
+              if (isInvited) {
+                // Si invité, le proche doit disparaître complètement de ses ronds
+                setState(() {
+                  _model.profiles.removeWhere((p) => p['id'] == profile['id']);
+                  _model.personGifts.remove(personId);
+                  if (_model.profiles.isNotEmpty) {
+                    _model.selectedProfileId = _normalizeId(_model.profiles.first['id']);
+                    _model.selectProfile(_model.selectedProfileId!);
+                  } else {
+                    _model.selectedProfileId = null;
+                  }
+                });
+                SearchPageModel.clearCache();
+              } else {
+                if (personId.isNotEmpty) {
+                  await FirebaseDataService.updatePersonMeta(personId, {
+                    'isShared': false,
+                    'chatId': null,
+                    'collabId': null,
+                  });
+                }
+                setState(() {
+                  profile['isShared'] = false;
+                  profile['chatId'] = null;
+                  profile['collabId'] = null;
                 });
               }
-              setState(() {
-                profile['isShared'] = false;
-                profile['chatId'] = null;
-                profile['collabId'] = null;
-              });
               _showSnackBar('Tu as quitté la collaboration.', isError: false);
             },
             child: Text('Quitter', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -1183,7 +1449,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
 
   Widget _buildGiftsAddButtons(Map<String, dynamic> profile) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
       child: Row(
         children: [
           Expanded(
@@ -1359,6 +1625,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
         child: ReorderableGridView.count(
+          padding: EdgeInsets.zero,
           crossAxisCount: 2,
           childAspectRatio: 0.7,
           crossAxisSpacing: 16,
@@ -1390,6 +1657,21 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                 product: products[i],
                 index: i + 1,
                 showWishlistButton: false,
+                onRemove: () async {
+                  final profile = _model.currentProfile;
+                  if (profile == null) return;
+                  final personId = profile['id'].toString();
+                  final giftId = products[i]['id']?.toString() ?? products[i]['name']?.toString() ?? '';
+                  setState(() {
+                    _model.personGifts[personId]?.removeWhere((g) =>
+                        (g['id']?.toString() == giftId) ||
+                        (g['name']?.toString() == giftId));
+                  });
+                  await FirebaseDataService.removeGiftFromPerson(
+                    personId: personId,
+                    giftId: giftId,
+                  );
+                },
               ),
           ],
         ),
@@ -1690,10 +1972,27 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                   backgroundColor: Colors.transparent,
                   builder: (_) => Padding(
                     padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.2),
-                    child: ShareListBottomSheet(profile: profile),
+                    child: ShareListBottomSheet(
+                      profile: profile,
+                      gifts: _model.personGifts[profile['id']?.toString()] ?? [],
+                    ),
                   ),
-                ).then((chatId) {
-                  if (chatId != null && mounted) {
+                ).then((res) {
+                  if (res == 'left_collab') {
+                    setState(() {
+                      _model.profiles.removeWhere((p) => p['id'] == profile['id']);
+                      if (_model.profiles.isNotEmpty) {
+                        _model.selectedProfileId = _normalizeId(_model.profiles.first['id']);
+                        _model.selectProfile(_model.selectedProfileId!);
+                      } else {
+                        _model.selectedProfileId = null;
+                      }
+                    });
+                    SearchPageModel.clearCache();
+                    return;
+                  }
+                  if (res != null && mounted) {
+                    final chatId = res.toString();
                     setState(() {
                       profile['chatId'] = chatId;
                       profile['isShared'] = true;
@@ -1897,7 +2196,7 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
       'id': photoId,
       'type': 'photo',
       'name': productName.isNotEmpty ? productName : 'Photo',
-      'image': picked.path,    // chemin local "” affiché immédiatement
+      'image': picked.path,
       'price': productPrice,
       'caption': productName,
       'brand': '',
@@ -1906,22 +2205,19 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
       '_uploading': true,
     };
 
-    // â”€â”€ 5. INJECTION OPTIMISTE IMMÉDIATE dans la grille â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    // On insère en tête de liste sans attendre Firebase → UI instantanée
+    // 5. Injection optimiste immédiate dans la grille
     _model.personGifts[personId] ??= [];
     _model.personGifts[personId]!.insert(0, photoGiftLocal);
-    if (mounted) setState(() {}); // grille mise à jour en < 16ms
+    if (mounted) setState(() {});
 
-    // Snack discret immédiat
-    _showSnackBar('ðŸ“· Photo ajoutée ! Upload en cours"¦');
+    _showSnackBar('📸 Photo ajoutée ! Upload en cours...');
 
-    // â”€â”€ 6. Persistance en arrière-plan (Firebase + Storage) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // 6. Persistance en arrière-plan (Firebase + Storage)
     FirebaseDataService.addGiftToPerson(
       personId: personId,
       gift: photoGiftLocal,
     ).then((ok) {
       if (!ok) {
-        // Doublon détecté : retirer l'entrée optimiste
         if (mounted) {
           setState(() {
             _model.personGifts[personId]?.removeWhere((g) => g['id'] == photoId);
@@ -1932,13 +2228,12 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
     });
 
     // Upload Storage en arrière-plan
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId;
     if (uid != null) {
       OptimisticImageUploader.upload(
         localPath: picked.path,
         storagePath: 'users/$uid/person_photos/$personId/$photoId.jpg',
         onUploadComplete: (cdnUrl) async {
-          // Remplacer le chemin local par l'URL CDN dans la grille
           if (mounted) {
             setState(() {
               final idx = _model.personGifts[personId]
@@ -1952,7 +2247,6 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
               }
             });
           }
-          // Mettre à jour le gift avec l'URL CDN dans Firestore
           try {
             await FirebaseDataService.updateGiftInPerson(
               personId: personId,
@@ -1960,20 +2254,17 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
               updates: {'image': cdnUrl, '_uploading': false},
             );
           } catch (_) {}
-          if (mounted) _showSnackBar('ðŸ“· Photo de $personName sauvegardée !');
+          if (mounted) _showSnackBar('📸 Photo de $personName sauvegardée !');
         },
         onUploadError: (_) {
-          if (mounted) _showSnackBar('âš ï¸ Erreur upload "” photo sauvegardée localement', isError: true);
+          if (mounted) _showSnackBar('⚠️ Erreur upload — photo sauvegardée localement', isError: true);
         },
-        );
-      }
+      );
+    }
   }
 
-  /// Upload une photo locale vers Firebase Storage et retourne l'URL de téléchargement.
-  /// Chemin : users/{uid}/person_photos/{personId}/{timestamp}.jpg
-  /// @deprecated "” utiliser OptimisticImageUploader.upload() à la place
   Future<String?> _uploadPhotoToStorage(String localPath, String personId) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = FirebaseDataService.currentUserId;
     if (uid == null) return null;
     final photoId = DateTime.now().millisecondsSinceEpoch.toString();
     return OptimisticImageUploader.uploadAndWait(

@@ -705,8 +705,8 @@ class GlobalProductDetailModal {
 
   /// Fonction globale de favoris — écrit dans users/{uid}/favorites
   static Future<bool> _toggleFavoriteGlobally(BuildContext context, Map<String, dynamic> product, bool isCurrentlyLiked) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
+    final uid = FirebaseDataService.currentUserId;
+    if (uid == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.tr('Connexion requise pour les favoris.', 'Sign in to save favourites.'), style: GoogleFonts.poppins()),
@@ -717,7 +717,6 @@ class GlobalProductDetailModal {
     }
 
     try {
-      final uid = user.uid;
       final favCollection = FirebaseFirestore.instance
           .collection('users')
           .doc(uid)
@@ -760,7 +759,7 @@ class GlobalProductDetailModal {
 
   /// Affiche le modal de sélection de wishlist
   static Future<void> _showWishlistModal(BuildContext context, Map<String, dynamic> product) async {
-    if (FirebaseAuth.instance.currentUser == null) {
+    if (FirebaseDataService.currentUserId == null) {
       await showConnectionRequiredDialog(
         context,
         title: 'Connexion requise',
@@ -1104,8 +1103,7 @@ class GlobalProductDetailModal {
 
   /// Affiche le bottom sheet avec les actions produit (envoyer par message, ajouter pour quelqu'un)
   static void showProductActionsSheet(BuildContext context, Map<String, dynamic> product) {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
+    if (FirebaseDataService.currentUserId == null) {
       showConnectionRequiredDialog(
         context,
         title: 'Connexion requise',
@@ -1235,8 +1233,8 @@ class GlobalProductDetailModal {
 
   /// Affiche la liste des conversations pour envoyer le produit en tant que product_card
   static void _showChatPickerSheet(BuildContext context, Map<String, dynamic> product) {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    final currentUid = FirebaseDataService.currentUserId ?? FirebaseAuth.instance.currentUser?.uid;
+    if (currentUid == null) return;
 
     showModalBottomSheet(
       context: context,
@@ -1293,7 +1291,7 @@ class GlobalProductDetailModal {
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('chats')
-                      .where('participants', arrayContains: user.uid)
+                      .where('participants', arrayContains: currentUid)
                       .snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -1351,7 +1349,7 @@ class GlobalProductDetailModal {
                         // For 1-on-1 chats, resolve the other user's name
                         final participants = (chatData['participants'] as List?)?.cast<String>() ?? [];
                         final otherUid = participants.firstWhere(
-                          (p) => p != user.uid,
+                          (p) => p != currentUid,
                           orElse: () => '',
                         );
                         if (otherUid.isEmpty) {
@@ -1413,8 +1411,8 @@ class GlobalProductDetailModal {
 
   /// Envoie le produit comme message product_card dans le chat
   static Future<void> _sendProductToChat(BuildContext context, String chatId, Map<String, dynamic> product) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    final myUid = FirebaseDataService.currentUserId ?? FirebaseAuth.instance.currentUser?.uid;
+    if (myUid == null) return;
 
     try {
       final productTitle = product['name'] as String? ?? product['product_title'] as String? ?? 'Produit';
@@ -1439,7 +1437,7 @@ class GlobalProductDetailModal {
 
       await messageRef.set({
         'id': messageRef.id,
-        'senderId': user.uid,
+        'senderId': myUid,
         'text': productCardJson,
         'timestamp': FieldValue.serverTimestamp(),
         'type': 'product_card',

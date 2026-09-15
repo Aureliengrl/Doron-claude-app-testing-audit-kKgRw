@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '/services/firebase_data_service.dart';
 
 /// Bottom sheet d'actions sur un message : répondre, réagir, copier, supprimer.
 class MessageActionsSheet extends StatelessWidget {
@@ -28,7 +29,7 @@ class MessageActionsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMe = senderId == FirebaseAuth.instance.currentUser?.uid;
+    final isMe = senderId == FirebaseDataService.currentUserId;
 
     return Container(
       decoration: BoxDecoration(
@@ -149,7 +150,7 @@ class MessageActionsSheet extends StatelessWidget {
   }
 
   Future<void> _addReaction(BuildContext context, String emoji) async {
-    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    final myUid = FirebaseDataService.currentUserId;
     if (myUid == null) return;
     Navigator.pop(context);
 
@@ -233,7 +234,7 @@ class MessageActionsSheet extends StatelessWidget {
   }
 
   Future<void> _deleteForMe() async {
-    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    final myUid = FirebaseDataService.currentUserId;
     if (myUid == null) return;
     try {
       await FirebaseFirestore.instance

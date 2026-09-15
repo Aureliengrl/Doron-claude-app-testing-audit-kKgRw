@@ -31,6 +31,7 @@ class SerpLiveSearchService {
       final gender = (userTags['gender'] ?? userTags['personGender'] ?? userTags['recipientGender'] ?? '').toString().toLowerCase();
       final isMale = gender.contains('homme') || gender.contains('garçon') || gender.contains('masculin');
       final isFemale = gender.contains('femme') || gender.contains('fille') || gender.contains('féminin');
+      final genderSuffix = isMale ? ' homme' : (isFemale ? ' femme' : '');
       final ageStr = (userTags['age'] ?? userTags['personAge'] ?? '25').toString();
       
       final recipientPersonality = (userTags['recipientPersonality'] is List)
@@ -42,7 +43,6 @@ class SerpLiveSearchService {
       final interests = (userTags['interests'] as List?)?.map((c) => c.toString()).toList() ?? [];
       final giftTypes = (userTags['giftTypes'] as List?)?.map((g) => g.toString()).toList() ?? [];
       final occasion = (userTags['occasion'] ?? '').toString().trim();
-      final budgetTier = (userTags['budgetTier'] ?? userTags['budget'] ?? '').toString();
       final voiceDesc = (userTags['voiceDescription'] ??
               userTags['vocalTranscript'] ??
               userTags['description'] ??
@@ -50,9 +50,10 @@ class SerpLiveSearchService {
           .toString()
           .trim();
 
-      // Construction d'une requête ultra-ciblée e-commerce (1 à 2 termes précis)
-      String query = '';
+      // Construire une liste de requêtes spécifiques et variées (jusqu'à 3 requêtes)
+      final List<String> queries = [];
 
+      // 1. Requête basée sur la description vocale ou texte libre
       if (voiceDesc.isNotEmpty && voiceDesc.length > 3) {
         final cleanVoice = voiceDesc
             .toLowerCase()
@@ -60,71 +61,107 @@ class SerpLiveSearchService {
             .replaceAll(RegExp(r'[^\w\s\-]'), ' ')
             .trim();
         final rawWords = cleanVoice.split(RegExp(r'\s+')).where((w) => w.length >= 3).toList();
-        final words = rawWords.map((w) {
-          if (w.endsWith('s') && w.length > 3 && !w.endsWith('ss')) {
-            return w.substring(0, w.length - 1);
-          }
-          if (w.endsWith('x') && w.length > 3) {
-            return w.substring(0, w.length - 1);
-          }
-          return w;
-        }).toList();
-
-        if (words.isNotEmpty) {
-          query = words.take(2).join(' ');
+        if (rawWords.isNotEmpty) {
+          final voiceQuery = rawWords.take(3).join(' ') + genderSuffix;
+          queries.add(voiceQuery.trim());
         }
       }
 
-      if (query.isEmpty && passions.isNotEmpty) {
-        query = passions.first.replaceAll('cat_', '').replaceAll('subcat_', '').replaceAll('_', ' ');
-      } else if (query.isEmpty && interests.isNotEmpty) {
-        query = interests.first.replaceAll('cat_', '').replaceAll('subcat_', '').replaceAll('_', ' ');
+      // 2. Requête basée sur les passions principales
+      for (final passion in passions) {
+        final cleanPassion = passion.replaceAll('cat_', '').replaceAll('subcat_', '').replaceAll('_', ' ').trim();
+        if (cleanPassion.isNotEmpty) {
+          queries.add('$cleanPassion$genderSuffix'.trim());
+        }
       }
 
-      if (query.isEmpty && recipientPersonality.isNotEmpty) {
-        final perso = recipientPersonality.first.toLowerCase();
-        if (perso.contains('explorateur') || perso.contains('voyage') || perso.contains('aventure')) {
-          query = 'sac voyage rando';
-        } else if (perso.contains('casanier') || perso.contains('deco') || perso.contains('cocooning')) {
-          query = 'plaid bougie deco';
-        } else if (perso.contains('tech') || perso.contains('gadget')) {
-          query = 'gadget tech insolite';
-        } else if (perso.contains('gamer') || perso.contains('jeu')) {
-          query = 'accessoire gaming';
-        } else if (perso.contains('fashion') || perso.contains('coquet') || perso.contains('mode')) {
-          query = isMale ? 'accessoire mode homme' : 'sac bijou femme';
-        } else if (perso.contains('epicurien') || perso.contains('gourmand') || perso.contains('vin')) {
-          query = 'coffret gastronomie vin';
-        } else if (perso.contains('creatif') || perso.contains('art') || perso.contains('musique')) {
-          query = 'kit creatif art';
-        } else if (perso.contains('sport') || perso.contains('fitness')) {
-          query = 'accessoire fitness sport';
-        } else if (perso.contains('zen') || perso.contains('bien-etre') || perso.contains('yoga')) {
-          query = 'coffret diffuseur huiles';
+      // 3. Requête basée sur les centres d'intérêt
+      for (final interest in interests) {
+        final cleanInterest = interest.replaceAll('cat_', '').replaceAll('subcat_', '').replaceAll('_', ' ').trim();
+        if (cleanInterest.isNotEmpty) {
+          queries.add('$cleanInterest$genderSuffix'.trim());
+        }
+      }
+
+      // 4. Requête basée sur la personnalité
+      for (final perso in recipientPersonality) {
+        final pLow = perso.toLowerCase();
+        if (pLow.contains('explorateur') || pLow.contains('voyage') || pLow.contains('aventure')) {
+          queries.add('sac voyage aventure$genderSuffix');
+        } else if (pLow.contains('casanier') || pLow.contains('deco') || pLow.contains('cocooning')) {
+          queries.add('deco cocooning plaid');
+        } else if (pLow.contains('tech') || pLow.contains('gadget')) {
+          queries.add('gadget tech insolite');
+        } else if (pLow.contains('gamer') || pLow.contains('jeu')) {
+          queries.add('accessoire gaming setup');
+        } else if (pLow.contains('fashion') || pLow.contains('mode')) {
+          queries.add(isMale ? 'accessoire mode homme tendance' : 'sac bijou femme tendance');
+        } else if (pLow.contains('epicurien') || pLow.contains('gourmand')) {
+          queries.add('coffret gourmand gastronomie');
+        } else if (pLow.contains('sport') || pLow.contains('fitness')) {
+          queries.add('accessoire sport fitness$genderSuffix');
         } else {
-          query = perso.replaceAll('perso_', '').replaceAll('&', ' ').replaceAll('_', ' ');
+          final cleanP = perso.replaceAll('perso_', '').replaceAll('&', ' ').replaceAll('_', ' ').trim();
+          if (cleanP.isNotEmpty) queries.add('$cleanP$genderSuffix');
         }
       }
 
-      if (query.isEmpty) {
+      // 5. Requête de secours si liste vide
+      if (queries.isEmpty) {
         if (occasion.toLowerCase().contains('valentin')) {
-          query = isMale ? 'parfum montre homme' : 'coffret bijou femme';
+          queries.add(isMale ? 'parfum montre homme' : 'coffret bijou femme');
         } else if (occasion.toLowerCase().contains('noël') || occasion.toLowerCase().contains('noel')) {
-          query = isMale ? 'coffret cadeau homme' : 'coffret cadeau femme';
-        } else if (isMale) {
-          query = 'montre tech homme';
-        } else if (isFemale) {
-          query = 'sac bijou femme';
+          queries.add(isMale ? 'idee cadeau noel homme' : 'idee cadeau noel femme');
         } else {
-          query = 'cadeau tendance';
+          queries.add(isMale ? 'idee cadeau homme tendance' : (isFemale ? 'idee cadeau femme tendance' : 'cadeau tendance'));
         }
       }
 
-      query = query.trim();
-      AppLogger.info('⚡ [SerpLiveSearch] Requête ciblée Google Shopping: "$query"', 'LiveSearch');
+      // Limiter à 3 requêtes uniques maximum
+      final uniqueQueries = queries.toSet().take(3).toList();
+      AppLogger.info('⚡ [SerpLiveSearch] ${uniqueQueries.length} requêtes ciblées Google Shopping: ${uniqueQueries.join(" | ")}', 'LiveSearch');
 
+      // Exécuter les requêtes en parallèle
+      final responses = await Future.wait(
+        uniqueQueries.map((q) => _fetchGoogleShoppingQuery(q, isMale: isMale, isFemale: isFemale, gender: gender, ageStr: ageStr)),
+      );
+
+      // Aplatir et dédoublonner
+      final List<Map<String, dynamic>> allLiveProducts = [];
+      final Set<String> seenTitles = {};
+      final Set<String> seenUrls = {};
+
+      for (final productList in responses) {
+        for (final product in productList) {
+          final titleNorm = (product['name'] ?? '').toString().toLowerCase().trim();
+          final url = (product['url'] ?? '').toString().trim();
+          if (titleNorm.isNotEmpty && !seenTitles.contains(titleNorm) && !seenUrls.contains(url)) {
+            seenTitles.add(titleNorm);
+            if (url.isNotEmpty) seenUrls.add(url);
+            allLiveProducts.add(product);
+          }
+        }
+      }
+
+      AppLogger.success('🎉 [SerpLiveSearch] Total de ${allLiveProducts.length} produits Google Shopping EN DIRECT récupérés !', 'LiveSearch');
+      return allLiveProducts;
+    } catch (e) {
+      AppLogger.warning('⚠️ [SerpLiveSearch] Exception recherche en direct (fallback local fluide): $e', 'LiveSearch');
+      return [];
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> _fetchGoogleShoppingQuery(
+    String query, {
+    required bool isMale,
+    required bool isFemale,
+    required String gender,
+    required String ageStr,
+  }) async {
+    try {
       final uri = Uri.parse(_serpApiBase).replace(queryParameters: {
-        'engine': 'google_shopping',
+        'engine': 'google',
+        'tbm': 'shop',
         'q': query,
         'gl': 'fr',
         'hl': 'fr',
@@ -132,30 +169,36 @@ class SerpLiveSearchService {
         'api_key': _serpApiKey,
       });
 
-      final response = await http.get(uri).timeout(const Duration(seconds: 15));
+      final response = await http.get(uri).timeout(const Duration(seconds: 25));
       if (response.statusCode != 200) {
-        AppLogger.warning('⚠️ [SerpLiveSearch] Statut HTTP ${response.statusCode}', 'LiveSearch');
+        AppLogger.warning('⚠️ [SerpLiveSearch] HTTP ${response.statusCode} for query "$query"', 'LiveSearch');
         return [];
       }
 
-      final data = jsonDecode(response.body);
-      final rawShopping = (data['shopping_results'] as List?) ?? [];
-      if (rawShopping.isEmpty) {
-        AppLogger.warning('⚠️ [SerpLiveSearch] Aucun résultat Google Shopping retourné pour "$query"', 'LiveSearch');
-        return [];
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final rawShopping = <dynamic>[];
+      if (data['shopping_results'] is List) {
+        rawShopping.addAll(data['shopping_results'] as List);
+      }
+      if (data['immersive_products'] is List) {
+        rawShopping.addAll(data['immersive_products'] as List);
+      }
+      if (data['inline_shopping'] is List) {
+        rawShopping.addAll(data['inline_shopping'] as List);
       }
 
-      final List<Map<String, dynamic>> liveProducts = [];
+      final List<Map<String, dynamic>> results = [];
 
       for (int i = 0; i < rawShopping.length; i++) {
         final item = rawShopping[i];
-        final title = (item['title'] ?? '').toString().trim();
-        final link = (item['product_link'] ?? item['link'] ?? item['direct_link'] ?? '').toString().trim();
-        final thumbnail = (item['thumbnail'] ?? item['serpapi_thumbnail'] ?? '').toString().trim();
-        final source = (item['source'] ?? 'Google Shopping').toString().trim();
-        final rawPrice = item['extracted_price'] ?? item['price'];
+        if (item is! Map) continue;
+        final title = (item['title'] ?? item['name'] ?? '').toString().trim();
+        final link = (item['product_link'] ?? item['link'] ?? item['direct_link'] ?? item['serpapi_link'] ?? '').toString().trim();
+        final thumbnail = (item['thumbnail'] ?? item['serpapi_thumbnail'] ?? item['image'] ?? '').toString().trim();
+        final source = (item['source'] ?? item['merchant'] ?? item['seller'] ?? 'Google Shopping').toString().trim();
+        final rawPrice = item['extracted_price'] ?? item['price'] ?? item['extracted_price_raw'];
 
-        if (title.isEmpty || thumbnail.isEmpty || link.isEmpty) continue;
+        if (title.isEmpty || thumbnail.isEmpty) continue;
 
         // Exclusion stricte des Smartbox / Wonderbox
         final titleLower = title.toLowerCase();
@@ -163,7 +206,7 @@ class SerpLiveSearchService {
           continue;
         }
 
-        // 🛑 VERROUILLAGE STRICT DU GENRE (0% FUITE)
+        // 🛑 VERROUILLAGE STRICT DU GENRE
         if (isMale && _femaleKeywords.any((kw) => titleLower.contains(kw))) {
           continue;
         }
@@ -174,10 +217,9 @@ class SerpLiveSearchService {
         final price = _parsePrice(rawPrice);
         final brand = _extractBrand(title, source);
         final itemGender = isMale ? 'gender_homme' : (isFemale ? 'gender_femme' : 'gender_mixte');
+        final docId = 'live_${DateTime.now().millisecondsSinceEpoch}_${results.length}_${i}';
 
-        final docId = 'live_${DateTime.now().millisecondsSinceEpoch}_$i';
-
-        liveProducts.add({
+        results.add({
           'id': docId,
           'name': title,
           'product_title': title,
@@ -187,16 +229,17 @@ class SerpLiveSearchService {
           'product_price': '${price.toStringAsFixed(2)} €',
           'image': thumbnail,
           'product_photo': thumbnail,
-          'url': link,
-          'product_url': link,
+          'imageUrl': thumbnail,
+          'url': link.isNotEmpty ? link : 'https://www.google.com/search?q=${Uri.encodeComponent(title)}&tbm=shop',
+          'product_url': link.isNotEmpty ? link : 'https://www.google.com/search?q=${Uri.encodeComponent(title)}&tbm=shop',
           'description': '$title — Découverte en temps réel pour $gender ($ageStr ans).',
           'category': 'cat_tendances',
           'subcategory': 'subcat_tendances_gadgets_viraux',
-          'categories': ['cat_tendances', 'trending', itemGender, brand.toLowerCase()],
-          'tags': [itemGender, 'trending', 'live_serp_google'],
+          'categories': ['cat_tendances', 'trending', itemGender, brand.toLowerCase(), 'live_api'],
+          'tags': [itemGender, 'trending', 'live_serp_google', 'live_api', 'pour_toi'],
           'gender': itemGender,
-          'popularity': 100, // Score maximal pour le résultat en direct ultra-ciblé
-          '_matchScore': 350.0, // Priorité absolue en tête de questionnaire
+          'popularity': 100,
+          '_matchScore': 600.0,
           'match': 98,
           'active': true,
           'source': source,
@@ -205,10 +248,8 @@ class SerpLiveSearchService {
         });
       }
 
-      AppLogger.success('🎉 [SerpLiveSearch] ${liveProducts.length} produits ultra-ciblés récupérés en direct !', 'LiveSearch');
-      return liveProducts;
+      return results;
     } catch (e) {
-      AppLogger.warning('⚠️ [SerpLiveSearch] Exception recherche en direct (fallback local fluide): $e', 'LiveSearch');
       return [];
     }
   }

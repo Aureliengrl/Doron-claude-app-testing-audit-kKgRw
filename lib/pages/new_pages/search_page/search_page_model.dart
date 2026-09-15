@@ -7,15 +7,17 @@ import '/backend/backend.dart';
 import '/auth/firebase_auth/auth_util.dart';
 
 class SearchPageModel {
+  static String? _cachedForUserId;
+  static List<Map<String, dynamic>>? _cachedProfiles;
+  static Map<String, List<Map<String, dynamic>>>? _cachedPersonGifts;
+  static Map<String, List<Map<String, dynamic>>>? _cachedPersonSuggestions;
+
   static void clearCache() {
+    _cachedForUserId = null;
     _cachedProfiles = null;
     _cachedPersonGifts = null;
     _cachedPersonSuggestions = null;
   }
-
-  static List<Map<String, dynamic>>? _cachedProfiles;
-  static Map<String, List<Map<String, dynamic>>>? _cachedPersonGifts;
-  static Map<String, List<Map<String, dynamic>>>? _cachedPersonSuggestions;
 
   int? selectedProfileId;
   Set<int> likedProducts = {};
@@ -23,9 +25,9 @@ class SearchPageModel {
   bool isLoading = true;
   String? errorMessage;
 
-  List<Map<String, dynamic>> profiles = _cachedProfiles ?? [];
-  Map<String, List<Map<String, dynamic>>> personGifts = _cachedPersonGifts ?? {}; // Cache des cadeaux par personId
-  Map<String, List<Map<String, dynamic>>> personSuggestions = _cachedPersonSuggestions ?? {}; // Cache des suggestions par personId
+  List<Map<String, dynamic>> profiles = [];
+  Map<String, List<Map<String, dynamic>>> personGifts = {}; // Cache des cadeaux par personId
+  Map<String, List<Map<String, dynamic>>> personSuggestions = {}; // Cache des suggestions par personId
   bool isLoadingSuggestions = false;
 
   /// Normalise un ID (String ou int) en int pour cohérence
@@ -37,11 +39,16 @@ class SearchPageModel {
 
   /// Charge les profils depuis Firebase/Local Storage (nouvelle architecture)
   Future<void> loadProfiles({bool forceRefresh = false}) async {
-    if (forceRefresh) {
+    final currentUid = FirebaseDataService.currentUserId;
+    if (_cachedForUserId != currentUid || forceRefresh) {
       clearCache();
       profiles = [];
       personGifts.clear();
       personSuggestions.clear();
+    } else if (_cachedProfiles != null) {
+      profiles = _cachedProfiles!;
+      personGifts = _cachedPersonGifts ?? {};
+      personSuggestions = _cachedPersonSuggestions ?? {};
     }
     try {
       isLoading = profiles.isEmpty; // N'affiche le chargement bloquant que s'il n'y a pas de cache
@@ -123,10 +130,34 @@ class SearchPageModel {
             final giftListData = await FirebaseDataService.loadLatestGiftListForPerson(personId);
             gifts = (giftListData?['gifts'] as List? ?? []).cast<Map<String, dynamic>>();
           }
+        } else if (person['gifts'] != null && (person['gifts'] as List).isNotEmpty) {
+          final rawG = person['gifts'] as List;
+          gifts = rawG.map((item) => item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{}).where((m) => m.isNotEmpty).toList();
+          AppLogger.debug('📦 ${gifts.length} cadeaux chargés depuis la collab partagée pour $recipientName', 'Debug');
         } else {
           final giftListData = await FirebaseDataService.loadLatestGiftListForPerson(personId);
-          gifts = (giftListData?['gifts'] as List? ?? []).cast<Map<String, dynamic>>();
+          final rawG = giftListData?['gifts'] as List?;
+          gifts = rawG == null ? [] : rawG.map((item) => item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{}).where((m) => m.isNotEmpty).toList();
           AppLogger.debug('📦 ${gifts.length} cadeaux chargés depuis Firebase pour $recipientName', 'Debug');
+        }
+
+        // Fallback ultime si gifts est vide pour une personne partagée : lecture directe du doc collaborations
+        if (gifts.isEmpty && (person['collabId'] != null || person['isShared'] == true || meta['collabId'] != null || meta['isShared'] == true)) {
+          final collabId = person['collabId']?.toString() ?? meta['collabId']?.toString();
+          if (collabId != null && collabId.isNotEmpty) {
+            try {
+              final cDoc = await FirebaseFirestore.instance.collection('collaborations').doc(collabId).get();
+              if (cDoc.exists) {
+                final rawCollabG = cDoc.data()?['gifts'] as List?;
+                if (rawCollabG != null && rawCollabG.isNotEmpty) {
+                  gifts = rawCollabG.map((item) => item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{}).where((m) => m.isNotEmpty).toList();
+                  AppLogger.debug('📦 ${gifts.length} cadeaux récupérés directement depuis collaborations/$collabId pour $recipientName', 'Debug');
+                }
+              }
+            } catch (e) {
+              AppLogger.debug('Fallback direct collab read error: $e', 'Debug');
+            }
+          }
         }
 
         return {
@@ -141,9 +172,12 @@ class SearchPageModel {
             'meta': meta,
             // FIX C1+C6: persistance du chatId entre les sessions
             // chatId peut être dans meta (collab) ou dans tags (compatibilité)
-            'chatId': meta['chatId'] as String? ?? tags['chatId'] as String?,
-            'isShared': meta['isShared'] == true || tags['isShared'] == true,
-            'collabId': meta['collabId'] as String? ?? tags['collabId'] as String?,
+            'chatId': meta['chatId'] as String? ?? tags['chatId'] as String? ?? person['chatId'] as String?,
+            'isShared': meta['isShared'] == true || tags['isShared'] == true || person['isShared'] == true,
+            'collabId': meta['collabId'] as String? ?? tags['collabId'] as String? ?? person['collabId'] as String?,
+            'isInvited': person['isInvited'] == true || meta['isInvited'] == true,
+            'ownerId': person['ownerId'] ?? meta['ownerId'],
+            'ownerName': person['ownerName'] ?? meta['ownerName'],
           },
           'personId': personId,
           'gifts': gifts,
@@ -162,6 +196,7 @@ class SearchPageModel {
         personGifts[personId] = gifts;
         profiles.add(result['profile'] as Map<String, dynamic>);
       }
+      _cachedForUserId = currentUid;
       _cachedProfiles = profiles; // Update cache
       _cachedPersonGifts = personGifts; // Update cache
 
@@ -342,6 +377,15 @@ class SearchPageModel {
 
       // Définir le contexte actuel pour que les nouveaux favoris soient liés à cette personne
       await FirebaseDataService.setCurrentPersonContext(personId);
+
+      // Si les cadeaux de cette personne ne sont pas encore en mémoire ou sont vides, les recharger
+      if (personGifts[personId] == null || personGifts[personId]!.isEmpty) {
+        final giftListData = await FirebaseDataService.loadLatestGiftListForPerson(personId);
+        final rawG = giftListData?['gifts'] as List?;
+        if (rawG != null && rawG.isNotEmpty) {
+          personGifts[personId] = rawG.map((e) => e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{}).where((m) => m.isNotEmpty).toList();
+        }
+      }
 
       // Charger les suggestions pour cette personne (si pas déjà chargées)
       if (!personSuggestions.containsKey(personId) && personGifts[personId]?.isNotEmpty == true) {

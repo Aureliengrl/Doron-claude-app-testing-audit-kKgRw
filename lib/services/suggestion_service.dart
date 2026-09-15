@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import '/utils/app_logger.dart';
+import '/services/firebase_data_service.dart';
 
 /// Service qui calcule les suggestions d'amis :
 /// 1. Amis d'amis (priorité haute)
@@ -14,14 +15,14 @@ class SuggestionService {
   /// Retourne une liste de suggestions (max [limit]).
   /// Chaque map contient : uid, displayName, handle, photoUrl, source ('friend_of_friend' | 'contact')
   static Future<List<Map<String, dynamic>>> getSuggestions({int limit = 20}) async {
-    final me = FirebaseAuth.instance.currentUser;
-    if (me == null) return [];
+    final myUid = FirebaseDataService.currentUserId ?? FirebaseAuth.instance.currentUser?.uid;
+    if (myUid == null || myUid.isEmpty) return [];
 
     try {
       // 1. Charger mes données (friends list)
-      final myDoc = await _db.collection('users').doc(me.uid).get();
+      final myDoc = await _db.collection('users').doc(myUid).get();
       final myFriends = List<String>.from(myDoc.data()?['friends'] ?? []);
-      final excluded = <String>{me.uid, ...myFriends};
+      final excluded = <String>{myUid, ...myFriends};
 
       final suggestions = <String, Map<String, dynamic>>{};
 

@@ -10,6 +10,7 @@ import '/domain/matching/tag_converter.dart';
 import '/domain/matching/matching_engine.dart';
 import '/services/claude_api_service.dart';
 import '/services/serp_live_search_service.dart';
+import '/services/firebase_data_service.dart';
 
 /// Service de matching de produits basé sur les tags.
 /// 
@@ -175,7 +176,7 @@ class ProductMatchingService {
       List<String> effectiveBrandsSeen = brandsSeen ?? [];
       if (effectiveBrandsSeen.isEmpty && (brand == null || brand == 'all')) {
         try {
-          final uid = FirebaseAuth.instance.currentUser?.uid ?? 'anon';
+          final uid = FirebaseDataService.currentUserId ?? FirebaseAuth.instance.currentUser?.uid ?? 'anon';
           final prefs = await SharedPreferences.getInstance();
           effectiveBrandsSeen = prefs.getStringList('brands_seen_v3_$uid') ?? [];
         } catch (e) {
@@ -454,13 +455,12 @@ class ProductMatchingService {
         shuffledProducts = [...topProducts, ...restProducts];
         AppLogger.debug('🏆 Top $topCount produits phares maintenus en tête, ${restProducts.length} produits secondaires mélangés', 'Matching');
       } else {
-        // En mode Quiz : Top 15% préservé en tête, 85% mélangé pour la variété
-        final topCount = (relevantProducts.length * 0.15).ceil();
-        final topProducts = relevantProducts.take(topCount).toList();
-        final middleProducts = relevantProducts.skip(topCount).toList();
-        middleProducts.shuffle(random);
-        shuffledProducts = [...topProducts, ...middleProducts];
-        AppLogger.debug('🎲 Quiz: top $topCount préservé + ${middleProducts.length} mélangés', 'Matching');
+        // En mode Quiz / Personne : Les produits LIVE Google Shopping en tête absolue !
+        final liveTop = relevantProducts.where((p) => p['is_live'] == true || p['from_api'] == true).toList();
+        final otherProducts = relevantProducts.where((p) => p['is_live'] != true && p['from_api'] != true).toList();
+        otherProducts.shuffle(random);
+        shuffledProducts = [...liveTop, ...otherProducts];
+        AppLogger.debug('🎲 Quiz: ${liveTop.length} produits Live Google Shopping en tête absolue + ${otherProducts.length} secondaires', 'Matching');
       }
 
       // ⚠️ VÉRIFICATION CRITIQUE: Y a-t-il des produits à ce stade ?
@@ -518,14 +518,15 @@ class ProductMatchingService {
         final currentCategoryCount = categoryCounts[mainCategory] ?? 0;
 
         // 4️⃣ Vérifier limite par marque et catégorie (uniquement en mode découverte globale)
-        if (!isBrandSpecific) {
+        final isLiveItem = product['is_live'] == true || product['from_api'] == true;
+        if (!isBrandSpecific && !isLiveItem) {
           if (currentBrandCount >= maxPerBrand) {
             continue; // Skip, trop de produits de cette marque
           }
           if (currentCategoryCount >= maxPerCategory) {
             continue; // Skip, trop de produits de cette catégorie
           }
-        } else {
+        } else if (isBrandSpecific) {
           // En mode marque spécifique (ex: Zara), s'assurer que le produit appartient strictement à cette marque
           final pBrand = (product['brand'] ?? '').toString().toLowerCase();
           final pCategories = (product['categories'] as List?)?.cast<String>() ?? [];
@@ -586,7 +587,7 @@ class ProductMatchingService {
             .take(5)
             .toList();
         if (seenBrands.isNotEmpty) {
-          final uid = FirebaseAuth.instance.currentUser?.uid ?? 'anon';
+          final uid = FirebaseDataService.currentUserId ?? FirebaseAuth.instance.currentUser?.uid ?? 'anon';
           final prefs = await SharedPreferences.getInstance();
           await prefs.setStringList('brands_seen_v3_$uid', seenBrands);
           AppLogger.debug('💾 Marques sauvegardées (uid=$uid): $seenBrands', 'Matching');
@@ -938,6 +939,11 @@ class ProductMatchingService {
     // Garantit qu'un produit avec quelques pénalités aura quand même un score positif
     // Évite que tous les produits aient scores négatifs et soient filtrés
     double score = 150.0;
+
+    // ⚡ BONUS LIVE GOOGLE SHOPPING / SERPAPI : +450 points pour garantir la première place
+    if (product['is_live'] == true || product['from_api'] == true) {
+      score += 450.0;
+    }
 
     // Déterminer si un filtre de catégorie est actif
     final hasCategoryFilter = categoryFilter != null &&

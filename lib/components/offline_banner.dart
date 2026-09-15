@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,21 +21,39 @@ class _OfflineBannerWrapperState extends State<OfflineBannerWrapper> {
   void initState() {
     super.initState();
     _checkInitialConnection();
-    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
-      if (mounted) {
-        setState(() {
-          _isConnected = !results.contains(ConnectivityResult.none);
-        });
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) async {
+      final hasConnection = results.any((r) => r != ConnectivityResult.none);
+      if (hasConnection) {
+        if (mounted) setState(() => _isConnected = true);
+      } else {
+        // Double-check real internet before showing banner (prevents Simulator false-positive)
+        final real = await _hasRealInternet();
+        if (mounted) setState(() => _isConnected = real);
       }
     });
   }
 
+  Future<bool> _hasRealInternet() async {
+    try {
+      final res = await InternetAddress.lookup('google.com').timeout(const Duration(seconds: 2));
+      return res.isNotEmpty && res[0].rawAddress.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> _checkInitialConnection() async {
-    final results = await Connectivity().checkConnectivity();
-    if (mounted) {
-      setState(() {
-        _isConnected = !results.contains(ConnectivityResult.none);
-      });
+    try {
+      final results = await Connectivity().checkConnectivity();
+      final hasConnection = results.any((r) => r != ConnectivityResult.none);
+      if (hasConnection) {
+        if (mounted) setState(() => _isConnected = true);
+      } else {
+        final real = await _hasRealInternet();
+        if (mounted) setState(() => _isConnected = real);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isConnected = true);
     }
   }
 

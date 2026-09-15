@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
+import '/services/firebase_data_service.dart';
 import '/utils/app_logger.dart';
 
 /// Service de collaboration sur les listes de cadeaux.
 /// Gère : création, invitations, deep links, gestion du chat de groupe.
 class CollaborationService {
   static final _db = FirebaseFirestore.instance;
-  static String? get _myUid => FirebaseAuth.instance.currentUser?.uid;
+  static String? get _myUid => FirebaseDataService.currentUserId;
 
   // â”€â”€â”€ Créer ou récupérer une collaboration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -17,14 +18,43 @@ class CollaborationService {
     required String profileId,
     required String profileName,
     String mode = 'simple', // 'simple' (collab classique) | 'group_gift' (cagnotte)
+    Map<String, dynamic>? personData,
+    List<Map<String, dynamic>>? gifts,
   }) async {
     final myUid = _myUid;
     if (myUid == null) throw Exception('Non connecté');
 
     try {
+      // Récupérer le nom de l'hôte pour l'afficher aux invités
+      String ownerName = 'Un ami';
+      try {
+        final uDoc = await _db.collection('users').doc(myUid).get();
+        final uData = uDoc.data();
+        if (uData != null) {
+          ownerName = uData['first_name'] as String? ??
+              uData['display_name'] as String? ??
+              uData['name'] as String? ??
+              FirebaseAuth.instance.currentUser?.displayName ??
+              'Un ami';
+        }
+      } catch (_) {}
+
+      // S'assurer que gifts contient bien les cadeaux du profil (fallback vers la liste existante de l'owner)
+      List<Map<String, dynamic>> finalGifts = gifts != null ? List<Map<String, dynamic>>.from(gifts) : [];
+      if (finalGifts.isEmpty) {
+        try {
+          final listData = await FirebaseDataService.loadLatestGiftListForPerson(profileId);
+          final rawG = listData?['gifts'] as List?;
+          if (rawG != null && rawG.isNotEmpty) {
+            finalGifts = rawG.map((e) => e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{}).where((m) => m.isNotEmpty).toList();
+            AppLogger.debug('🎁 ${finalGifts.length} cadeaux récupérés pour la collab depuis le profil', 'Collab');
+          }
+        } catch (e) {
+          AppLogger.debug('Fallback loadLatestGiftListForPerson error in createOrGetCollab: $e', 'Collab');
+        }
+      }
+
       // Chercher une collaboration existante pour ce profil et cet owner
-      // IMPORTANT: inclure where('ownerId') pour satisfaire les security rules Firestore
-      // (sans ce filtre, la query peut retourner des docs d'autres users → permission-denied)
       final existing = await _db
           .collection('collaborations')
           .where('profileId', isEqualTo: profileId)
@@ -33,7 +63,17 @@ class CollaborationService {
 
       if (existing.docs.isNotEmpty) {
         final doc = existing.docs.first;
-        return {'collabId': doc.id, ...doc.data()};
+        final updates = <String, dynamic>{
+          'ownerName': ownerName,
+        };
+        if (personData != null && personData.isNotEmpty) {
+          updates['personData'] = personData;
+        }
+        if (finalGifts.isNotEmpty) {
+          updates['gifts'] = finalGifts;
+        }
+        await doc.reference.set(updates, SetOptions(merge: true));
+        return {'collabId': doc.id, ...doc.data(), ...updates};
       }
 
       // Générer un token unique pour le lien d'invitation
@@ -54,12 +94,16 @@ class CollaborationService {
       });
 
       // Premier message dans le chat
-      await chatRef.collection('messages').add({
-        'senderId': 'system',
-        'text': '🎁 Liste de cadeaux partagée pour $profileName. Invitez des amis pour collaborer !',
-        'timestamp': FieldValue.serverTimestamp(),
-        'type': 'system',
-      });
+      try {
+        await chatRef.collection('messages').add({
+          'senderId': myUid,
+          'text': '🎁 Liste de cadeaux partagée pour $profileName. Invitez des amis pour collaborer !',
+          'timestamp': FieldValue.serverTimestamp(),
+          'type': 'system',
+        });
+      } catch (e) {
+        AppLogger.debug('Premier message chat: $e', 'Collab');
+      }
 
       // Créer la collaboration
       final collabRef = _db.collection('collaborations').doc();
@@ -67,24 +111,30 @@ class CollaborationService {
         'profileId': profileId,
         'profileName': profileName,
         'ownerId': myUid,
+        'ownerName': ownerName,
         'mode': mode,
         'members': [myUid],
         'pendingInvites': <String>[],
         'chatId': chatRef.id,
         'inviteToken': inviteToken,
+        if (personData != null) 'personData': personData,
+        if (finalGifts.isNotEmpty) 'gifts': finalGifts,
         'createdAt': FieldValue.serverTimestamp(),
       };
       await collabRef.set(collabData);
 
-      // â”€â”€ FIX #5 : écrire dans collab_tokens pour que joinByToken puisse lire
-      // sans query sur collaborations (évite permission-denied sur la query)
-      await _db.collection('collab_tokens').doc(inviteToken).set({
-        'collabId': collabRef.id,
-        'chatId': chatRef.id,
-        'profileName': profileName,
-        'ownerId': myUid,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      // Écrire dans collab_tokens pour que joinByToken puisse lire
+      try {
+        await _db.collection('collab_tokens').doc(inviteToken).set({
+          'collabId': collabRef.id,
+          'chatId': chatRef.id,
+          'profileName': profileName,
+          'ownerId': myUid,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      } catch (e) {
+        AppLogger.debug('collab_tokens error: $e', 'Collab');
+      }
 
       // Mettre à jour le profil avec chatId et collabId
       try {
@@ -97,6 +147,7 @@ class CollaborationService {
           'isShared': true,
           'chatId': chatRef.id,
           'collabId': collabRef.id,
+          'giftMode': mode,
         }, SetOptions(merge: true));
       } catch (e) { AppLogger.debug('CollaborationService error: $e', 'Collab'); }
 
@@ -262,11 +313,57 @@ class CollaborationService {
     }
   }
 
+  /// Synchronise les cadeaux d'une collaboration avec tous les membres
+  static Future<void> syncGiftsToCollab({
+    required String collabId,
+    required List<Map<String, dynamic>> gifts,
+  }) async {
+    try {
+      await _db.collection('collaborations').doc(collabId).set({
+        'gifts': gifts,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      AppLogger.debug('✅ Cadeaux synchronisés avec la collab $collabId (${gifts.length} cadeaux)', 'Collab');
+    } catch (e) {
+      AppLogger.debug('⚠️ syncGiftsToCollab error: $e', 'Collab');
+    }
+  }
+
   /// Permet à un utilisateur de quitter une collaboration
-  static Future<void> leaveCollaboration(String collabId) async {
+  static Future<void> leaveCollaboration({
+    required String collabId,
+    String? chatId,
+    String? profileId,
+  }) async {
     final myUid = _myUid;
     if (myUid == null) return;
-    await removeMember(collabId: collabId, uid: myUid);
+    try {
+      // 1. Retirer de collaborations.members
+      await _db.collection('collaborations').doc(collabId).update({
+        'members': FieldValue.arrayRemove([myUid]),
+      });
+
+      // 2. Retirer de chats.participants si chatId fourni ou résolu
+      String? resolvedChatId = chatId;
+      if (resolvedChatId == null) {
+        final doc = await _db.collection('collaborations').doc(collabId).get();
+        resolvedChatId = doc.data()?['chatId'] as String?;
+      }
+      if (resolvedChatId != null && resolvedChatId.isNotEmpty) {
+        await _db.collection('chats').doc(resolvedChatId).update({
+          'participants': FieldValue.arrayRemove([myUid]),
+        });
+      }
+
+      // 3. Supprimer la copie locale du profil si existante
+      if (profileId != null && profileId.isNotEmpty) {
+        await FirebaseDataService.deletePerson(profileId);
+      }
+      AppLogger.info('Membre $myUid a quitté la collaboration $collabId', 'Collab');
+    } catch (e) {
+      AppLogger.error('Erreur leaveCollaboration: $e', 'Collab');
+      rethrow;
+    }
   }
 
   /// Retire un membre de la collaboration et du chat associé

@@ -1,4 +1,4 @@
-﻿import '/utils/app_logger.dart';
+import '/utils/app_logger.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '/utils/app_tr.dart';
@@ -12,6 +12,7 @@ import '/services/product_url_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '/components/bounce_button.dart';
 import '/components/wishlist_picker_sheet.dart';
+import '/components/liquid_ai_gift_loader.dart';
 import 'gift_results_model.dart';
 export 'gift_results_model.dart';
 
@@ -59,29 +60,22 @@ class _GiftResultsWidgetState extends State<GiftResultsWidget>
       key: scaffoldKey,
       backgroundColor: LiquidGlassTokens.pageDark,
       body: _model.isLoading
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(color: violetColor),
-                  const SizedBox(height: 24),
-                  Text(
-                    '?? G�n�ration des cadeaux...',
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      color: violetColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
+          ? LiquidAIGiftLoader(
+              minSeconds: 2.5,
+              maxSeconds: 4.5,
+              onRestart: () {
+                setState(() {
+                  _model.isLoading = true;
+                });
+                _loadGiftsAndInitAnimations();
+              },
             )
           : CustomScrollView(
               slivers: [
-                // Header violet arrondi avec r�sum�
+                // Header violet arrondi avec rsum
                 SliverToBoxAdapter(child: _buildHeader()),
 
-                // Message IA personnalis�
+                // Message IA personnalis
                 SliverToBoxAdapter(child: _buildAIMessage()),
 
                 // Filtres de cat�gories

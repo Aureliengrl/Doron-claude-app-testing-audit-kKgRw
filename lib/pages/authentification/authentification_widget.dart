@@ -9,9 +9,12 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '/services/push_notifications_service.dart';
 import '/services/first_time_service.dart';
 import '/services/multi_account_service.dart';
+import '/services/firebase_data_service.dart';
+import '/pages/new_pages/search_page/search_page_model.dart';
 import 'authentification_model.dart';
 export 'authentification_model.dart';
 
@@ -136,6 +139,17 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
   }
 
   Future<void> _afterSignIn() async {
+    // 1. Reset override UID pour le nouveau compte connecté
+    FirebaseDataService.setActiveUidOverride(null);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('active_account_uid');
+    } catch (_) {}
+
+    // 2. Vider les caches mémoire des profils/recherche
+    FirebaseDataService.invalidateProfileTagsCache();
+    SearchPageModel.clearCache();
+
     try {
       await PushNotificationsService.initialize();
     } catch (_) {}

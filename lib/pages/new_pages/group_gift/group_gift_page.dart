@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '/utils/app_tr.dart';
 import '/auth/firebase_auth/auth_util.dart';
+import '/services/firebase_data_service.dart';
 import '/services/group_gift_service.dart';
 
 /// Page centrale du mode « Cadeau de groupe » (cagnotte).
@@ -47,7 +48,7 @@ class _GroupGiftPageState extends State<GroupGiftPage> {
   static const _bg = Color(0xFF0E0B14);
   static const _card = Color(0xFF1A1622);
 
-  bool get _isHost => currentUserUid == widget.ownerId;
+  bool get _isHost => (FirebaseDataService.currentUserId ?? currentUserUid) == widget.ownerId;
 
   String _eur(num v) => '${v.toStringAsFixed(2)} €';
 
@@ -201,7 +202,7 @@ class _GroupGiftPageState extends State<GroupGiftPage> {
     return null;
   }
 
-  Future<String> _myName() => _userName(currentUserUid);
+  Future<String> _myName() => _userName(FirebaseDataService.currentUserId ?? currentUserUid);
 
   Future<String> _userName(String uid) async {
     try {
@@ -510,7 +511,7 @@ class _GroupGiftPageState extends State<GroupGiftPage> {
     final confirmed = participants.where((p) => p['status'] == 'confirmed').toList();
     final collected =
         confirmed.fold<double>(0, (s, p) => s + ((p['share'] as num?)?.toDouble() ?? 0));
-    final myPart = participants.where((p) => p['uid'] == currentUserUid).toList();
+    final myPart = participants.where((p) => p['uid'] == (FirebaseDataService.currentUserId ?? currentUserUid)).toList();
     final mine = myPart.isEmpty ? null : myPart.first;
 
     return Column(children: [

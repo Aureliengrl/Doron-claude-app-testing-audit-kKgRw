@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/services/firebase_data_service.dart';
 import '/services/user_search_service.dart';
+import '/services/multi_account_service.dart';
 import 'change_name_model.dart';
 export 'change_name_model.dart';
 
@@ -228,7 +229,7 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
                             return;
                           }
 
-                          final uid = FirebaseAuth.instance.currentUser?.uid;
+                          final uid = FirebaseDataService.currentUserId;
                           if (uid == null) {
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -286,8 +287,14 @@ class _ChangeNameWidgetState extends State<ChangeNameWidget> {
                                 .doc(uid)
                                 .set(updateData, SetOptions(merge: true));
 
-                            // Mettre à jour aussi le displayName Firebase Auth
-                            if (displayName.isNotEmpty) {
+                            // Mettre à jour aussi le multi-account cache
+                            await MultiAccountService.saveCurrentAccount(profileData: {
+                              'displayName': displayName,
+                              'handle': handleRaw,
+                            });
+
+                            // Mettre à jour aussi le displayName Firebase Auth si même compte auth
+                            if (displayName.isNotEmpty && FirebaseAuth.instance.currentUser?.uid == uid) {
                               await FirebaseAuth.instance.currentUser
                                   ?.updateDisplayName(displayName);
                             }

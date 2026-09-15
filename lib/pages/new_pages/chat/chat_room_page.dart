@@ -111,6 +111,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     });
   }
 
+  String? get _currentUid => FirebaseDataService.currentUserId;
+
   /// Returns effective chat data, falling back to loaded _chatDocData when widget.chatData is null.
   Map<String, dynamic>? get _effectiveChatData => widget.chatData ?? (_chatDocData.isNotEmpty ? _chatDocData : null);
 
@@ -119,7 +121,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     final chatData = _effectiveChatData;
     final isGroup = chatData?['isGroup'] == true;
     if (isGroup) return;
-    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    final currentUid = _currentUid;
     if (currentUid == null) return;
     final participants = List<String>.from(chatData?['participants'] ?? []);
     final otherUid = participants.firstWhere((id) => id != currentUid, orElse: () => '');
@@ -140,17 +142,17 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
   
   Future<void> _updateReadStatus() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    final uid = _currentUid;
+    if (uid == null) return;
     
     try {
       await FirebaseFirestore.instance.collection('chats').doc(widget.chatId).set({
         'readStatus': {
-          user.uid: FieldValue.serverTimestamp(),
+          uid: FieldValue.serverTimestamp(),
         },
         // BUG 3 FIX: reset unread counter to 0 for current user on open
         'unreadCount': {
-          user.uid: 0,
+          uid: 0,
         },
       }, SetOptions(merge: true));
     } catch (e) {
@@ -174,8 +176,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 
   Future<void> _setTypingStatus(bool isTyping) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    final uid = _currentUid;
+    if (uid == null) return;
     
     if (_isTyping == isTyping) return;
     _isTyping = isTyping;
@@ -183,7 +185,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     try {
       await FirebaseFirestore.instance.collection('chats').doc(widget.chatId).set({
         'typingUsers': {
-          user.uid: isTyping ? DateTime.now().millisecondsSinceEpoch : FieldValue.delete(),
+          uid: isTyping ? DateTime.now().millisecondsSinceEpoch : FieldValue.delete(),
         }
       }, SetOptions(merge: true));
     } catch (e) {
@@ -217,8 +219,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     
     _updateReadStatus();
     
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return;
+    final uid = _currentUid;
+    if (uid == null) return;
     
     final replyData = _replyingToMessage;
     setState(() => _replyingToMessage = null);
@@ -232,7 +234,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           
       final messageData = {
         'id': messageRef.id,
-        'senderId': currentUser.uid,
+        'senderId': uid,
         'text': text,
         'timestamp': FieldValue.serverTimestamp(),
         'type': 'text',
@@ -250,7 +252,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         'lastMessageTime': FieldValue.serverTimestamp(),
       };
       for (final pid in participants) {
-        if (pid != currentUser.uid) {
+        if (pid != uid) {
           unreadUpdate['unreadCount.$pid'] = FieldValue.increment(1);
         }
       }
@@ -267,8 +269,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       if (pickedFile == null) return;
 
       final file = File(pickedFile.path);
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) return;
+      final uid = _currentUid;
+      if (uid == null) return;
 
       // Optimistic message placeholder
       final messageRef = FirebaseFirestore.instance
@@ -279,7 +281,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
       final messageData = {
         'id': messageRef.id,
-        'senderId': currentUser.uid,
+        'senderId': uid,
         'text': '📸 Image envoyée',
         'timestamp': FieldValue.serverTimestamp(),
         'type': 'image',
@@ -313,7 +315,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         'lastMessageTime': FieldValue.serverTimestamp(),
       };
       for (final pid in participants) {
-        if (pid != currentUser.uid) {
+        if (pid != uid) {
           unreadUpdate['unreadCount.$pid'] = FieldValue.increment(1);
         }
       }
@@ -413,7 +415,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             child: GestureDetector(
               onTap: !isGroup && _otherUserData != null ? () {
                 final participants = List<String>.from(_effectiveChatData?['participants'] ?? []);
-                final currentUid = FirebaseAuth.instance.currentUser?.uid;
+                final currentUid = _currentUid;
                 final otherUid = participants.firstWhere((id) => id != currentUid, orElse: () => '');
                 if (otherUid.isNotEmpty) context.push('/public-profile/$otherUid');
               } : null,
@@ -504,8 +506,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   Widget _buildMessagesList() {
     final isGroup = _effectiveChatData?['isGroup'] == true;
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return const SizedBox();
+    final uid = _currentUid;
+    if (uid == null) return const SizedBox();
 
     return StreamBuilder<QuerySnapshot>(
       stream: _messagesStream,
@@ -593,7 +595,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             }
             final messageData = messages[index].data() as Map<String, dynamic>;
             final senderId = messageData['senderId'] as String?;
-            final isMe = senderId == currentUser.uid;
+            final isMe = senderId == uid;
             
             final rawText = messageData['text'] as String? ?? '';
             final text = rawText
@@ -609,7 +611,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             if (isMe && timestamp != null && _chatDocData.containsKey('readStatus')) {
               final readStatuses = _chatDocData['readStatus'] as Map<String, dynamic>;
               for (final key in readStatuses.keys) {
-                if (key != currentUser.uid) {
+                if (key != uid) {
                   final otherReadTime = readStatuses[key] as Timestamp?;
                   if (otherReadTime != null && otherReadTime.compareTo(timestamp) >= 0) {
                     isReadByOthers = true;
@@ -822,9 +824,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       const SizedBox(width: 4),
                       Builder(builder: (ctx) {
                         final readStatuses = _chatDocData['readStatus'] as Map<String, dynamic>? ?? {};
-                        final currentUser = FirebaseAuth.instance.currentUser;
+                        final currentUid = _currentUid;
                         final readByUids = readStatuses.keys.where((k) {
-                          if (currentUser != null && k == currentUser.uid) return false;
+                          if (currentUid != null && k == currentUid) return false;
                           final t = readStatuses[k] as Timestamp?;
                           return t != null && timestamp != null && t.compareTo(timestamp) >= 0;
                         }).toList();
@@ -866,7 +868,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   void _toggleHeartReaction(String msgId) {
     HapticFeedback.lightImpact();
-    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final uid = _currentUid ?? '';
     if (uid.isEmpty) return;
     FirebaseFirestore.instance.collection('chats').doc(widget.chatId).collection('messages').doc(msgId).set({'reactions': { uid: '❤️' }}, SetOptions(merge: true));
   }
@@ -929,7 +931,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                           onTap: () async {
                             Navigator.pop(context);
                             HapticFeedback.lightImpact();
-                            final uid = FirebaseAuth.instance.currentUser?.uid;
+                            final uid = _currentUid;
                             if (uid == null) return;
                             await FirebaseFirestore.instance
                                 .collection('chats')
@@ -1361,8 +1363,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       final giftTypes = (result['giftTypes'] as List?)?.join(', ') ?? '';
 
       // Envoyer un message récapitulatif dans le chat du groupe
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) return;
+      final uid = _currentUid;
+      if (uid == null) return;
 
       final occasionLabels = {
         'anniversaire': '🎂 Anniversaire',
@@ -1421,12 +1423,12 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   Widget _buildTypingIndicator() {
     if (_chatDocData.isEmpty || !_chatDocData.containsKey('typingUsers')) return const SizedBox.shrink();
     
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return const SizedBox.shrink();
+    final currentUid = _currentUid;
+    if (currentUid == null) return const SizedBox.shrink();
     
     final typingUsers = _chatDocData['typingUsers'] as Map<String, dynamic>;
     final othersTyping = typingUsers.entries.where((e) {
-      if (e.key == currentUser.uid) return false;
+      if (e.key == currentUid) return false;
       final time = e.value as int?;
       if (time == null) return false;
       return DateTime.now().millisecondsSinceEpoch - time < 3000;
@@ -1831,7 +1833,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   /// Opens a bottom sheet showing the user's favorite products for selection.
   void _showProductPicker() {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = _currentUid;
     if (uid == null) return;
 
     showModalBottomSheet(
@@ -2165,8 +2167,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     required Map<String, dynamic> jsonPayload,
     required String previewText,
   }) async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) return;
+    final uid = _currentUid;
+    if (uid == null) return;
     try {
       final messageRef = FirebaseFirestore.instance
           .collection('chats')
@@ -2175,7 +2177,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
           .doc();
       await messageRef.set({
         'id': messageRef.id,
-        'senderId': currentUser.uid,
+        'senderId': uid,
         'text': json.encode(jsonPayload),
         'timestamp': FieldValue.serverTimestamp(),
         'type': type,
@@ -2188,7 +2190,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         'lastMessageTime': FieldValue.serverTimestamp(),
       };
       for (final pid in participantsForTyped) {
-        if (pid != currentUser.uid) {
+        if (pid != uid) {
           typedUpdate['unreadCount.$pid'] = FieldValue.increment(1);
         }
       }

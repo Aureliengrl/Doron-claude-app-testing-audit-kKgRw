@@ -14,6 +14,7 @@ import '/components/liquid_glass_loader.dart';
 import '/components/floating_cta_button.dart';
 import '/components/app_notch.dart';
 import 'create_chat_bottom_sheet.dart';
+import '/services/firebase_data_service.dart';
 import '/utils/app_tr.dart';
 
 class ChatListPage extends StatefulWidget {
@@ -70,7 +71,7 @@ class _ChatListPageState extends State<ChatListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = FirebaseAuth.instance.currentUser;
+    final currentUid = FirebaseDataService.currentUserId;
 
     return Scaffold(
       backgroundColor: LiquidGlassTokens.pageDark,
@@ -83,12 +84,12 @@ class _ChatListPageState extends State<ChatListPage> {
               children: [
                 _buildHeader(),
                 Expanded(
-                  child: currentUser == null
+                  child: currentUid == null || currentUid.isEmpty
                       ? Center(child: Text(context.tr('Non connecté', 'Not connected'), style: const TextStyle(color: Colors.white)))
                       : StreamBuilder<QuerySnapshot>(
                           stream: FirebaseFirestore.instance
                               .collection('chats')
-                              .where('participants', arrayContains: currentUser.uid)
+                              .where('participants', arrayContains: currentUid)
                               .snapshots(),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -98,9 +99,9 @@ class _ChatListPageState extends State<ChatListPage> {
                             final allDocs = snapshot.data?.docs ?? [];
                             return Column(
                               children: [
-                                _buildFilterBar(allDocs, currentUser.uid),
+                                _buildFilterBar(allDocs, currentUid),
                                 Expanded(
-                                  child: _buildChatsList(allDocs, currentUser.uid),
+                                  child: _buildChatsList(allDocs, currentUid),
                                 ),
                               ],
                             );
@@ -138,6 +139,14 @@ class _ChatListPageState extends State<ChatListPage> {
 
   String _activeFilter = 'all'; // 'all', 'unread', 'groups', 'direct'
 
+  bool _isGroupChat(Map<String, dynamic> data) {
+    return data['isGroup'] == true ||
+        data['isGroup'] == 'true' ||
+        data['type'] == 'group' ||
+        data['collabId'] != null ||
+        (data['name'] != null && data['name'].toString().startsWith('Cadeaux pour '));
+  }
+
   Widget _buildFilterBar(List<QueryDocumentSnapshot> allChats, String currentUid) {
     final totalCount = allChats.length;
     final unreadCount = allChats.where((c) {
@@ -149,14 +158,14 @@ class _ChatListPageState extends State<ChatListPage> {
       }
       return false;
     }).length;
-    final groupsCount = allChats.where((c) => (c.data() as Map<String, dynamic>)['isGroup'] == true).length;
-    final directCount = allChats.where((c) => (c.data() as Map<String, dynamic>)['isGroup'] != true).length;
+    final groupsCount = allChats.where((c) => _isGroupChat(c.data() as Map<String, dynamic>)).length;
+    final directCount = allChats.where((c) => !_isGroupChat(c.data() as Map<String, dynamic>)).length;
 
     final filters = [
-      {'id': 'all', 'label': context.tr('Tous', 'All'), 'count': totalCount, 'icon': IconlyLight.chat, 'activeIcon': IconlyBold.chat},
-      {'id': 'unread', 'label': context.tr('Non lus', 'Unread'), 'count': unreadCount, 'icon': IconlyLight.notification, 'activeIcon': IconlyBold.notification},
+      {'id': 'all', 'label': context.tr('Toutes', 'All'), 'count': totalCount, 'icon': IconlyLight.chat, 'activeIcon': IconlyBold.chat},
+      {'id': 'direct', 'label': context.tr('Amis', 'Friends'), 'count': directCount, 'icon': IconlyLight.user2, 'activeIcon': IconlyBold.user2},
       {'id': 'groups', 'label': context.tr('Groupes', 'Groups'), 'count': groupsCount, 'icon': IconlyLight.user3, 'activeIcon': IconlyBold.user3},
-      {'id': 'direct', 'label': context.tr('Directs', 'Direct'), 'count': directCount, 'icon': IconlyLight.user2, 'activeIcon': IconlyBold.user2},
+      {'id': 'unread', 'label': context.tr('Non lus', 'Unread'), 'count': unreadCount, 'icon': IconlyLight.notification, 'activeIcon': IconlyBold.notification},
     ];
 
     return Container(
@@ -167,89 +176,20 @@ class _ChatListPageState extends State<ChatListPage> {
         child: Row(
           children: filters.map((f) {
             final filterId = f['id'] as String;
-            final isSelected = _activeFilter == filterId;
-            final count = f['count'] as int;
-            final label = f['label'] as String;
-            final icon = isSelected ? (f['activeIcon'] as IconData) : (f['icon'] as IconData);
-
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  setState(() => _activeFilter = filterId);
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                  decoration: BoxDecoration(
-                    gradient: isSelected
-                        ? const LinearGradient(
-                            colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          )
-                        : null,
-                    color: isSelected ? null : Colors.white.withOpacity(0.07),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isSelected ? const Color(0xFFEC4899).withOpacity(0.6) : Colors.white.withOpacity(0.12),
-                      width: 1,
-                    ),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: const Color(0xFF8A2BE2).withOpacity(0.35),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        icon,
-                        color: isSelected ? Colors.white : Colors.white70,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        label,
-                        style: GoogleFonts.poppins(
-                          color: isSelected ? Colors.white : Colors.white70,
-                          fontSize: 13,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                        ),
-                      ),
-                      if (count > 0 || isSelected) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? Colors.black.withOpacity(0.25)
-                                : (filterId == 'unread' && count > 0)
-                                    ? const Color(0xFFEC4899)
-                                    : Colors.white.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '$count',
-                            style: GoogleFonts.poppins(
-                              color: Colors.white,
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
+            return _ChatFilterChip(
+              key: ValueKey('filter_$filterId'),
+              id: filterId,
+              label: f['label'] as String,
+              count: f['count'] as int,
+              icon: f['icon'] as IconData,
+              activeIcon: f['activeIcon'] as IconData,
+              isSelected: _activeFilter == filterId,
+              onSelected: (id) {
+                HapticFeedback.selectionClick();
+                setState(() {
+                  _activeFilter = id;
+                });
+              },
             );
           }).toList(),
         ),
@@ -282,10 +222,10 @@ class _ChatListPageState extends State<ChatListPage> {
       title: context.tr('Messages', 'Messages'),
       subtitle: context.tr('Vos discussions et groupes', 'Your chats and groups'),
       trailing: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseAuth.instance.currentUser != null
+        stream: (FirebaseDataService.currentUserId ?? FirebaseAuth.instance.currentUser?.uid) != null
           ? FirebaseFirestore.instance
               .collection('notifications')
-              .doc(FirebaseAuth.instance.currentUser!.uid)
+              .doc(FirebaseDataService.currentUserId ?? FirebaseAuth.instance.currentUser!.uid)
               .collection('items')
               .where('read', isEqualTo: false)
               .snapshots()
@@ -354,13 +294,13 @@ class _ChatListPageState extends State<ChatListPage> {
       case 'groups':
         filteredChats = chats.where((doc) {
           final d = doc.data() as Map<String, dynamic>;
-          return d['isGroup'] == true;
+          return _isGroupChat(d);
         }).toList();
         break;
       case 'direct':
         filteredChats = chats.where((doc) {
           final d = doc.data() as Map<String, dynamic>;
-          return d['isGroup'] != true;
+          return !_isGroupChat(d);
         }).toList();
         break;
       case 'all':
@@ -501,14 +441,14 @@ class _ChatListPageState extends State<ChatListPage> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 160),
       itemCount: filteredChats.length,
       itemBuilder: (context, index) {
         final chatDoc = filteredChats[index];
         final chatData = chatDoc.data() as Map<String, dynamic>;
         final chatId = chatDoc.id;
             
-            final isGroup = chatData['isGroup'] == true;
+            final isGroup = _isGroupChat(chatData);
             final lastMessage = chatData['lastMessage'] as String? ?? '';
             final lastMessageTime = chatData['lastMessageTime'] as Timestamp?;
             
@@ -664,7 +604,7 @@ class _ChatListPageState extends State<ChatListPage> {
                       ),
                     ),
                   ),
-                ).animate().fadeIn(delay: Duration(milliseconds: 50 * index)).slideX(begin: 0.1, end: 0),
+                ).animate().fadeIn(duration: const Duration(milliseconds: 150)),
               );
             }
 
@@ -700,6 +640,131 @@ class _ChatListPageState extends State<ChatListPage> {
             }
           },
         );
+  }
+}
+
+class _ChatFilterChip extends StatefulWidget {
+  final String id;
+  final String label;
+  final int count;
+  final IconData icon;
+  final IconData activeIcon;
+  final bool isSelected;
+  final ValueChanged<String> onSelected;
+
+  const _ChatFilterChip({
+    super.key,
+    required this.id,
+    required this.label,
+    required this.count,
+    required this.icon,
+    required this.activeIcon,
+    required this.isSelected,
+    required this.onSelected,
+  });
+
+  @override
+  State<_ChatFilterChip> createState() => _ChatFilterChipState();
+}
+
+class _ChatFilterChipState extends State<_ChatFilterChip> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = widget.isSelected;
+    final icon = isSelected ? widget.activeIcon : widget.icon;
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Listener(
+        behavior: HitTestBehavior.opaque,
+        onPointerDown: (_) {
+          setState(() => _isPressed = true);
+          widget.onSelected(widget.id);
+        },
+        onPointerUp: (_) => setState(() => _isPressed = false),
+        onPointerCancel: (_) => setState(() => _isPressed = false),
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: AnimatedScale(
+            scale: _isPressed ? 0.94 : 1.0,
+            duration: const Duration(milliseconds: 100),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+              decoration: BoxDecoration(
+                gradient: isSelected
+                    ? const LinearGradient(
+                        colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : null,
+                color: isSelected ? null : Colors.white.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isSelected
+                      ? const Color(0xFFEC4899).withOpacity(0.7)
+                      : Colors.white.withOpacity(0.15),
+                  width: 1.5,
+                ),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFF8A2BE2).withOpacity(0.45),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    icon,
+                    color: isSelected ? Colors.white : Colors.white70,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    widget.label,
+                    style: GoogleFonts.poppins(
+                      color: isSelected ? Colors.white : Colors.white70,
+                      fontSize: 13,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                  ),
+                  if (widget.count > 0 || isSelected) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? Colors.black.withOpacity(0.3)
+                            : (widget.id == 'unread' && widget.count > 0)
+                                ? const Color(0xFFEC4899)
+                                : Colors.white.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '${widget.count}',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

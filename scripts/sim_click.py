@@ -21,13 +21,19 @@ kCGHIDEventTap = 0
 
 def get_sim_bounds():
     script = '''
-    tell application "Simulator" to activate
+    tell application "Simulator"
+        activate
+        delay 0.3
+    end tell
     tell application "System Events"
         tell process "Simulator"
-            set win to front window
-            set winPos to position of win
-            set winSize to size of win
-            return (item 1 of winPos as string) & "," & (item 2 of winPos as string) & "," & (item 1 of winSize as string) & "," & (item 2 of winSize as string)
+            set wList to (every window whose subrole is not "AXUnknown")
+            if (count of wList) > 0 then
+                set win to item 1 of wList
+                set winPos to position of win
+                set winSize to size of win
+                return (item 1 of winPos as string) & "," & (item 2 of winPos as string) & "," & (item 1 of winSize as string) & "," & (item 2 of winSize as string)
+            end if
         end tell
     end tell
     '''
@@ -36,13 +42,7 @@ def get_sim_bounds():
     return x, y, w, h
 
 def click_sim(rel_x, rel_y):
-    # Bring simulator to front
-    subprocess.run(['osascript', '-e', 'tell application "Simulator" to activate'], check=True)
-    time.sleep(0.15)
-    
     win_x, win_y, win_w, win_h = get_sim_bounds()
-    # Note: Window includes ~30px titlebar on macOS
-    # Content area starts around win_y + 28
     title_offset = 28.0
     content_h = win_h - title_offset
     
