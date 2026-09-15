@@ -50,15 +50,15 @@ void main() {
         expect(result.isExcluded, isTrue);
       });
 
-      test('male user + female product → NOT excluded in discovery mode', () {
+      test('male user + female product → strictly excluded in discovery mode (0% leakage)', () {
         final result = MatchingEngine.score(
           feminineProductTags,
           {'gender_homme'},
           {},
           filteringMode: 'discovery',
         );
-        expect(result.isExcluded, isFalse);
-        expect(result.score, greaterThan(0));
+        expect(result.isExcluded, isTrue);
+        expect(result.score, lessThanOrEqualTo(-9000));
       });
 
       test('universal product → not excluded for any user', () {

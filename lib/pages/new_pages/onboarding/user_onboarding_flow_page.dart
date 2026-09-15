@@ -545,7 +545,7 @@ class _UserOnboardingFlowPageState extends State<UserOnboardingFlowPage> {
         children: [
           const SizedBox(height: 12),
           Text(
-            'Créons ton profil ✨',
+            'Créons ton profil',
             style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 4),
@@ -1115,7 +1115,7 @@ class _UserOnboardingFlowPageState extends State<UserOnboardingFlowPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      isLast ? 'Terminer et Découvrir ✨' : 'Continuer',
+                      isLast ? 'Terminer et Découvrir' : 'Continuer',
                       style: GoogleFonts.poppins(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(width: 8),

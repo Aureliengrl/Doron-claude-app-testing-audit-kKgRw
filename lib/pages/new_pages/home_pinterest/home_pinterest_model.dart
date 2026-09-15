@@ -572,16 +572,35 @@ class HomePinterestModel {
             allTags.contains('occasion_fete');
 
       case 'st_valentin':
-        return allTags.contains('occasion_saint_valentin') ||
+        // EXCLUSION STRICTE : bières, tireuses, aspirateurs, outillage, pièces auto, reconditionné
+        if (text.contains('bière') ||
+            text.contains('biere') ||
+            text.contains('tireuse') ||
+            text.contains('aspirateur') ||
+            text.contains('perceuse') ||
+            text.contains('moteur') ||
+            text.contains('vidange') ||
+            text.contains('reconditionné') ||
+            text.contains('reconditionne') ||
+            text.contains('câble') ||
+            text.contains('cable') ||
+            allTags.contains('cat_mecanique_auto') ||
+            allTags.contains('cat_jardinage') ||
+            allTags.contains('cat_jeuxvideo')) {
+          return false;
+        }
+        return allTags.contains('occasion_st_valentin') ||
+            allTags.contains('occasion_saint_valentin') ||
+            allTags.contains('st_valentin_romantique') ||
+            allTags.contains('st_valentin_experience_duo') ||
+            allTags.contains('st_valentin_personnalise') ||
             allTags.contains('subcat_bijoux') ||
             allTags.contains('subcat_parfum') ||
             allTags.contains('subcat_lingerie_nuit') ||
             allTags.contains('subcat_chocolats_confiseries') ||
-            allTags.contains('subcat_vins_spiritueux') ||
             allTags.contains('subcat_ambiance_bougies_senteurs') ||
             allTags.contains('subcat_bains_thalasso_maison') ||
             allTags.contains('subcat_massages_relaxation') ||
-            allTags.contains('subcat_montres_classiques') ||
             allTags.contains('perso_romantique');
 
       case 'naissance':

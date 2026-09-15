@@ -394,7 +394,7 @@ class GlobalProductDetailModal {
     );
   }
 
-  /// Bloc de localisation des magasins / ateliers à proximité
+  /// Bloc de localisation des magasins / ateliers à proximité — Format compact élégant
   static Widget _buildStoreLocatorSection(BuildContext context, Map<String, dynamic> product) {
     final stores = StoreLocatorService.getNearbyStoresForProduct(product);
     if (stores.isEmpty) return const SizedBox.shrink();
@@ -402,85 +402,87 @@ class GlobalProductDetailModal {
     final closest = stores.first;
 
     return Container(
-      margin: const EdgeInsets.only(top: 14),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF8A2BE2).withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.location_on, color: Color(0xFFC77DFF), size: 18),
-              const SizedBox(width: 6),
-              Text(
-                'Disponible près de vous',
-                style: GoogleFonts.outfit(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
+      margin: const EdgeInsets.only(top: 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            StoreLocatorSheet.show(context, product);
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.06),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF8A2BE2).withOpacity(0.35),
+                width: 1,
               ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF8A2BE2).withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.storefront_rounded, color: Color(0xFFC77DFF), size: 18),
                 ),
-                child: Text(
-                  'Dès ${closest.distanceKm.toStringAsFixed(1)} km',
-                  style: GoogleFonts.outfit(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF10B981),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'En stock près de chez vous',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        '${closest.name} • dès ${closest.distanceKm.toStringAsFixed(1)} km',
+                        style: GoogleFonts.poppins(
+                          fontSize: 11.5,
+                          color: Colors.white.withOpacity(0.6),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${closest.name} • ${closest.stockLabel}',
-            style: GoogleFonts.outfit(
-              fontSize: 12,
-              color: Colors.white.withOpacity(0.7),
-            ),
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            width: double.infinity,
-            height: 38,
-            child: OutlinedButton.icon(
-              onPressed: () {
-                StoreLocatorSheet.show(context, product);
-              },
-              icon: const Icon(Icons.map_outlined, color: Color(0xFFC77DFF), size: 16),
-              label: Text(
-                'Voir la carte & les magasins (${stores.length})',
-                style: GoogleFonts.outfit(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFFC77DFF),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Voir carte',
+                        style: GoogleFonts.poppins(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF10B981),
+                        ),
+                      ),
+                      const SizedBox(width: 3),
+                      const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF10B981), size: 10),
+                    ],
+                  ),
                 ),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: const Color(0xFF8A2BE2).withOpacity(0.5)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
-
 
   // ─── Site colors & icons ────────────────────────────────────────────────────
   static Color _siteColor(String site) {
@@ -492,27 +494,14 @@ class GlobalProductDetailModal {
     if (s.contains('zalando')) return const Color(0xFFFF6600);
     if (s.contains('la redoute')) return const Color(0xFFE91E63);
     if (s.contains('galeries')) return const Color(0xFF1A237E);
-    if (s.contains('sephora')) return const Color(0xFF000000);
+    if (s.contains('sephora')) return const Color(0xFFEC4899);
     if (s.contains('boulanger')) return const Color(0xFF003DA5);
     if (s.contains('decathlon')) return const Color(0xFF007DBA);
     if (s.contains('monoprix')) return const Color(0xFFE30613);
-    return const Color(0xFF6B7280);
+    return const Color(0xFF8A2BE2);
   }
 
-  static String _siteEmoji(String site) {
-    final s = site.toLowerCase();
-    if (s.contains('amazon'))   return '🟠';
-    if (s.contains('fnac'))     return '🟡';
-    if (s.contains('darty'))    return '🔴';
-    if (s.contains('zalando'))  return '🟧';
-    if (s.contains('cdiscount'))return '🔷';
-    if (s.contains('sephora'))  return '⚫';
-    if (s.contains('boulanger'))return '🔵';
-    if (s.contains('decathlon'))return '💙';
-    return '🌐';
-  }
-
-  /// Mini comparateur de prix — affiche tous les buyLinks[]
+  /// Mini comparateur de prix — affiche tous les buyLinks[] avec badges épurés
   static Widget _buildBuyLinksSection(BuildContext context, Map<String, dynamic> product) {
     // Récupérer buyLinks depuis le produit
     final rawLinks = product['buyLinks'];
@@ -558,7 +547,7 @@ class GlobalProductDetailModal {
             try { await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication); } catch (_) {}
           },
           icon: const Icon(Icons.open_in_new, color: Colors.white, size: 18),
-          label: Text('Voir sur $brand', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+          label: Text('Voir sur $brand', style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white)),
           style: ElevatedButton.styleFrom(
             backgroundColor: violetColor,
             padding: const EdgeInsets.symmetric(vertical: 14),
@@ -580,9 +569,9 @@ class GlobalProductDetailModal {
         Row(
           children: [
             Text(
-            context.tr('Où acheter', 'Where to buy'),
+              context.tr('Disponibilités & Prix', 'Availability & Prices'),
               style: GoogleFonts.poppins(
-                fontSize: 15,
+                fontSize: 14.5,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
               ),
@@ -590,16 +579,16 @@ class GlobalProductDetailModal {
             const Spacer(),
             if (priceMin != null)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                 decoration: BoxDecoration(
                   color: const Color(0xFF10B981).withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: const Color(0xFF10B981).withOpacity(0.4)),
                 ),
                 child: Text(
                   'Dès ${priceMin.toStringAsFixed(priceMin == priceMin.roundToDouble() ? 0 : 2)}€',
                   style: GoogleFonts.poppins(
-                    fontSize: 12,
+                    fontSize: 11.5,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF10B981),
                   ),
@@ -609,14 +598,13 @@ class GlobalProductDetailModal {
         ),
         const SizedBox(height: 10),
         // Liste des liens
-        ...buyLinks.take(6).map((link) {
+        ...buyLinks.take(5).map((link) {
           final site    = (link['site'] as String?) ?? 'Boutique';
           final url     = (link['url'] as String?) ?? '';
           final price   = (link['price'] as num?)?.toDouble();
           final isAffiliated = link['affiliated'] == true;
           final isBest  = price != null && price == priceMin;
           final siteColor = _siteColor(site);
-          final emoji = _siteEmoji(site);
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -627,7 +615,7 @@ class GlobalProductDetailModal {
               } : null,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
                   color: isBest
                       ? const Color(0xFF10B981).withOpacity(0.08)
@@ -642,77 +630,78 @@ class GlobalProductDetailModal {
                 ),
                 child: Row(
                   children: [
-                    // Emoji site
-                    Text(emoji, style: const TextStyle(fontSize: 18)),
+                    // Badge marchand élégant sans emoji
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: siteColor.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: siteColor.withOpacity(0.4), width: 1),
+                      ),
+                      child: Center(
+                        child: Text(
+                          site.isNotEmpty ? site[0].toUpperCase() : 'B',
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
                     const SizedBox(width: 10),
                     // Nom du site
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Text(
-                                site,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              if (isBest) ...[
-                                const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF10B981),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    context.tr('Meilleur prix', 'Best price'),
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              if (isAffiliated) ...[
-                                const SizedBox(width: 4),
-                                const Text('💰', style: TextStyle(fontSize: 10)),
-                              ],
-                            ],
+                          Text(
+                            site,
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
                           ),
+                          if (isBest)
+                            Text(
+                              'Meilleur prix garanti',
+                              style: GoogleFonts.poppins(
+                                fontSize: 10.5,
+                                color: const Color(0xFF10B981),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                         ],
                       ),
                     ),
-                    // Prix
+                    // Prix & bouton
                     if (price != null)
                       Text(
-                        '${price.toStringAsFixed(price == price.roundToDouble() ? 0 : 2)}€',
+                        '${price.toStringAsFixed(price == price.roundToDouble() ? 0 : 2)} €',
                         style: GoogleFonts.poppins(
-                          fontSize: 16,
+                          fontSize: 13.5,
                           fontWeight: FontWeight.bold,
                           color: isBest ? const Color(0xFF10B981) : Colors.white,
                         ),
                       ),
                     const SizedBox(width: 8),
-                    Icon(
+                    const Icon(
                       Icons.arrow_forward_ios_rounded,
-                      size: 14,
                       color: Colors.white38,
+                      size: 12,
                     ),
                   ],
                 ),
               ),
             ),
           );
-        }).toList(),
-        const SizedBox(height: 4),
+        }),
       ],
     );
   }
+
 
   /// Fonction globale de favoris — écrit dans users/{uid}/favorites
   static Future<bool> _toggleFavoriteGlobally(BuildContext context, Map<String, dynamic> product, bool isCurrentlyLiked) async {

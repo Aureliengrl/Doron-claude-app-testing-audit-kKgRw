@@ -97,5 +97,54 @@ void main() {
       expect(tags.contains('subcat_maquillage'), false);
       print('   • [${p['category']} / ${p['subcategory']}] ${p['brand']} - ${p['name']} (${p['price']}€)');
     }
+
+    // Test Saint-Valentin
+    final valentinProducts = products.where((p) {
+      final tags = ((p['tags'] as List?)?.cast<dynamic>() ?? []).map((t) => t.toString().toLowerCase()).toSet();
+      final cats = ((p['categories'] as List?)?.cast<dynamic>() ?? []).map((c) => c.toString().toLowerCase()).toSet();
+      final pCat = (p['category'] ?? '').toString().toLowerCase();
+      final allTags = {...tags, ...cats, if (pCat.isNotEmpty) pCat};
+      final text = '${p['name']} ${p['brand']} ${p['description']}'.toLowerCase();
+
+      if (text.contains('bière') ||
+          text.contains('biere') ||
+          text.contains('tireuse') ||
+          text.contains('aspirateur') ||
+          text.contains('perceuse') ||
+          text.contains('moteur') ||
+          text.contains('reconditionné') ||
+          text.contains('reconditionne') ||
+          text.contains('câble') ||
+          text.contains('cable') ||
+          allTags.contains('cat_mecanique_auto') ||
+          allTags.contains('cat_jardinage') ||
+          allTags.contains('cat_jeuxvideo')) {
+        return false;
+      }
+
+      return allTags.contains('occasion_st_valentin') ||
+          allTags.contains('occasion_saint_valentin') ||
+          allTags.contains('st_valentin_romantique') ||
+          allTags.contains('st_valentin_experience_duo') ||
+          allTags.contains('st_valentin_personnalise') ||
+          allTags.contains('subcat_bijoux') ||
+          allTags.contains('subcat_parfum') ||
+          allTags.contains('subcat_lingerie_nuit') ||
+          allTags.contains('subcat_chocolats_confiseries') ||
+          allTags.contains('subcat_ambiance_bougies_senteurs') ||
+          allTags.contains('subcat_bains_thalasso_maison') ||
+          allTags.contains('subcat_massages_relaxation') ||
+          allTags.contains('perso_romantique');
+    }).toList();
+
+    print('\n🌹 Produits trouvés pour "Saint-Valentin" : ${valentinProducts.length}');
+    expect(valentinProducts.isNotEmpty, true);
+    for (final p in valentinProducts) {
+      final text = '${p['name']} ${p['description']}'.toLowerCase();
+      expect(text.contains('tireuse'), false, reason: 'Tireuse dans Saint-Valentin : ${p['name']}');
+      expect(text.contains('bière'), false, reason: 'Bière dans Saint-Valentin : ${p['name']}');
+      expect(text.contains('aspirateur'), false, reason: 'Aspirateur dans Saint-Valentin : ${p['name']}');
+      expect(text.contains('reconditionné'), false, reason: 'Reconditionné dans Saint-Valentin : ${p['name']}');
+    }
   });
 }

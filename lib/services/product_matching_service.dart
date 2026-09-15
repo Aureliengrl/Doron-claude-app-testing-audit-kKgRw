@@ -1018,6 +1018,12 @@ class ProductMatchingService {
       score += 50.0;
     }
 
+    // ⚡ PRODUIT EN DIRECT SERPAPI / GOOGLE SHOPPING : Priorité maximale en tête de résultats
+    if (product['is_live'] == true || product['from_api'] == true) {
+      AppLogger.debug('⚡ Produit Live Google Shopping prioritaire: "${product['name']}" (+500pts)', 'Matching');
+      return 500.0;
+    }
+
     // 🔒 2. ÂGE (SCORING UNIQUEMENT - JAMAIS d'exclusion)
     final age = userTags['age'] ?? userTags['recipientAge'];
     if (age != null) {

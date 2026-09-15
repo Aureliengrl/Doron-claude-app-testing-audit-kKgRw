@@ -970,28 +970,28 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 duration: const Duration(milliseconds: 3000),
                 child: Text(
                   _model.isAnonymousMode
-                      ? 'Bonjour ✨'
+                      ? 'Bonjour'
                       : (_model.firstName.isNotEmpty
-                          ? 'Bonjour ${_model.firstName} ✨'
-                          : 'Bonjour ✨'),
+                          ? 'Bonjour ${_model.firstName}'
+                          : 'Bonjour'),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     color: Colors.white,
-                    fontSize: 20,
+                    fontSize: 21,
                     fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
+                    letterSpacing: 0.3,
                   ),
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 3),
               Text(
                 _model.isAnonymousMode
-                    ? 'Idées cadeaux populaires'
+                    ? 'Idées cadeaux & tendances'
                     : 'Voici tes inspirations cadeaux',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   color: Colors.white.withOpacity(0.9),
-                  fontSize: 12,
+                  fontSize: 12.5,
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -1045,11 +1045,11 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
         itemBuilder: (context, index) {
           final category = _model.categories[index];
           final isActive = _model.activeCategoryId == category['id'];
-          final emoji = HomePinterestModel.getCategoryEmoji(category['id'] as String);
+          final icon = HomePinterestModel.getCategoryIcon(category['id'] as String);
           final categoryName = _translateCategory(category['id'] as String, category['name'] as String);
 
           return Padding(
-            padding: const EdgeInsets.only(right: 20),
+            padding: const EdgeInsets.only(right: 10),
             child: InkWell(
               onTap: () {
                 HapticFeedback.lightImpact();
@@ -1060,57 +1060,52 @@ class _HomePinterestWidgetState extends State<HomePinterestWidget> {
                 });
                 _loadProducts();
               },
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          emoji,
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          categoryName,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14.5,
-                            fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                            color: isActive ? Colors.white : Colors.white.withOpacity(0.55),
-                            letterSpacing: -0.2,
+              borderRadius: BorderRadius.circular(20),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutCubic,
+                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+                decoration: BoxDecoration(
+                  color: isActive ? Colors.white : Colors.white.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isActive ? Colors.white : Colors.white.withOpacity(0.20),
+                    width: 1,
+                  ),
+                  boxShadow: isActive
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.12),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
-                        ),
-                      ],
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      icon,
+                      size: 14,
+                      color: isActive ? const Color(0xFF8A2BE2) : Colors.white,
                     ),
-                    const SizedBox(height: 5),
-                    // Trait indicateur actif centré et symétrique
-                    Center(
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.easeOutCubic,
-                        height: 3.0,
-                        width: isActive ? 34.0 : 0.0,
-                        decoration: BoxDecoration(
-                          color: isActive ? Colors.white : Colors.transparent,
-                          borderRadius: BorderRadius.circular(2),
-                          boxShadow: isActive
-                              ? [
-                                  BoxShadow(
-                                    color: Colors.white.withOpacity(0.8),
-                                    blurRadius: 4,
-                                  ),
-                                ]
-                              : null,
-                        ),
+                    const SizedBox(width: 6),
+                    Text(
+                      categoryName,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.5,
+                        fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                        color: isActive ? const Color(0xFF1F2937) : Colors.white,
+                        letterSpacing: -0.2,
                       ),
                     ),
                   ],
                 ),
               ),
-            );
-          },
+            ),
+          );
+        },
       ),
     );
   }

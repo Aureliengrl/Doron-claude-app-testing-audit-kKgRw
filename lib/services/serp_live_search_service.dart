@@ -28,29 +28,99 @@ class SerpLiveSearchService {
   /// Interroge Google Shopping France en temps réel pour un profil de questionnaire
   static Future<List<Map<String, dynamic>>> fetchLiveProductsForQuiz(Map<String, dynamic> userTags) async {
     try {
-      final gender = (userTags['gender'] ?? userTags['recipientGender'] ?? '').toString().toLowerCase();
-      final isMale = gender.contains('homme');
-      final isFemale = gender.contains('femme');
+      final gender = (userTags['gender'] ?? userTags['personGender'] ?? userTags['recipientGender'] ?? '').toString().toLowerCase();
+      final isMale = gender.contains('homme') || gender.contains('garçon') || gender.contains('masculin');
+      final isFemale = gender.contains('femme') || gender.contains('fille') || gender.contains('féminin');
+      final ageStr = (userTags['age'] ?? userTags['personAge'] ?? '25').toString();
       
+      final recipientPersonality = (userTags['recipientPersonality'] is List)
+          ? (userTags['recipientPersonality'] as List).map((p) => p.toString()).toList()
+          : (userTags['recipientPersonality'] is String && (userTags['recipientPersonality'] as String).isNotEmpty
+              ? [userTags['recipientPersonality'].toString()]
+              : <String>[]);
       final passions = (userTags['passions'] as List?)?.map((p) => p.toString()).toList() ?? [];
-      final categories = (userTags['categories'] as List?)?.map((c) => c.toString()).toList() ?? [];
+      final interests = (userTags['interests'] as List?)?.map((c) => c.toString()).toList() ?? [];
       final giftTypes = (userTags['giftTypes'] as List?)?.map((g) => g.toString()).toList() ?? [];
+      final occasion = (userTags['occasion'] ?? '').toString().trim();
+      final budgetTier = (userTags['budgetTier'] ?? userTags['budget'] ?? '').toString();
+      final voiceDesc = (userTags['voiceDescription'] ??
+              userTags['vocalTranscript'] ??
+              userTags['description'] ??
+              (userTags['recipientPersonality'] is String ? userTags['recipientPersonality'] : ''))
+          .toString()
+          .trim();
 
-      // Construire des mots-clés concis (2-3 termes max pour rapidité Google Shopping)
-      String keyword = 'cadeau';
-      if (passions.isNotEmpty) {
-        keyword = passions.first.replaceAll('cat_', '').replaceAll('subcat_', '').replaceAll('_', ' ');
-      } else if (giftTypes.isNotEmpty) {
-        keyword = giftTypes.first.toString().replaceAll('_', ' ');
-      } else if (categories.isNotEmpty) {
-        keyword = categories.first.replaceAll('cat_', '').replaceAll('subcat_', '').replaceAll('_', ' ');
-      } else if (isMale) {
-        keyword = 'gadget tech homme';
-      } else if (isFemale) {
-        keyword = 'beauté mode femme';
+      // Construction d'une requête ultra-ciblée e-commerce (1 à 2 termes précis)
+      String query = '';
+
+      if (voiceDesc.isNotEmpty && voiceDesc.length > 3) {
+        final cleanVoice = voiceDesc
+            .toLowerCase()
+            .replaceAll(RegExp(r'\b(il|elle|aime|adore|passionné|passion|de|du|des|le|la|les|pour|un|une|très|beaucoup|quelqu|un|cadeau|cadeaux|veut|souhaite|cherche)\b'), ' ')
+            .replaceAll(RegExp(r'[^\w\s\-]'), ' ')
+            .trim();
+        final rawWords = cleanVoice.split(RegExp(r'\s+')).where((w) => w.length >= 3).toList();
+        final words = rawWords.map((w) {
+          if (w.endsWith('s') && w.length > 3 && !w.endsWith('ss')) {
+            return w.substring(0, w.length - 1);
+          }
+          if (w.endsWith('x') && w.length > 3) {
+            return w.substring(0, w.length - 1);
+          }
+          return w;
+        }).toList();
+
+        if (words.isNotEmpty) {
+          query = words.take(2).join(' ');
+        }
       }
 
-      final query = isMale ? '$keyword homme' : (isFemale ? '$keyword femme' : keyword);
+      if (query.isEmpty && passions.isNotEmpty) {
+        query = passions.first.replaceAll('cat_', '').replaceAll('subcat_', '').replaceAll('_', ' ');
+      } else if (query.isEmpty && interests.isNotEmpty) {
+        query = interests.first.replaceAll('cat_', '').replaceAll('subcat_', '').replaceAll('_', ' ');
+      }
+
+      if (query.isEmpty && recipientPersonality.isNotEmpty) {
+        final perso = recipientPersonality.first.toLowerCase();
+        if (perso.contains('explorateur') || perso.contains('voyage') || perso.contains('aventure')) {
+          query = 'sac voyage rando';
+        } else if (perso.contains('casanier') || perso.contains('deco') || perso.contains('cocooning')) {
+          query = 'plaid bougie deco';
+        } else if (perso.contains('tech') || perso.contains('gadget')) {
+          query = 'gadget tech insolite';
+        } else if (perso.contains('gamer') || perso.contains('jeu')) {
+          query = 'accessoire gaming';
+        } else if (perso.contains('fashion') || perso.contains('coquet') || perso.contains('mode')) {
+          query = isMale ? 'accessoire mode homme' : 'sac bijou femme';
+        } else if (perso.contains('epicurien') || perso.contains('gourmand') || perso.contains('vin')) {
+          query = 'coffret gastronomie vin';
+        } else if (perso.contains('creatif') || perso.contains('art') || perso.contains('musique')) {
+          query = 'kit creatif art';
+        } else if (perso.contains('sport') || perso.contains('fitness')) {
+          query = 'accessoire fitness sport';
+        } else if (perso.contains('zen') || perso.contains('bien-etre') || perso.contains('yoga')) {
+          query = 'coffret diffuseur huiles';
+        } else {
+          query = perso.replaceAll('perso_', '').replaceAll('&', ' ').replaceAll('_', ' ');
+        }
+      }
+
+      if (query.isEmpty) {
+        if (occasion.toLowerCase().contains('valentin')) {
+          query = isMale ? 'parfum montre homme' : 'coffret bijou femme';
+        } else if (occasion.toLowerCase().contains('noël') || occasion.toLowerCase().contains('noel')) {
+          query = isMale ? 'coffret cadeau homme' : 'coffret cadeau femme';
+        } else if (isMale) {
+          query = 'montre tech homme';
+        } else if (isFemale) {
+          query = 'sac bijou femme';
+        } else {
+          query = 'cadeau tendance';
+        }
+      }
+
+      query = query.trim();
       AppLogger.info('⚡ [SerpLiveSearch] Requête ciblée Google Shopping: "$query"', 'LiveSearch');
 
       final uri = Uri.parse(_serpApiBase).replace(queryParameters: {
@@ -58,11 +128,11 @@ class SerpLiveSearchService {
         'q': query,
         'gl': 'fr',
         'hl': 'fr',
-        'num': '10',
+        'num': '20',
         'api_key': _serpApiKey,
       });
 
-      final response = await http.get(uri).timeout(const Duration(seconds: 5));
+      final response = await http.get(uri).timeout(const Duration(seconds: 15));
       if (response.statusCode != 200) {
         AppLogger.warning('⚠️ [SerpLiveSearch] Statut HTTP ${response.statusCode}', 'LiveSearch');
         return [];
@@ -71,7 +141,7 @@ class SerpLiveSearchService {
       final data = jsonDecode(response.body);
       final rawShopping = (data['shopping_results'] as List?) ?? [];
       if (rawShopping.isEmpty) {
-        AppLogger.warning('⚠️ [SerpLiveSearch] Aucun résultat Google Shopping retourné', 'LiveSearch');
+        AppLogger.warning('⚠️ [SerpLiveSearch] Aucun résultat Google Shopping retourné pour "$query"', 'LiveSearch');
         return [];
       }
 
@@ -80,10 +150,10 @@ class SerpLiveSearchService {
       for (int i = 0; i < rawShopping.length; i++) {
         final item = rawShopping[i];
         final title = (item['title'] ?? '').toString().trim();
-        final link = (item['link'] ?? '').toString().trim();
-        final thumbnail = (item['thumbnail'] ?? '').toString().trim();
+        final link = (item['product_link'] ?? item['link'] ?? item['direct_link'] ?? '').toString().trim();
+        final thumbnail = (item['thumbnail'] ?? item['serpapi_thumbnail'] ?? '').toString().trim();
         final source = (item['source'] ?? 'Google Shopping').toString().trim();
-        final rawPrice = item['price'];
+        final rawPrice = item['extracted_price'] ?? item['price'];
 
         if (title.isEmpty || thumbnail.isEmpty || link.isEmpty) continue;
 
@@ -127,9 +197,11 @@ class SerpLiveSearchService {
           'gender': itemGender,
           'popularity': 100, // Score maximal pour le résultat en direct ultra-ciblé
           '_matchScore': 350.0, // Priorité absolue en tête de questionnaire
+          'match': 98,
           'active': true,
           'source': source,
           'is_live': true,
+          'from_api': true,
         });
       }
 

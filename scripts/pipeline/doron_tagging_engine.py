@@ -201,48 +201,135 @@ def determine_personalities(title: str, cat: str) -> list:
         persos.append("perso_epicurien")
     return list(set(persos))
 
+JUNK_EXCLUSIONS = [
+    "bras et moteur", "nacelle", "câble ptz", "écran lcd", "pour pièces", 
+    "pièce détachée", "reconditionné", "reconditionne", "d'occasion", "seconde main", 
+    "boîtier de charge seul", "boitier de charge seul", "coque seule", "câble seul", 
+    "chargeur seul", "boîte vide", "boite vide", "débloqué grade", "grade a+", 
+    "grade a", "grade b", "grade c", "très bon état", "tres bon etat", "bon état", 
+    "comme neuf", "fluted bezel upgrade", "bracelet seul", "batterie seule", 
+    "pièce de rechange", "verre trempé seul", "adaptateur secteur seul", "état correct",
+    "batterie d'origine", "à réviser", "débloqué", "sans prix de réserve"
+]
+
+def is_junk_product(title: str) -> bool:
+    t_low = title.lower()
+    # Exceptions pour les ateliers d'artisanat Wecandoo ("Décorez votre pièce en céramique")
+    if any(k in t_low for k in ["céramique", "poterie", "artisan", "atelier cuisine", "maroquinerie"]):
+        if any(j in t_low for j in ["reconditionné", "reconditionne", "grade", "d'occasion", "bon état", "grade a"]):
+            return True
+        return False
+    return any(j in t_low for j in JUNK_EXCLUSIONS)
+
 def determine_events_and_subfilters(title: str, gender: str, cat: str, subcat: str, price: float) -> list:
     events = ["occasion_anniversaire", "occasion_noel"]
     t_low = title.lower()
     
-    # Saint-Valentin & sous-filtres
-    if gender in ["gender_femme", "gender_mixte"] or "amour" in t_low or "duo" in t_low or "spa" in t_low or "bijou" in t_low or "parfum" in t_low or "chocolat" in t_low:
-        events.append("occasion_st_valentin")
-        if "duo" in t_low or "séjour" in t_low or "spa" in t_low or cat == "cat_activites_experiences":
-            events.append("st_valentin_experience_duo")
-        elif "personnalis" in t_low or "gravure" in t_low or "bijou" in t_low or "or" in t_low:
-            events.append("st_valentin_personnalise")
-        else:
-            events.append("st_valentin_romantique")
-            
-    # Fête des Mères (STRICTEMENT ZÉRO PRODUIT HOMME)
-    if gender in ["gender_femme", "gender_mixte"]:
-        events.append("occasion_fete_meres")
-        if cat in ["cat_bienetre", "cat_beaute"] or "spa" in t_low or "massage" in t_low:
-            events.append("fete_meres_detente")
-        elif subcat in ["subcat_bijoux"] or "collier" in t_low or "bracelet" in t_low:
-            events.append("fete_meres_bijoux")
-        elif cat in ["cat_food"] or "chocolat" in t_low or "thé" in t_low:
-            events.append("fete_meres_gourmandise")
-            
-    # Fête des Pères (STRICTEMENT ZÉRO PRODUIT FEMME)
-    if gender in ["gender_homme", "gender_mixte"]:
-        events.append("occasion_fete_peres")
-        if cat in ["cat_tech", "cat_jeuxvideo", "cat_aeronautique"]:
-            events.append("fete_peres_hightech")
-        elif cat in ["cat_food"] or "vin" in t_low or "whisky" in t_low or "bière" in t_low:
-            events.append("fete_peres_gastronomie")
-        elif cat in ["cat_mecanique_auto"] or "bricolage" in t_low or "outil" in t_low:
-            events.append("fete_peres_bricolage_meca")
-            
-    # Crémaillère / Mariage / Naissance / Diplôme
-    if cat in ["cat_maison", "cat_food", "cat_jardinage"]:
+    # =========================================================================
+    # 🌹 SAINT-VALENTIN : STRICTEMENT ROMANTIQUE & LUXE & DUO (ZÉRO ÉLECTROMÉNAGER/MÉCA/BIÈRE/GAMING/OUTIL)
+    # =========================================================================
+    valentin_disallowed_cats = [
+        "cat_mecanique_auto", "cat_jardinage", "cat_jeuxvideo", "cat_aeronautique", "cat_tech"
+    ]
+    valentin_disallowed_subcats = [
+        "subcat_electromenager", "subcat_accessoires_auto_interieur", "subcat_outils_mecanique_diagnostic",
+        "subcat_dashcam_securite_auto", "subcat_ordinateurs_accessoires", "subcat_gadgets_divers",
+        "subcat_consoles_gaming", "subcat_manettes_accessoires_gaming", "subcat_casques_audio_gaming",
+        "subcat_accessoires_sommellerie_bar"
+    ]
+    valentin_forbidden_keywords = [
+        "aspirateur", "bière", "biere", "tireuse", "perceuse", "outil", "coffre", "moteur", "pneu", 
+        "manette", "switch", "ps5", "xbox", "clavier gaming", "souris", "reconditionné", "reconditionne",
+        "câble", "cable", "auto", "vidange", "support de table", "xlr", "pack micros", "seiko 5", "tissot prs"
+    ]
+
+    is_valentin_disallowed = (cat in valentin_disallowed_cats) or \
+                             (subcat in valentin_disallowed_subcats) or \
+                             any(w in t_low for w in valentin_forbidden_keywords)
+
+    if not is_valentin_disallowed:
+        is_valentin_subcat = subcat in [
+            "subcat_bijoux", "subcat_parfum", "subcat_lingerie_nuit", "subcat_chocolats_confiseries",
+            "subcat_ambiance_bougies_senteurs", "subcat_sacs_maroquinerie", "subcat_soin_visage",
+            "subcat_soin_corps"
+        ]
+        
+        valentin_patterns = [
+            r"\b(romantique|amour|duo|couple|massage duo|spa duo|nuit insolite|château|chateau|lingerie)\b",
+            r"\b(collier|bague|solitaire|diamant|pendentif|boucles d'oreilles|or 18k|or blanc|or rose|plaqué or)\b",
+            r"\b(champagne|ruinart|dom perignon|chocolats fins|boîte de chocolats)\b",
+            r"\b(polène|polene|jacquemus|diptyque|miss dior|j'adore|coco mademoiselle|libre ysl|black opium)\b"
+        ]
+        is_valentin_keyword = any(re.search(pat, t_low) for pat in valentin_patterns)
+        
+        is_valentin_experience = (cat == "cat_activites_experiences") and any(
+            re.search(pat, t_low) for pat in [
+                r"\b(duo|couple|spa|massage|nuit insolite|château|gastronomique|dîner aux chandelles|degustation vin|oenologie|maroquinerie|joaillerie)\b"
+            ]
+        )
+
+        if is_valentin_subcat or is_valentin_keyword or is_valentin_experience:
+            events.append("occasion_st_valentin")
+            events.append("occasion_saint_valentin")
+            if "duo" in t_low or "séjour" in t_low or "spa" in t_low or "massage" in t_low or is_valentin_experience:
+                events.append("st_valentin_experience_duo")
+            elif "personnalis" in t_low or "gravure" in t_low or subcat == "subcat_bijoux" or "collier" in t_low or "bague" in t_low:
+                events.append("st_valentin_personnalise")
+            else:
+                events.append("st_valentin_romantique")
+
+    # =========================================================================
+    # 🌸 FÊTE DES MÈRES : STRICTEMENT FÉMININ & BIEN-ÊTRE (ZÉRO PRODUIT HOMME)
+    # =========================================================================
+    if gender in ["gender_femme", "gender_mixte"] and cat not in ["cat_mecanique_auto", "cat_jeuxvideo", "cat_aeronautique"]:
+        is_meres_subcat = subcat in [
+            "subcat_bijoux", "subcat_parfum", "subcat_soin_visage", "subcat_soin_corps", "subcat_cheveux_coiffure",
+            "subcat_maquillage", "subcat_ambiance_bougies_senteurs", "subcat_sacs_maroquinerie", "subcat_cafe_the",
+            "subcat_chocolats_confiseries", "subcat_cuisine_arts_de_la_table", "subcat_activites_ateliers_diy"
+        ]
+        if is_meres_subcat or any(w in t_low for w in ["maman", "mère", "femme", "soin", "beauté", "détente", "fleurs", "thé", "diptyque"]):
+            events.append("occasion_fete_meres")
+            events.append("occasion_fete")
+            if cat in ["cat_bienetre", "cat_beaute"] or "spa" in t_low or "massage" in t_low or "soin" in t_low:
+                events.append("fete_meres_detente")
+            elif subcat == "subcat_bijoux" or "collier" in t_low or "bracelet" in t_low or "bague" in t_low:
+                events.append("fete_meres_bijoux")
+            elif cat == "cat_food" or "chocolat" in t_low or "thé" in t_low or "gourmand" in t_low:
+                events.append("fete_meres_gourmandise")
+
+    # =========================================================================
+    # 👔 FÊTE DES PÈRES : STRICTEMENT MASCULIN & GASTRO & TECH (ZÉRO PRODUIT FEMME)
+    # =========================================================================
+    if (gender in ["gender_homme", "gender_mixte"] and cat not in ["cat_beaute", "cat_bienetre"]) or subcat in ["subcat_rasage_barbe", "subcat_parfum"]:
+        is_peres_subcat = subcat in [
+            "subcat_vins_spiritueux", "subcat_accessoires_sommellerie_bar", "subcat_montres_classiques",
+            "subcat_vetements_homme", "subcat_rasage_barbe", "subcat_smartphones_tablettes", "subcat_audio",
+            "subcat_wearables", "subcat_outils_mecanique_diagnostic", "subcat_simulation_vol_pilotage",
+            "subcat_activites_sensations_fortes", "subcat_activites_gastronomie_oenologie"
+        ]
+        if is_peres_subcat or any(w in t_low for w in ["papa", "père", "homme", "whisky", "vin", "barbe", "rasage", "pilotage", "montre"]):
+            events.append("occasion_fete_peres")
+            events.append("occasion_fete")
+            if cat in ["cat_tech", "cat_jeuxvideo", "cat_aeronautique"]:
+                events.append("fete_peres_hightech")
+            elif cat == "cat_food" or "vin" in t_low or "whisky" in t_low or "spiritueux" in t_low:
+                events.append("fete_peres_gastronomie")
+            elif cat == "cat_mecanique_auto" or "bricolage" in t_low or "outil" in t_low:
+                events.append("fete_peres_bricolage_meca")
+
+    # =========================================================================
+    # 🏡 CRÉMAILLÈRE / MARIAGE / NAISSANCE / DIPLÔME
+    # =========================================================================
+    if cat in ["cat_maison", "cat_food", "cat_jardinage"] and subcat not in ["subcat_lingerie_nuit"]:
         events.append("occasion_cremaillere")
-    if "mariage" in t_low or "couple" in t_low or (cat in ["cat_maison", "cat_food", "cat_activites_experiences"] and price >= 80):
+        
+    if ("mariage" in t_low or "couple" in t_low or (cat in ["cat_maison", "cat_food", "cat_activites_experiences"] and price >= 80)) and not is_valentin_disallowed:
         events.append("occasion_mariage")
-    if "bébé" in t_low or "naissance" in t_low or "maternité" in t_low:
+        
+    if "bébé" in t_low or "naissance" in t_low or "maternité" in t_low or "doudou" in t_low:
         events.append("occasion_naissance")
-    if "diplôme" in t_low or "stylo" in t_low or cat in ["cat_tech", "cat_lecture", "cat_mode"]:
+        
+    if "diplôme" in t_low or "stylo" in t_low or (cat in ["cat_tech", "cat_lecture", "cat_mode"] and price >= 50):
         events.append("occasion_diplome")
         
     return list(set(events))
@@ -343,6 +430,10 @@ def tag_raw_catalog():
         if is_excluded_box(title, source):
             continue
             
+        # Exclusion stricte des pièces détachées, reconditionnés, câbles seuls et annonces de mauvaise qualité
+        if is_junk_product(title):
+            continue
+            
         brand = determine_brand(title, source)
         gender = determine_gender(title, cat, subcat, brand)
         age_groups = determine_age_groups(title, price, cat, subcat)
@@ -417,7 +508,10 @@ def tag_raw_catalog():
     with open(OUTPUT_CATALOG, "w", encoding="utf-8") as f:
         json.dump(enriched_products, f, indent=2, ensure_ascii=False)
         
-    print(f"💾 Sauvegardé dans {OUTPUT_CATALOG}")
+    with open(FALLBACK_JSON, "w", encoding="utf-8") as f:
+        json.dump(enriched_products, f, indent=2, ensure_ascii=False)
+        
+    print(f"💾 Sauvegardé dans {OUTPUT_CATALOG} et {FALLBACK_JSON}")
     return enriched_products
 
 if __name__ == "__main__":

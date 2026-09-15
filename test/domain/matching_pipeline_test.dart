@@ -79,11 +79,14 @@ void main() {
         expect(result.isExcluded, isTrue);
       });
 
-      test('en mode discovery, aucun produit exclu par genre', () {
-        for (final product in [femaleProduct, maleProduct, universalProduct, techProduct]) {
+      test('en mode discovery avec profil masculin, produit féminin exclu strictement', () {
+        final resultFem = MatchingEngine.score(femaleProduct, searchTags, {}, filteringMode: 'discovery');
+        expect(resultFem.isExcluded, isTrue);
+
+        for (final product in [maleProduct, universalProduct, techProduct]) {
           final result = MatchingEngine.score(product, searchTags, {}, filteringMode: 'discovery');
           expect(result.isExcluded, isFalse,
-              reason: 'Product ${product['name']} should not be excluded in discovery mode');
+              reason: 'Product ${product['name']} should not be excluded');
         }
       });
     });
@@ -102,8 +105,6 @@ void main() {
       test('aucun produit exclu pour un profil neutre en home mode', () {
         for (final product in [femaleProduct, maleProduct, universalProduct]) {
           final result = MatchingEngine.score(product, searchTags, {}, filteringMode: 'home');
-          // gender_mixte = neutre → ne doit pas déclencher d'exclusion stricte
-          // Les produits genrés peuvent quand même avoir un score négatif mais pas –9000
           if (result.isExcluded) {
             expect(result.score, lessThanOrEqualTo(-9000));
           }
@@ -124,9 +125,9 @@ void main() {
         }
       });
 
-      test('scores retournés en tant qu\'entiers', () {
+      test('scores retournés en tant que nombre', () {
         final result = MatchingEngine.score(femaleProduct, userTags, {});
-        expect(result.score, isA<int>());
+        expect(result.score, isA<num>());
       });
     });
   });

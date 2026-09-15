@@ -464,26 +464,15 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
 
   Widget _buildWelcomeMessage() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.auto_awesome,
-            color: Color(0xFFFBBF24),
-            size: 18,
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              'Sélectionne une personne pour voir ses cadeaux',
-              style: GoogleFonts.poppins(
-                color: Colors.white.withOpacity(0.75),
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+      child: Text(
+        context.tr('MES PROCHES', 'MY LOVED ONES'),
+        style: GoogleFonts.poppins(
+          color: Colors.white.withOpacity(0.60),
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.2,
+        ),
       ),
     );
   }
@@ -766,6 +755,37 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
     );
   }
 
+  String _formatProfileSubtitle(String rawRelation, String rawOccasion) {
+    // Nettoyer les emojis éventuels
+    final emojiRegex = RegExp(r'[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{1F1E6}-\u{1F1FF}]', unicode: true);
+    final relation = rawRelation.replaceAll(emojiRegex, '').replaceAll('✨', '').trim();
+    final occasion = rawOccasion.replaceAll(emojiRegex, '').replaceAll('✨', '').trim();
+
+    if (relation.isEmpty && occasion.isEmpty) return 'Profil personnalisé';
+    if (occasion.isEmpty) return relation;
+    if (relation.isEmpty) return occasion;
+
+    final lowerOcc = occasion.toLowerCase();
+    if (lowerOcc.contains('juste') || lowerOcc.contains('plaisir') || lowerOcc.contains('sans occasion')) {
+      return '$relation • Pour faire plaisir';
+    } else if (lowerOcc.contains('anniversaire')) {
+      return '$relation • Pour son anniversaire';
+    } else if (lowerOcc.contains('noël') || lowerOcc.contains('noel')) {
+      return '$relation • Pour Noël';
+    } else if (lowerOcc.contains('valentin')) {
+      return '$relation • Saint-Valentin';
+    } else if (lowerOcc.contains('naissance')) {
+      return '$relation • Naissance';
+    } else if (lowerOcc.contains('fête des mères') || lowerOcc.contains('fete des meres')) {
+      return '$relation • Fête des Mères';
+    } else if (lowerOcc.contains('fête des pères') || lowerOcc.contains('fete des peres')) {
+      return '$relation • Fête des Pères';
+    } else if (lowerOcc.contains('crémaillère') || lowerOcc.contains('cremaillere')) {
+      return '$relation • Pendaison de crémaillère';
+    }
+    return '$relation • $occasion';
+  }
+
   Widget _buildProfileInfo() {
     final profile = _model.currentProfile!;
 
@@ -837,12 +857,12 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 2),
                       Text(
-                        '${profile['relation']} à ${profile['occasion']}',
+                        _formatProfileSubtitle(profile['relation']?.toString() ?? '', profile['occasion']?.toString() ?? ''),
                         style: GoogleFonts.poppins(
                           fontSize: 13,
-                          color: Colors.white.withOpacity(0.6),
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white.withOpacity(0.65),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

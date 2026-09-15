@@ -9,7 +9,7 @@
 ///   3. Variation: deux appels identiques donnent des ordres légèrement différents
 ///   4. Personas: 6 profils types donnent des résultats pertinents
 import 'dart:math';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 // ─── Minimal stubs (évite d'importer Firebase dans les tests) ────────────────
 // On recopie la logique pure ici pour tests isolés
@@ -32,8 +32,7 @@ double _scoreProduct(Map<String, dynamic> product, Set<String> searchTags,
     } else if (pGender.contains('gender_mixte')) {
       s += 70;
     } else {
-      if (mode == 'person' || mode == 'home') return -10000;
-      s -= 80;
+      return -10000;
     }
   }
 

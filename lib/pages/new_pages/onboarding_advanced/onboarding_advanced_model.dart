@@ -122,10 +122,10 @@ class OnboardingAdvancedModel {
         'subtitle': 'Tu peux choisir plusieurs options !',
         'field': 'giftTypes',
         'options': [
-          '🎁 Cadeaux Physiques (Livres, Mode, Déco)',
-          '🎟️ Expériences & Activités (Spa, Voyages)',
-          '📦 Abonnements (Box, Magasines, Streaming)',
-          '❤️ Dons / Charité'
+          'Cadeaux physiques (Livres, Mode, Déco)',
+          'Expériences & Activités (Spa, Voyages)',
+          'Abonnements (Box, Magazines, Streaming)',
+          'Dons & Charité'
         ],
         'icon': '🛍️',
       },
@@ -137,10 +137,10 @@ class OnboardingAdvancedModel {
         'subtitle': 'Affinons la recherche',
         'field': 'personGender',
         'options': [
-          '👨‍🦱 Homme',
-          '👩‍🦱 Femme',
-          '🤝 Non-binaire',
-          '👶 Enfant',
+          'Homme',
+          'Femme',
+          'Non-binaire',
+          'Enfant',
         ],
         'icon': '👤',
       },
@@ -167,13 +167,13 @@ class OnboardingAdvancedModel {
         'question': 'L''occasion (Le "Pourquoi") ?',
         'field': 'occasion',
         'options': [
-          '🎂 Anniversaire',
-          '🎄 Noël',
-          '❤️ Saint Valentin',
-          '👶 Naissance',
-          '🎉 Fête des Mères/Pères',
-          '🥂 Pendaison de crémaillère',
-          '✨ Juste comme ça'
+          'Anniversaire',
+          'Noël',
+          'Saint Valentin',
+          'Naissance',
+          'Fête des Mères / Pères',
+          'Pendaison de crémaillère',
+          'Juste pour faire plaisir'
         ],
         'icon': '🥂',
       },
@@ -185,14 +185,14 @@ class OnboardingAdvancedModel {
         'subtitle': 'Choisis ton mode préféré',
         'field': 'personalityMode',
         'options': [
-          '💬 Essayer le mode vocal (Recommandé)',
-          '📝 Répondre aux questions (Classique)',
+          'Essayer le mode vocal (Recommandé)',
+          'Répondre aux questions (Classique)',
         ],
         'icon': '🗣️',
       }
     ];
 
-    if (answers['personalityMode'] == '💬 Essayer le mode vocal (Recommandé)') {
+    if (answers['personalityMode'] == 'Essayer le mode vocal (Recommandé)' || answers['personalityMode'] == '💬 Essayer le mode vocal (Recommandé)') {
       steps.add({
         'section': 'gift',
         'id': 'voiceRecording',
@@ -210,14 +210,14 @@ class OnboardingAdvancedModel {
         'subtitle': 'Sélection multiple possible',
         'field': 'recipientPersonality',
         'options': [
-          '🧗 L''Explorateur (Voyage, Nature, Aventure)',
-          '🛋️ Le Casanier (Déco, Cocooning, Lecture)',
-          '💻 Le Tech-Addict (Gadgets, Gaming)',
-          '👗 Le Fashioniste (Mode, Beauté)',
-          '🍷 L''Épicurien (Vin, Gastronomie)',
-          '🎨 Le Créatif (Art, Musique, DIY)',
-          '⚽ Le Sportif (Fitness, Compétition)',
-          '🧘 Le Zen (Bien-être, Spiritualité, Yoga)',
+          'L''Explorateur (Voyage, Nature, Aventure)',
+          'Le Casanier (Déco, Cocooning, Lecture)',
+          'Le Tech-Addict (Gadgets, Gaming)',
+          'Le Fashioniste (Mode, Beauté)',
+          'L''Épicurien (Vin, Gastronomie)',
+          'Le Créatif (Art, Musique, DIY)',
+          'Le Sportif (Fitness, Compétition)',
+          'Le Zen (Bien-être, Spiritualité, Yoga)',
         ],
         'icon': '🎭',
       });
@@ -230,12 +230,12 @@ class OnboardingAdvancedModel {
       'question': 'Le Budget (Filtre strict) ?',
       'field': 'budgetTier',
       'options': [
-        '💸 < 20€',
-        '💰 20€ - 50€',
-        '💎 50€ - 150€',
-        '👑 Luxe (> 150€)'
+        '< 20€',
+        '20€ - 50€',
+        '50€ - 150€',
+        'Luxe (> 150€)'
       ],
-      'icon': 'ðŸ’³',
+      'icon': '💳',
     });
 
     return steps;
@@ -393,6 +393,11 @@ class OnboardingAdvancedModel {
           'occasion': answers['occasion'],
           'recipientPersonality': answers['recipientPersonality'],
           'budgetTier': answers['budgetTier'],
+          'voiceDescription': answers['recipientPersonality'] is String
+              ? answers['recipientPersonality']
+              : (answers['voiceDescription'] ?? answers['vocalTranscript'] ?? answers['description']),
+          'interests': answers['interests'],
+          'passions': answers['passions'],
         };
 
         final personId = await FirebaseDataService.createPerson(

@@ -261,11 +261,12 @@ class _BrandFiltersWidgetState extends State<BrandFiltersWidget> {
               children: [
                 // Logo miniature
                 if (isAll)
-                  const Padding(
-                    padding: EdgeInsets.only(right: 5),
-                    child: Text(
-                      '✨',
-                      style: TextStyle(fontSize: 14),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 5),
+                    child: Icon(
+                      Icons.grid_view_rounded,
+                      size: 14,
+                      color: isActive ? Colors.white : primary,
                     ),
                   )
                 else if (localAsset != null)

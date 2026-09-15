@@ -205,7 +205,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
           });
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
-              saved ? 'Photo de profil mise à jour ✨' : 'Photo envoyée mais non enregistrée, réessaie',
+              saved ? 'Photo de profil mise à jour' : 'Photo envoyée mais non enregistrée, réessaie',
               style: GoogleFonts.outfit(),
             ),
             backgroundColor: saved ? const Color(0xFF8A2BE2) : const Color(0xFFE53935),
@@ -1951,7 +1951,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                       const Icon(Icons.refresh_rounded, color: Colors.white, size: 20),
                       const SizedBox(width: 10),
                       Text(
-                        'Recommencer l\'onboarding ✨',
+                        'Recommencer l\'onboarding',
                         style: GoogleFonts.poppins(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                     ],

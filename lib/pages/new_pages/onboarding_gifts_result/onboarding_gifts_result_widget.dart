@@ -259,9 +259,12 @@ class _OnboardingGiftsResultWidgetState
           }
         }
         final matchScore = product['_matchScore'];
-        final matchScoreInt = matchScore is int
-            ? matchScore
-            : (matchScore is double ? matchScore.toInt() : 0);
+        final isLive = product['is_live'] == true || product['from_api'] == true;
+        final matchScoreInt = isLive
+            ? 98
+            : (matchScore is int
+                ? matchScore
+                : (matchScore is double ? matchScore.toInt() : 0));
         return {
           'id': product['id'],
           'name': product['name'] ?? 'Produit',
@@ -274,6 +277,10 @@ class _OnboardingGiftsResultWidgetState
           'categories': product['categories'] ?? [],
           'match': matchScoreInt.clamp(0, 100),
           'fromWishlist': false,
+          'is_live': isLive,
+          'from_api': isLive,
+          'source': product['source'] ?? 'Google Shopping',
+          'description': product['description'] ?? '',
         };
       })
       .where((product) {
@@ -798,7 +805,7 @@ class _OnboardingGiftsResultWidgetState
           Expanded(
             child: _buildFilterChip(
               id: 'physical',
-              icon: '🎁',
+              iconData: Icons.inventory_2_outlined,
               title: context.tr('Cadeaux physiques', 'Physical gifts'),
               isSelected: _giftCategoryFilter == 'physical',
               onTap: () {
@@ -813,7 +820,7 @@ class _OnboardingGiftsResultWidgetState
           Expanded(
             child: _buildFilterChip(
               id: 'experience',
-              icon: '🎟️',
+              iconData: Icons.local_activity_outlined,
               title: context.tr('Expériences & Activités', 'Experiences & Activities'),
               isSelected: _giftCategoryFilter == 'experience',
               onTap: () {
@@ -831,7 +838,7 @@ class _OnboardingGiftsResultWidgetState
 
   Widget _buildFilterChip({
     required String id,
-    required String icon,
+    required IconData iconData,
     required String title,
     required bool isSelected,
     required VoidCallback onTap,
@@ -872,7 +879,11 @@ class _OnboardingGiftsResultWidgetState
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(icon, style: const TextStyle(fontSize: 13)),
+              Icon(
+                iconData,
+                size: 14,
+                color: isSelected ? violetColor : const Color(0xFF4B5563),
+              ),
               const SizedBox(width: 6),
               Flexible(
                 child: Text(

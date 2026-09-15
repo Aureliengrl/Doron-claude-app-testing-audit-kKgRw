@@ -119,7 +119,7 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Calendrier Apple synchronisé avec succès ! ✨',
+                    'Calendrier Apple synchronisé avec succès !',
                     style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500),
                   ),
                 ),
@@ -580,12 +580,12 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            e.title,
+                            e.title.replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{1F1E6}-\u{1F1FF}]', unicode: true), '').trim(),
                             style: GoogleFonts.poppins(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            label,
+                            label.replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{1F1E6}-\u{1F1FF}]', unicode: true), '').trim(),
                             style: GoogleFonts.poppins(color: e.color, fontSize: 12, fontWeight: FontWeight.w500),
                           ),
                         ],
@@ -617,13 +617,20 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: _pink.withOpacity(0.2),
-                          border: Border.all(color: _pink.withOpacity(0.5)),
+                          color: _pink.withOpacity(0.15),
+                          border: Border.all(color: _pink.withOpacity(0.4)),
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: Text(
-                          'Idées 🎁',
-                          style: GoogleFonts.poppins(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.card_giftcard_rounded, color: _pink, size: 13),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Idées',
+                              style: GoogleFonts.poppins(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                            ),
+                          ],
                         ),
                       ),
                     ),

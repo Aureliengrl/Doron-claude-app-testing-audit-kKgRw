@@ -1202,11 +1202,31 @@ class FirebaseDataService {
             .collection('users')
             .doc(currentUserId)
             .get(const GetOptions(source: Source.serverAndCache));
-        if (doc.exists && doc.data()?['profile']?['tags'] != null) {
-          AppLogger.firebase('Loaded user profile tags from Firebase');
-          _profileTagsCache = doc.data()!['profile']['tags'] as Map<String, dynamic>;
-          _profileTagsCacheTime = DateTime.now();
-          return _profileTagsCache;
+        if (doc.exists) {
+          final data = doc.data();
+          if (data != null) {
+            Map<String, dynamic> tags = {};
+            if (data['profile'] is Map && data['profile']['tags'] is Map) {
+              tags = Map<String, dynamic>.from(data['profile']['tags'] as Map);
+            } else if (data['tags'] is Map) {
+              tags = Map<String, dynamic>.from(data['tags'] as Map);
+            }
+            // Injecter prénom et genre si absents des tags mais présents dans le document
+            final firstName = data['firstName'] ?? data['displayName'] ?? data['name'] ?? (data['profile'] is Map ? data['profile']['firstName'] : null);
+            if (firstName != null && tags['firstName'] == null) {
+              tags['firstName'] = firstName.toString();
+            }
+            final gender = data['gender'] ?? data['sexe'] ?? (data['profile'] is Map ? (data['profile']['gender'] ?? data['profile']['sexe']) : null);
+            if (gender != null && tags['gender'] == null && tags['recipientGender'] == null) {
+              tags['gender'] = gender.toString();
+            }
+            if (tags.isNotEmpty) {
+              AppLogger.firebase('Loaded user profile tags from Firebase: ${tags.keys.join(", ")}');
+              _profileTagsCache = tags;
+              _profileTagsCacheTime = DateTime.now();
+              return _profileTagsCache;
+            }
+          }
         }
       } catch (e) {
         AppLogger.error('Error loading user profile tags from Firebase', 'Firebase', e);
