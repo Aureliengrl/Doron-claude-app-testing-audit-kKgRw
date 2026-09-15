@@ -5,8 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '/utils/iconly_compat.dart';
+import '/components/cached_image.dart';
 import '/services/friend_service.dart';
 import '/services/firebase_data_service.dart';
 import '/utils/app_tr.dart';
@@ -481,20 +481,8 @@ class _CreateChatBottomSheetState extends State<CreateChatBottomSheet> {
                                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                                   child: Row(
                                     children: [
-                                      // Avatar
-                                      CircleAvatar(
-                                        radius: 22,
-                                        backgroundColor: _violet.withOpacity(0.4),
-                                        backgroundImage: (photoUrl != null && photoUrl.isNotEmpty)
-                                            ? CachedNetworkImageProvider(photoUrl)
-                                            : null,
-                                        child: (photoUrl == null || photoUrl.isEmpty)
-                                            ? Text(
-                                                name.isNotEmpty ? name[0].toUpperCase() : '?',
-                                                style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),
-                                              )
-                                            : null,
-                                      ),
+                                      // Avatar unifié (même style partout dans l'app)
+                                      UserAvatar(photoUrl: photoUrl, name: name, radius: 22),
                                       const SizedBox(width: 14),
                                       // Nom
                                       Expanded(

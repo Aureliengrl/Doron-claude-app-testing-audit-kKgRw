@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'dart:async';
 import '/services/user_search_service.dart';
 import '/components/liquid_glass.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import '/components/cached_image.dart';
 
 class UserSearchBottomSheet extends StatefulWidget {
   const UserSearchBottomSheet({super.key});
@@ -175,23 +175,7 @@ class _UserSearchBottomSheetState extends State<UserSearchBottomSheet> {
             padding: const EdgeInsets.all(12),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 26,
-                  backgroundColor: _violetColor.withOpacity(0.3),
-                  backgroundImage: photoUrl.isNotEmpty
-                      ? CachedNetworkImageProvider(photoUrl)
-                      : null,
-                  child: photoUrl.isEmpty
-                      ? Text(
-                          displayName[0].toUpperCase(),
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                          ),
-                        )
-                      : null,
-                ),
+                UserAvatar(photoUrl: photoUrl, name: displayName, radius: 26),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(

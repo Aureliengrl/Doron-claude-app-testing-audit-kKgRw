@@ -122,10 +122,11 @@ class GroupGiftService {
     required String chatId,
     required String profileName,
     required double total,
-    required String splitType, // 'equal' | 'custom'
+    required String splitType, // 'equal' | 'custom' | 'open'
     required Map<String, double> shares,
     required Map<String, dynamic> payment,
     String currency = 'EUR',
+    DateTime? deadline,
   }) async {
     final uid = _uid;
     if (uid == null) throw Exception('Non connecté');
@@ -139,6 +140,7 @@ class GroupGiftService {
           'splitType': splitType,
           'startedAt': FieldValue.serverTimestamp(),
           'startedBy': uid,
+          if (deadline != null) 'deadline': Timestamp.fromDate(deadline),
         },
         'payment': payment,
       }, SetOptions(merge: true));
@@ -181,13 +183,18 @@ class GroupGiftService {
       });
       await batch.commit();
 
+      final deadlineText = deadline != null
+          ? ' Date limite pour le virement : ${deadline.day}/${deadline.month}/${deadline.year}.'
+          : '';
       await _db.collection('chats').doc(chatId).collection('messages').add({
         // Posté par l'hôte (participant du chat) — 'system' ne passerait pas
         // la règle Firestore pour un type non-'system'.
         'senderId': uid,
         'type': 'payment_request',
-        'text': '💰 La collecte est ouverte pour $profileName '
-            '(${total.toStringAsFixed(2)} $currency).',
+        'text': splitType == 'open'
+            ? '💰 Cagnotte ouverte pour $profileName : chacun donne ce qu\'il veut !$deadlineText'
+            : '💰 La collecte est ouverte pour $profileName '
+                '(${total.toStringAsFixed(2)} $currency).$deadlineText',
         'total': total,
         'currency': currency,
         'timestamp': FieldValue.serverTimestamp(),
@@ -209,6 +216,119 @@ class GroupGiftService {
     await _db.collection('collaborations').doc(collabId).set({
       'collection': {'status': 'closed', 'closedAt': FieldValue.serverTimestamp()},
     }, SetOptions(merge: true));
+  }
+
+  /// L'hôte annule la cagnotte avant son terme (ex : erreur de sa part).
+  /// Distinct de [closeCollection] (clôture normale une fois tout le monde
+  /// payé) : ici la collecte est explicitement marquée comme annulée et les
+  /// participants sont prévenus qu'ils n'ont plus rien à payer.
+  static Future<void> cancelCollection({
+    required String collabId,
+    required String chatId,
+    required String profileName,
+  }) async {
+    final uid = _uid;
+    if (uid == null) throw Exception('Non connecté');
+
+    try {
+      await _db.collection('collaborations').doc(collabId).set({
+        'collection': {
+          'status': 'cancelled',
+          'cancelledAt': FieldValue.serverTimestamp(),
+          'cancelledBy': uid,
+        },
+      }, SetOptions(merge: true));
+
+      final label = '🛑 La cagnotte pour $profileName a été annulée par l\'hôte.';
+      await _db.collection('chats').doc(chatId).collection('messages').add({
+        'senderId': uid,
+        'type': 'collection_cancelled',
+        'text': label,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+      await _db.collection('chats').doc(chatId).set({
+        'lastMessage': label,
+        'lastMessageTime': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      AppLogger.debug('✅ GroupGift: cagnotte annulée sur $collabId', 'GroupGift');
+    } catch (e) {
+      AppLogger.debug('❌ GroupGift.cancelCollection: $e', 'GroupGift');
+      rethrow;
+    }
+  }
+
+  /// L'hôte ajoute ou modifie la date limite pour recevoir les virements.
+  /// Passer [deadline] à null retire la date limite.
+  static Future<void> updateDeadline({
+    required String collabId,
+    DateTime? deadline,
+  }) async {
+    await _db.collection('collaborations').doc(collabId).set({
+      'collection': {
+        'deadline': deadline != null ? Timestamp.fromDate(deadline) : FieldValue.delete(),
+      },
+    }, SetOptions(merge: true));
+  }
+
+  /// Cagnotte ouverte (mode 'open') : un participant déclare lui-même le
+  /// montant qu'il souhaite donner — pas de tarif imposé par l'hôte.
+  static Future<void> contributeOpenAmount({
+    required String collabId,
+    required String chatId,
+    required double amount,
+    required String myName,
+  }) async {
+    final uid = _uid;
+    if (uid == null) throw Exception('Non connecté');
+
+    try {
+      await _db
+          .collection('collaborations')
+          .doc(collabId)
+          .collection('participants')
+          .doc(uid)
+          .set({
+        'uid': uid,
+        'share': amount,
+        'status': 'declared',
+        'includedInSplit': true,
+        'updatedAt': FieldValue.serverTimestamp(),
+        'declaredAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      String? ownerId;
+      try {
+        final collab = await _db.collection('collaborations').doc(collabId).get();
+        ownerId = collab.data()?['ownerId'] as String?;
+      } catch (_) {}
+
+      await _db.collection('chats').doc(chatId).collection('messages').add({
+        'senderId': uid,
+        'type': 'payment_declared',
+        'text': '💸 $myName a proposé de donner ${amount.toStringAsFixed(2)} €.',
+        'targetUid': ownerId,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      if (ownerId != null && ownerId != uid) {
+        await _db.collection('notifications').doc(ownerId).collection('items').add({
+          'type': 'group_payment_declared',
+          'collabId': collabId,
+          'chatId': chatId,
+          'fromUid': uid,
+          'fromName': myName,
+          'title': '💸 Paiement déclaré',
+          'body': '$myName a envoyé ${amount.toStringAsFixed(2)} €. À confirmer.',
+          'read': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+      AppLogger.debug('✅ GroupGift: contribution libre de $uid ($amount)', 'GroupGift');
+    } catch (e) {
+      AppLogger.debug('❌ GroupGift.contributeOpenAmount: $e', 'GroupGift');
+      rethrow;
+    }
   }
 
   // ─── Cycle de paiement ───────────────────────────────────────────────────

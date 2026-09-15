@@ -457,46 +457,6 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
                 },
               ),
             ],
-            if (event.type == EventType.holiday) ...[
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () async {
-                  HapticFeedback.selectionClick();
-                  final prefs = await SharedPreferences.getInstance();
-                  String eventId = 'all';
-                  final title = event.title.toLowerCase();
-                  
-                  if (title.contains('valentin')) eventId = 'st_valentin';
-                  else if (title.contains('nationale')) eventId = 'fete_nationale';
-                  else if (title.contains('noël') || title.contains('noel')) eventId = 'noel';
-                  else if (title.contains('mères')) eventId = 'fete_meres';
-                  else if (title.contains('pères')) eventId = 'fete_peres';
-                  else if (title.contains('musique')) eventId = 'fete_musique';
-                  else if (title.contains('grand')) eventId = 'fete_grand_meres';
-                  else if (title.contains('halloween')) eventId = 'halloween';
-                  else if (title.contains('saint patrick')) eventId = 'saint_patrick';
-                  else if (title.contains('monde')) eventId = 'world_cup';
-                  
-                  if (eventId != 'all') {
-                    await prefs.setString('pending_event_filter', eventId);
-                  }
-                  
-                  if (mounted) {
-                    context.go('/home-pinterest');
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: _gold.withOpacity(0.15),
-                    border: Border.all(color: _gold.withOpacity(0.4)),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text('Idées',
-                    style: GoogleFonts.poppins(color: _gold, fontSize: 12, fontWeight: FontWeight.w600)),
-                ),
-              ),
-            ],
           ],
         ),
       ),
@@ -517,8 +477,10 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
 
     if (upcoming.isEmpty) return const SizedBox.shrink();
 
-    // Prendre les 8 prochains événements pour une vue toujours riche
-    final displayedUpcoming = upcoming.take(8).toList();
+    // Prendre les prochains événements (limite large pour ne pas masquer les
+    // événements créés par l'utilisateur derrière les fêtes par défaut,
+    // qui sont générées sur 2 ans et peuvent saturer une petite limite).
+    final displayedUpcoming = upcoming.take(30).toList();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
@@ -589,49 +551,6 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
                             style: GoogleFonts.poppins(color: e.color, fontSize: 12, fontWeight: FontWeight.w500),
                           ),
                         ],
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () async {
-                        HapticFeedback.selectionClick();
-                        final prefs = await SharedPreferences.getInstance();
-                        String eventId = 'all';
-                        final title = e.title.toLowerCase();
-                        if (title.contains('valentin')) eventId = 'st_valentin';
-                        else if (title.contains('nationale')) eventId = 'fete_nationale';
-                        else if (title.contains('noël') || title.contains('noel')) eventId = 'noel';
-                        else if (title.contains('mères')) eventId = 'fete_meres';
-                        else if (title.contains('pères')) eventId = 'fete_peres';
-                        else if (title.contains('musique')) eventId = 'fete_musique';
-                        else if (title.contains('grand')) eventId = 'fete_grand_meres';
-                        else if (title.contains('halloween')) eventId = 'halloween';
-                        else if (title.contains('saint patrick')) eventId = 'saint_patrick';
-                        else if (title.contains('monde')) eventId = 'world_cup';
-                        if (eventId != 'all') {
-                          await prefs.setString('pending_event_filter', eventId);
-                        }
-                        if (mounted) {
-                          context.go('/home-pinterest');
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: _pink.withOpacity(0.15),
-                          border: Border.all(color: _pink.withOpacity(0.4)),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.card_giftcard_rounded, color: _pink, size: 13),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Idées',
-                              style: GoogleFonts.poppins(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
-                            ),
-                          ],
-                        ),
                       ),
                     ),
                   ],

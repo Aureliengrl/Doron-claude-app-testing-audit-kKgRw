@@ -52,60 +52,74 @@ class FriendService {
   /// composite Firestore qui peut ne pas encore être actif.
   /// Le filtre sur status='pending' est appliqué côté client.
   static Stream<List<Map<String, dynamic>>> getPendingRequestsStream() {
-    final myUid = _myUid;
-    if (myUid == null) return Stream.value([]);
+    // Réagit aux changements d'état d'authentification plutôt que de figer
+    // définitivement le flux sur l'uid disponible au moment de l'appel :
+    // si l'utilisateur n'est pas encore connecté quand la page s'initialise,
+    // le flux bascule automatiquement dès que la connexion est établie.
+    return FirebaseAuth.instance.authStateChanges().asyncExpand((user) {
+      final myUid = user?.uid ?? _myUid;
+      if (myUid == null) return Stream.value(<Map<String, dynamic>>[]);
 
-    return _db
-        .collection('friend_requests')
-        .where('toUid', isEqualTo: myUid)
-        .snapshots()
-        .asyncMap((snap) async {
-      final requests = <Map<String, dynamic>>[];
-      try {
-        final pendingDocs = snap.docs.where((d) => d.data()['status'] == 'pending').toList();
-        for (final doc in pendingDocs) {
-          final data = doc.data();
-          final fromUid = data['fromUid'] as String?;
-          if (fromUid == null || fromUid.isEmpty) continue;
+      return _db
+          .collection('friend_requests')
+          .where('toUid', isEqualTo: myUid)
+          .snapshots()
+          .asyncMap((snap) async {
+        final requests = <Map<String, dynamic>>[];
+        try {
+          final pendingDocs = snap.docs.where((d) => d.data()['status'] == 'pending').toList();
+          // Récupère les profils des expéditeurs en parallèle (au lieu d'un
+          // await séquentiel par demande) pour qu'une lecture lente ne bloque
+          // pas l'affichage de toutes les autres demandes.
+          final results = await Future.wait(pendingDocs.map((doc) async {
+            final data = doc.data();
+            final fromUid = data['fromUid'] as String?;
+            if (fromUid == null || fromUid.isEmpty) return null;
 
-          String displayName = 'Utilisateur';
-          String handle = '';
-          String photoUrl = '';
+            String displayName = 'Utilisateur';
+            String handle = '';
+            String photoUrl = '';
 
-          try {
-            final senderDoc = await _db.collection('users').doc(fromUid).get();
-            if (senderDoc.exists) {
-              final sender = senderDoc.data() ?? {};
-              displayName = (sender['first_name'] as String?) ??
-                           (sender['display_name'] as String?) ??
-                           (sender['name'] as String?) ??
-                           ((sender['email'] as String? ?? '').split('@').first.isNotEmpty
-                               ? (sender['email'] as String).split('@').first
-                               : 'Utilisateur');
-              handle = (sender['handle'] as String?) ?? (sender['username'] as String?) ?? '';
-              photoUrl = (sender['photo_url'] as String?)?.isNotEmpty == true
-                  ? sender['photo_url'] as String
-                  : (sender['photoUrl'] as String?)?.isNotEmpty == true
-                      ? sender['photoUrl'] as String
-                      : (sender['photoURL'] as String?) ?? '';
+            try {
+              final senderDoc = await _db
+                  .collection('users')
+                  .doc(fromUid)
+                  .get()
+                  .timeout(const Duration(seconds: 6));
+              if (senderDoc.exists) {
+                final sender = senderDoc.data() ?? {};
+                displayName = (sender['first_name'] as String?) ??
+                             (sender['display_name'] as String?) ??
+                             (sender['name'] as String?) ??
+                             ((sender['email'] as String? ?? '').split('@').first.isNotEmpty
+                                 ? (sender['email'] as String).split('@').first
+                                 : 'Utilisateur');
+                handle = (sender['handle'] as String?) ?? (sender['username'] as String?) ?? '';
+                photoUrl = (sender['photo_url'] as String?)?.isNotEmpty == true
+                    ? sender['photo_url'] as String
+                    : (sender['photoUrl'] as String?)?.isNotEmpty == true
+                        ? sender['photoUrl'] as String
+                        : (sender['photoURL'] as String?) ?? '';
+              }
+            } catch (e) {
+              AppLogger.debug('getPendingRequestsStream: cannot load sender $fromUid: $e', 'FriendService');
             }
-          } catch (e) {
-            AppLogger.debug('getPendingRequestsStream: cannot load sender $fromUid: $e', 'FriendService');
-          }
 
-          requests.add({
-            'requestId': doc.id,
-            'fromUid': fromUid,
-            'displayName': displayName,
-            'handle': handle,
-            'photoUrl': photoUrl,
-            'createdAt': data['createdAt'],
-          });
+            return {
+              'requestId': doc.id,
+              'fromUid': fromUid,
+              'displayName': displayName,
+              'handle': handle,
+              'photoUrl': photoUrl,
+              'createdAt': data['createdAt'],
+            };
+          }));
+          requests.addAll(results.whereType<Map<String, dynamic>>());
+        } catch (e) {
+          AppLogger.debug('❌ getPendingRequestsStream asyncMap error: $e', 'FriendService');
         }
-      } catch (e) {
-        AppLogger.debug('❌ getPendingRequestsStream asyncMap error: $e', 'FriendService');
-      }
-      return requests;
+        return requests;
+      });
     }).asBroadcastStream();
   }
 

@@ -199,12 +199,30 @@ service cloud.firestore {
             request.auth.uid in collab().members
           );
         }
+        // Cagnotte ouverte : tout le monde donne le montant de son choix
+        // (pas de tarif imposé par l'hôte) — voir GroupGiftService.startCollection.
+        function isOpenPot() {
+          return collab().get('collection', {}).get('splitType', '') == 'open';
+        }
         allow read: if isCollabMember();
-        allow create: if isHost();
+        // En cagnotte ouverte, un membre peut créer SON propre document de
+        // contribution (l'hôte ne connaît pas le montant à l'avance).
+        allow create: if isHost() || (
+          isCollabMember() &&
+          participantUid == request.auth.uid &&
+          isOpenPot()
+        );
         allow update: if isHost() || (
           participantUid == request.auth.uid &&
-          request.resource.data.status == 'declared' &&
-          request.resource.data.share == resource.data.share
+          (
+            // Mode normal : le participant déclare avoir payé, sans toucher
+            // au montant fixé par l'hôte.
+            (request.resource.data.status == 'declared' &&
+             request.resource.data.share == resource.data.share) ||
+            // Cagnotte ouverte : le participant peut ajuster librement le
+            // montant qu'il souhaite donner.
+            (isOpenPot() && request.resource.data.status == 'declared')
+          )
         );
         allow delete: if isHost();
       }

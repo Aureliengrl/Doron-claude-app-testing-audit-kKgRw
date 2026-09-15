@@ -13,6 +13,7 @@ import '/components/liquid_glass_empty_state_widget.dart';
 import '/components/liquid_glass_loader.dart';
 import '/components/floating_cta_button.dart';
 import '/components/app_notch.dart';
+import '/components/cached_image.dart';
 import 'create_chat_bottom_sheet.dart';
 import '/services/firebase_data_service.dart';
 import '/utils/app_tr.dart';
@@ -488,27 +489,9 @@ class _ChatListPageState extends State<ChatListPage> {
                       ),
                       child: Row(
                         children: [
-                          // Avatar "” FIX C5: initiale affichée si pas de photo
+                          // Avatar unifié (même style partout dans l'app)
                           Container(
-                            width: 56,
-                            height: 56,
                             decoration: BoxDecoration(
-                              gradient: isGroup
-                                ? const RadialGradient(
-                                    colors: [Color(0xFF8A2BE2), Color(0xFF4A148C)])
-                                : photoUrl.isEmpty
-                                  ? LinearGradient(
-                                      colors: [
-                                        HSLColor.fromAHSL(1, (chatName.hashCode % 360).toDouble().abs(), 0.55, 0.45).toColor(),
-                                        HSLColor.fromAHSL(1, ((chatName.hashCode + 60) % 360).toDouble().abs(), 0.55, 0.35).toColor(),
-                                      ],
-                                    )
-                                  : null,
-                              color: (!isGroup && photoUrl.isNotEmpty) ? null : null,
-                              image: (!isGroup && photoUrl.isNotEmpty) ? DecorationImage(
-                                image: CachedNetworkImageProvider(photoUrl),
-                                fit: BoxFit.cover,
-                              ) : null,
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
@@ -518,20 +501,9 @@ class _ChatListPageState extends State<ChatListPage> {
                                 ),
                               ],
                             ),
-                            child: (!isGroup && photoUrl.isNotEmpty)
-                              ? null
-                              : Center(
-                                  child: isGroup
-                                    ? const Icon(IconlyBold.user2, color: Colors.white, size: 26)
-                                    : Text(
-                                        chatName.isNotEmpty ? chatName[0].toUpperCase() : '?',
-                                        style: GoogleFonts.poppins(
-                                          color: Colors.white,
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                ),
+                            child: isGroup
+                                ? const GroupAvatar(radius: 28)
+                                : UserAvatar(photoUrl: photoUrl, name: chatName, radius: 28),
                           ),
                           const SizedBox(width: 16),
                           // Infos

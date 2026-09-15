@@ -1,7 +1,9 @@
 import '/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import '/utils/iconly_compat.dart';
+import '/utils/user_display_helper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 // PERF AXE 3: Widget shimmer pour placeholder d'image — 4× plus fluide que CircularProgressIndicator
 class _ShimmerBox extends StatefulWidget {
@@ -455,6 +457,86 @@ class CachedCircleAvatar extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Avatar utilisateur unique pour toute l'app : même photo (mise en cache
+/// via [CachedCircleAvatar]) et **un seul** style de repli (initiale sur fond
+/// violet plein) partout où il n'y a pas de photo.
+///
+/// Remplace les implémentations "faites maison" dispersées entre les écrans
+/// (liste de conversations, en-tête de conversation, fiche profil, page
+/// amis, etc.) qui affichaient chacune une couleur/dégradé/icône différent
+/// pour la même personne.
+class UserAvatar extends StatelessWidget {
+  final String? photoUrl;
+  final String name;
+  final double radius;
+
+  static const _violet = Color(0xFF8A2BE2);
+
+  const UserAvatar({
+    super.key,
+    required this.photoUrl,
+    required this.name,
+    this.radius = 20,
+  });
+
+  /// Construit l'avatar directement à partir d'un document Firestore user
+  /// (ou de toute Map contenant les champs habituels photo/nom).
+  factory UserAvatar.fromData(Map<String, dynamic>? data, {double radius = 20}) {
+    return UserAvatar(
+      photoUrl: UserDisplayHelper.getPhotoUrl(data),
+      name: UserDisplayHelper.getName(data),
+      radius: radius,
+    );
+  }
+
+  String get _initials {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return '?';
+    final parts = trimmed.split(RegExp(r'\s+'));
+    if (parts.length >= 2 && parts[0].isNotEmpty && parts[1].isNotEmpty) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return trimmed[0].toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CachedCircleAvatar(
+      photoUrl: photoUrl,
+      radius: radius,
+      backgroundColor: _violet,
+      fallback: Text(
+        _initials,
+        style: GoogleFonts.poppins(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: radius * 0.8,
+        ),
+      ),
+    );
+  }
+}
+
+/// Avatar "groupe" unique pour toute l'app (icône, jamais une photo/initiale)
+/// — remplace les 3 dégradés+icônes redéfinis séparément par écran.
+class GroupAvatar extends StatelessWidget {
+  final double radius;
+  const GroupAvatar({super.key, this.radius = 20});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: radius * 2,
+      height: radius * 2,
+      decoration: const BoxDecoration(
+        gradient: RadialGradient(colors: [Color(0xFF8A2BE2), Color(0xFF4A148C)]),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(IconlyBold.user2, color: Colors.white, size: radius),
     );
   }
 }

@@ -144,11 +144,8 @@ class _SecretSantaWishlistPageState extends State<SecretSantaWishlistPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 40),
-                      CachedCircleAvatar(
-                        photoUrl: photo,
-                        radius: 44,
-                        backgroundColor: _violet.withOpacity(0.3),
-                      ).animate().scale(duration: 500.ms, curve: Curves.elasticOut),
+                      UserAvatar(photoUrl: photo, name: name, radius: 44)
+                          .animate().scale(duration: 500.ms, curve: Curves.elasticOut),
                       const SizedBox(height: 12),
                       Text(name,
                           style: GoogleFonts.poppins(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold))

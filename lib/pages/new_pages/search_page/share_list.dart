@@ -4,11 +4,12 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '/services/firebase_data_service.dart';
 import '/components/liquid_glass.dart';
+import '/components/cached_image.dart';
+import '/components/collab_success_dialog.dart';
 import '/services/friend_service.dart';
 import '/services/collaboration_service.dart';
 import '/pages/new_pages/search_page/search_page_model.dart';
@@ -223,154 +224,37 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
   }
 
   void _showCollabSuccessDialog(String friendName, String profileName) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dCtx) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-        child: Container(
-          padding: const EdgeInsets.all(28),
-          decoration: BoxDecoration(
-            color: const Color(0xFF130E26),
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: _pink.withOpacity(0.4), width: 1.5),
-            boxShadow: [
-              BoxShadow(
-                color: _pink.withOpacity(0.25),
-                blurRadius: 30,
-                spreadRadius: 2,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Icône festive animée
-              Container(
-                width: 84,
-                height: 84,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [_violet, _pink],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: _pink.withOpacity(0.4),
-                      blurRadius: 20,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: const Center(
-                  child: Text('🎉', style: TextStyle(fontSize: 42)),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Félicitations !',
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 10),
-              RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  style: GoogleFonts.poppins(color: Colors.white70, fontSize: 15, height: 1.4),
-                  children: [
-                    TextSpan(
-                      text: friendName,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                    const TextSpan(text: ' a rejoint la collaboration pour '),
-                    TextSpan(
-                      text: profileName,
-                      style: const TextStyle(color: _pink, fontWeight: FontWeight.bold),
-                    ),
-                    const TextSpan(text: ' ! 🎁'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Vous pouvez dès maintenant échanger vos idées cadeaux et organiser vos achats ensemble.',
-                style: GoogleFonts.poppins(color: Colors.white38, fontSize: 12),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              // Bouton Principal Grand CTA vers la discussion
-              SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [_violet, _pink],
-                    ),
-                    borderRadius: BorderRadius.circular(18),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _pink.withOpacity(0.4),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.pop(dCtx); // Ferme le dialog
-                      Navigator.pop(context, _chatId); // Ferme le bottom sheet avec le chatId
-                      if (_chatId != null) {
-                        context.push('/chat-room/$_chatId', extra: {
-                          'id': _chatId,
-                          'name': 'Cadeaux pour $profileName',
-                          'isGroup': true,
-                        });
-                      }
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.chat_bubble_outline_rounded, color: Colors.white, size: 20),
-                        const SizedBox(width: 10),
-                        Text(
-                          'Rejoindre la discussion 💬',
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              // Bouton secondaire pour rester sur le sheet
-              TextButton(
-                onPressed: () => Navigator.pop(dCtx),
-                child: Text(
-                  'Inviter d\'autres amis',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white54,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
+    showCollabWelcomeDialog(
+      context,
+      message: RichText(
+        textAlign: TextAlign.center,
+        text: TextSpan(
+          style: GoogleFonts.poppins(color: Colors.white70, fontSize: 15, height: 1.4),
+          children: [
+            TextSpan(
+              text: friendName,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            const TextSpan(text: ' a rejoint la collaboration pour '),
+            TextSpan(
+              text: profileName,
+              style: const TextStyle(color: _pink, fontWeight: FontWeight.bold),
+            ),
+            const TextSpan(text: ' ! 🎁'),
+          ],
         ),
       ),
+      secondaryLabel: 'Inviter d\'autres amis',
+      onOpenChat: () {
+        Navigator.pop(context, _chatId); // Ferme le bottom sheet avec le chatId
+        if (_chatId != null) {
+          context.push('/chat-room/$_chatId', extra: {
+            'id': _chatId,
+            'name': 'Cadeaux pour $profileName',
+            'isGroup': true,
+          });
+        }
+      },
     );
   }
 
@@ -665,15 +549,7 @@ class _ShareListBottomSheetState extends State<ShareListBottomSheet>
             ),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 22,
-                  backgroundColor: _violet.withOpacity(0.3),
-                  backgroundImage: photoUrl.isNotEmpty ? CachedNetworkImageProvider(photoUrl) : null,
-                  child: photoUrl.isEmpty
-                      ? Text(name.isNotEmpty ? name[0].toUpperCase() : '?',
-                          style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold))
-                      : null,
-                ),
+                UserAvatar(photoUrl: photoUrl, name: name, radius: 22),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(name, style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),

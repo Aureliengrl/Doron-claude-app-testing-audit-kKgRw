@@ -17,6 +17,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import '/components/liquid_glass.dart';
 import '/components/liquid_glass_loader.dart';
+import '/components/cached_image.dart';
 import '/components/product_detail_modal.dart';
 import '/services/firebase_data_service.dart';
 import '/pages/new_pages/occasion_question_page.dart'; // F6: flow questionnaire complet
@@ -381,34 +382,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
             icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
             onPressed: () => context.pop(),
           ),
-          // Avatar : vrai photo pour 1-to-1, icône groupe sinon
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: (!isGroup && photoUrl.isEmpty) ? RadialGradient(
-                colors: [const Color(0xFFEC4899), const Color(0xFF9C27B0)],
-              ) : (isGroup ? RadialGradient(
-                colors: [const Color(0xFF8A2BE2), const Color(0xFF4A148C)],
-              ) : null),
-              image: (!isGroup && photoUrl.isNotEmpty)
-                  ? DecorationImage(
-                      image: CachedNetworkImageProvider(photoUrl),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
-            ),
-            child: (isGroup || photoUrl.isEmpty)
-                ? Center(
-                    child: Icon(
-                      isGroup ? IconlyBold.user2 : IconlyLight.profile,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  )
-                : null,
-          ),
+          // Avatar unifié (même style partout dans l'app) : vrai photo pour
+          // 1-to-1, icône groupe sinon.
+          isGroup
+              ? const GroupAvatar(radius: 20)
+              : UserAvatar(photoUrl: photoUrl, name: displayName, radius: 20),
           const SizedBox(width: 12),
           // S11 FIX: tapper sur avatar/nom pour acceder au profil de l'interlocuteur
           Expanded(
@@ -475,23 +453,23 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               ),
             ),
           ),
-          // Bouton cadeau 🎁 pour accéder directement aux idées de la personne liée
+          // Bouton cadeau 🎁 : uniquement affiché si cette conversation est
+          // liée à une collaboration/liste (sinon il n'y a rien à montrer).
           Builder(builder: (ctx) {
             final linkedProfileId = _effectiveChatData?['linkedProfileId']?.toString() ??
                 _effectiveChatData?['profileId']?.toString() ??
                 _effectiveChatData?['personId']?.toString();
+            if (linkedProfileId == null || linkedProfileId.isEmpty) {
+              return const SizedBox.shrink();
+            }
             return IconButton(
               icon: const Text('🎁', style: TextStyle(fontSize: 20)),
               tooltip: 'Voir les cadeaux',
               onPressed: () {
-                if (linkedProfileId != null && linkedProfileId.isNotEmpty) {
-                  context.go('/search-page?profileId=$linkedProfileId', extra: {
-                    'selectedProfileId': linkedProfileId,
-                    'profileId': linkedProfileId,
-                  });
-                } else {
-                  context.go('/search-page');
-                }
+                context.go('/search-page?profileId=$linkedProfileId', extra: {
+                  'selectedProfileId': linkedProfileId,
+                  'profileId': linkedProfileId,
+                });
               },
             );
           }),

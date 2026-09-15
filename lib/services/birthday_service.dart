@@ -91,20 +91,21 @@ class BirthdayService {
 
     return [
       _holiday(year, 1, 1,  'Jour de l\'An', '🎊'),
-      _holiday(year, 1, 6,  'Épiphanie', '👑'),       // Galette des Rois
       _holiday(year, 2, 14, 'Saint-Valentin', '❤️'),
       // Pâques (dimanche) — gardé car échange de chocolats/cadeaux
       {'date': easter, 'title': 'Pâques', 'emoji': '🐣', 'type': 'holiday'},
       // Fête des Mères = 2e dimanche de mai (ou 1er dimanche de juin si Pentecôte)
       {'date': _mothersDayFrance(year), 'title': 'Fête des Mères', 'emoji': '💐', 'type': 'holiday'},
-      _holiday(year, 6, 21, 'Fête de la Musique', '🎵'),
+      // Fête des Grand-mères = 1er dimanche de mars
+      {'date': _nthWeekdayOfMonth(year, 3, DateTime.sunday, 1), 'title': 'Fête des Grand-mères', 'emoji': '👵', 'type': 'holiday'},
       // Fête des Pères = 3e dimanche de juin
       {'date': _fathersDayFrance(year), 'title': 'Fête des Pères', 'emoji': '🎁', 'type': 'holiday'},
       _holiday(year, 7, 14, 'Fête Nationale', '🇫🇷'),
+      // Fête des Grands-pères = 1er dimanche d'octobre
+      {'date': _nthWeekdayOfMonth(year, 10, DateTime.sunday, 1), 'title': 'Fête des Grands-pères', 'emoji': '👴', 'type': 'holiday'},
       _holiday(year, 10, 31,'Halloween', '🎃'),
       _holiday(year, 11, 1, 'Toussaint', '🕯️'),
       _holiday(year, 12, 25,'Noël', '🎄'),
-      _holiday(year, 12, 26,'Lendemain de Noël', '🎁'),
       _holiday(year, 12, 31,'Réveillon', '🥂'),
     ];
   }
@@ -309,7 +310,7 @@ class BirthdayService {
     if (myBirthday != null) {
       for (final y in [now.year, now.year + 1]) {
         addEvent(DateTime(y, myBirthday['month']!, myBirthday['day']!),
-          const CalendarEvent(title: 'Mon anniversaire 🎂', type: EventType.myBirthday, emoji: '🎂'));
+          const CalendarEvent(title: 'Mon anniversaire', type: EventType.myBirthday, emoji: '🎂'));
       }
     }
 
@@ -319,7 +320,7 @@ class BirthdayService {
       for (final y in [now.year, now.year + 1]) {
         final d = DateTime(y, friend['month'] as int, friend['day'] as int);
         addEvent(d, CalendarEvent(
-          title: '${friend['name']} 🎁',
+          title: friend['name'] as String,
           type: EventType.friendBirthday,
           emoji: '🎁',
           uid: friend['uid'] as String,
@@ -336,7 +337,7 @@ class BirthdayService {
         final d = DateTime(y, ce['month'] as int, ce['day'] as int);
         addEvent(d, CalendarEvent(
           id: ce['id'] as String?,
-          title: '${ce['emoji']} ${ce['title']}',
+          title: ce['title'] as String,
           type: EventType.customEvent,
           emoji: ce['emoji'] as String,
         ));
@@ -349,7 +350,7 @@ class BirthdayService {
       for (final h in holidays) {
         final date = h['date'] as DateTime;
         addEvent(date, CalendarEvent(
-          title: '${h['emoji']} ${h['title']}',
+          title: h['title'] as String,
           type: EventType.holiday,
           emoji: h['emoji'] as String,
         ));

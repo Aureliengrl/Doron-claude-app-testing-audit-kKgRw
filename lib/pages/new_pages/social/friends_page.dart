@@ -5,9 +5,10 @@ import '/utils/iconly_compat.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/components/liquid_glass.dart';
+import '/components/cached_image.dart';
+import '/components/collab_success_dialog.dart';
 import '/services/user_search_service.dart';
 import '/services/friend_service.dart';
 import '/services/collaboration_service.dart';
@@ -57,6 +58,10 @@ class _FriendsPageState extends State<FriendsPage>
   Stream<List<Map<String, dynamic>>>? _requestsStream;
   List<Map<String, dynamic>> _pendingRequests = [];
   final Set<String> _processingRequestIds = {};
+  // Garde-fou : si aucun des deux flux (demandes / invitations collab) n'a
+  // émis après ce délai, on arrête d'afficher le spinner indéfiniment et on
+  // affiche l'état vide/le contenu déjà connu à la place.
+  bool _requestsLoadTimedOut = false;
 
   // Invitations de collaboration reçues
   Stream<List<Map<String, dynamic>>>? _collabInvitesStream;
@@ -77,6 +82,13 @@ class _FriendsPageState extends State<FriendsPage>
     _requestsStream = FriendService.getPendingRequestsStream();
     // Stream des invitations de collaboration reçues
     _collabInvitesStream = CollaborationService.getMyPendingCollabInvitesStream();
+    // Garde-fou anti-spinner-infini : si rien n'est arrivé après 10s, on
+    // arrête d'attendre et on affiche l'état vide au lieu de tourner.
+    Future.delayed(const Duration(seconds: 10), () {
+      if (mounted && !_requestsLoadTimedOut) {
+        setState(() => _requestsLoadTimedOut = true);
+      }
+    });
     // Charger l'historique de recherche
     _loadSearchHistory();
     // Précharger les suggestions en arrière-plan
@@ -255,15 +267,21 @@ class _FriendsPageState extends State<FriendsPage>
           _processingCollabIds.remove(inviteId);
           _pendingCollabInvites.removeWhere((i) => i['inviteId'] == inviteId);
         });
-        _showSnack('🎉 Tu as rejoint la liste !', _green);
         final chatId = result['chatId'] as String?;
         final profileName = result['profileName'] as String? ?? 'la liste';
-        if (chatId != null) {
-          context.push('/chat-room/$chatId', extra: {
-            'name': 'Cadeaux pour $profileName',
-            'isGroup': true,
-          });
-        }
+        // Même écran de félicitations que lorsque le propriétaire ajoute
+        // directement un ami, pour une expérience cohérente.
+        showCollabWelcomeDialog(
+          context,
+          message: Text(
+            'Tu as rejoint la collaboration pour $profileName ! 🎁',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(color: Colors.white70, fontSize: 15, height: 1.4),
+          ),
+          chatId: chatId,
+          chatName: 'Cadeaux pour $profileName',
+          secondaryLabel: 'Plus tard',
+        );
       }
     } catch (_) {
       if (mounted) setState(() => _processingCollabIds.remove(inviteId));
@@ -428,6 +446,8 @@ class _FriendsPageState extends State<FriendsPage>
                       hintText: 'Rechercher par @pseudo ou prénom"¦',
                       hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 14),
                       border: InputBorder.none,
+                      filled: false,
+                      fillColor: Colors.transparent,
                     ),
                   ),
                 ),
@@ -564,15 +584,7 @@ class _FriendsPageState extends State<FriendsPage>
                   onTap: () => _openProfile(uid),
                   child: Stack(
                     children: [
-                      CircleAvatar(
-                        radius: 26,
-                        backgroundColor: _violet.withOpacity(0.3),
-                        backgroundImage: photoUrl.isNotEmpty ? CachedNetworkImageProvider(photoUrl) : null,
-                        child: photoUrl.isEmpty
-                            ? Text(name[0].toUpperCase(),
-                                style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white))
-                            : null,
-                      ),
+                      UserAvatar(photoUrl: photoUrl, name: name, radius: 26),
                       StreamBuilder<DocumentSnapshot>(
                         stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
                         builder: (ctx, snap) {
@@ -854,15 +866,7 @@ class _FriendsPageState extends State<FriendsPage>
           child: Row(
             children: [
               // Avatar
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: _violet.withOpacity(0.3),
-                backgroundImage: photoUrl.isNotEmpty ? CachedNetworkImageProvider(photoUrl) : null,
-                child: photoUrl.isEmpty
-                    ? Text(name[0].toUpperCase(),
-                        style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white))
-                    : null,
-              ),
+              UserAvatar(photoUrl: photoUrl, name: name, radius: 24),
               const SizedBox(width: 12),
               // Infos
               Expanded(
@@ -1061,15 +1065,7 @@ class _FriendsPageState extends State<FriendsPage>
                 Row(
                   children: [
                     // Avatar
-                    CircleAvatar(
-                      radius: 26,
-                      backgroundColor: _pink.withOpacity(0.3),
-                      backgroundImage: photoUrl.isNotEmpty ? CachedNetworkImageProvider(photoUrl) : null,
-                      child: photoUrl.isEmpty
-                          ? Text(name[0].toUpperCase(),
-                              style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white))
-                          : null,
-                    ),
+                    UserAvatar(photoUrl: photoUrl, name: name, radius: 26),
                     const SizedBox(width: 14),
                     // Infos
                     Expanded(
@@ -1275,7 +1271,16 @@ class _FriendsPageState extends State<FriendsPage>
             final friendRequests = friendSnap.data ?? _pendingRequests;
             final collabInvites = collabSnap.data ?? _pendingCollabInvites;
 
-            if (friendSnap.connectionState == ConnectionState.waiting && friendRequests.isEmpty && collabInvites.isEmpty) {
+            // On n'affiche le spinner que tant qu'AUCUN des deux flux n'a encore
+            // émis (état initial). Dès que l'un des deux répond, on montre son
+            // contenu (vide ou non) plutôt que de rester bloqué en chargement
+            // en attendant l'autre indéfiniment.
+            final stillWaitingForBoth =
+                friendSnap.connectionState == ConnectionState.waiting &&
+                collabSnap.connectionState == ConnectionState.waiting &&
+                friendRequests.isEmpty &&
+                collabInvites.isEmpty;
+            if (stillWaitingForBoth && !_requestsLoadTimedOut) {
               return const Center(child: CircularProgressIndicator(color: _violet, strokeWidth: 2));
             }
 
@@ -1362,15 +1367,7 @@ class _FriendsPageState extends State<FriendsPage>
             // Avatar cliquable
             GestureDetector(
               onTap: () => _openProfile(fromUid),
-              child: CircleAvatar(
-                radius: 26,
-                backgroundColor: _violet.withOpacity(0.3),
-                backgroundImage: photoUrl.isNotEmpty ? CachedNetworkImageProvider(photoUrl) : null,
-                child: photoUrl.isEmpty
-                    ? Text(name[0].toUpperCase(),
-                        style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white))
-                    : null,
-              ),
+              child: UserAvatar(photoUrl: photoUrl, name: name, radius: 26),
             ),
             const SizedBox(width: 14),
             // Infos
@@ -1457,15 +1454,7 @@ class _FriendsPageState extends State<FriendsPage>
         ),
         child: Row(
           children: [
-            CircleAvatar(
-              radius: 26,
-              backgroundColor: amber.withOpacity(0.3),
-              backgroundImage: fromPhotoUrl.isNotEmpty ? CachedNetworkImageProvider(fromPhotoUrl) : null,
-              child: fromPhotoUrl.isEmpty
-                  ? Text(fromName[0].toUpperCase(),
-                      style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white))
-                  : null,
-            ),
+            UserAvatar(photoUrl: fromPhotoUrl, name: fromName, radius: 26),
             const SizedBox(width: 14),
             Expanded(
               child: Column(

@@ -52,6 +52,16 @@ class _GroupGiftPageState extends State<GroupGiftPage> {
 
   String _eur(num v) => '${v.toStringAsFixed(2)} €';
 
+  // Persistant (et non recréé à chaque rebuild du StreamBuilder) pour ne pas
+  // perdre la saisie de l'utilisateur en cagnotte ouverte.
+  final TextEditingController _openAmountCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _openAmountCtrl.dispose();
+    super.dispose();
+  }
+
   // ─── Actions hôte ─────────────────────────────────────────────────────────
 
   Future<void> _pickRetained(Map<String, dynamic> gift) async {
@@ -300,6 +310,7 @@ class _GroupGiftPageState extends State<GroupGiftPage> {
               .map((e) => e.toString())
               .toList();
           final collectionOpen = (collection?['status'] == 'open');
+          final collectionCancelled = (collection?['status'] == 'cancelled');
 
           return StreamBuilder<List<Map<String, dynamic>>>(
             stream: GroupGiftService.participantsStream(widget.collabId),
@@ -310,9 +321,16 @@ class _GroupGiftPageState extends State<GroupGiftPage> {
                 children: [
                   _roleBanner(),
                   const SizedBox(height: 16),
-                  _retainedSection(retained, collectionOpen),
+                  _retainedSection(retained, collectionOpen || collectionCancelled),
                   const SizedBox(height: 20),
-                  if (collectionOpen)
+                  if (collectionCancelled)
+                    _infoCard(
+                      Icons.cancel_outlined,
+                      context.tr('Cagnotte annulée', 'Pot cancelled'),
+                      context.tr('L\'hôte a annulé cette cagnotte. Plus rien à payer.',
+                          'The host cancelled this pot. Nothing left to pay.'),
+                    )
+                  else if (collectionOpen)
                     _collectionSection(collection!, payment, participants)
                   else if (_isHost && retained != null)
                     _launchCollectionCta(retained, members),
@@ -507,12 +525,14 @@ class _GroupGiftPageState extends State<GroupGiftPage> {
     Map<String, dynamic> payment,
     List<Map<String, dynamic>> participants,
   ) {
+    final isOpen = collection['splitType'] == 'open';
     final total = (collection['total'] as num?)?.toDouble() ?? 0;
     final confirmed = participants.where((p) => p['status'] == 'confirmed').toList();
     final collected =
         confirmed.fold<double>(0, (s, p) => s + ((p['share'] as num?)?.toDouble() ?? 0));
     final myPart = participants.where((p) => p['uid'] == (FirebaseDataService.currentUserId ?? currentUserUid)).toList();
     final mine = myPart.isEmpty ? null : myPart.first;
+    final deadline = (collection['deadline'] as Timestamp?)?.toDate();
 
     return Column(children: [
       // Vue d'ensemble (toujours visible)
@@ -528,33 +548,258 @@ class _GroupGiftPageState extends State<GroupGiftPage> {
             Text(context.tr('Avancement', 'Progress'),
                 style: GoogleFonts.poppins(
                     fontSize: 13, color: Colors.white60, fontWeight: FontWeight.w600)),
-            Text('${confirmed.length}/${participants.length} · ${_eur(collected)} / ${_eur(total)}',
+            Text(
+                isOpen
+                    ? '${participants.length} · ${_eur(collected)}'
+                    : '${confirmed.length}/${participants.length} · ${_eur(collected)} / ${_eur(total)}',
                 style: GoogleFonts.poppins(
                     fontSize: 13, color: Colors.white, fontWeight: FontWeight.w700)),
           ]),
-          const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: LinearProgressIndicator(
-              value: total == 0 ? 0 : (collected / total).clamp(0, 1),
-              minHeight: 8,
-              backgroundColor: Colors.white12,
-              valueColor: const AlwaysStoppedAnimation(_green),
+          if (!isOpen) ...[
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: total == 0 ? 0 : (collected / total).clamp(0, 1),
+                minHeight: 8,
+                backgroundColor: Colors.white12,
+                valueColor: const AlwaysStoppedAnimation(_green),
+              ),
             ),
-          ),
+          ],
         ]),
       ),
+      if (deadline != null) ...[
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: _amber.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _amber.withOpacity(0.4)),
+          ),
+          child: Row(children: [
+            const Icon(Icons.event_rounded, color: _amber, size: 18),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                context.tr(
+                    'Date limite pour le virement : ${deadline.day}/${deadline.month}/${deadline.year}',
+                    'Deadline to send payment: ${deadline.day}/${deadline.month}/${deadline.year}'),
+                style: GoogleFonts.poppins(fontSize: 12.5, color: _amber, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ]),
+        ),
+      ],
       const SizedBox(height: 16),
-      // Bloc « ma part » (participant redevable)
-      if (!_isHost && mine != null) _myPartCard(mine, payment),
-      if (_isHost)
+      // Bloc « ma part » (participant redevable, ou saisie libre en cagnotte ouverte)
+      if (!_isHost && isOpen) _myOpenContributionCard(mine, payment),
+      if (!_isHost && !isOpen && mine != null) _myPartCard(mine, payment),
+      if (_isHost) ...[
         Align(
           alignment: Alignment.centerLeft,
           child: Text(context.tr('Participants', 'Participants'),
               style: GoogleFonts.poppins(
                   fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white)),
         ),
+        const SizedBox(height: 12),
+        _hostCollectionControls(collection),
+      ],
     ]);
+  }
+
+  /// Contrôles réservés à l'hôte : annuler la cagnotte, gérer la date limite.
+  Widget _hostCollectionControls(Map<String, dynamic> collection) {
+    final status = (collection['status'] ?? 'open').toString();
+    if (status != 'open') return const SizedBox.shrink();
+    final deadline = (collection['deadline'] as Timestamp?)?.toDate();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Wrap(spacing: 8, runSpacing: 8, children: [
+        OutlinedButton.icon(
+          onPressed: () => _editDeadline(deadline),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: _amber,
+            side: BorderSide(color: _amber.withOpacity(0.5)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          ),
+          icon: const Icon(Icons.event_rounded, size: 18),
+          label: Text(
+            deadline == null
+                ? context.tr('Ajouter une date limite', 'Add a deadline')
+                : context.tr('Modifier la date limite', 'Edit the deadline'),
+            style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600),
+          ),
+        ),
+        OutlinedButton.icon(
+          onPressed: _confirmCancelCollection,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Colors.red.shade300,
+            side: BorderSide(color: Colors.red.shade300.withOpacity(0.5)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          ),
+          icon: const Icon(Icons.cancel_outlined, size: 18),
+          label: Text(context.tr('Annuler la cagnotte', 'Cancel the pot'),
+              style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600)),
+        ),
+      ]),
+    );
+  }
+
+  Future<void> _editDeadline(DateTime? current) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: current ?? DateTime.now().add(const Duration(days: 14)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (picked == null) return;
+    try {
+      await GroupGiftService.updateDeadline(collabId: widget.collabId, deadline: picked);
+      _toast(context.tr('Date limite mise à jour', 'Deadline updated'));
+    } catch (_) {
+      _toast(context.tr('Erreur, réessaie', 'Something went wrong'), error: true);
+    }
+  }
+
+  Future<void> _confirmCancelCollection() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: _card,
+        title: Text(context.tr('Annuler la cagnotte ?', 'Cancel the pot?'),
+            style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w700)),
+        content: Text(
+          context.tr(
+              'Les participants seront prévenus qu\'ils n\'ont plus rien à payer. Cette action est irréversible.',
+              'Participants will be told they no longer need to pay. This cannot be undone.'),
+          style: GoogleFonts.poppins(color: Colors.white70, fontSize: 13.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(context.tr('Retour', 'Back'), style: GoogleFonts.poppins(color: Colors.white54)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(context.tr('Annuler la cagnotte', 'Cancel the pot'),
+                style: GoogleFonts.poppins(color: Colors.red.shade300, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await GroupGiftService.cancelCollection(
+        collabId: widget.collabId,
+        chatId: widget.chatId,
+        profileName: widget.profileName,
+      );
+      _toast(context.tr('Cagnotte annulée', 'Pot cancelled'));
+    } catch (_) {
+      _toast(context.tr('Erreur, réessaie', 'Something went wrong'), error: true);
+    }
+  }
+
+  /// Carte de saisie libre pour la cagnotte ouverte (mode participant).
+  Widget _myOpenContributionCard(Map<String, dynamic>? mine, Map<String, dynamic> payment) {
+    final status = (mine?['status'] ?? 'due').toString();
+    final amount = (mine?['share'] as num?)?.toDouble() ?? 0;
+    final confirmed = status == 'confirmed';
+    final declared = status == 'declared';
+
+    if (mine != null && (confirmed || declared)) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: confirmed
+                ? [_green.withOpacity(0.25), _green.withOpacity(0.08)]
+                : [_violet.withOpacity(0.3), _pink.withOpacity(0.12)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: confirmed ? _green.withOpacity(0.6) : Colors.white12),
+        ),
+        child: Column(children: [
+          Text(context.tr('Ta contribution', 'Your contribution'),
+              style: GoogleFonts.poppins(fontSize: 13, color: Colors.white60)),
+          const SizedBox(height: 4),
+          Text(_eur(amount),
+              style: GoogleFonts.poppins(fontSize: 34, fontWeight: FontWeight.w800, color: Colors.white)),
+          const SizedBox(height: 10),
+          if (confirmed)
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              const Icon(Icons.verified_rounded, color: _green, size: 18),
+              const SizedBox(width: 6),
+              Text(context.tr('Payé & confirmé', 'Paid & confirmed'),
+                  style: GoogleFonts.poppins(color: _green, fontWeight: FontWeight.w700, fontSize: 14)),
+            ])
+          else
+            Text(context.tr('Envoyé — en attente de l\'hôte', 'Sent — awaiting host'),
+                style: GoogleFonts.poppins(color: _amber, fontWeight: FontWeight.w600, fontSize: 13.5)),
+          if (!confirmed) ...[
+            const SizedBox(height: 8),
+            _bigButton(
+              context.tr('Payer l\'hôte', 'Pay the host'),
+              () => _payHost(payment, amount),
+              icon: Icons.account_balance_wallet_rounded,
+            ),
+          ],
+        ]),
+      );
+    }
+
+    // Pas encore contribué : saisie libre du montant
+    final ctrl = _openAmountCtrl;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: _card,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(children: [
+        Text(context.tr('Combien veux-tu donner ?', 'How much do you want to give?'),
+            style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
+        const SizedBox(height: 12),
+        TextField(
+          controller: ctrl,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          style: GoogleFonts.poppins(color: Colors.white, fontSize: 16),
+          decoration: InputDecoration(
+            suffixText: '€',
+            suffixStyle: GoogleFonts.poppins(color: Colors.white70),
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.06),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _bigButton(
+          context.tr('Donner', 'Give'),
+          () async {
+            final v = double.tryParse(ctrl.text.replaceAll(',', '.')) ?? 0;
+            if (v <= 0) return;
+            try {
+              await GroupGiftService.contributeOpenAmount(
+                collabId: widget.collabId,
+                chatId: widget.chatId,
+                amount: v,
+                myName: await _userName(FirebaseDataService.currentUserId ?? currentUserUid),
+              );
+            } catch (_) {
+              _toast(context.tr('Erreur, réessaie', 'Something went wrong'), error: true);
+            }
+          },
+          icon: Icons.volunteer_activism_rounded,
+        ),
+      ]),
+    );
   }
 
   Widget _myPartCard(Map<String, dynamic> mine, Map<String, dynamic> payment) {
@@ -919,10 +1164,14 @@ class _CollectionSetupSheetState extends State<_CollectionSetupSheet> {
   static const _violet = Color(0xFF8A2BE2);
   static const _pink = Color(0xFFEC4899);
 
-  bool _custom = false;
+  // 'equal' | 'custom' | 'open' (cagnotte ouverte : chacun donne ce qu'il veut)
+  String _splitType = 'equal';
+  bool get _custom => _splitType == 'custom';
+  bool get _open => _splitType == 'open';
   bool _hostPays = false; // l'hôte avance par défaut → ne paie pas de part
   final Map<String, bool> _included = {};
   final Map<String, TextEditingController> _amountCtrls = {};
+  DateTime? _deadline;
 
   String _method = 'revolut';
   final _handleCtrl = TextEditingController();
@@ -949,7 +1198,7 @@ class _CollectionSetupSheetState extends State<_CollectionSetupSheet> {
   /// Remplit les champs de montant en parts égales. Ne déclenche PAS de
   /// rebuild — les appelants (hors initState) encadrent déjà par setState.
   void _computeEqualShares() {
-    if (_custom) return; // en mode perso, on ne touche pas aux montants saisis
+    if (_custom || _open) return; // pas de montants à calculer en perso/ouvert
     final uids = _includedUids;
     final split = GroupGiftService.computeEqualSplit(widget.total, uids);
     for (final uid in widget.memberUids) {
@@ -968,11 +1217,13 @@ class _CollectionSetupSheetState extends State<_CollectionSetupSheet> {
 
   Future<void> _launch() async {
     final shares = <String, double>{};
-    for (final uid in _includedUids) {
-      final v = double.tryParse(_amountCtrls[uid]!.text.replaceAll(',', '.')) ?? 0;
-      if (v > 0) shares[uid] = v;
+    if (!_open) {
+      for (final uid in _includedUids) {
+        final v = double.tryParse(_amountCtrls[uid]!.text.replaceAll(',', '.')) ?? 0;
+        if (v > 0) shares[uid] = v;
+      }
+      if (shares.isEmpty) return;
     }
-    if (shares.isEmpty) return;
 
     final payment = <String, dynamic>{
       'method': _method,
@@ -989,9 +1240,10 @@ class _CollectionSetupSheetState extends State<_CollectionSetupSheet> {
         chatId: widget.chatId,
         profileName: widget.profileName,
         total: widget.total,
-        splitType: _custom ? 'custom' : 'equal',
+        splitType: _splitType,
         shares: shares,
         payment: payment,
+        deadline: _deadline,
       );
       widget.onDone();
     } catch (_) {
@@ -1008,7 +1260,7 @@ class _CollectionSetupSheetState extends State<_CollectionSetupSheet> {
   @override
   Widget build(BuildContext context) {
     final diff = (_sumEntered - widget.total);
-    final balanced = diff.abs() < 0.01;
+    final balanced = _open || diff.abs() < 0.01;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -1030,52 +1282,105 @@ class _CollectionSetupSheetState extends State<_CollectionSetupSheet> {
                   fontSize: 19, fontWeight: FontWeight.w800, color: Colors.white)),
           const SizedBox(height: 14),
 
-          // Bascule égal / perso
+          // Bascule égal / perso / ouverte
           Row(children: [
-            _segButton(context.tr('Parts égales', 'Equal'), !_custom, () {
-              setState(() => _custom = false);
+            _segButton(context.tr('Parts égales', 'Equal'), _splitType == 'equal', () {
+              setState(() => _splitType = 'equal');
               _computeEqualShares();
             }),
             const SizedBox(width: 8),
             _segButton(context.tr('Personnalisé', 'Custom'), _custom, () {
-              setState(() => _custom = true);
+              setState(() => _splitType = 'custom');
+            }),
+            const SizedBox(width: 8),
+            _segButton(context.tr('Ouverte', 'Open'), _open, () {
+              setState(() => _splitType = 'open');
             }),
           ]),
-          const SizedBox(height: 8),
-          Row(children: [
-            Checkbox(
-              value: _hostPays,
-              activeColor: _violet,
-              onChanged: (v) {
-                setState(() {
-                  _hostPays = v ?? false;
-                  _included[widget.hostUid] = _hostPays;
-                });
-                _computeEqualShares();
-              },
+          if (_open) ...[
+            const SizedBox(height: 10),
+            Text(
+              context.tr(
+                  'Cagnotte ouverte : chacun donne le montant de son choix, pas de tarif imposé.',
+                  'Open pot: everyone gives whatever amount they want, no fixed price.'),
+              style: GoogleFonts.poppins(fontSize: 12.5, color: Colors.white54),
             ),
+          ] else ...[
+            const SizedBox(height: 8),
+            Row(children: [
+              Checkbox(
+                value: _hostPays,
+                activeColor: _violet,
+                onChanged: (v) {
+                  setState(() {
+                    _hostPays = v ?? false;
+                    _included[widget.hostUid] = _hostPays;
+                  });
+                  _computeEqualShares();
+                },
+              ),
+              Expanded(
+                child: Text(
+                  context.tr('L\'hôte participe aussi au paiement',
+                      'Host also chips in'),
+                  style: GoogleFonts.poppins(fontSize: 13, color: Colors.white70),
+                ),
+              ),
+            ]),
+            const SizedBox(height: 6),
+
+            // Liste des membres avec montant
+            ...widget.memberUids.map((uid) => _memberRow(uid)),
+
+            const SizedBox(height: 8),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Text(context.tr('Total réparti', 'Split total'),
+                  style: GoogleFonts.poppins(fontSize: 13, color: Colors.white60)),
+              Text('${_sumEntered.toStringAsFixed(2)} € / ${widget.total.toStringAsFixed(2)} €',
+                  style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: balanced ? const Color(0xFF10B981) : const Color(0xFFF59E0B))),
+            ]),
+          ],
+
+          const SizedBox(height: 14),
+          // Date limite (optionnelle) pour recevoir les virements
+          Row(children: [
             Expanded(
               child: Text(
-                context.tr('L\'hôte participe aussi au paiement',
-                    'Host also chips in'),
+                _deadline == null
+                    ? context.tr('Pas de date limite', 'No deadline')
+                    : context.tr(
+                        'Date limite : ${_deadline!.day}/${_deadline!.month}/${_deadline!.year}',
+                        'Deadline: ${_deadline!.day}/${_deadline!.month}/${_deadline!.year}'),
                 style: GoogleFonts.poppins(fontSize: 13, color: Colors.white70),
               ),
             ),
-          ]),
-          const SizedBox(height: 6),
-
-          // Liste des membres avec montant
-          ...widget.memberUids.map((uid) => _memberRow(uid)),
-
-          const SizedBox(height: 8),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text(context.tr('Total réparti', 'Split total'),
-                style: GoogleFonts.poppins(fontSize: 13, color: Colors.white60)),
-            Text('${_sumEntered.toStringAsFixed(2)} € / ${widget.total.toStringAsFixed(2)} €',
-                style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: balanced ? const Color(0xFF10B981) : const Color(0xFFF59E0B))),
+            TextButton.icon(
+              onPressed: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: _deadline ?? DateTime.now().add(const Duration(days: 14)),
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime.now().add(const Duration(days: 365)),
+                );
+                if (picked != null) setState(() => _deadline = picked);
+              },
+              icon: const Icon(Icons.event_rounded, color: _pink, size: 18),
+              label: Text(
+                _deadline == null
+                    ? context.tr('Ajouter', 'Add')
+                    : context.tr('Modifier', 'Edit'),
+                style: GoogleFonts.poppins(color: _pink, fontWeight: FontWeight.w600),
+              ),
+            ),
+            if (_deadline != null)
+              IconButton(
+                tooltip: context.tr('Retirer', 'Remove'),
+                icon: const Icon(Icons.close_rounded, color: Colors.white38, size: 18),
+                onPressed: () => setState(() => _deadline = null),
+              ),
           ]),
 
           const Divider(color: Colors.white12, height: 28),

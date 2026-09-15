@@ -65,6 +65,10 @@ class _OnboardingGiftsResultWidgetState
 
   String? _returnTo; // Page de retour (ex: /search-page)
   String _giftCategoryFilter = 'all'; // 'all', 'physical', 'experience'
+  // "Créer directement" (quiz sauté) : pas de tags réels à envoyer à l'IA,
+  // donc pas d'appel API ni de chargement — on affiche direct des produits
+  // populaires locaux (mode "discovery").
+  bool _quizSkipped = false;
 
 
   /// Parse les paramètres de query de l'URL et les données extra
@@ -76,6 +80,7 @@ class _OnboardingGiftsResultWidgetState
         goRouterState.uri.queryParameters['editProfileId'] ??
         (extraData is Map ? (extraData['personId'] ?? extraData['id'])?.toString() : null);
     _returnTo = goRouterState.uri.queryParameters['returnTo'];
+    _quizSkipped = goRouterState.uri.queryParameters['quizSkipped'] == 'true';
 
     // ?? NOUVEAU: Récupérer les données passées via extra (assistant vocal)
     AppLogger.debug('?? Extra data détecté: ${extraData != null ? "OUI" : "NON"}', 'Debug');
@@ -245,11 +250,14 @@ class _OnboardingGiftsResultWidgetState
           ?.map((s) => int.tryParse(s) ?? 0).toList() ?? [];
 
       // ?? Générer les cadeaux via ProductMatchingService
+      // Quiz sauté : pas de goûts réels connus, donc pas d'appel API live ni
+      // de rerank IA (mode "discovery" = produits populaires 100% locaux).
       final rawGifts = await ProductMatchingService.getPersonalizedProducts(
-        userTags: profileForGeneration ?? {},
+        userTags: _quizSkipped ? {} : (profileForGeneration ?? {}),
         count: 50,
         excludeProductIds: forceRefresh ? seenProductIds : null,
-        filteringMode: "person",
+        filteringMode: _quizSkipped ? "discovery" : "person",
+        category: _quizSkipped ? "trending" : null,
       );
 
       final aiGifts = rawGifts.map((product) {
@@ -393,7 +401,9 @@ class _OnboardingGiftsResultWidgetState
 
   @override
   Widget build(BuildContext context) {
-    if (_model.isLoading) {
+    // Quiz sauté : chargement 100% local (aucun appel API), donc pas de
+    // grand écran de chargement IA — les produits arrivent quasi instantanément.
+    if (_model.isLoading && !_quizSkipped) {
       return Scaffold(
         key: scaffoldKey,
         backgroundColor: const Color(0xFFFDF2F8),

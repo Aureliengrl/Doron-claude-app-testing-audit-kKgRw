@@ -9,6 +9,7 @@ import "package:cached_network_image/cached_network_image.dart";
 import "/utils/iconly_compat.dart";
 import "/components/liquid_glass.dart";
 import "/components/product_detail_modal.dart";
+import "/components/cached_image.dart";
 import "/services/friend_service.dart";
 import "/services/collaboration_service.dart";
 import "/services/firebase_data_service.dart";
@@ -332,17 +333,7 @@ class _ChatInfoPageState extends State<ChatInfoPage>
                         ),
                         child: Row(
                           children: [
-                            CircleAvatar(
-                              radius: 20,
-                              backgroundColor: _violet.withOpacity(0.3),
-                              backgroundImage: fPhoto.isNotEmpty
-                                  ? CachedNetworkImageProvider(fPhoto)
-                                  : null,
-                              child: fPhoto.isEmpty
-                                  ? Text(fName.isNotEmpty ? fName[0].toUpperCase() : "?",
-                                      style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold))
-                                  : null,
-                            ),
+                            UserAvatar(photoUrl: fPhoto, name: fName, radius: 20),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
@@ -545,33 +536,22 @@ class _ChatInfoPageState extends State<ChatInfoPage>
             // ── 1. Avatar & Nom ──────────────────────────────────────────────
             const SizedBox(height: 10),
             Center(
-              child: _isGroup
-                  ? _buildGroupAvatar()
-                  : Container(
-                      width: 90,
-                      height: 90,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white.withOpacity(0.8), width: 2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: _violet.withOpacity(0.6),
-                            blurRadius: 20,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: ClipOval(
-                        child: photoUrl.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: photoUrl,
-                                fit: BoxFit.cover,
-                                placeholder: (_, __) => Container(color: Colors.grey[800]),
-                                errorWidget: (_, __, ___) => _buildAvatarFallback(displayName),
-                              )
-                            : _buildAvatarFallback(displayName),
-                      ),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white.withOpacity(0.8), width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _violet.withOpacity(0.6),
+                      blurRadius: 20,
+                      spreadRadius: 2,
                     ),
+                  ],
+                ),
+                child: _isGroup
+                    ? const GroupAvatar(radius: 45)
+                    : UserAvatar(photoUrl: photoUrl, name: displayName, radius: 45),
+              ),
             ),
             const SizedBox(height: 14),
             Text(
@@ -674,38 +654,6 @@ class _ChatInfoPageState extends State<ChatInfoPage>
             const SizedBox(height: 60),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildGroupAvatar() {
-    return Container(
-      width: 90,
-      height: 90,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const LinearGradient(colors: [_violet, _pink]),
-        boxShadow: [
-          BoxShadow(
-            color: _violet.withOpacity(0.5),
-            blurRadius: 20,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: const Center(
-        child: Icon(Icons.people_alt_rounded, color: Colors.white, size: 44),
-      ),
-    );
-  }
-
-  Widget _buildAvatarFallback(String name) {
-    return Container(
-      color: _violet,
-      alignment: Alignment.center,
-      child: Text(
-        name.isNotEmpty ? name[0].toUpperCase() : "U",
-        style: GoogleFonts.poppins(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.white),
       ),
     );
   }
@@ -1012,11 +960,7 @@ class _ChatInfoPageState extends State<ChatInfoPage>
                       ),
                       child: Row(
                         children: [
-                          CircleAvatar(
-                            radius: 20,
-                            backgroundImage: photo.isNotEmpty ? CachedNetworkImageProvider(photo) : null,
-                            child: photo.isEmpty ? Text(name[0].toUpperCase()) : null,
-                          ),
+                          UserAvatar(photoUrl: photo, name: name as String, radius: 20),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(

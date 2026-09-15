@@ -280,9 +280,15 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: SearchPageWidget.routeName,
           path: SearchPageWidget.routePath,
           requireAuth: false,
-          builder: (context, params) => params.isEmpty
-              ? NavBarPage(initialPage: 'SearchPage')
-              : SearchPageWidget(),
+          // Toujours encapsuler dans NavBarPage (même avec des query params,
+          // ex: ?profileId=... utilisé par le bouton cadeau d'une conversation)
+          // pour ne jamais perdre la barre de navigation. SearchPageWidget lit
+          // ses paramètres via GoRouterState.of(context), donc l'encapsulation
+          // ne casse pas la présélection du profil.
+          builder: (context, params) => NavBarPage(
+            initialPage: 'SearchPage',
+            page: params.isEmpty ? null : SearchPageWidget(),
+          ),
         ),
         FFRoute(
           name: GiftResultsWidget.routeName,

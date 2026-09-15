@@ -360,11 +360,7 @@ class _SecretSantaLobbyPageState extends State<SecretSantaLobbyPage> {
           ),
           child: Row(
             children: [
-              CachedCircleAvatar(
-                photoUrl: photo,
-                radius: 20,
-                backgroundColor: _violet.withOpacity(0.3),
-              ),
+              UserAvatar(photoUrl: photo, name: name, radius: 20),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

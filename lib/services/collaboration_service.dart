@@ -54,12 +54,25 @@ class CollaborationService {
         }
       }
 
-      // Chercher une collaboration existante pour ce profil et cet owner
-      final existing = await _db
+      // Chercher une collaboration existante pour ce profil dont je suis déjà
+      // membre (peu importe qui est l'hôte). Sans ce filtre, un membre non
+      // créateur ne retrouvait jamais la collab existante (la recherche ne
+      // portait que sur ownerId == moi) et en recréait une en double.
+      var existing = await _db
           .collection('collaborations')
           .where('profileId', isEqualTo: profileId)
-          .where('ownerId', isEqualTo: myUid)
+          .where('members', arrayContains: myUid)
           .get();
+
+      // Sinon, cas du créateur avant qu'il ne soit techniquement listé comme
+      // membre (ou collab créée par un autre mécanisme) : chercher par ownerId.
+      if (existing.docs.isEmpty) {
+        existing = await _db
+            .collection('collaborations')
+            .where('profileId', isEqualTo: profileId)
+            .where('ownerId', isEqualTo: myUid)
+            .get();
+      }
 
       if (existing.docs.isNotEmpty) {
         final doc = existing.docs.first;
@@ -454,6 +467,67 @@ class CollaborationService {
 
   // â”€â”€â”€ Rejoindre via token (deep link) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+  /// Lit les informations d'un lien d'invitation SANS rejoindre la
+  /// collaboration — utilisé pour afficher l'écran de confirmation
+  /// « veux-tu rejoindre la liste de X ? » avant tout engagement.
+  /// Le rejoint effectif se fait ensuite via [joinByToken], après acceptation.
+  static Future<Map<String, dynamic>?> previewInviteToken(String token) async {
+    final myUid = _myUid;
+    if (myUid == null) return null;
+
+    try {
+      String? collabId;
+      String? chatId;
+      String? profileName;
+
+      final tokenDoc = await _db.collection('collab_tokens').doc(token).get();
+      if (tokenDoc.exists) {
+        final data = tokenDoc.data()!;
+        collabId = data['collabId'] as String?;
+        chatId = data['chatId'] as String?;
+        profileName = data['profileName'] as String?;
+      } else {
+        // Fallback pour les anciens tokens non indexés dans collab_tokens.
+        final snap = await _db
+            .collection('collaborations')
+            .where('inviteToken', isEqualTo: token)
+            .limit(1)
+            .get();
+        if (snap.docs.isEmpty) return null;
+        collabId = snap.docs.first.id;
+        final data = snap.docs.first.data();
+        chatId = data['chatId'] as String?;
+        profileName = data['profileName'] as String?;
+      }
+      if (collabId == null) return null;
+
+      bool alreadyMember = false;
+      String ownerName = 'Un ami';
+      try {
+        final collabDoc = await _db.collection('collaborations').doc(collabId).get();
+        if (collabDoc.exists) {
+          final data = collabDoc.data()!;
+          final members = (data['members'] as List?)?.cast<String>() ?? [];
+          alreadyMember = members.contains(myUid);
+          ownerName = data['ownerName'] as String? ?? ownerName;
+          profileName ??= data['profileName'] as String?;
+          chatId ??= data['chatId'] as String?;
+        }
+      } catch (_) {} // non-critique : on garde les infos du token
+
+      return {
+        'collabId': collabId,
+        'chatId': chatId,
+        'profileName': profileName ?? 'la liste',
+        'ownerName': ownerName,
+        'alreadyMember': alreadyMember,
+      };
+    } catch (e) {
+      AppLogger.debug('❌ CollaborationService.previewInviteToken: $e', 'Collab');
+      return null;
+    }
+  }
+
   /// FIX #2 "” joinByToken utilise la collection `collab_tokens` comme index.
   /// La query directe sur `collaborations` échouait car la règle Firestore
   /// ne permet pas la lecture sans être owner/member/pendingInvite.
@@ -554,51 +628,60 @@ class CollaborationService {
   /// FIX #6: Filtre sur toUid uniquement pour éviter l'index composite (toUid+status).
   /// Le filtre status='pending' est appliqué côté client.
   static Stream<List<Map<String, dynamic>>> getMyPendingCollabInvitesStream() {
-    final myUid = _myUid;
-    if (myUid == null) return Stream.value([]);
+    // Réagit aux changements d'état d'authentification plutôt que de figer
+    // définitivement le flux sur l'uid disponible au moment de l'appel.
+    return FirebaseAuth.instance.authStateChanges().asyncExpand((user) {
+      final myUid = user?.uid ?? _myUid;
+      if (myUid == null) return Stream.value(<Map<String, dynamic>>[]);
 
-    return _db
-        .collection('collab_invites')
-        .where('toUid', isEqualTo: myUid)
-        .snapshots()
-        .asyncMap((snap) async {
-      final result = <Map<String, dynamic>>[];
-      // Filtre status côté client pour éviter l'index composite
-      final pendingDocs = snap.docs
-          .where((d) => d.data()['status'] == 'pending')
-          .toList();
-      for (final doc in pendingDocs) {
-        final data = doc.data();
-        try {
-          final senderDoc = await _db.collection('users').doc(data['fromUid']).get();
-          final sender = senderDoc.data() ?? {};
-          result.add({
-            'inviteId': doc.id,
-            'collabId': data['collabId'],
-            'fromUid': data['fromUid'],
-            'profileName': data['profileName'] ?? 'une liste',
-            'fromName': sender['first_name'] ?? sender['display_name'] ?? 'Quelqu\'un',
-            'fromPhotoUrl': (sender['photo_url'] as String?)?.isNotEmpty == true
-                ? sender['photo_url'] as String
-                : (sender['photoUrl'] as String?)?.isNotEmpty == true
-                    ? sender['photoUrl'] as String
-                    : (sender['photoURL'] as String?) ?? '',
-            'createdAt': data['createdAt'],
-          });
-        } catch (e) {
-          AppLogger.debug('CollaborationService error: $e', 'Collab');
-          result.add({
-            'inviteId': doc.id,
-            'collabId': data['collabId'],
-            'fromUid': data['fromUid'],
-            'profileName': data['profileName'] ?? 'une liste',
-            'fromName': 'Quelqu\'un',
-            'fromPhotoUrl': '',
-            'createdAt': data['createdAt'],
-          });
-        }
-      }
-      return result;
+      return _db
+          .collection('collab_invites')
+          .where('toUid', isEqualTo: myUid)
+          .snapshots()
+          .asyncMap((snap) async {
+        // Filtre status côté client pour éviter l'index composite
+        final pendingDocs = snap.docs
+            .where((d) => d.data()['status'] == 'pending')
+            .toList();
+        // Lectures des profils expéditeurs en parallèle avec timeout, pour
+        // qu'une lecture lente ne bloque pas l'affichage des autres invitations.
+        final result = await Future.wait(pendingDocs.map((doc) async {
+          final data = doc.data();
+          try {
+            final senderDoc = await _db
+                .collection('users')
+                .doc(data['fromUid'])
+                .get()
+                .timeout(const Duration(seconds: 6));
+            final sender = senderDoc.data() ?? {};
+            return {
+              'inviteId': doc.id,
+              'collabId': data['collabId'],
+              'fromUid': data['fromUid'],
+              'profileName': data['profileName'] ?? 'une liste',
+              'fromName': sender['first_name'] ?? sender['display_name'] ?? 'Quelqu\'un',
+              'fromPhotoUrl': (sender['photo_url'] as String?)?.isNotEmpty == true
+                  ? sender['photo_url'] as String
+                  : (sender['photoUrl'] as String?)?.isNotEmpty == true
+                      ? sender['photoUrl'] as String
+                      : (sender['photoURL'] as String?) ?? '',
+              'createdAt': data['createdAt'],
+            };
+          } catch (e) {
+            AppLogger.debug('CollaborationService error: $e', 'Collab');
+            return {
+              'inviteId': doc.id,
+              'collabId': data['collabId'],
+              'fromUid': data['fromUid'],
+              'profileName': data['profileName'] ?? 'une liste',
+              'fromName': 'Quelqu\'un',
+              'fromPhotoUrl': '',
+              'createdAt': data['createdAt'],
+            };
+          }
+        }));
+        return result;
+      });
     });
   }
 

@@ -336,11 +336,8 @@ class _SecretSantaRevealPageState extends State<SecretSantaRevealPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CachedCircleAvatar(
-            photoUrl: photoUrl,
-            radius: 50,
-            backgroundColor: _violet.withOpacity(0.3),
-          ).animate().scale(duration: 600.ms, curve: Curves.elasticOut),
+          UserAvatar(photoUrl: photoUrl, name: name, radius: 50)
+              .animate().scale(duration: 600.ms, curve: Curves.elasticOut),
           const SizedBox(height: 20),
           Text(name,
               style: GoogleFonts.poppins(

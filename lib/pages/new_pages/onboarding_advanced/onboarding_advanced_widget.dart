@@ -928,11 +928,13 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
                   children: _handleSuggestions.map((user) {
                     return ListTile(
                       dense: true,
-                      leading: CachedCircleAvatar(
+                      leading: UserAvatar(
                         photoUrl: user['photoUrl'] as String?,
+                        name: (user['displayName'] as String?) ??
+                            (user['name'] as String?) ??
+                            (user['handle'] as String?) ??
+                            '?',
                         radius: 16,
-                        backgroundColor: violetColor.withOpacity(0.3),
-                        fallback: const Icon(IconlyLight.profile, color: Colors.white, size: 16),
                       ),
                       title: Text(
                         '@${user['handle']}',

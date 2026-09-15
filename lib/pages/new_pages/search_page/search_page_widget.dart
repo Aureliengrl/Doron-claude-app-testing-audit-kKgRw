@@ -1962,7 +1962,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
             const SizedBox(height: 20),
             // Bouton Collaborer sur la liste (chat de groupe)
             _buildAvatarOption(
-              icon: IconlyLight.addUser,
+              icon: IconlyBold.usersTwo,
+              color: const Color(0xFF8A2BE2),
               label: 'Collaborer sur la liste de cadeaux',
               onTap: () {
                 Navigator.pop(ctx);
@@ -2008,7 +2009,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
             if (uid != null) ...[
               const SizedBox(height: 12),
               _buildAvatarOption(
-                icon: IconlyLight.addUser,
+                icon: IconlyBold.addUser,
+                color: const Color(0xFF10B981),
                 label: 'Ajouter en ami',
                 onTap: () async {
                   Navigator.pop(ctx);
@@ -2027,7 +2029,8 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
               ),
               const SizedBox(height: 12),
               _buildAvatarOption(
-                icon: IconlyLight.chat,
+                icon: IconlyBold.chat,
+                color: const Color(0xFFEC4899),
                 label: 'Envoyer un message',
                 onTap: () async {
                   Navigator.pop(ctx);
@@ -2048,12 +2051,17 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
     );
   }
 
-  Widget _buildAvatarOption({required IconData icon, required String label, required VoidCallback onTap}) {
+  Widget _buildAvatarOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    Color color = const Color(0xFF8A2BE2),
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.07),
           borderRadius: BorderRadius.circular(14),
@@ -2061,9 +2069,20 @@ class _SearchPageWidgetState extends State<SearchPageWidget> with AutomaticKeepA
         ),
         child: Row(
           children: [
-            Icon(icon, color: Colors.white, size: 22),
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.18),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
             const SizedBox(width: 14),
-            Text(label, style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.white)),
+            Expanded(
+              child: Text(label, style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.white)),
+            ),
+            Icon(IconlyLight.arrowRight2, color: Colors.white24, size: 16),
           ],
         ),
       ),

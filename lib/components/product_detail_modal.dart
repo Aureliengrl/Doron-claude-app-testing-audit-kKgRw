@@ -1382,17 +1382,7 @@ class GlobalProductDetailModal {
 
   static Widget _buildChatTile(BuildContext context, String chatId, String name, String? photoUrl, Map<String, dynamic> product) {
     return ListTile(
-      leading: CircleAvatar(
-        radius: 24,
-        backgroundColor: violetColor.withOpacity(0.2),
-        backgroundImage: (photoUrl != null && photoUrl.isNotEmpty) ? CachedNetworkImageProvider(photoUrl) : null,
-        child: (photoUrl == null || photoUrl.isEmpty)
-            ? Text(
-                name.isNotEmpty ? name[0].toUpperCase() : '?',
-                style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-              )
-            : null,
-      ),
+      leading: UserAvatar(photoUrl: photoUrl, name: name, radius: 24),
       title: Text(
         name,
         style: GoogleFonts.poppins(

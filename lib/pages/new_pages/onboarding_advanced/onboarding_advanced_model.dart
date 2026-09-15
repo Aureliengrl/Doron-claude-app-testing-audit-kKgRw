@@ -300,7 +300,7 @@ class OnboardingAdvancedModel {
         (fieldValue is! double || fieldValue > 0);
   }
 
-  Future<void> handleNext(List<Map<String, dynamic>> steps, BuildContext context, {bool skipUserQuestions = false, String? returnTo, bool onlyUserQuestions = false}) async {
+  Future<void> handleNext(List<Map<String, dynamic>> steps, BuildContext context, {bool skipUserQuestions = false, String? returnTo, bool onlyUserQuestions = false, bool quizSkipped = false}) async {
     // FIX Bug 2: Emp�cher les doubles clics
     if (isNavigating) {
       AppLogger.debug('?? Navigation d�j� en cours, ignor�', 'Debug');
@@ -444,7 +444,8 @@ class OnboardingAdvancedModel {
             } else {
               // Si c'est un ajout de personne, aller directement aux cadeaux
               AppLogger.debug('?? Ajout de personne: Navigation directe vers cadeaux', 'Debug');
-              context.go('/onboarding-gifts-result?personId=$personId$returnParam');
+              final skipParam = quizSkipped ? '&quizSkipped=true' : '';
+              context.go('/onboarding-gifts-result?personId=$personId$returnParam$skipParam');
             }
           } else {
             // Fallback: si pas de personId (erreur)
@@ -500,6 +501,10 @@ class OnboardingAdvancedModel {
       skipUserQuestions: skipUserQuestions,
       returnTo: returnTo,
       onlyUserQuestions: onlyUserQuestions,
+      // "Créer directement" = quiz volontairement sauté : la page de
+      // résultats doit afficher des suggestions génériques instantanées
+      // au lieu de lancer un chargement + un appel API de personnalisation.
+      quizSkipped: true,
     );
   }
 }
