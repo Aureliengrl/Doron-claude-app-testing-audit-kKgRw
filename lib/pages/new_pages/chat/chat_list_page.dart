@@ -160,7 +160,7 @@ class _ChatListPageState extends State<ChatListPage> {
     ];
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      margin: const EdgeInsets.fromLTRB(16, 10, 16, 12),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
@@ -174,82 +174,79 @@ class _ChatListPageState extends State<ChatListPage> {
 
             return Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    setState(() => _activeFilter = filterId);
-                  },
-                  borderRadius: BorderRadius.circular(16),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                    decoration: BoxDecoration(
-                      gradient: isSelected
-                          ? const LinearGradient(
-                              colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            )
-                          : null,
-                      color: isSelected ? null : Colors.white.withOpacity(0.07),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isSelected ? const Color(0xFFEC4899).withOpacity(0.6) : Colors.white.withOpacity(0.12),
-                        width: 1,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  setState(() => _activeFilter = filterId);
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                  decoration: BoxDecoration(
+                    gradient: isSelected
+                        ? const LinearGradient(
+                            colors: [Color(0xFF8A2BE2), Color(0xFFEC4899)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          )
+                        : null,
+                    color: isSelected ? null : Colors.white.withOpacity(0.07),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isSelected ? const Color(0xFFEC4899).withOpacity(0.6) : Colors.white.withOpacity(0.12),
+                      width: 1,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: const Color(0xFF8A2BE2).withOpacity(0.35),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        icon,
+                        color: isSelected ? Colors.white : Colors.white70,
+                        size: 16,
                       ),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: const Color(0xFF8A2BE2).withOpacity(0.35),
-                                blurRadius: 10,
-                                offset: const Offset(0, 3),
-                              ),
-                            ]
-                          : null,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          icon,
+                      const SizedBox(width: 6),
+                      Text(
+                        label,
+                        style: GoogleFonts.poppins(
                           color: isSelected ? Colors.white : Colors.white70,
-                          size: 16,
+                          fontSize: 13,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                         ),
+                      ),
+                      if (count > 0 || isSelected) ...[
                         const SizedBox(width: 6),
-                        Text(
-                          label,
-                          style: GoogleFonts.poppins(
-                            color: isSelected ? Colors.white : Colors.white70,
-                            fontSize: 13,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? Colors.black.withOpacity(0.25)
+                                : (filterId == 'unread' && count > 0)
+                                    ? const Color(0xFFEC4899)
+                                    : Colors.white.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '$count',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                        if (count > 0 || isSelected) ...[
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? Colors.black.withOpacity(0.25)
-                                  : (filterId == 'unread' && count > 0)
-                                      ? const Color(0xFFEC4899)
-                                      : Colors.white.withOpacity(0.12),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              '$count',
-                              style: GoogleFonts.poppins(
-                                color: Colors.white,
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
                       ],
-                    ),
+                    ],
                   ),
                 ),
               ),
@@ -327,17 +324,6 @@ class _ChatListPageState extends State<ChatListPage> {
   }
 
   Widget _buildChatsList(List<QueryDocumentSnapshot> allDocs, String currentUid) {
-    if (allDocs.isEmpty) {
-      return LiquidGlassEmptyStateWidget(
-        icon: IconlyLight.chat,
-        title: context.tr('Aucun message', 'No messages'),
-        subtitle: context.tr(
-          'Commencez à discuter avec vos proches ou collaborez sur une liste de cadeaux.',
-          'Start chatting with your friends or collaborate on a gift list.',
-        ),
-      );
-    }
-
     // Copie de la liste pour tri
     final chats = List<QueryDocumentSnapshot>.from(allDocs);
 
@@ -401,12 +387,15 @@ class _ChatListPageState extends State<ChatListPage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Aucun groupe de discussion',
+                  context.tr('Aucun groupe de discussion', 'No group chats'),
                   style: GoogleFonts.poppins(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Créez un groupe pour organiser un cadeau en commun ou discuter à plusieurs.',
+                  context.tr(
+                    'Créez un groupe pour organiser un cadeau en commun ou discuter à plusieurs.',
+                    'Create a group to organize a joint gift or chat together.',
+                  ),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(color: Colors.white54, fontSize: 13),
                 ),
@@ -414,7 +403,7 @@ class _ChatListPageState extends State<ChatListPage> {
                 ElevatedButton.icon(
                   onPressed: () => _openCreateChat(forceGroup: true),
                   icon: const Icon(Icons.group_add_rounded, color: Colors.white, size: 18),
-                  label: Text('Créer un groupe', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                  label: Text(context.tr('Créer un groupe', 'Create a group'), style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: violetColor,
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -442,12 +431,12 @@ class _ChatListPageState extends State<ChatListPage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Tout est à jour !',
+                  context.tr('Tout est à jour !', 'All caught up!'),
                   style: GoogleFonts.poppins(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Vous n\'avez aucun message non lu en attente.',
+                  context.tr('Vous n\'avez aucun message non lu en attente.', 'You have no unread messages.'),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(color: Colors.white54, fontSize: 13),
                 ),
@@ -472,12 +461,15 @@ class _ChatListPageState extends State<ChatListPage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Aucune discussion directe',
+                  context.tr('Aucune discussion directe', 'No direct messages'),
                   style: GoogleFonts.poppins(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Démarrez une conversation privée avec l\'un de vos proches.',
+                  context.tr(
+                    'Démarrez une conversation privée avec l\'un de vos proches.',
+                    'Start a private chat with one of your loved ones.',
+                  ),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(color: Colors.white54, fontSize: 13),
                 ),
@@ -485,7 +477,7 @@ class _ChatListPageState extends State<ChatListPage> {
                 ElevatedButton.icon(
                   onPressed: () => _openCreateChat(forceGroup: false),
                   icon: const Icon(Icons.edit_note_rounded, color: Colors.white, size: 20),
-                  label: Text('Nouveau message', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
+                  label: Text(context.tr('Nouveau message', 'New message'), style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFEC4899),
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -494,6 +486,15 @@ class _ChatListPageState extends State<ChatListPage> {
                 ),
               ],
             ),
+          ),
+        );
+      } else {
+        return LiquidGlassEmptyStateWidget(
+          icon: IconlyLight.chat,
+          title: context.tr('Aucun message', 'No messages'),
+          subtitle: context.tr(
+            'Commencez à discuter avec vos proches ou collaborez sur une liste de cadeaux.',
+            'Start chatting with your friends or collaborate on a gift list.',
           ),
         );
       }

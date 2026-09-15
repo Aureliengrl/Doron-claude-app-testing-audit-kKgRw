@@ -500,21 +500,33 @@ class _OnboardingGiftsResultWidgetState
                 onPressed: () {
                   if (!mounted) return;
                   if (_returnTo != null && _returnTo!.isNotEmpty) {
-                    AppLogger.debug('?? Retour vers: $_returnTo', 'Debug');
-                    context.go(_returnTo!);
+                    AppLogger.debug('Retour vers: $_returnTo', 'Debug');
+                    final pid = _personId ?? _model.personId;
+                    final target = (pid != null && pid.isNotEmpty && !_returnTo!.contains('personId'))
+                        ? '$_returnTo${_returnTo!.contains('?') ? '&' : '?'}personId=$pid'
+                        : _returnTo!;
+                    context.go(target);
                   } else {
-                    context.go('/search-page');
+                    final pid = _personId ?? _model.personId ?? '';
+                    context.go('/search-page?personId=$pid');
                   }
                 },
                 icon: Icon(
                   _returnTo != null && _returnTo!.isNotEmpty
-                      ? Icons.arrow_back
-                      : Icons.close,
-                  color: violetColor,
+                      ? Icons.arrow_back_rounded
+                      : Icons.close_rounded,
+                  color: Colors.white,
                 ),
                 tooltip: _returnTo != null && _returnTo!.isNotEmpty ? 'Retour' : 'Fermer',
               ),
-              Icon(Icons.auto_awesome, color: violetColor, size: 32),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.card_giftcard_rounded, color: Colors.white, size: 24),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -1673,7 +1685,11 @@ class _OnboardingGiftsResultWidgetState
                             if (context.canPop()) {
                               context.pop(true);
                             } else if (_returnTo != null && _returnTo!.isNotEmpty) {
-                              context.go(_returnTo!);
+                              final pid = _personId ?? _model.personId;
+                              final target = (pid != null && pid.isNotEmpty && !_returnTo!.contains('personId'))
+                                  ? '$_returnTo${_returnTo!.contains('?') ? '&' : '?'}personId=$pid'
+                                  : _returnTo!;
+                              context.go(target);
                             } else {
                               context.go('/search-page?selectedProfileId=${_model.personId ?? ''}');
                             }

@@ -27,18 +27,27 @@ class FirebaseDataService {
     AppLogger.info('Profile tags cache invalidated', 'Firebase');
   }
 
-  /// Retourne l'ID de l'utilisateur connecté
-  static String? get currentUserId => _auth.currentUser?.uid;
+  // ─── Support multi-comptes : override UID actif ───
+  static String? _activeUidOverride;
+
+  /// Définit l'UID actif pour le multi-compte sans forcer la ré-authentification
+  static void setActiveUidOverride(String? uid) {
+    _activeUidOverride = uid;
+    invalidateProfileTagsCache();
+  }
+
+  /// Retourne l'ID de l'utilisateur connecté ou du compte actif
+  static String? get currentUserId => _activeUidOverride ?? _auth.currentUser?.uid;
 
   /// Vérifie si un utilisateur est connecté
-  static bool get isLoggedIn => _auth.currentUser != null;
+  static bool get isLoggedIn => currentUserId != null && currentUserId!.isNotEmpty;
 
   /// ─────────────────────────────────────────────────────────────────────────
   /// Helper : préfixe toutes les clés SharedPreferences avec l'uid courant.
   /// Garantit l'isolation des données entre les comptes sur le même appareil.
   /// ─────────────────────────────────────────────────────────────────────────
   static String _key(String base) {
-    final uid = _auth.currentUser?.uid;
+    final uid = currentUserId;
     return uid != null ? '${uid}_$base' : 'guest_$base';
   }
 

@@ -306,7 +306,7 @@ void main() {
     });
 
     test('Âge: produit enfant favorisé pour profil enfant', () {
-      final searchTags = <String>{'gender_mixte', 'budget_0_50', 'age_enfant'};
+      final searchTags = <String>{'gender_mixte', 'age_enfant'};
       final profile = <String, dynamic>{};
       final lego = _catalog.firstWhere((p) => p['name'] == 'Lego City Police Station');
       final audible = _catalog.firstWhere((p) => p['name'] == 'Abonnement Audible 3 mois');

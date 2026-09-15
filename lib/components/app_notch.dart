@@ -53,7 +53,7 @@ class AppNotch extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
           child: Row(
             children: [
               SizedBox(
@@ -77,7 +77,7 @@ class AppNotch extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: GoogleFonts.poppins(
                             color: Colors.white,
-                            fontSize: 19,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 0.5,
                           ),
@@ -91,7 +91,7 @@ class AppNotch extends StatelessWidget {
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           color: Colors.white,
-                          fontSize: 19,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,
                         ),
@@ -99,13 +99,14 @@ class AppNotch extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     if (subtitle.isNotEmpty) ...[
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
                       Text(
                         subtitle,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           color: Colors.white.withOpacity(0.9),
-                          fontSize: 11.5,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

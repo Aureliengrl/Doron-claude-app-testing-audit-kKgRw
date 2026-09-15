@@ -527,7 +527,7 @@ class _BirthdayCalendarPageState extends State<BirthdayCalendarPage> {
         children: [
           Row(
             children: [
-              const Icon(Icons.auto_awesome, color: Color(0xFFF59E0B), size: 18),
+              const Icon(Icons.event_note_rounded, color: Color(0xFFF59E0B), size: 18),
               const SizedBox(width: 8),
               Text(
                 'Prochains événements',

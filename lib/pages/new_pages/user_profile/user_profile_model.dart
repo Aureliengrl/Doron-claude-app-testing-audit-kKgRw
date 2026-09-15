@@ -37,8 +37,8 @@ class UserProfileModel extends ChangeNotifier {
       isLoading = true;
       notifyListeners();
 
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
+      final uid = FirebaseDataService.currentUserId;
+      if (uid == null || uid.isEmpty) {
         errorMessage = 'Utilisateur non connecté';
         isLoading = false;
         notifyListeners();
@@ -56,7 +56,7 @@ class UserProfileModel extends ChangeNotifier {
       // Charger les favoris une première fois puis s'abonner au stream
       final snap = await FirebaseFirestore.instance
           .collection('users')
-          .doc(user.uid)
+          .doc(uid)
           .collection('favorites')
           .orderBy('createdAt', descending: true)
           .get();

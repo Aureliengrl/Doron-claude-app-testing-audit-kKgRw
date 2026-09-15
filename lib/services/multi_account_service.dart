@@ -220,6 +220,17 @@ class MultiAccountService {
     }
   }
 
+  /// Initialise le compte actif au démarrage de l'application
+  static Future<void> init() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedActiveUid = prefs.getString('active_account_uid');
+      if (savedActiveUid != null && savedActiveUid.isNotEmpty) {
+        FirebaseDataService.setActiveUidOverride(savedActiveUid);
+      }
+    } catch (_) {}
+  }
+
   /// Prépare l'ajout d'un nouveau compte sans perdre les comptes existants
   static Future<void> startAddAccount(BuildContext context) async {
     HapticFeedback.mediumImpact();
@@ -235,16 +246,18 @@ class MultiAccountService {
     }
   }
 
-  /// Bascule vers un compte cible
+  /// Bascule instantanément vers un compte cible sans redemander d'identifiants
   static Future<void> switchAccount(
     BuildContext context,
     SavedAccount targetAccount, {
     VoidCallback? onAccountSwitched,
   }) async {
-    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    final currentUid = FirebaseDataService.currentUserId;
     if (currentUid == targetAccount.uid) {
       // Déjà connecté sur ce compte
-      Navigator.of(context).pop();
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
       return;
     }
 
@@ -257,15 +270,50 @@ class MultiAccountService {
     FirebaseDataService.invalidateProfileTagsCache();
     SearchPageModel.clearCache();
 
-    // 3. Déconnecter la session actuelle
-    await authManager.signOut();
+    // 3. Basculer vers l'UID du compte cible
+    FirebaseDataService.setActiveUidOverride(targetAccount.uid);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('active_account_uid', targetAccount.uid);
 
-    // 4. Rediriger vers l'authentification avec contexte du compte sélectionné
+    // Mettre à jour la date de dernière activité et l'ordre
+    final accounts = await getSavedAccounts();
+    final index = accounts.indexWhere((a) => a.uid == targetAccount.uid);
+    if (index >= 0) {
+      final acc = accounts.removeAt(index);
+      accounts.insert(0, acc.copyWith(lastActive: DateTime.now()));
+      await _persistAccounts(accounts);
+    }
+
+    // 4. Mettre à jour l'interface
     if (context.mounted) {
-      Navigator.of(context).pop(); // Fermer le modal
-      context.go(
-        '/authentification?targetEmail=${Uri.encodeComponent(targetAccount.email)}&targetHandle=${Uri.encodeComponent(targetAccount.handle)}',
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop(); // Fermer le modal
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Compte actif : ${targetAccount.displayName.isNotEmpty ? targetAccount.displayName : (targetAccount.handle.isNotEmpty ? "@${targetAccount.handle}" : "Utilisateur")}',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF8A2BE2),
+          duration: const Duration(seconds: 2),
+        ),
       );
+
+      if (onAccountSwitched != null) {
+        onAccountSwitched();
+      } else {
+        context.go('/user-profile');
+      }
     }
   }
 

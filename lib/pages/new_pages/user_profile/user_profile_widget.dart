@@ -2327,27 +2327,32 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Comptes enregistrés',
-                                style: GoogleFonts.poppins(
-                                  color: Colors.white,
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.bold,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Comptes enregistrés',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontSize: 19,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Basculez d\'un compte à l\'autre à tout moment',
-                                style: GoogleFonts.poppins(
-                                  color: Colors.white54,
-                                  fontSize: 12,
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Basculez d\'un compte à l\'autre à tout moment',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white54,
+                                    fontSize: 12,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(

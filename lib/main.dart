@@ -34,6 +34,7 @@ import '/services/push_notifications_service.dart';
 import '/pages/new_pages/birthday_calendar/birthday_calendar_page.dart';
 import '/services/seed_catalog_service.dart';
 import '/services/product_matching_service.dart';
+import '/services/multi_account_service.dart';
 import '/components/doron_luxury_splash.dart';
 import 'index.dart';
 
@@ -167,6 +168,9 @@ void main() async {
     
     // Préchargement ultra-rapide du catalogue en mémoire vive (0 ms)
     ProductMatchingService.preloadCatalog();
+
+    // Initialisation du service multi-compte
+    await MultiAccountService.init();
 
     // Auto-seed du catalogue complet (400+ produits) dans Firestore
     SeedCatalogService.seedFirestoreGifts().catchError((e) {
