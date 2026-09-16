@@ -1843,7 +1843,7 @@ class _UserProfileWidgetState extends State<UserProfileWidget> with SingleTicker
       );
       return;
     }
-    final url = 'https://doron.app/@$handle';
+    final url = 'https://doron-app.com/@$handle';
     await Clipboard.setData(ClipboardData(text: url));
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

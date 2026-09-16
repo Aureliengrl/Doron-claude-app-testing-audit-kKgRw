@@ -617,9 +617,9 @@ class CollaborationService {
   static String generateInviteLink(String inviteToken) {
     // Utilise un lien universel Apple (app_links) qui redirige vers l'app
     // ou vers l'App Store si non installée.
-    // Le domaine doron.app doit être configuré avec apple-app-site-association.
+    // Le domaine doron-app.com doit être configuré avec apple-app-site-association.
     // Fallback: lien App Store direct avec le token en paramètre.
-    return 'https://doron.app/join/$inviteToken';
+    return 'https://doron-app.com/join/$inviteToken';
   }
 
   // â”€â”€â”€ Streams â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

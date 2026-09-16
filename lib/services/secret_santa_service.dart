@@ -443,7 +443,7 @@ class SecretSantaService {
 
   // ── Lien d'invitation ──────────────────────────────────────────────────────
 
-  static String getInviteLink(String token) => 'https://doron.app/ss/$token';
+  static String getInviteLink(String token) => 'https://doron-app.com/ss/$token';
 
   // ── Récupérer la wishlist publique d'un user dans un budget ───────────────
 

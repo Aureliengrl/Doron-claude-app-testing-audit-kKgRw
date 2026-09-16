@@ -57,16 +57,16 @@
                 <data android:scheme="doron" android:host="doron.com" />
             </intent-filter>
             <!-- Liens d'invitation / partage réels générés par l'app
-                 (CollaborationService.generateInviteLink : https://doron.app/join/{token}).
+                 (CollaborationService.generateInviteLink : https://doron-app.com/join/{token}).
                  Sans ce filtre, ces liens ouvraient uniquement un navigateur au
                  lieu de l'app, même quand elle est installée. Nécessite un
-                 fichier assetlinks.json hébergé sur https://doron.app/.well-known/
+                 fichier assetlinks.json hébergé sur https://doron-app.com/.well-known/
                  pour que la vérification automatique (autoVerify) passe. -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="doron.app" />
+                <data android:scheme="https" android:host="doron-app.com" />
             </intent-filter>
 
         </activity>

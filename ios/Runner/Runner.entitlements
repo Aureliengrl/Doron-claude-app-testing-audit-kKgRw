@@ -6,11 +6,11 @@
     <array>
       <string>Default</string>
     </array>
-    <!-- FIX Deep Links: Universal Links pour ouvrir doron.app/join/* directement dans l'app -->
-    <!-- Nécessite un fichier apple-app-site-association sur https://doron.app/.well-known/apple-app-site-association -->
+    <!-- FIX Deep Links: Universal Links pour ouvrir doron-app.com/join/* directement dans l'app -->
+    <!-- Nécessite un fichier apple-app-site-association sur https://doron-app.com/.well-known/apple-app-site-association -->
     <key>com.apple.developer.associated-domains</key>
     <array>
-      <string>applinks:doron.app</string>
+      <string>applinks:doron-app.com</string>
     </array>
 </dict>
 </plist>

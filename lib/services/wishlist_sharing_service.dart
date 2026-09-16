@@ -62,7 +62,7 @@ class WishlistSharingService {
   /// Génère l'URL de partage complète.
   static Future<String> getShareUrl(String wishlistId) async {
     final token = await getOrCreateShareToken(wishlistId);
-    return 'https://doron.app/wishlist/$token';
+    return 'https://doron-app.com/wishlist/$token';
   }
 
   /// Résout un token de partage en wishlist data.

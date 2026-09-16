@@ -6,7 +6,7 @@ import '/components/collab_success_dialog.dart';
 import '/services/collaboration_service.dart';
 
 /// Page affichée quand l'utilisateur ouvre un lien d'invitation
-/// (deep link : doron.app/join/{token}).
+/// (deep link : doron-app.com/join/{token}).
 ///
 /// Flow : la route est protégée par `requireAuth: true` (voir nav.dart), donc
 /// l'utilisateur est déjà connecté à ce stade (sinon il est redirigé vers le
