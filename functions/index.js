@@ -5,19 +5,35 @@
  * S2: sendFriendRequestNotification — demande d'ami reçue
  * S3: sendCollabInviteNotification  — invitation à collaborer sur une liste cadeaux
  * S4: sendCollabMemberAddNotification — ajout direct comme membre d'une collaboration
+ * S4b: sendGenericNotificationPush  — push générique pour tout autre type de
+ *      notification in-app (demande acceptée, cagnotte, rappel d'événement…)
+ * S6: sendEventReminders            — rappel 2 semaines avant fêtes/anniversaires
+ *      (tourne quotidiennement, voir onSchedule ci-dessous)
+ *
+ * Avant premier déploiement, définir le secret Claude une seule fois :
+ *   firebase functions:secrets:set ANTHROPIC_API_KEY
  *
  * Deploy: firebase deploy --only functions
  */
 
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 const { getMessaging } = require('firebase-admin/messaging');
 const { onCall } = require('firebase-functions/v2/https');
+const { defineSecret } = require('firebase-functions/params');
 const Anthropic = require('@anthropic-ai/sdk');
 
 initializeApp();
 const db = getFirestore();
+
+// Clé API Anthropic — gérée en secret Firebase, jamais en clair dans le code.
+// À définir une fois via : firebase functions:secrets:set ANTHROPIC_API_KEY
+const anthropicApiKey = defineSecret('ANTHROPIC_API_KEY');
+function getAnthropicClient() {
+  return new Anthropic({ apiKey: anthropicApiKey.value() });
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // S1: Push notification pour les nouveaux messages de chat
@@ -360,13 +376,224 @@ exports.sendCollabMemberAddNotification = onDocumentCreated(
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
+// S4b: Push notification générique pour tout nouveau type de notification
+// in-app (notifications/{uid}/items) qui n'a pas déjà son propre trigger
+// dédié ci-dessus. Couvre notamment : demande d'ami acceptée, cagnotte
+// lancée/déclarée/confirmée/annulée, et les rappels d'événements (S6).
+// Réutilise directement le titre/corps déjà écrits par le client Flutter
+// (ou par sendEventReminders côté serveur), donc aucune donnée dupliquée.
+// ─────────────────────────────────────────────────────────────────────────────
+// Types déjà couverts par un trigger dédié (S1 messages, S2 demandes d'ami,
+// S3/S4 collaboration) : ne pas les repousser ici pour éviter un double push.
+const ALREADY_HANDLED_TYPES = new Set(['collab_invite', 'friend_request', 'message']);
+
+exports.sendGenericNotificationPush = onDocumentCreated(
+  'notifications/{uid}/items/{itemId}',
+  async (event) => {
+    const data = event.data?.data();
+    if (!data) return;
+    const type = data.type || '';
+    if (ALREADY_HANDLED_TYPES.has(type)) return;
+
+    const toUid = event.params.uid;
+    const title = data.title || 'Nouvelle notification';
+    const body = data.body || '';
+
+    let fcmToken = null;
+    try {
+      const snap = await db.collection('users').doc(toUid).get();
+      if (snap.exists) fcmToken = snap.data().fcmToken;
+    } catch (_) {}
+    if (!fcmToken) return;
+
+    try {
+      await getMessaging().send({
+        token: fcmToken,
+        notification: { title, body },
+        data: {
+          type,
+          chatId: data.chatId || '',
+          collabId: data.collabId || '',
+          fromUid: data.fromUid || '',
+        },
+        android: {
+          priority: 'high',
+          notification: { channelId: 'social', priority: 'default', defaultSound: true },
+        },
+        apns: {
+          payload: { aps: { sound: 'default', badge: 1 } },
+        },
+      });
+      console.log(`sendGenericNotificationPush: notified ${toUid} (${type})`);
+    } catch (err) {
+      console.error('sendGenericNotificationPush error:', err);
+    }
+  },
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// S6: Rappels d'événements 2 semaines à l'avance (fêtes fixes + anniversaires
+// des amis + événements personnalisés). Tourne une fois par jour et écrit une
+// notification (type 'event_reminder') dans le flux de chaque utilisateur
+// concerné — le push est ensuite envoyé automatiquement par S4b ci-dessus.
+// ─────────────────────────────────────────────────────────────────────────────
+const { FieldValue } = require('firebase-admin/firestore');
+
+/** Algorithme de Gauss pour calculer la date de Pâques (identique à birthday_service.dart). */
+function computeEaster(year) {
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+}
+
+/** N-ième occurrence d'un jour de semaine dans un mois (weekday: 0=dimanche..6=samedi). */
+function nthWeekdayOfMonth(year, month, weekday, n) {
+  let d = new Date(year, month - 1, 1);
+  let count = 0;
+  while (true) {
+    if (d.getDay() === weekday) {
+      count++;
+      if (count === n) return d;
+    }
+    d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+  }
+}
+
+/** Dernier jour de semaine donné du mois (ex: dernier dimanche de mai). */
+function lastWeekdayOfMonth(year, month, weekday) {
+  let d = new Date(year, month, 0); // dernier jour du mois (month est 1-indexé ici)
+  while (d.getDay() !== weekday) {
+    d = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1);
+  }
+  return d;
+}
+
+function mothersDayFrance(year) {
+  const easter = computeEaster(year);
+  const pentecote = new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() + 49);
+  // Dernier dimanche de mai, sauf si ça coïncide avec le dimanche de Pentecôte.
+  let candidate = lastWeekdayOfMonth(year, 5, 0);
+  if (candidate.getMonth() === pentecote.getMonth() && candidate.getDate() === pentecote.getDate()) {
+    candidate = nthWeekdayOfMonth(year, 6, 0, 1);
+  }
+  return candidate;
+}
+
+function fathersDayFrance(year) {
+  return nthWeekdayOfMonth(year, 6, 0, 3);
+}
+
+/** Même liste de fêtes que BirthdayService.getHolidaysForYear (Dart) — à garder synchronisée. */
+function getHolidaysForYear(year) {
+  return [
+    { date: new Date(year, 0, 1), title: 'Jour de l\'An', emoji: '🎊' },
+    { date: new Date(year, 1, 14), title: 'Saint-Valentin', emoji: '❤️' },
+    { date: computeEaster(year), title: 'Pâques', emoji: '🐣' },
+    { date: mothersDayFrance(year), title: 'Fête des Mères', emoji: '💐' },
+    { date: nthWeekdayOfMonth(year, 3, 0, 1), title: 'Fête des Grand-mères', emoji: '👵' },
+    { date: fathersDayFrance(year), title: 'Fête des Pères', emoji: '🎁' },
+    { date: new Date(year, 6, 14), title: 'Fête Nationale', emoji: '🇫🇷' },
+    { date: nthWeekdayOfMonth(year, 10, 0, 1), title: 'Fête des Grands-pères', emoji: '👴' },
+    { date: new Date(year, 9, 31), title: 'Halloween', emoji: '🎃' },
+    { date: new Date(year, 10, 1), title: 'Toussaint', emoji: '🕯️' },
+    { date: new Date(year, 11, 25), title: 'Noël', emoji: '🎄' },
+    { date: new Date(year, 11, 31), title: 'Réveillon', emoji: '🥂' },
+  ];
+}
+
+function sameMonthDay(d1, d2) {
+  return d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+}
+
+exports.sendEventReminders = onSchedule(
+  { schedule: '0 9 * * *', timeZone: 'Europe/Paris' },
+  async () => {
+    const today = new Date();
+    const target = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 14);
+    const targetLabel = `${target.getDate()}/${target.getMonth() + 1}`;
+
+    const holidays = getHolidaysForYear(target.getFullYear()).filter((h) => sameMonthDay(h.date, target));
+
+    const usersSnap = await db.collection('users').get();
+    const usersById = new Map();
+    usersSnap.forEach((doc) => usersById.set(doc.id, doc.data()));
+
+    const writes = [];
+    const queue = (uid, title, body, extra = {}) => {
+      writes.push({
+        ref: db.collection('notifications').doc(uid).collection('items').doc(),
+        data: {
+          type: 'event_reminder',
+          title,
+          body,
+          read: false,
+          createdAt: FieldValue.serverTimestamp(),
+          ...extra,
+        },
+      });
+    };
+
+    for (const [uid, userData] of usersById.entries()) {
+      // Fêtes fixes (identiques pour tout le monde)
+      for (const h of holidays) {
+        queue(uid, `${h.emoji} ${h.title} approche !`, `${h.title}, c'est dans 2 semaines (${targetLabel}). Pense à tes cadeaux !`);
+      }
+
+      // Mon propre anniversaire
+      const myBday = userData.birthday;
+      if (myBday && myBday.month - 1 === target.getMonth() && myBday.day === target.getDate()) {
+        queue(uid, '🎂 Ton anniversaire approche !', 'Ton anniversaire est dans 2 semaines !');
+      }
+
+      // Anniversaires des amis
+      const friends = userData.friends || [];
+      for (const friendUid of friends) {
+        const friendData = usersById.get(friendUid);
+        const fBday = friendData && friendData.birthday;
+        if (fBday && fBday.month - 1 === target.getMonth() && fBday.day === target.getDate()) {
+          const friendName = friendData.first_name || friendData.display_name || friendData.name || 'Un ami';
+          queue(uid, `🎂 Anniversaire de ${friendName}`, `L'anniversaire de ${friendName} est dans 2 semaines, pense à son cadeau !`, { friendUid });
+        }
+      }
+
+      // Événements personnalisés de l'utilisateur
+      const customEvents = userData.customEventsList || [];
+      for (const ce of customEvents) {
+        if (typeof ce.month === 'number' && typeof ce.day === 'number' &&
+            ce.month - 1 === target.getMonth() && ce.day === target.getDate()) {
+          const label = ce.title || 'Ton événement';
+          queue(uid, `${ce.emoji || '🎉'} ${label} approche !`, `${label}, c'est dans 2 semaines !`);
+        }
+      }
+    }
+
+    for (let i = 0; i < writes.length; i += 450) {
+      const batch = db.batch();
+      writes.slice(i, i + 450).forEach(({ ref, data }) => batch.set(ref, data));
+      await batch.commit();
+    }
+
+    console.log(`sendEventReminders: ${writes.length} rappel(s) écrit(s) pour ${usersById.size} utilisateur(s) (cible ${targetLabel})`);
+  },
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
 // S5: Génération d'idées de cadeaux via l'API Claude
 // ─────────────────────────────────────────────────────────────────────────────
-const anthropic = new Anthropic({
-  apiKey: "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",
-});
-
-exports.generateGiftIdeas = onCall(async (request) => {
+exports.generateGiftIdeas = onCall({ secrets: [anthropicApiKey] }, async (request) => {
+  const anthropic = getAnthropicClient();
   const data = request.data;
   const userTags = data.userTags || {};
 
@@ -411,7 +638,8 @@ Réponds UNIQUEMENT avec un tableau JSON valide contenant des objets avec ces pr
 
 
 // Nouveau: generateBrands
-exports.generateBrands = onCall(async (request) => {
+exports.generateBrands = onCall({ secrets: [anthropicApiKey] }, async (request) => {
+  const anthropic = getAnthropicClient();
   const data = request.data;
   const age = data.age || 25;
   const domains = data.domains || [];
@@ -446,7 +674,8 @@ Réponds UNIQUEMENT avec un tableau JSON valide de strings (ex: ["Nike", "Sephor
 });
 
 // Nouveau: generateEvents
-exports.generateEvents = onCall(async (request) => {
+exports.generateEvents = onCall({ secrets: [anthropicApiKey] }, async (request) => {
+  const anthropic = getAnthropicClient();
   const data = request.data;
   const age = data.age || 25;
   const domains = data.domains || [];
@@ -482,7 +711,8 @@ Réponds UNIQUEMENT avec un tableau JSON valide de strings (ex: ["🎄 Noël", "
 });
 
 // Nouveau: rerankProductsWithClaude
-exports.rerankProductsWithClaude = onCall(async (request) => {
+exports.rerankProductsWithClaude = onCall({ secrets: [anthropicApiKey] }, async (request) => {
+  const anthropic = getAnthropicClient();
   const data = request.data;
   const products = data.products || [];
   const userProfile = data.userProfile || {};

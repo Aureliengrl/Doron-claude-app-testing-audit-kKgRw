@@ -20,6 +20,8 @@ import '/components/liquid_glass_loader.dart';
 import '/components/cached_image.dart';
 import '/components/product_detail_modal.dart';
 import '/services/firebase_data_service.dart';
+import '/services/notification_service.dart';
+import '/utils/user_display_helper.dart';
 import '/pages/new_pages/occasion_question_page.dart'; // F6: flow questionnaire complet
 
 class ChatRoomPage extends StatefulWidget {
@@ -258,9 +260,37 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         }
       }
       await FirebaseFirestore.instance.collection('chats').doc(widget.chatId).update(unreadUpdate);
+      _notifyNewMessage(text, participants: participants, senderUid: uid);
     } catch (e) {
       debugPrint('Erreur d\'envoi: $e');
     }
+  }
+
+  /// Notification in-app (écran Notifications) pour chaque destinataire du
+  /// message — indépendant de la notification push déjà gérée côté serveur
+  /// (Cloud Function sendChatNotification) qui, elle, ne touche pas ce flux.
+  Future<void> _notifyNewMessage(
+    String previewText, {
+    required List<String> participants,
+    required String senderUid,
+  }) async {
+    try {
+      final chatData = _effectiveChatData;
+      final isGroup = chatData?['isGroup'] == true;
+      final chatName = chatData?['name'] as String? ?? 'conversation';
+      final senderName = await UserProfileCache.instance.getDisplayName(senderUid);
+      final title = isGroup ? '$senderName dans $chatName' : senderName;
+      for (final pid in participants) {
+        if (pid == senderUid) continue;
+        await NotificationService.send(
+          toUid: pid,
+          type: 'message',
+          title: title,
+          body: previewText,
+          extra: {'chatId': widget.chatId, 'fromUid': senderUid},
+        );
+      }
+    } catch (_) {}
   }
 
   Future<void> _pickAndSendImage(ImageSource source) async {
@@ -321,6 +351,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         }
       }
       await FirebaseFirestore.instance.collection('chats').doc(widget.chatId).update(unreadUpdate);
+      _notifyNewMessage('📸 Photo', participants: participants, senderUid: uid);
 
     } catch (e) {
       debugPrint('Erreur d\'envoi d\'image: $e');

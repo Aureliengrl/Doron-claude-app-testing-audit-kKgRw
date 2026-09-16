@@ -214,6 +214,32 @@ class _NotificationsPageState extends State<NotificationsPage> {
           context.push('/wishlist-details/$wishlistId');
         }
         break;
+      case 'friend_request_accepted':
+        final fromUid = data['fromUid'] as String?;
+        if (fromUid != null) {
+          context.push('/public-profile/$fromUid');
+        } else {
+          context.push('/friends');
+        }
+        break;
+      case 'group_payment_due':
+      case 'group_payment_declared':
+      case 'group_payment_confirmed':
+      case 'group_collection_cancelled':
+        final collabId = data['collabId'] as String?;
+        final chatId = data['chatId'] as String?;
+        if (collabId != null && chatId != null) {
+          context.push('/group-gift/$collabId', extra: {
+            'chatId': chatId,
+            'profileName': data['profileName'] ?? '',
+          });
+        } else if (chatId != null) {
+          context.push('/chat-room/$chatId', extra: {'id': chatId});
+        }
+        break;
+      case 'event_reminder':
+        context.push('/birthday-calendar');
+        break;
       default:
         break;
     }
@@ -261,6 +287,30 @@ class _NotificationTile extends StatelessWidget {
           title = context.tr('Wishlist partagée', 'Shared wishlist');
           if (body.isEmpty) body = context.tr('Quelqu\'un a partagé une wishlist avec vous.', 'Someone shared a wishlist with you.');
           break;
+        case 'friend_request_accepted':
+          title = context.tr('Demande acceptée', 'Request accepted');
+          if (body.isEmpty) body = context.tr('Votre demande d\'ami a été acceptée !', 'Your friend request was accepted!');
+          break;
+        case 'group_payment_due':
+          title = context.tr('Cagnotte', 'Group pot');
+          if (body.isEmpty) body = context.tr('Une cagnotte a été lancée.', 'A group pot was started.');
+          break;
+        case 'group_payment_declared':
+          title = context.tr('Paiement déclaré', 'Payment declared');
+          if (body.isEmpty) body = context.tr('Un paiement a été déclaré comme envoyé.', 'A payment was marked as sent.');
+          break;
+        case 'group_payment_confirmed':
+          title = context.tr('Paiement confirmé', 'Payment confirmed');
+          if (body.isEmpty) body = context.tr('Ton paiement a été confirmé.', 'Your payment was confirmed.');
+          break;
+        case 'group_collection_cancelled':
+          title = context.tr('Cagnotte annulée', 'Pot cancelled');
+          if (body.isEmpty) body = context.tr('Une cagnotte a été annulée.', 'A group pot was cancelled.');
+          break;
+        case 'event_reminder':
+          title = context.tr('Événement à venir', 'Upcoming event');
+          if (body.isEmpty) body = context.tr('Un événement approche.', 'An event is coming up.');
+          break;
         default:
           title = context.tr('Nouvelle notification', 'New notification');
       }
@@ -286,6 +336,30 @@ class _NotificationTile extends StatelessWidget {
       case 'wishlist_share':
         icon = IconlyBold.heart;
         iconColor = _pink;
+        break;
+      case 'friend_request_accepted':
+        icon = Icons.how_to_reg_rounded;
+        iconColor = const Color(0xFF10B981);
+        break;
+      case 'group_payment_due':
+        icon = Icons.account_balance_wallet_rounded;
+        iconColor = const Color(0xFFF59E0B);
+        break;
+      case 'group_payment_declared':
+        icon = Icons.hourglass_top_rounded;
+        iconColor = const Color(0xFFF59E0B);
+        break;
+      case 'group_payment_confirmed':
+        icon = Icons.verified_rounded;
+        iconColor = const Color(0xFF10B981);
+        break;
+      case 'group_collection_cancelled':
+        icon = Icons.cancel_rounded;
+        iconColor = Colors.redAccent;
+        break;
+      case 'event_reminder':
+        icon = IconlyBold.calendar;
+        iconColor = const Color(0xFFF59E0B);
         break;
       default:
         icon = IconlyBold.notification;

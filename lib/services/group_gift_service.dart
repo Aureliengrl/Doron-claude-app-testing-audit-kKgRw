@@ -127,6 +127,11 @@ class GroupGiftService {
     required Map<String, dynamic> payment,
     String currency = 'EUR',
     DateTime? deadline,
+    // Utilisé pour notifier TOUS les membres qu'une cagnotte a démarré,
+    // y compris en mode 'open' où [shares] est vide (personne n'a encore de
+    // montant fixé) — sans ça, personne n'était prévenu qu'une cagnotte
+    // ouverte venait d'être lancée.
+    List<String>? memberUids,
   }) async {
     final uid = _uid;
     if (uid == null) throw Exception('Non connecté');
@@ -146,6 +151,7 @@ class GroupGiftService {
       }, SetOptions(merge: true));
 
       final batch = _db.batch();
+      final notifiedUids = <String>{};
       shares.forEach((puid, amount) {
         final pRef = _db
             .collection('collaborations')
@@ -179,8 +185,26 @@ class GroupGiftService {
             'read': false,
             'createdAt': FieldValue.serverTimestamp(),
           });
+          notifiedUids.add(puid);
         }
       });
+
+      // Cagnotte ouverte (ou tout membre non couvert par un montant fixe) :
+      // prévenir quand même qu'une collecte vient de démarrer.
+      for (final puid in (memberUids ?? const <String>[])) {
+        if (puid == uid || notifiedUids.contains(puid)) continue;
+        final nRef = _db.collection('notifications').doc(puid).collection('items').doc();
+        batch.set(nRef, {
+          'type': 'group_payment_due',
+          'collabId': collabId,
+          'chatId': chatId,
+          'profileName': profileName,
+          'title': '🎁 Cagnotte lancée',
+          'body': 'Une cagnotte ouverte a été lancée pour $profileName : donne le montant de ton choix !',
+          'read': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
       await batch.commit();
 
       final deadlineText = deadline != null
@@ -250,6 +274,28 @@ class GroupGiftService {
         'lastMessage': label,
         'lastMessageTime': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
+
+      // Notifier chaque membre (sauf l'hôte) que la cagnotte est annulée.
+      try {
+        final collabDoc = await _db.collection('collaborations').doc(collabId).get();
+        final members = (collabDoc.data()?['members'] as List?)?.cast<String>() ?? [];
+        final batch = _db.batch();
+        for (final puid in members) {
+          if (puid == uid) continue;
+          final nRef = _db.collection('notifications').doc(puid).collection('items').doc();
+          batch.set(nRef, {
+            'type': 'group_collection_cancelled',
+            'collabId': collabId,
+            'chatId': chatId,
+            'profileName': profileName,
+            'title': '🛑 Cagnotte annulée',
+            'body': 'La cagnotte pour $profileName a été annulée par l\'hôte.',
+            'read': false,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+        }
+        await batch.commit();
+      } catch (_) {}
 
       AppLogger.debug('✅ GroupGift: cagnotte annulée sur $collabId', 'GroupGift');
     } catch (e) {

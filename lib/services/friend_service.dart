@@ -265,6 +265,24 @@ class FriendService {
         // Non-fatal: the request is accepted and our own friend list is updated.
       }
 
+      // ── Notification in-app : prévenir l'expéditeur que sa demande est acceptée ──
+      try {
+        final meDoc = await _db.collection('users').doc(myUid).get();
+        final meData = meDoc.data() ?? {};
+        final myName = meData['first_name'] as String? ??
+            meData['display_name'] as String? ??
+            'Quelqu\'un';
+        await _db.collection('notifications').doc(fromUid).collection('items').add({
+          'type': 'friend_request_accepted',
+          'fromUid': myUid,
+          'fromName': myName,
+          'title': '✅ Demande acceptée',
+          'body': '$myName a accepté ta demande d\'ami !',
+          'read': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      } catch (_) {}
+
       AppLogger.debug('✅ FriendService.acceptRequest: $requestId from $fromUid', 'Social');
       return true;
     } catch (e) {

@@ -303,10 +303,25 @@ class _MyAppState extends State<MyApp> {
       });
     }
 
-    // Listen to real-time notification clicks
-    PushNotificationsService.onNotificationClick.stream.listen((chatId) {
-      if (mounted) {
-        _router.push('/chat-room/$chatId');
+    // Listen to real-time notification clicks. _handleNotificationInteraction
+    // emits structured values ('chat:<id>', 'friends', 'calendar',
+    // 'collab:<id>'), pas un chatId brut — il faut donc les distinguer,
+    // sinon un clic sur une notif "demande d'ami" par ex. ouvrait par erreur
+    // une conversation nommée littéralement "friends".
+    PushNotificationsService.onNotificationClick.stream.listen((event) {
+      if (!mounted) return;
+      if (event.startsWith('chat:')) {
+        _router.push('/chat-room/${event.substring('chat:'.length)}');
+      } else if (event == 'friends') {
+        _router.push('/friends');
+      } else if (event == 'calendar') {
+        _router.push('/birthday-calendar');
+      } else if (event.startsWith('collab:')) {
+        // Pas encore de chatId disponible pour cette collab : on ramène au
+        // moins l'utilisateur sur son centre de notifications.
+        _router.push('/notifications');
+      } else {
+        AppLogger.debug('Unhandled notification click event: $event', 'Main');
       }
     });
   }

@@ -1244,6 +1244,7 @@ class _CollectionSetupSheetState extends State<_CollectionSetupSheet> {
         shares: shares,
         payment: payment,
         deadline: _deadline,
+        memberUids: widget.memberUids,
       );
       widget.onDone();
     } catch (_) {

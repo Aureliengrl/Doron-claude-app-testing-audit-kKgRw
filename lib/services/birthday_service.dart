@@ -138,13 +138,13 @@ class BirthdayService {
     return DateTime(year, month, day);
   }
 
-  /// Fête des Mères en France: 2e dimanche de mai
+  /// Fête des Mères en France: dernier dimanche de mai
   /// Sauf si coïncide avec Pentecôte → 1er dimanche de juin
   static DateTime _mothersDayFrance(int year) {
     final easter = _computeEaster(year);
     final pentecote = easter.add(const Duration(days: 49));
 
-    DateTime candidate = _nthWeekdayOfMonth(year, 5, DateTime.sunday, 2);
+    DateTime candidate = _lastWeekdayOfMonth(year, 5, DateTime.sunday);
     if (candidate.month == pentecote.month &&
         candidate.day == pentecote.day) {
       // Décalage au 1er dimanche de juin
@@ -169,6 +169,15 @@ class BirthdayService {
       }
       d = d.add(const Duration(days: 1));
     }
+  }
+
+  /// Retourne le dernier jour de semaine donné du mois (ex: dernier dimanche de mai).
+  static DateTime _lastWeekdayOfMonth(int year, int month, int weekday) {
+    DateTime d = DateTime(year, month + 1, 0); // dernier jour du mois
+    while (d.weekday != weekday) {
+      d = d.subtract(const Duration(days: 1));
+    }
+    return d;
   }
 
   // ─────────────────────────────────────────────────────────────────────────

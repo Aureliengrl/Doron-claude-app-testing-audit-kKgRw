@@ -133,6 +133,33 @@ class PushNotificationsService {
       return;
     }
 
+    // Demande d'ami acceptée → naviguer vers la page amis
+    if (type == 'friend_request_accepted') {
+      onNotificationClick.add('friends');
+      AppLogger.debug('Notification: friend request accepted, navigate to friends page', 'PushNotificationsService');
+      return;
+    }
+
+    // Cagnotte (lancée / déclarée / confirmée / annulée) → chat de groupe si dispo
+    if (type == 'group_payment_due' ||
+        type == 'group_payment_declared' ||
+        type == 'group_payment_confirmed' ||
+        type == 'group_collection_cancelled') {
+      if (chatId.isNotEmpty) {
+        pendingChatRoute = chatId;
+        onNotificationClick.add('chat:$chatId');
+        AppLogger.debug('Notification $type: navigate to chat $chatId', 'PushNotificationsService');
+      }
+      return;
+    }
+
+    // Rappel d'événement (2 semaines avant) → page calendrier
+    if (type == 'event_reminder') {
+      onNotificationClick.add('calendar');
+      AppLogger.debug('Notification: event reminder, navigate to calendar', 'PushNotificationsService');
+      return;
+    }
+
     // Fallback générique avec chatId
     if (chatId.isNotEmpty) {
       pendingChatRoute = chatId;
