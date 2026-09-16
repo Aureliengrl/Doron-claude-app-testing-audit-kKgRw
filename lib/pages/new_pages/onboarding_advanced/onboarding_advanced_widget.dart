@@ -387,7 +387,7 @@ class _OnboardingAdvancedWidgetState extends State<OnboardingAdvancedWidget>
               scale: value,
               child: useLogo
                   ? Image.asset(
-                      'assets/images/doron_logo.png', // Logo DOR�N (vague)
+                      'assets/images/doron_wave_mark.png',
                       width: 150,
                       height: 150,
                       errorBuilder: (context, error, stackTrace) {

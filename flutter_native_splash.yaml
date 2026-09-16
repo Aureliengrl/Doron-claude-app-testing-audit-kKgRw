@@ -1,11 +1,16 @@
 flutter_native_splash:
-  image: assets/images/Icon.png
-  color: "#000000"
-  color_dark: "#000000"
+  # Logo + wordmark identiques à l'écran de chargement animé
+  # (lib/components/doron_luxury_splash.dart) sur le même fond, pour une
+  # transition invisible entre le splash natif et le splash Flutter animé.
+  image: assets/images/splash_lockup.png
+  color: "#070311"
+  color_dark: "#070311"
   android_12:
-    image: assets/images/Icon.png
-    color: "#000000"
-    color_dark: "#000000"
+    image: assets/images/splash_lockup.png
+    icon_background_color: "#070311"
+    icon_background_color_dark: "#070311"
+    color: "#070311"
+    color_dark: "#070311"
   android: true
   ios: true
   web: true

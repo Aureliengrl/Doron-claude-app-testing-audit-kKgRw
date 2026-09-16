@@ -243,14 +243,14 @@ class _AuthentificationWidgetState extends State<AuthentificationWidget> {
                 children: [
                   const Spacer(flex: 2),
 
-                  // Logo
+                  // Logo (icône officielle Doron, style tuile d'app)
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(24),
                     child: Image.asset(
-                      'assets/images/doron_logo.png',
+                      'assets/images/doron_logo.jpg',
                       width: 100,
                       height: 100,
-                      fit: BoxFit.contain,
+                      fit: BoxFit.cover,
                     ),
                   ),
                   const SizedBox(height: 24),

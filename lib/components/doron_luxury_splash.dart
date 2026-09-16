@@ -345,11 +345,11 @@ class _DoronLuxurySplashIntroState extends State<DoronLuxurySplashIntro>
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Official Doron Logo
+                    // Official Doron Logo (mark blanc extrait de l'icône officielle)
                     Image.asset(
-                      'assets/images/doron_logo.png',
-                      width: 118,
-                      height: 118,
+                      'assets/images/doron_wave_mark.png',
+                      width: 108,
+                      height: 108,
                       fit: BoxFit.contain,
                     ),
 

@@ -107,7 +107,7 @@ class _DoronLuxuryLoaderState extends State<DoronLuxuryLoader>
                           ? Padding(
                               padding: EdgeInsets.all(widget.size * 0.16),
                               child: Image.asset(
-                                'assets/images/doron_logo.png',
+                                'assets/images/doron_wave_mark.png',
                                 fit: BoxFit.contain,
                               ),
                             )

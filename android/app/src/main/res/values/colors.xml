@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Couleur de fond de l'écran de démarrage natif — identique au fond de
+         l'écran de chargement animé Flutter (DoronLuxurySplashIntro) pour une
+         transition invisible entre les deux. -->
+    <color name="splash_background">#070311</color>
+</resources>

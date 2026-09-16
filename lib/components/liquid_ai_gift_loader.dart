@@ -499,9 +499,10 @@ class _LiquidAIGiftLoaderState extends State<LiquidAIGiftLoader>
       child: Padding(
         padding: const EdgeInsets.all(36),
         child: Image.asset(
-          'assets/images/doron_logo.png',
+          'assets/images/doron_wave_mark.png',
           fit: BoxFit.contain,
-          color: tintWhite ? Colors.white : null,
+          color: tintWhite ? Colors.white : const Color(0xFF8A2BE2),
+          colorBlendMode: BlendMode.srcIn,
           errorBuilder: (context, error, stackTrace) {
             return Icon(
               Icons.card_giftcard_rounded,
